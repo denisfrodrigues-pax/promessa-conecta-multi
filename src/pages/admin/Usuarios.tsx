@@ -99,21 +99,21 @@ export default function Usuarios() {
         .update({
           nome: editData.nome,
           telefone: editData.telefone || null,
-          status: editData.status,
+          status: editData.status as 'ativo' | 'inativo' | 'pendente',
         })
         .eq('id', editingUser.id);
 
       if (profileError) throw profileError;
 
-      // Update role
-      const { error: deleteRoleError } = await supabase
+      // Update role - delete existing and insert new
+      await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', editingUser.user_id);
 
       const { error: insertRoleError } = await supabase
         .from('user_roles')
-        .insert({ user_id: editingUser.user_id, role: editData.role });
+        .insert([{ user_id: editingUser.user_id, role: editData.role as 'admin' | 'lider' | 'voluntario' | 'membro' | 'visitante' }]);
 
       toast.success('Usuário atualizado com sucesso');
       setEditingUser(null);
