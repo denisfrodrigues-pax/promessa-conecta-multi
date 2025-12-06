@@ -3,24 +3,90 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { AuthProvider } from "@/contexts/AuthContext";
+
+// Layouts
+import AdminLayout from "@/components/layout/AdminLayout";
+import MemberLayout from "@/components/layout/MemberLayout";
+import LeaderLayout from "@/components/layout/LeaderLayout";
+
+// Auth
+import Auth from "@/pages/Auth";
+
+// Admin Pages
+import AdminDashboard from "@/pages/admin/Dashboard";
+import AdminUsuarios from "@/pages/admin/Usuarios";
+import AdminGrupos from "@/pages/admin/Grupos";
+import AdminEventos from "@/pages/admin/Eventos";
+import AdminAvisos from "@/pages/admin/Avisos";
+
+// Member Pages
+import MemberHome from "@/pages/member/Home";
+import MemberGrupos from "@/pages/member/Grupos";
+import MemberEventos from "@/pages/member/Eventos";
+import MemberAvisos from "@/pages/member/Avisos";
+import MemberPerfil from "@/pages/member/Perfil";
+import SouNovo from "@/pages/member/SouNovo";
+import Oracao from "@/pages/member/Oracao";
+
+// Leader Pages
+import LeaderDashboard from "@/pages/leader/Dashboard";
+import LeaderEscalas from "@/pages/leader/Escalas";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Auth */}
+            <Route path="/auth" element={<Auth />} />
+
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="usuarios" element={<AdminUsuarios />} />
+              <Route path="grupos" element={<AdminGrupos />} />
+              <Route path="eventos" element={<AdminEventos />} />
+              <Route path="avisos" element={<AdminAvisos />} />
+              <Route path="ministerios" element={<AdminDashboard />} />
+              <Route path="escalas" element={<AdminDashboard />} />
+              <Route path="infantil" element={<AdminDashboard />} />
+              <Route path="auditoria" element={<AdminDashboard />} />
+              <Route path="configuracoes" element={<AdminDashboard />} />
+            </Route>
+
+            {/* Leader Routes */}
+            <Route path="/lider" element={<LeaderLayout />}>
+              <Route index element={<LeaderDashboard />} />
+              <Route path="grupos" element={<LeaderDashboard />} />
+              <Route path="escalas" element={<LeaderEscalas />} />
+              <Route path="relatorios" element={<LeaderDashboard />} />
+            </Route>
+
+            {/* Member Routes */}
+            <Route element={<MemberLayout />}>
+              <Route path="/" element={<MemberHome />} />
+              <Route path="/grupos" element={<MemberGrupos />} />
+              <Route path="/eventos" element={<MemberEventos />} />
+              <Route path="/avisos" element={<MemberAvisos />} />
+              <Route path="/perfil" element={<MemberPerfil />} />
+              <Route path="/sou-novo" element={<SouNovo />} />
+              <Route path="/oracao" element={<Oracao />} />
+            </Route>
+
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
