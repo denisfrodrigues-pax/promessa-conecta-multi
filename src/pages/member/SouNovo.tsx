@@ -1,0 +1,135 @@
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { Heart, Users, Calendar, MessageCircle, ChevronRight, Sparkles, MapPin, Clock } from 'lucide-react';
+
+export default function SouNovo() {
+  const steps = [
+    {
+      icon: Heart,
+      title: 'Seja Bem-vindo!',
+      description: 'Estamos felizes em recebê-lo. Aqui você encontrará uma comunidade acolhedora.',
+      color: 'bg-rose-100 text-rose-500',
+    },
+    {
+      icon: Users,
+      title: 'Encontre seu Grupo',
+      description: 'Participe de um pequeno grupo e desenvolva amizades significativas.',
+      color: 'bg-primary/10 text-primary',
+      action: { label: 'Ver Grupos', path: '/grupos' },
+    },
+    {
+      icon: Calendar,
+      title: 'Participe dos Eventos',
+      description: 'Venha nos conhecer melhor participando de nossos eventos e programações.',
+      color: 'bg-church-gold/10 text-church-gold',
+      action: { label: 'Ver Eventos', path: '/eventos' },
+    },
+    {
+      icon: MessageCircle,
+      title: 'Fale Conosco',
+      description: 'Tire suas dúvidas e saiba mais sobre nossa igreja.',
+      color: 'bg-violet-100 text-violet-500',
+    },
+  ];
+
+  return (
+    <div className="pb-24 md:pb-6">
+      {/* Hero Section */}
+      <section className="bg-gradient-hero text-primary-foreground relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/banner_sou_novo_placeholder.png')] bg-cover bg-center opacity-20" />
+        <div className="container mx-auto px-4 py-16 relative z-10 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-church-gold shadow-gold mb-6">
+            <Sparkles className="w-8 h-8 text-primary-foreground" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">
+            Sou Novo Aqui
+          </h1>
+          <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto">
+            Seja muito bem-vindo à Igreja da Promessa! Estamos muito felizes em tê-lo conosco.
+            Aqui você vai encontrar uma família que se importa com você.
+          </p>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Steps */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-display font-bold text-center mb-6">
+            Seus Próximos Passos
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {steps.map((step, index) => (
+              <Card key={index} className="shadow-card hover:shadow-elevated transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className={`w-12 h-12 rounded-xl ${step.color} flex items-center justify-center flex-shrink-0`}>
+                      <step.icon className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-display font-semibold text-lg mb-2">{step.title}</h3>
+                      <p className="text-muted-foreground text-sm mb-3">{step.description}</p>
+                      {step.action && (
+                        <Button asChild variant="ghost" size="sm" className="p-0 h-auto">
+                          <Link to={step.action.path}>
+                            {step.action.label} <ChevronRight className="w-4 h-4 ml-1" />
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Info Section */}
+        <section>
+          <Card className="shadow-card bg-gradient-card">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-display font-bold mb-6">Nossos Cultos</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 rounded-lg bg-background shadow-soft">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="font-medium">Domingo</span>
+                  </div>
+                  <p className="text-2xl font-display font-bold">10:00</p>
+                  <p className="text-sm text-muted-foreground">Culto da Família</p>
+                </div>
+                <div className="p-4 rounded-lg bg-background shadow-soft">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="font-medium">Domingo</span>
+                  </div>
+                  <p className="text-2xl font-display font-bold">19:00</p>
+                  <p className="text-sm text-muted-foreground">Culto de Celebração</p>
+                </div>
+                <div className="p-4 rounded-lg bg-background shadow-soft">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="font-medium">Quarta</span>
+                  </div>
+                  <p className="text-2xl font-display font-bold">19:30</p>
+                  <p className="text-sm text-muted-foreground">Culto de Ensino</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* CTA */}
+        <section className="text-center py-8">
+          <h2 className="text-xl font-display font-bold mb-4">Pronto para dar o próximo passo?</h2>
+          <p className="text-muted-foreground mb-6">
+            Complete seu cadastro e faça parte da nossa comunidade
+          </p>
+          <Button asChild variant="gold" size="lg">
+            <Link to="/perfil">Completar Meu Cadastro</Link>
+          </Button>
+        </section>
+      </div>
+    </div>
+  );
+}
