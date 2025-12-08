@@ -546,6 +546,7 @@ export type Database = {
         Row: {
           ativo: boolean | null
           created_at: string | null
+          funcao_principal_id: string | null
           id: string
           ministerio_id: string
           updated_at: string | null
@@ -554,6 +555,7 @@ export type Database = {
         Insert: {
           ativo?: boolean | null
           created_at?: string | null
+          funcao_principal_id?: string | null
           id?: string
           ministerio_id: string
           updated_at?: string | null
@@ -562,12 +564,20 @@ export type Database = {
         Update: {
           ativo?: boolean | null
           created_at?: string | null
+          funcao_principal_id?: string | null
           id?: string
           ministerio_id?: string
           updated_at?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ministerio_voluntarios_funcao_principal_id_fkey"
+            columns: ["funcao_principal_id"]
+            isOneToOne: false
+            referencedRelation: "ministerio_funcoes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ministerio_voluntarios_ministerio_id_fkey"
             columns: ["ministerio_id"]

@@ -7,11 +7,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Trash2, Users, Building2 } from 'lucide-react';
+import { Plus, Trash2, Users, Building2, Search, Pencil } from 'lucide-react';
 
 interface Ministerio {
+  id: string;
+  nome: string;
+  ativo: boolean;
+}
+
+interface Funcao {
   id: string;
   nome: string;
   ativo: boolean;
@@ -20,6 +28,7 @@ interface Ministerio {
 interface Profile {
   id: string;
   nome: string;
+  email: string;
   user_id: string;
 }
 
@@ -28,7 +37,9 @@ interface MinisterioVoluntario {
   ministerio_id: string;
   user_id: string;
   ativo: boolean;
-  profile?: { nome: string };
+  funcao_principal_id: string | null;
+  profile?: { nome: string; email: string };
+  funcao_principal?: { nome: string } | null;
 }
 
 export default function AdminVoluntariosMinisterios() {
@@ -36,11 +47,19 @@ export default function AdminVoluntariosMinisterios() {
   const [selectedMinisterio, setSelectedMinisterio] = useState<Ministerio | null>(null);
   const [voluntarios, setVoluntarios] = useState<MinisterioVoluntario[]>([]);
   const [availableProfiles, setAvailableProfiles] = useState<Profile[]>([]);
+  const [funcoes, setFuncoes] = useState<Funcao[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Dialogs
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditFuncaoDialogOpen, setIsEditFuncaoDialogOpen] = useState(false);
+  
   const [deletingVoluntario, setDeletingVoluntario] = useState<MinisterioVoluntario | null>(null);
+  const [editingVoluntario, setEditingVoluntario] = useState<MinisterioVoluntario | null>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string>('');
+  const [selectedFuncaoId, setSelectedFuncaoId] = useState<string>('');
 
   useEffect(() => {
     fetchMinisterios();
@@ -49,6 +68,7 @@ export default function AdminVoluntariosMinisterios() {
   useEffect(() => {
     if (selectedMinisterio) {
       fetchVoluntarios(selectedMinisterio.id);
+      fetchFuncoes(selectedMinisterio.id);
     }
   }, [selectedMinisterio]);
 
@@ -78,16 +98,39 @@ export default function AdminVoluntariosMinisterios() {
           ministerio_id,
           user_id,
           ativo,
-          profile:profiles!ministerio_voluntarios_user_id_fkey(nome)
+          funcao_principal_id,
+          profile:profiles!ministerio_voluntarios_user_id_fkey(nome, email),
+          funcao_principal:ministerio_funcoes(nome)
         `)
         .eq('ministerio_id', ministerioId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setVoluntarios(data || []);
+      
+      // Sort alphabetically by name
+      const sorted = (data || []).sort((a, b) => 
+        (a.profile?.nome || '').localeCompare(b.profile?.nome || '')
+      );
+      setVoluntarios(sorted);
     } catch (error) {
       console.error('Error fetching voluntarios:', error);
       toast.error('Erro ao carregar voluntários');
+    }
+  };
+
+  const fetchFuncoes = async (ministerioId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('ministerio_funcoes')
+        .select('id, nome, ativo')
+        .eq('ministerio_id', ministerioId)
+        .eq('ativo', true)
+        .order('nome');
+
+      if (error) throw error;
+      setFuncoes(data || []);
+    } catch (error) {
+      console.error('Error fetching funcoes:', error);
     }
   };
 
@@ -95,15 +138,13 @@ export default function AdminVoluntariosMinisterios() {
     if (!selectedMinisterio) return;
 
     try {
-      // Get all profiles
       const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, nome, user_id')
+        .select('id, nome, email, user_id')
         .order('nome');
 
       if (profilesError) throw profilesError;
 
-      // Get profiles already in this ministry
       const { data: existingVoluntarios, error: existingError } = await supabase
         .from('ministerio_voluntarios')
         .select('user_id')
@@ -113,7 +154,6 @@ export default function AdminVoluntariosMinisterios() {
 
       const existingUserIds = new Set(existingVoluntarios?.map((v) => v.user_id) || []);
       
-      // Filter out profiles already in this ministry
       const available = (allProfiles || []).filter(
         (profile) => !existingUserIds.has(profile.user_id)
       );
@@ -127,6 +167,7 @@ export default function AdminVoluntariosMinisterios() {
 
   const handleOpenAddDialog = () => {
     setSelectedProfileId('');
+    setSelectedFuncaoId('');
     fetchAvailableProfiles();
     setIsAddDialogOpen(true);
   };
@@ -137,7 +178,6 @@ export default function AdminVoluntariosMinisterios() {
       return;
     }
 
-    // Find the profile to get the user_id
     const profile = availableProfiles.find((p) => p.id === selectedProfileId);
     if (!profile) {
       toast.error('Perfil não encontrado');
@@ -151,6 +191,7 @@ export default function AdminVoluntariosMinisterios() {
           ministerio_id: selectedMinisterio.id,
           user_id: profile.user_id,
           ativo: true,
+          funcao_principal_id: selectedFuncaoId || null,
         });
 
       if (error) throw error;
@@ -165,6 +206,33 @@ export default function AdminVoluntariosMinisterios() {
       } else {
         toast.error('Erro ao adicionar voluntário');
       }
+    }
+  };
+
+  const handleOpenEditFuncaoDialog = (voluntario: MinisterioVoluntario) => {
+    setEditingVoluntario(voluntario);
+    setSelectedFuncaoId(voluntario.funcao_principal_id || '');
+    setIsEditFuncaoDialogOpen(true);
+  };
+
+  const handleUpdateFuncao = async () => {
+    if (!editingVoluntario || !selectedMinisterio) return;
+
+    try {
+      const { error } = await supabase
+        .from('ministerio_voluntarios')
+        .update({ funcao_principal_id: selectedFuncaoId || null })
+        .eq('id', editingVoluntario.id);
+
+      if (error) throw error;
+
+      toast.success('Função principal atualizada');
+      setIsEditFuncaoDialogOpen(false);
+      setEditingVoluntario(null);
+      fetchVoluntarios(selectedMinisterio.id);
+    } catch (error) {
+      console.error('Error updating funcao:', error);
+      toast.error('Erro ao atualizar função');
     }
   };
 
@@ -207,6 +275,12 @@ export default function AdminVoluntariosMinisterios() {
       toast.error('Erro ao remover voluntário');
     }
   };
+
+  // Filter voluntarios by search term
+  const filteredVoluntarios = voluntarios.filter((v) =>
+    v.profile?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    v.profile?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -265,7 +339,7 @@ export default function AdminVoluntariosMinisterios() {
         {/* Main Content - Voluntários */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 {selectedMinisterio ? `Voluntários - ${selectedMinisterio.nome}` : 'Selecione um Ministério'}
@@ -277,6 +351,17 @@ export default function AdminVoluntariosMinisterios() {
                 </Button>
               )}
             </div>
+            {selectedMinisterio && (
+              <div className="relative mt-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar voluntário..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             {!selectedMinisterio ? (
@@ -284,29 +369,50 @@ export default function AdminVoluntariosMinisterios() {
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Selecione um ministério para ver seus voluntários</p>
               </div>
-            ) : voluntarios.length === 0 ? (
+            ) : filteredVoluntarios.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhum voluntário neste ministério</p>
-                <Button variant="outline" className="mt-4" onClick={handleOpenAddDialog}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Voluntário
-                </Button>
+                <p>{searchTerm ? 'Nenhum voluntário encontrado' : 'Nenhum voluntário neste ministério'}</p>
+                {!searchTerm && (
+                  <Button variant="outline" className="mt-4" onClick={handleOpenAddDialog}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Voluntário
+                  </Button>
+                )}
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nome</TableHead>
+                    <TableHead>Nome / Email</TableHead>
+                    <TableHead>Função Principal</TableHead>
                     <TableHead className="text-center">Status</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {voluntarios.map((voluntario) => (
+                  {filteredVoluntarios.map((voluntario) => (
                     <TableRow key={voluntario.id}>
-                      <TableCell className="font-medium">
-                        {voluntario.profile?.nome || 'Nome não disponível'}
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{voluntario.profile?.nome || 'Nome não disponível'}</p>
+                          <p className="text-sm text-muted-foreground">{voluntario.profile?.email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">
+                            {voluntario.funcao_principal?.nome || 'Não definida'}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => handleOpenEditFuncaoDialog(voluntario)}
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-2">
@@ -349,25 +455,47 @@ export default function AdminVoluntariosMinisterios() {
               Selecione um usuário para adicionar ao ministério {selectedMinisterio?.nome}
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Select value={selectedProfileId} onValueChange={setSelectedProfileId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um voluntário" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableProfiles.length === 0 ? (
-                  <div className="p-2 text-center text-muted-foreground">
-                    Todos os usuários já estão neste ministério
-                  </div>
-                ) : (
-                  availableProfiles.map((profile) => (
-                    <SelectItem key={profile.id} value={profile.id}>
-                      {profile.nome}
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Voluntário</Label>
+              <Select value={selectedProfileId} onValueChange={setSelectedProfileId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um voluntário" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableProfiles.length === 0 ? (
+                    <div className="p-2 text-center text-muted-foreground">
+                      Todos os usuários já estão neste ministério
+                    </div>
+                  ) : (
+                    availableProfiles.map((profile) => (
+                      <SelectItem key={profile.id} value={profile.id}>
+                        <div>
+                          <span>{profile.nome}</span>
+                          <span className="text-muted-foreground ml-2 text-sm">({profile.email})</span>
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Função Principal (opcional)</Label>
+              <Select value={selectedFuncaoId} onValueChange={setSelectedFuncaoId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma função" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Nenhuma</SelectItem>
+                  {funcoes.map((funcao) => (
+                    <SelectItem key={funcao.id} value={funcao.id}>
+                      {funcao.nome}
                     </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
@@ -375,6 +503,42 @@ export default function AdminVoluntariosMinisterios() {
             </Button>
             <Button onClick={handleAddVoluntario} disabled={!selectedProfileId}>
               Adicionar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Funcao Dialog */}
+      <Dialog open={isEditFuncaoDialogOpen} onOpenChange={setIsEditFuncaoDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Função Principal</DialogTitle>
+            <DialogDescription>
+              Defina a função principal de {editingVoluntario?.profile?.nome}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label>Função Principal</Label>
+            <Select value={selectedFuncaoId} onValueChange={setSelectedFuncaoId}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Selecione uma função" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Nenhuma</SelectItem>
+                {funcoes.map((funcao) => (
+                  <SelectItem key={funcao.id} value={funcao.id}>
+                    {funcao.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditFuncaoDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleUpdateFuncao}>
+              Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
