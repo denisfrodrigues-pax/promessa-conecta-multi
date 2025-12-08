@@ -19,6 +19,7 @@ import AdminUsuarios from "@/pages/admin/Usuarios";
 import AdminGrupos from "@/pages/admin/Grupos";
 import AdminEventos from "@/pages/admin/Eventos";
 import AdminAvisos from "@/pages/admin/Avisos";
+import AdminEscalas from "@/pages/admin/Escalas";
 
 // Member Pages
 import MemberHome from "@/pages/member/Home";
@@ -56,7 +57,7 @@ const App = () => (
               <Route path="eventos" element={<AdminEventos />} />
               <Route path="avisos" element={<AdminAvisos />} />
               <Route path="ministerios" element={<AdminDashboard />} />
-              <Route path="escalas" element={<AdminDashboard />} />
+              <Route path="escalas" element={<AdminEscalas />} />
               <Route path="infantil" element={<AdminDashboard />} />
               <Route path="auditoria" element={<AdminDashboard />} />
               <Route path="configuracoes" element={<AdminDashboard />} />
