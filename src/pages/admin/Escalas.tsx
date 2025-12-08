@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, Filter, CheckCircle, Clock, XCircle, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, CheckCircle, Clock, XCircle, Search, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -47,6 +47,26 @@ interface Escala {
   responsavel: { nome: string } | null;
 }
 
+interface EscalaGroup {
+  key: string;
+  ministerio_id: string | null;
+  data: string;
+  horario: string | null;
+  funcao: string;
+  turno: string | null;
+  responsavel_id: string | null;
+  status_geral: string | null;
+  ministerio_nome: string | null;
+  responsavel_nome: string | null;
+  voluntarios: Array<{
+    id: string;
+    voluntario_id: string;
+    nome: string;
+    status: string;
+    justificativa: string | null;
+  }>;
+}
+
 interface EscalaFormData {
   ministerio_id: string;
   data: Date;
@@ -71,14 +91,17 @@ const initialFormData: EscalaFormData = {
 
 export default function AdminEscalas() {
   const [escalas, setEscalas] = useState<Escala[]>([]);
+  const [escalaGroups, setEscalaGroups] = useState<EscalaGroup[]>([]);
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
   const [voluntarios, setVoluntarios] = useState<Profile[]>([]);
   const [lideres, setLideres] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [editingEscala, setEditingEscala] = useState<Escala | null>(null);
-  const [deletingEscalaId, setDeletingEscalaId] = useState<string | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<EscalaGroup | null>(null);
+  const [viewingGroup, setViewingGroup] = useState<EscalaGroup | null>(null);
+  const [deletingGroup, setDeletingGroup] = useState<EscalaGroup | null>(null);
   const [formData, setFormData] = useState<EscalaFormData>(initialFormData);
   
   // Filters
@@ -116,10 +139,51 @@ export default function AdminEscalas() {
 
       if (error) throw error;
       setEscalas(data || []);
+      
+      // Group escalas by (ministerio_id, data, funcao, turno)
+      const groups = groupEscalas(data || []);
+      setEscalaGroups(groups);
     } catch (error) {
       console.error('Error fetching escalas:', error);
       toast.error('Erro ao carregar escalas');
     }
+  };
+
+  const groupEscalas = (escalas: Escala[]): EscalaGroup[] => {
+    const groupMap = new Map<string, EscalaGroup>();
+    
+    escalas.forEach((escala) => {
+      const key = `${escala.ministerio_id}-${escala.data}-${escala.funcao}-${escala.turno || ''}`;
+      
+      if (!groupMap.has(key)) {
+        groupMap.set(key, {
+          key,
+          ministerio_id: escala.ministerio_id,
+          data: escala.data,
+          horario: escala.horario,
+          funcao: escala.funcao,
+          turno: escala.turno,
+          responsavel_id: escala.responsavel_id,
+          status_geral: escala.status_geral,
+          ministerio_nome: escala.ministerios?.nome || null,
+          responsavel_nome: escala.responsavel?.nome || null,
+          voluntarios: [],
+        });
+      }
+      
+      const group = groupMap.get(key)!;
+      if (escala.voluntario_id && escala.voluntario) {
+        group.voluntarios.push({
+          id: escala.id,
+          voluntario_id: escala.voluntario_id,
+          nome: escala.voluntario.nome,
+          status: escala.status,
+          justificativa: escala.justificativa,
+        });
+      }
+    });
+    
+    return Array.from(groupMap.values());
   };
 
   const fetchMinisterios = async () => {
@@ -177,40 +241,48 @@ export default function AdminEscalas() {
   };
 
   const handleCreate = () => {
-    setEditingEscala(null);
+    setEditingGroup(null);
     setFormData(initialFormData);
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (escala: Escala) => {
-    setEditingEscala(escala);
+  const handleEdit = (group: EscalaGroup) => {
+    setEditingGroup(group);
     setFormData({
-      ministerio_id: escala.ministerio_id || '',
-      data: new Date(escala.data),
-      horario: escala.horario || '',
-      funcao: escala.funcao,
-      turno: escala.turno || '',
-      responsavel_id: escala.responsavel_id || '',
-      voluntarios_ids: escala.voluntario_id ? [escala.voluntario_id] : [],
-      status_geral: escala.status_geral || 'planejada',
+      ministerio_id: group.ministerio_id || '',
+      data: new Date(group.data),
+      horario: group.horario || '',
+      funcao: group.funcao,
+      turno: group.turno || '',
+      responsavel_id: group.responsavel_id || '',
+      voluntarios_ids: group.voluntarios.map((v) => v.voluntario_id),
+      status_geral: group.status_geral || 'planejada',
     });
     setIsDialogOpen(true);
   };
 
+  const handleView = (group: EscalaGroup) => {
+    setViewingGroup(group);
+    setIsViewDialogOpen(true);
+  };
+
   const handleDelete = async () => {
-    if (!deletingEscalaId) return;
+    if (!deletingGroup) return;
 
     try {
+      // Delete all escalas in this group
+      const ids = deletingGroup.voluntarios.map((v) => v.id);
+      
       const { error } = await supabase
         .from('escalas')
         .delete()
-        .eq('id', deletingEscalaId);
+        .in('id', ids);
 
       if (error) throw error;
 
       toast.success('Escala excluída com sucesso');
       setIsDeleteDialogOpen(false);
-      setDeletingEscalaId(null);
+      setDeletingGroup(null);
       fetchEscalas();
     } catch (error) {
       console.error('Error deleting escala:', error);
@@ -225,21 +297,36 @@ export default function AdminEscalas() {
     }
 
     try {
-      if (editingEscala) {
-        // Update existing escala
+      if (editingGroup) {
+        // When editing, delete old entries and create new ones with updated volunteers
+        const oldIds = editingGroup.voluntarios.map((v) => v.id);
+        
+        // Delete old entries
+        if (oldIds.length > 0) {
+          const { error: deleteError } = await supabase
+            .from('escalas')
+            .delete()
+            .in('id', oldIds);
+
+          if (deleteError) throw deleteError;
+        }
+
+        // Create new entries for selected volunteers
+        const escalasToInsert = formData.voluntarios_ids.map((voluntarioId) => ({
+          ministerio_id: formData.ministerio_id,
+          data: format(formData.data, 'yyyy-MM-dd'),
+          horario: formData.horario || null,
+          funcao: formData.funcao,
+          turno: formData.turno || null,
+          responsavel_id: formData.responsavel_id || null,
+          voluntario_id: voluntarioId,
+          status_geral: formData.status_geral as 'planejada' | 'ativa' | 'concluida',
+          status: 'pendente' as const,
+        }));
+
         const { error } = await supabase
           .from('escalas')
-          .update({
-            ministerio_id: formData.ministerio_id,
-            data: format(formData.data, 'yyyy-MM-dd'),
-            horario: formData.horario || null,
-            funcao: formData.funcao,
-            turno: formData.turno || null,
-            responsavel_id: formData.responsavel_id || null,
-            voluntario_id: formData.voluntarios_ids[0],
-            status_geral: formData.status_geral as 'planejada' | 'ativa' | 'concluida',
-          })
-          .eq('id', editingEscala.id);
+          .insert(escalasToInsert);
 
         if (error) throw error;
         toast.success('Escala atualizada com sucesso');
@@ -267,6 +354,7 @@ export default function AdminEscalas() {
 
       setIsDialogOpen(false);
       setFormData(initialFormData);
+      setEditingGroup(null);
       fetchEscalas();
     } catch (error) {
       console.error('Error saving escala:', error);
@@ -311,6 +399,14 @@ export default function AdminEscalas() {
     }
   };
 
+  const getVoluntariosStatusSummary = (voluntarios: EscalaGroup['voluntarios']) => {
+    const confirmados = voluntarios.filter((v) => v.status === 'confirmado').length;
+    const pendentes = voluntarios.filter((v) => v.status === 'pendente').length;
+    const ausentes = voluntarios.filter((v) => v.status === 'ausente').length;
+    
+    return { confirmados, pendentes, ausentes, total: voluntarios.length };
+  };
+
   const toggleVoluntario = (voluntarioId: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -320,22 +416,22 @@ export default function AdminEscalas() {
     }));
   };
 
-  // Filtered escalas
-  const filteredEscalas = escalas.filter((escala) => {
-    if (filterMinisterio !== 'all' && escala.ministerio_id !== filterMinisterio) return false;
-    if (filterVoluntario !== 'all' && escala.voluntario_id !== filterVoluntario) return false;
-    if (filterData && format(new Date(escala.data), 'yyyy-MM-dd') !== format(filterData, 'yyyy-MM-dd')) return false;
-    if (searchTerm && !escala.funcao.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+  // Filtered groups
+  const filteredGroups = escalaGroups.filter((group) => {
+    if (filterMinisterio !== 'all' && group.ministerio_id !== filterMinisterio) return false;
+    if (filterVoluntario !== 'all' && !group.voluntarios.some((v) => v.voluntario_id === filterVoluntario)) return false;
+    if (filterData && format(new Date(group.data), 'yyyy-MM-dd') !== format(filterData, 'yyyy-MM-dd')) return false;
+    if (searchTerm && !group.funcao.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     return true;
   });
 
   // Group escalas by date for calendar view
-  const escalasByDate = escalas.reduce((acc, escala) => {
-    const date = escala.data;
+  const groupsByDate = filteredGroups.reduce((acc, group) => {
+    const date = group.data;
     if (!acc[date]) acc[date] = [];
-    acc[date].push(escala);
+    acc[date].push(group);
     return acc;
-  }, {} as Record<string, Escala[]>);
+  }, {} as Record<string, EscalaGroup[]>);
 
   return (
     <div className="space-y-6">
@@ -430,60 +526,86 @@ export default function AdminEscalas() {
                     <TableHead>Data</TableHead>
                     <TableHead>Função</TableHead>
                     <TableHead>Ministério</TableHead>
-                    <TableHead>Voluntário</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Voluntários</TableHead>
                     <TableHead>Status Geral</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredEscalas.length === 0 ? (
+                  {filteredGroups.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         Nenhuma escala encontrada
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredEscalas.map((escala) => (
-                      <TableRow key={escala.id}>
-                        <TableCell>
-                          <div className="font-medium">
-                            {format(new Date(escala.data), 'dd/MM/yyyy')}
-                          </div>
-                          {escala.horario && (
-                            <div className="text-sm text-muted-foreground">{escala.horario}</div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">{escala.funcao}</div>
-                          {escala.turno && (
-                            <div className="text-sm text-muted-foreground">{escala.turno}</div>
-                          )}
-                        </TableCell>
-                        <TableCell>{escala.ministerios?.nome || '-'}</TableCell>
-                        <TableCell>{escala.voluntario?.nome || '-'}</TableCell>
-                        <TableCell>{getStatusBadge(escala.status)}</TableCell>
-                        <TableCell>{getStatusGeralBadge(escala.status_geral)}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleEdit(escala)}>
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                              onClick={() => {
-                                setDeletingEscalaId(escala.id);
-                                setIsDeleteDialogOpen(true);
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    filteredGroups.map((group) => {
+                      const summary = getVoluntariosStatusSummary(group.voluntarios);
+                      return (
+                        <TableRow key={group.key}>
+                          <TableCell>
+                            <div className="font-medium">
+                              {format(new Date(group.data), 'dd/MM/yyyy')}
+                            </div>
+                            {group.horario && (
+                              <div className="text-sm text-muted-foreground">{group.horario}</div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{group.funcao}</div>
+                            {group.turno && (
+                              <div className="text-sm text-muted-foreground capitalize">{group.turno}</div>
+                            )}
+                          </TableCell>
+                          <TableCell>{group.ministerio_nome || '-'}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4 text-muted-foreground" />
+                              <span className="font-medium">{summary.total}</span>
+                              <div className="flex gap-1">
+                                {summary.confirmados > 0 && (
+                                  <Badge variant="outline" className="text-emerald-600 border-emerald-200 text-xs">
+                                    {summary.confirmados} ✓
+                                  </Badge>
+                                )}
+                                {summary.pendentes > 0 && (
+                                  <Badge variant="outline" className="text-yellow-600 border-yellow-200 text-xs">
+                                    {summary.pendentes} ⏳
+                                  </Badge>
+                                )}
+                                {summary.ausentes > 0 && (
+                                  <Badge variant="outline" className="text-red-600 border-red-200 text-xs">
+                                    {summary.ausentes} ✗
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{getStatusGeralBadge(group.status_geral)}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button variant="ghost" size="icon" onClick={() => handleView(group)}>
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleEdit(group)}>
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => {
+                                  setDeletingGroup(group);
+                                  setIsDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>
@@ -502,7 +624,7 @@ export default function AdminEscalas() {
                   locale={ptBR}
                   className="rounded-md border"
                   modifiers={{
-                    hasEscala: Object.keys(escalasByDate).map((d) => new Date(d)),
+                    hasEscala: Object.keys(groupsByDate).map((d) => new Date(d)),
                   }}
                   modifiersStyles={{
                     hasEscala: { backgroundColor: 'hsl(var(--primary) / 0.1)', fontWeight: 'bold' },
@@ -514,21 +636,28 @@ export default function AdminEscalas() {
                       ? `Escalas em ${format(filterData, "dd 'de' MMMM", { locale: ptBR })}`
                       : 'Selecione uma data'}
                   </h3>
-                  {filterData && escalasByDate[format(filterData, 'yyyy-MM-dd')] ? (
+                  {filterData && groupsByDate[format(filterData, 'yyyy-MM-dd')] ? (
                     <div className="space-y-2">
-                      {escalasByDate[format(filterData, 'yyyy-MM-dd')].map((escala) => (
-                        <div key={escala.id} className="p-3 rounded-lg border bg-card">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-medium">{escala.funcao}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {escala.ministerios?.nome} • {escala.voluntario?.nome}
-                              </p>
+                      {groupsByDate[format(filterData, 'yyyy-MM-dd')].map((group) => {
+                        const summary = getVoluntariosStatusSummary(group.voluntarios);
+                        return (
+                          <div 
+                            key={group.key} 
+                            className="p-3 rounded-lg border bg-card cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => handleView(group)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-medium">{group.funcao}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {group.ministerio_nome} • {summary.total} voluntário(s)
+                                </p>
+                              </div>
+                              {getStatusGeralBadge(group.status_geral)}
                             </div>
-                            {getStatusBadge(escala.status)}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : filterData ? (
                     <p className="text-muted-foreground">Nenhuma escala nesta data</p>
@@ -540,14 +669,91 @@ export default function AdminEscalas() {
         </TabsContent>
       </Tabs>
 
+      {/* View Dialog - Show all volunteers and their status */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Escala</DialogTitle>
+            <DialogDescription>
+              Status de cada voluntário nesta escala
+            </DialogDescription>
+          </DialogHeader>
+          
+          {viewingGroup && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Data:</span>
+                  <span className="font-medium">{format(new Date(viewingGroup.data), 'dd/MM/yyyy')}</span>
+                </div>
+                {viewingGroup.horario && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Horário:</span>
+                    <span className="font-medium">{viewingGroup.horario}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Função:</span>
+                  <span className="font-medium">{viewingGroup.funcao}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Ministério:</span>
+                  <span className="font-medium">{viewingGroup.ministerio_nome || '-'}</span>
+                </div>
+                {viewingGroup.responsavel_nome && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Responsável:</span>
+                    <span className="font-medium">{viewingGroup.responsavel_nome}</span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <h4 className="font-medium mb-3">Voluntários ({viewingGroup.voluntarios.length})</h4>
+                <div className="space-y-2">
+                  {viewingGroup.voluntarios.map((vol) => (
+                    <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div>
+                        <p className="font-medium">{vol.nome}</p>
+                        {vol.status === 'ausente' && vol.justificativa && (
+                          <p className="text-sm text-muted-foreground">
+                            Justificativa: {vol.justificativa}
+                          </p>
+                        )}
+                      </div>
+                      {getStatusBadge(vol.status)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+              Fechar
+            </Button>
+            {viewingGroup && (
+              <Button variant="gold" onClick={() => {
+                setIsViewDialogOpen(false);
+                handleEdit(viewingGroup);
+              }}>
+                <Pencil className="w-4 h-4 mr-2" />
+                Editar
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingEscala ? 'Editar Escala' : 'Nova Escala'}</DialogTitle>
+            <DialogTitle>{editingGroup ? 'Editar Escala' : 'Nova Escala'}</DialogTitle>
             <DialogDescription>
-              {editingEscala
-                ? 'Atualize os dados da escala'
+              {editingGroup
+                ? 'Atualize os dados da escala. Ao alterar voluntários, o status de confirmação será resetado.'
                 : 'Crie uma nova escala para o ministério'}
             </DialogDescription>
           </DialogHeader>
@@ -663,7 +869,7 @@ export default function AdminEscalas() {
             </div>
 
             <div className="space-y-2">
-              <Label>Voluntários *</Label>
+              <Label>Voluntários * {editingGroup && <span className="text-muted-foreground font-normal">(alterar irá resetar confirmações)</span>}</Label>
               <Card>
                 <CardContent className="pt-4 max-h-[200px] overflow-y-auto">
                   <div className="grid grid-cols-2 gap-2">
@@ -673,7 +879,6 @@ export default function AdminEscalas() {
                           id={v.id}
                           checked={formData.voluntarios_ids.includes(v.id)}
                           onCheckedChange={() => toggleVoluntario(v.id)}
-                          disabled={editingEscala !== null}
                         />
                         <label
                           htmlFor={v.id}
@@ -686,14 +891,9 @@ export default function AdminEscalas() {
                   </div>
                 </CardContent>
               </Card>
-              {!editingEscala && formData.voluntarios_ids.length > 0 && (
+              {formData.voluntarios_ids.length > 0 && (
                 <p className="text-sm text-muted-foreground">
                   {formData.voluntarios_ids.length} voluntário(s) selecionado(s)
-                </p>
-              )}
-              {editingEscala && (
-                <p className="text-sm text-muted-foreground">
-                  Para alterar voluntários, exclua esta escala e crie uma nova
                 </p>
               )}
             </div>
@@ -704,7 +904,7 @@ export default function AdminEscalas() {
               Cancelar
             </Button>
             <Button variant="gold" onClick={handleSubmit}>
-              {editingEscala ? 'Salvar' : 'Criar Escala'}
+              {editingGroup ? 'Salvar' : 'Criar Escala'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -716,7 +916,7 @@ export default function AdminEscalas() {
           <DialogHeader>
             <DialogTitle>Excluir Escala</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja excluir esta escala? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir esta escala? Isso removerá todos os {deletingGroup?.voluntarios.length || 0} voluntários atribuídos. Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
