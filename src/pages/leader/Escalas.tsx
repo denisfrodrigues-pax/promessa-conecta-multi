@@ -5,10 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Calendar, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, Users, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -16,41 +17,131 @@ interface Escala {
   id: string;
   data: string;
   turno: string | null;
+  horario: string | null;
   funcao: string;
   status: string;
+  status_geral: string | null;
   justificativa: string | null;
+  ministerio_id: string | null;
+  voluntario_id: string | null;
+  responsavel_id: string | null;
   ministerios: { nome: string } | null;
+  voluntario: { nome: string } | null;
+}
+
+interface EscalaGroup {
+  key: string;
+  ministerio_id: string | null;
+  data: string;
+  horario: string | null;
+  funcao: string;
+  turno: string | null;
+  status_geral: string | null;
+  ministerio_nome: string | null;
+  voluntarios: Array<{
+    id: string;
+    voluntario_id: string;
+    nome: string;
+    status: string;
+    justificativa: string | null;
+  }>;
 }
 
 export default function LeaderEscalas() {
-  const { profile } = useAuth();
-  const [escalas, setEscalas] = useState<Escala[]>([]);
+  const { profile, isLider } = useAuth();
+  const [minhasEscalas, setMinhasEscalas] = useState<Escala[]>([]);
+  const [escalasGerenciadas, setEscalasGerenciadas] = useState<EscalaGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEscala, setSelectedEscala] = useState<Escala | null>(null);
   const [justificativa, setJustificativa] = useState('');
   const [isRecusing, setIsRecusing] = useState(false);
+  const [viewingGroup, setViewingGroup] = useState<EscalaGroup | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   useEffect(() => {
     if (profile) {
-      fetchEscalas();
+      fetchData();
     }
   }, [profile]);
 
-  const fetchEscalas = async () => {
+  const fetchData = async () => {
+    setLoading(true);
+    await Promise.all([
+      fetchMinhasEscalas(),
+      fetchEscalasGerenciadas(),
+    ]);
+    setLoading(false);
+  };
+
+  const fetchMinhasEscalas = async () => {
     try {
       const { data, error } = await supabase
         .from('escalas')
-        .select('*, ministerios(nome)')
+        .select('*, ministerios(nome), voluntario:profiles!escalas_voluntario_id_fkey(nome)')
         .eq('voluntario_id', profile?.id)
         .order('data', { ascending: true });
 
       if (error) throw error;
-      setEscalas(data || []);
+      setMinhasEscalas(data || []);
     } catch (error) {
       console.error('Error fetching escalas:', error);
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const fetchEscalasGerenciadas = async () => {
+    if (!isLider) return;
+    
+    try {
+      // Fetch escalas where this user is the responsavel
+      const { data, error } = await supabase
+        .from('escalas')
+        .select('*, ministerios(nome), voluntario:profiles!escalas_voluntario_id_fkey(nome)')
+        .eq('responsavel_id', profile?.id)
+        .order('data', { ascending: true });
+
+      if (error) throw error;
+      
+      // Group escalas
+      const groups = groupEscalas(data || []);
+      setEscalasGerenciadas(groups);
+    } catch (error) {
+      console.error('Error fetching escalas gerenciadas:', error);
+    }
+  };
+
+  const groupEscalas = (escalas: Escala[]): EscalaGroup[] => {
+    const groupMap = new Map<string, EscalaGroup>();
+    
+    escalas.forEach((escala) => {
+      const key = `${escala.ministerio_id}-${escala.data}-${escala.funcao}-${escala.turno || ''}`;
+      
+      if (!groupMap.has(key)) {
+        groupMap.set(key, {
+          key,
+          ministerio_id: escala.ministerio_id,
+          data: escala.data,
+          horario: escala.horario,
+          funcao: escala.funcao,
+          turno: escala.turno,
+          status_geral: escala.status_geral,
+          ministerio_nome: escala.ministerios?.nome || null,
+          voluntarios: [],
+        });
+      }
+      
+      const group = groupMap.get(key)!;
+      if (escala.voluntario_id && escala.voluntario) {
+        group.voluntarios.push({
+          id: escala.id,
+          voluntario_id: escala.voluntario_id,
+          nome: escala.voluntario.nome,
+          status: escala.status,
+          justificativa: escala.justificativa,
+        });
+      }
+    });
+    
+    return Array.from(groupMap.values());
   };
 
   const handleConfirmar = async (id: string) => {
@@ -62,7 +153,7 @@ export default function LeaderEscalas() {
 
       if (error) throw error;
       toast.success('Escala confirmada!');
-      fetchEscalas();
+      fetchData();
     } catch (error) {
       console.error('Error:', error);
       toast.error('Erro ao confirmar escala');
@@ -87,7 +178,7 @@ export default function LeaderEscalas() {
       setSelectedEscala(null);
       setJustificativa('');
       setIsRecusing(false);
-      fetchEscalas();
+      fetchData();
     } catch (error) {
       console.error('Error:', error);
       toast.error('Erro ao recusar escala');
@@ -120,24 +211,43 @@ export default function LeaderEscalas() {
     }
   };
 
-  const isPast = (date: string) => new Date(date) < new Date();
-
-  const groupedEscalas = {
-    proximas: escalas.filter((e) => !isPast(e.data)),
-    passadas: escalas.filter((e) => isPast(e.data)),
+  const getStatusGeralBadge = (status: string | null) => {
+    switch (status) {
+      case 'ativa':
+        return <Badge className="bg-blue-100 text-blue-700">Ativa</Badge>;
+      case 'concluida':
+        return <Badge className="bg-gray-100 text-gray-700">Concluída</Badge>;
+      default:
+        return <Badge className="bg-purple-100 text-purple-700">Planejada</Badge>;
+    }
   };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Minhas Escalas</h1>
-        <p className="text-muted-foreground">Gerencie suas escalas de serviço</p>
-      </div>
+  const getVoluntariosStatusSummary = (voluntarios: EscalaGroup['voluntarios']) => {
+    const confirmados = voluntarios.filter((v) => v.status === 'confirmado').length;
+    const pendentes = voluntarios.filter((v) => v.status === 'pendente').length;
+    const ausentes = voluntarios.filter((v) => v.status === 'ausente').length;
+    
+    return { confirmados, pendentes, ausentes, total: voluntarios.length };
+  };
 
+  const isPast = (date: string) => new Date(date) < new Date();
+
+  const groupedMinhasEscalas = {
+    proximas: minhasEscalas.filter((e) => !isPast(e.data)),
+    passadas: minhasEscalas.filter((e) => isPast(e.data)),
+  };
+
+  const groupedEscalasGerenciadas = {
+    proximas: escalasGerenciadas.filter((e) => !isPast(e.data)),
+    passadas: escalasGerenciadas.filter((e) => isPast(e.data)),
+  };
+
+  const renderMinhasEscalas = () => (
+    <div className="space-y-6">
       {/* Próximas Escalas */}
       <section>
         <h2 className="text-lg font-semibold mb-4">Próximas Escalas</h2>
-        {groupedEscalas.proximas.length === 0 ? (
+        {groupedMinhasEscalas.proximas.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
               Nenhuma escala programada
@@ -145,7 +255,7 @@ export default function LeaderEscalas() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {groupedEscalas.proximas.map((escala) => (
+            {groupedMinhasEscalas.proximas.map((escala) => (
               <Card key={escala.id} className="shadow-card">
                 <CardContent className="p-4">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -163,6 +273,7 @@ export default function LeaderEscalas() {
                         <p className="text-sm text-muted-foreground">
                           {escala.ministerios?.nome}
                           {escala.turno && ` • ${escala.turno}`}
+                          {escala.horario && ` • ${escala.horario}`}
                         </p>
                       </div>
                     </div>
@@ -202,11 +313,11 @@ export default function LeaderEscalas() {
       </section>
 
       {/* Escalas Passadas */}
-      {groupedEscalas.passadas.length > 0 && (
+      {groupedMinhasEscalas.passadas.length > 0 && (
         <section>
           <h2 className="text-lg font-semibold mb-4 text-muted-foreground">Histórico</h2>
           <div className="space-y-3 opacity-60">
-            {groupedEscalas.passadas.slice(0, 5).map((escala) => (
+            {groupedMinhasEscalas.passadas.slice(0, 5).map((escala) => (
               <Card key={escala.id} className="shadow-soft">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -233,6 +344,155 @@ export default function LeaderEscalas() {
             ))}
           </div>
         </section>
+      )}
+    </div>
+  );
+
+  const renderEscalasGerenciadas = () => (
+    <div className="space-y-6">
+      {/* Próximas Escalas Gerenciadas */}
+      <section>
+        <h2 className="text-lg font-semibold mb-4">Próximas Escalas</h2>
+        {groupedEscalasGerenciadas.proximas.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center text-muted-foreground">
+              Nenhuma escala sob sua responsabilidade
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {groupedEscalasGerenciadas.proximas.map((group) => {
+              const summary = getVoluntariosStatusSummary(group.voluntarios);
+              return (
+                <Card key={group.key} className="shadow-card">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
+                          <span className="text-lg font-bold text-primary">
+                            {format(new Date(group.data), 'dd')}
+                          </span>
+                          <span className="text-xs text-primary uppercase">
+                            {format(new Date(group.data), 'MMM', { locale: ptBR })}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-display font-semibold">{group.funcao}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {group.ministerio_nome}
+                            {group.turno && ` • ${group.turno}`}
+                            {group.horario && ` • ${group.horario}`}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{summary.total}</span>
+                          <div className="flex gap-1">
+                            {summary.confirmados > 0 && (
+                              <Badge variant="outline" className="text-emerald-600 border-emerald-200 text-xs">
+                                {summary.confirmados} ✓
+                              </Badge>
+                            )}
+                            {summary.pendentes > 0 && (
+                              <Badge variant="outline" className="text-yellow-600 border-yellow-200 text-xs">
+                                {summary.pendentes} ⏳
+                              </Badge>
+                            )}
+                            {summary.ausentes > 0 && (
+                              <Badge variant="outline" className="text-red-600 border-red-200 text-xs">
+                                {summary.ausentes} ✗
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setViewingGroup(group);
+                            setIsViewDialogOpen(true);
+                          }}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Ver Detalhes
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Escalas Passadas */}
+      {groupedEscalasGerenciadas.passadas.length > 0 && (
+        <section>
+          <h2 className="text-lg font-semibold mb-4 text-muted-foreground">Histórico</h2>
+          <div className="space-y-3 opacity-60">
+            {groupedEscalasGerenciadas.passadas.slice(0, 5).map((group) => {
+              const summary = getVoluntariosStatusSummary(group.voluntarios);
+              return (
+                <Card key={group.key} className="shadow-soft cursor-pointer" onClick={() => {
+                  setViewingGroup(group);
+                  setIsViewDialogOpen(true);
+                }}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center">
+                          <span className="text-sm font-bold">
+                            {format(new Date(group.data), 'dd')}
+                          </span>
+                          <span className="text-xs uppercase">
+                            {format(new Date(group.data), 'MMM', { locale: ptBR })}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium">{group.funcao}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {group.ministerio_nome} • {summary.total} voluntário(s)
+                          </p>
+                        </div>
+                      </div>
+                      {getStatusGeralBadge(group.status_geral)}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-display font-bold">Minhas Escalas</h1>
+        <p className="text-muted-foreground">Gerencie suas escalas de serviço</p>
+      </div>
+
+      {isLider ? (
+        <Tabs defaultValue="minhas">
+          <TabsList>
+            <TabsTrigger value="minhas">Minhas Escalas</TabsTrigger>
+            <TabsTrigger value="gerenciadas">Escalas que Gerencio</TabsTrigger>
+          </TabsList>
+          <TabsContent value="minhas">
+            {renderMinhasEscalas()}
+          </TabsContent>
+          <TabsContent value="gerenciadas">
+            {renderEscalasGerenciadas()}
+          </TabsContent>
+        </Tabs>
+      ) : (
+        renderMinhasEscalas()
       )}
 
       {/* Dialog de Recusa */}
@@ -272,6 +532,68 @@ export default function LeaderEscalas() {
             </Button>
             <Button variant="destructive" onClick={handleRecusar}>
               Confirmar Recusa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Dialog - Show all volunteers and their status */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Escala</DialogTitle>
+            <DialogDescription>
+              Status de cada voluntário nesta escala
+            </DialogDescription>
+          </DialogHeader>
+          
+          {viewingGroup && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Data:</span>
+                  <span className="font-medium">{format(new Date(viewingGroup.data), 'dd/MM/yyyy')}</span>
+                </div>
+                {viewingGroup.horario && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Horário:</span>
+                    <span className="font-medium">{viewingGroup.horario}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Função:</span>
+                  <span className="font-medium">{viewingGroup.funcao}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Ministério:</span>
+                  <span className="font-medium">{viewingGroup.ministerio_nome || '-'}</span>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium mb-3">Voluntários ({viewingGroup.voluntarios.length})</h4>
+                <div className="space-y-2">
+                  {viewingGroup.voluntarios.map((vol) => (
+                    <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div>
+                        <p className="font-medium">{vol.nome}</p>
+                        {vol.status === 'ausente' && vol.justificativa && (
+                          <p className="text-sm text-muted-foreground">
+                            Justificativa: {vol.justificativa}
+                          </p>
+                        )}
+                      </div>
+                      {getStatusBadge(vol.status)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+              Fechar
             </Button>
           </DialogFooter>
         </DialogContent>
