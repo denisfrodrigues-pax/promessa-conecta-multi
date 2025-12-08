@@ -34,6 +34,8 @@ interface Profile {
   id: string;
   nome: string;
   user_id: string;
+  email?: string;
+  funcao_principal_id?: string | null;
 }
 
 interface Escala {
@@ -233,21 +235,25 @@ export default function AdminEscalas() {
         .select(`
           user_id,
           ativo,
-          profile:profiles!ministerio_voluntarios_user_id_fkey(id, nome, user_id)
+          funcao_principal_id,
+          profile:profiles!ministerio_voluntarios_user_id_fkey(id, nome, email, user_id)
         `)
         .eq('ministerio_id', ministerioId)
         .eq('ativo', true);
 
       if (error) throw error;
       
-      // Map to Profile format
+      // Map to Profile format with funcao_principal_id
       const profiles = (data || [])
         .filter(item => item.profile)
         .map(item => ({
           id: item.profile!.id,
           nome: item.profile!.nome,
+          email: item.profile!.email,
           user_id: item.profile!.user_id,
-        }));
+          funcao_principal_id: item.funcao_principal_id,
+        }))
+        .sort((a, b) => a.nome.localeCompare(b.nome));
       
       setVoluntarios(profiles);
     } catch (error) {
@@ -362,8 +368,16 @@ export default function AdminEscalas() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.ministerio_id || !formData.funcao || formData.voluntarios_ids.length === 0) {
-      toast.error('Preencha os campos obrigatórios');
+    if (!formData.ministerio_id) {
+      toast.error('Selecione um ministério');
+      return;
+    }
+    if (!formData.funcao) {
+      toast.error('Selecione uma função');
+      return;
+    }
+    if (formData.voluntarios_ids.length === 0) {
+      toast.error('Selecione pelo menos um voluntário');
       return;
     }
 
@@ -902,25 +916,27 @@ export default function AdminEscalas() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Função *</Label>
-                <Select
-                  value={formData.funcao}
-                  onValueChange={(value) => setFormData({ ...formData, funcao: value })}
-                  disabled={!formData.ministerio_id}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={formData.ministerio_id ? "Selecione..." : "Selecione um ministério primeiro"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {funcoes.map((f) => (
-                      <SelectItem key={f.id} value={f.nome}>{f.nome}</SelectItem>
-                    ))}
-                    {funcoes.length === 0 && formData.ministerio_id && (
-                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                        Nenhuma função cadastrada
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
+                {formData.ministerio_id && funcoes.length === 0 ? (
+                  <div className="p-3 rounded-md border border-amber-200 bg-amber-50 text-amber-700">
+                    <p className="text-sm font-medium">Nenhuma função ativa</p>
+                    <p className="text-xs mt-0.5">Cadastre funções em "Funções de Ministério"</p>
+                  </div>
+                ) : (
+                  <Select
+                    value={formData.funcao}
+                    onValueChange={(value) => setFormData({ ...formData, funcao: value })}
+                    disabled={!formData.ministerio_id || funcoes.length === 0}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={formData.ministerio_id ? "Selecione uma função..." : "Selecione um ministério primeiro"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {funcoes.map((f) => (
+                        <SelectItem key={f.id} value={f.nome}>{f.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Turno</Label>
@@ -962,30 +978,52 @@ export default function AdminEscalas() {
               <Card>
                 <CardContent className="pt-4 max-h-[200px] overflow-y-auto">
                   {!formData.ministerio_id ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      Selecione um ministério primeiro
-                    </p>
+                    <div className="text-center py-4">
+                      <p className="text-sm text-muted-foreground">
+                        Selecione um ministério primeiro
+                      </p>
+                    </div>
                   ) : voluntarios.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      Nenhum voluntário cadastrado neste ministério
-                    </p>
+                    <div className="text-center py-4">
+                      <p className="text-sm text-amber-600 font-medium">
+                        Nenhum voluntário ativo neste ministério
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Cadastre voluntários primeiro em "Voluntários por Ministério"
+                      </p>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
-                      {voluntarios.map((v) => (
-                        <div key={v.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={v.id}
-                            checked={formData.voluntarios_ids.includes(v.id)}
-                            onCheckedChange={() => toggleVoluntario(v.id)}
-                          />
-                          <label
-                            htmlFor={v.id}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      {voluntarios.map((v) => {
+                        const selectedFuncao = funcoes.find(f => f.nome === formData.funcao);
+                        const isMainFunction = selectedFuncao && v.funcao_principal_id === selectedFuncao.id;
+                        return (
+                          <div 
+                            key={v.id} 
+                            className={cn(
+                              "flex items-center space-x-2 p-1.5 rounded-md transition-colors",
+                              isMainFunction && "bg-primary/10 border border-primary/20"
+                            )}
                           >
-                            {v.nome}
-                          </label>
-                        </div>
-                      ))}
+                            <Checkbox
+                              id={v.id}
+                              checked={formData.voluntarios_ids.includes(v.id)}
+                              onCheckedChange={() => toggleVoluntario(v.id)}
+                            />
+                            <label
+                              htmlFor={v.id}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                            >
+                              <span>{v.nome}</span>
+                              {isMainFunction && (
+                                <Badge variant="outline" className="ml-2 text-xs py-0 px-1.5 bg-primary/5">
+                                  Função Principal
+                                </Badge>
+                              )}
+                            </label>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </CardContent>
