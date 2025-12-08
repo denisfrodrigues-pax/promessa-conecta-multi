@@ -506,6 +506,7 @@ export type Database = {
       }
       ministerios: {
         Row: {
+          ativo: boolean | null
           contato: string | null
           created_at: string | null
           descricao: string | null
@@ -515,6 +516,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          ativo?: boolean | null
           contato?: string | null
           created_at?: string | null
           descricao?: string | null
@@ -524,6 +526,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          ativo?: boolean | null
           contato?: string | null
           created_at?: string | null
           descricao?: string | null
