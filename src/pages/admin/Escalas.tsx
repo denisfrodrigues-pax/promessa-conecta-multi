@@ -23,6 +23,13 @@ interface Ministerio {
   nome: string;
 }
 
+interface Funcao {
+  id: string;
+  ministerio_id: string;
+  nome: string;
+  ativo: boolean;
+}
+
 interface Profile {
   id: string;
   nome: string;
@@ -93,6 +100,7 @@ export default function AdminEscalas() {
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [escalaGroups, setEscalaGroups] = useState<EscalaGroup[]>([]);
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
+  const [funcoes, setFuncoes] = useState<Funcao[]>([]);
   const [voluntarios, setVoluntarios] = useState<Profile[]>([]);
   const [lideres, setLideres] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -249,6 +257,27 @@ export default function AdminEscalas() {
     }
   };
 
+  const fetchFuncoesByMinisterio = async (ministerioId: string) => {
+    if (!ministerioId) {
+      setFuncoes([]);
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('ministerio_funcoes')
+        .select('id, ministerio_id, nome, ativo')
+        .eq('ministerio_id', ministerioId)
+        .eq('ativo', true)
+        .order('nome');
+
+      if (error) throw error;
+      setFuncoes(data || []);
+    } catch (error) {
+      console.error('Error fetching funcoes:', error);
+      setFuncoes([]);
+    }
+  };
+
   const fetchLideres = async () => {
     try {
       const { data, error } = await supabase
@@ -279,6 +308,7 @@ export default function AdminEscalas() {
     setEditingGroup(null);
     setFormData(initialFormData);
     setVoluntarios([]); // Clear volunteers until ministry is selected
+    setFuncoes([]); // Clear functions until ministry is selected
     setIsDialogOpen(true);
   };
 
@@ -294,9 +324,10 @@ export default function AdminEscalas() {
       voluntarios_ids: group.voluntarios.map((v) => v.voluntario_id),
       status_geral: group.status_geral || 'planejada',
     });
-    // Load volunteers for the ministry
+    // Load volunteers and functions for the ministry
     if (group.ministerio_id) {
       fetchVoluntariosByMinisterio(group.ministerio_id);
+      fetchFuncoesByMinisterio(group.ministerio_id);
     }
     setIsDialogOpen(true);
   };
@@ -805,8 +836,9 @@ export default function AdminEscalas() {
                 <Select
                   value={formData.ministerio_id}
                   onValueChange={(value) => {
-                    setFormData({ ...formData, ministerio_id: value, voluntarios_ids: [] });
+                    setFormData({ ...formData, ministerio_id: value, voluntarios_ids: [], funcao: '' });
                     fetchVoluntariosByMinisterio(value);
+                    fetchFuncoesByMinisterio(value);
                   }}
                 >
                   <SelectTrigger>
@@ -870,11 +902,25 @@ export default function AdminEscalas() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Função *</Label>
-                <Input
+                <Select
                   value={formData.funcao}
-                  onChange={(e) => setFormData({ ...formData, funcao: e.target.value })}
-                  placeholder="Ex: Recepção, Louvor, etc."
-                />
+                  onValueChange={(value) => setFormData({ ...formData, funcao: value })}
+                  disabled={!formData.ministerio_id}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={formData.ministerio_id ? "Selecione..." : "Selecione um ministério primeiro"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {funcoes.map((f) => (
+                      <SelectItem key={f.id} value={f.nome}>{f.nome}</SelectItem>
+                    ))}
+                    {funcoes.length === 0 && formData.ministerio_id && (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                        Nenhuma função cadastrada
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Turno</Label>
