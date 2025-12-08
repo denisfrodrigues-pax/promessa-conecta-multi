@@ -324,14 +324,14 @@ export default function AdminMinisterios() {
             <div className="space-y-2">
               <Label htmlFor="lider">Líder</Label>
               <Select
-                value={formData.lider_id}
-                onValueChange={(value) => setFormData({ ...formData, lider_id: value })}
+                value={formData.lider_id || '__none__'}
+                onValueChange={(value) => setFormData({ ...formData, lider_id: value === '__none__' ? '' : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um líder" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sem líder</SelectItem>
+                  <SelectItem value="__none__">Sem líder</SelectItem>
                   {leaders.map((leader) => (
                     <SelectItem key={leader.id} value={leader.id}>
                       {leader.nome}
