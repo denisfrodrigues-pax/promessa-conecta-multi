@@ -214,6 +214,41 @@ export default function AdminEscalas() {
     }
   };
 
+  const fetchVoluntariosByMinisterio = async (ministerioId: string) => {
+    if (!ministerioId) {
+      setVoluntarios([]);
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('ministerio_voluntarios')
+        .select(`
+          user_id,
+          ativo,
+          profile:profiles!ministerio_voluntarios_user_id_fkey(id, nome, user_id)
+        `)
+        .eq('ministerio_id', ministerioId)
+        .eq('ativo', true);
+
+      if (error) throw error;
+      
+      // Map to Profile format
+      const profiles = (data || [])
+        .filter(item => item.profile)
+        .map(item => ({
+          id: item.profile!.id,
+          nome: item.profile!.nome,
+          user_id: item.profile!.user_id,
+        }));
+      
+      setVoluntarios(profiles);
+    } catch (error) {
+      console.error('Error fetching voluntarios by ministerio:', error);
+      // Fallback to all profiles
+      fetchVoluntarios();
+    }
+  };
+
   const fetchLideres = async () => {
     try {
       const { data, error } = await supabase
@@ -243,6 +278,7 @@ export default function AdminEscalas() {
   const handleCreate = () => {
     setEditingGroup(null);
     setFormData(initialFormData);
+    setVoluntarios([]); // Clear volunteers until ministry is selected
     setIsDialogOpen(true);
   };
 
@@ -258,6 +294,10 @@ export default function AdminEscalas() {
       voluntarios_ids: group.voluntarios.map((v) => v.voluntario_id),
       status_geral: group.status_geral || 'planejada',
     });
+    // Load volunteers for the ministry
+    if (group.ministerio_id) {
+      fetchVoluntariosByMinisterio(group.ministerio_id);
+    }
     setIsDialogOpen(true);
   };
 
@@ -764,7 +804,10 @@ export default function AdminEscalas() {
                 <Label>Ministério *</Label>
                 <Select
                   value={formData.ministerio_id}
-                  onValueChange={(value) => setFormData({ ...formData, ministerio_id: value })}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, ministerio_id: value, voluntarios_ids: [] });
+                    fetchVoluntariosByMinisterio(value);
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione..." />
@@ -872,23 +915,33 @@ export default function AdminEscalas() {
               <Label>Voluntários * {editingGroup && <span className="text-muted-foreground font-normal">(alterar irá resetar confirmações)</span>}</Label>
               <Card>
                 <CardContent className="pt-4 max-h-[200px] overflow-y-auto">
-                  <div className="grid grid-cols-2 gap-2">
-                    {voluntarios.map((v) => (
-                      <div key={v.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={v.id}
-                          checked={formData.voluntarios_ids.includes(v.id)}
-                          onCheckedChange={() => toggleVoluntario(v.id)}
-                        />
-                        <label
-                          htmlFor={v.id}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          {v.nome}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+                  {!formData.ministerio_id ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Selecione um ministério primeiro
+                    </p>
+                  ) : voluntarios.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Nenhum voluntário cadastrado neste ministério
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      {voluntarios.map((v) => (
+                        <div key={v.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={v.id}
+                            checked={formData.voluntarios_ids.includes(v.id)}
+                            onCheckedChange={() => toggleVoluntario(v.id)}
+                          />
+                          <label
+                            htmlFor={v.id}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {v.nome}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               {formData.voluntarios_ids.length > 0 && (

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Visão Geral', path: '/lider' },
+  { icon: Users, label: 'Minha Equipe', path: '/lider/equipe' },
   { icon: Users, label: 'Meus Grupos', path: '/lider/grupos' },
   { icon: ClipboardList, label: 'Minhas Escalas', path: '/lider/escalas' },
   { icon: BarChart3, label: 'Relatórios', path: '/lider/relatorios' },
