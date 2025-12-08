@@ -25,6 +25,7 @@ const menuItems = [
   { icon: Users, label: 'Usuários', path: '/admin/usuarios' },
   { icon: UsersRound, label: 'Grupos', path: '/admin/grupos' },
   { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
+  { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
   { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
   { icon: Baby, label: 'Infantil', path: '/admin/infantil' },
   { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },

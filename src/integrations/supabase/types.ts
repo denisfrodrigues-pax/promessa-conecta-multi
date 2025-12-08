@@ -504,6 +504,48 @@ export type Database = {
         }
         Relationships: []
       }
+      ministerio_voluntarios: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          id: string
+          ministerio_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          ministerio_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          ministerio_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministerio_voluntarios_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministerio_voluntarios_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       ministerios: {
         Row: {
           ativo: boolean | null
