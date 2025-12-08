@@ -22,6 +22,7 @@ import AdminAvisos from "@/pages/admin/Avisos";
 import AdminEscalas from "@/pages/admin/Escalas";
 import AdminMinisterios from "@/pages/admin/Ministerios";
 import AdminVoluntariosMinisterios from "@/pages/admin/VoluntariosMinisterios";
+import AdminFuncoesMinisterio from "@/pages/admin/FuncoesMinisterio";
 
 // Member Pages
 import MemberHome from "@/pages/member/Home";
@@ -36,6 +37,7 @@ import Oracao from "@/pages/member/Oracao";
 import LeaderDashboard from "@/pages/leader/Dashboard";
 import LeaderEscalas from "@/pages/leader/Escalas";
 import LeaderMinhaEquipe from "@/pages/leader/MinhaEquipe";
+import LeaderMinhasFuncoes from "@/pages/leader/MinhasFuncoes";
 
 import NotFound from "./pages/NotFound";
 
@@ -61,6 +63,7 @@ const App = () => (
               <Route path="avisos" element={<AdminAvisos />} />
               <Route path="ministerios" element={<AdminMinisterios />} />
               <Route path="voluntarios-ministerios" element={<AdminVoluntariosMinisterios />} />
+              <Route path="funcoes-ministerio" element={<AdminFuncoesMinisterio />} />
               <Route path="escalas" element={<AdminEscalas />} />
               <Route path="infantil" element={<AdminDashboard />} />
               <Route path="auditoria" element={<AdminDashboard />} />
@@ -73,6 +76,7 @@ const App = () => (
               <Route path="grupos" element={<LeaderDashboard />} />
               <Route path="escalas" element={<LeaderEscalas />} />
               <Route path="equipe" element={<LeaderMinhaEquipe />} />
+              <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
               <Route path="relatorios" element={<LeaderDashboard />} />
             </Route>
 
