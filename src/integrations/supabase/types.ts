@@ -216,10 +216,15 @@ export type Database = {
           created_by: string | null
           data: string
           funcao: string
+          horario: string | null
           id: string
           justificativa: string | null
           ministerio_id: string | null
+          responsavel_id: string | null
           status: Database["public"]["Enums"]["scale_status"] | null
+          status_geral:
+            | Database["public"]["Enums"]["escala_status_geral"]
+            | null
           turno: string | null
           updated_at: string | null
           voluntario_id: string | null
@@ -229,10 +234,15 @@ export type Database = {
           created_by?: string | null
           data: string
           funcao: string
+          horario?: string | null
           id?: string
           justificativa?: string | null
           ministerio_id?: string | null
+          responsavel_id?: string | null
           status?: Database["public"]["Enums"]["scale_status"] | null
+          status_geral?:
+            | Database["public"]["Enums"]["escala_status_geral"]
+            | null
           turno?: string | null
           updated_at?: string | null
           voluntario_id?: string | null
@@ -242,10 +252,15 @@ export type Database = {
           created_by?: string | null
           data?: string
           funcao?: string
+          horario?: string | null
           id?: string
           justificativa?: string | null
           ministerio_id?: string | null
+          responsavel_id?: string | null
           status?: Database["public"]["Enums"]["scale_status"] | null
+          status_geral?:
+            | Database["public"]["Enums"]["escala_status_geral"]
+            | null
           turno?: string | null
           updated_at?: string | null
           voluntario_id?: string | null
@@ -263,6 +278,13 @@ export type Database = {
             columns: ["ministerio_id"]
             isOneToOne: false
             referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -739,6 +761,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "lider" | "voluntario" | "membro" | "visitante"
       communication_type: "push" | "whatsapp" | "email"
+      escala_status_geral: "planejada" | "ativa" | "concluida"
       group_visibility: "publica" | "privada"
       participant_status: "ativo" | "saida" | "pendente"
       scale_status: "confirmado" | "pendente" | "ausente"
@@ -872,6 +895,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "lider", "voluntario", "membro", "visitante"],
       communication_type: ["push", "whatsapp", "email"],
+      escala_status_geral: ["planejada", "ativa", "concluida"],
       group_visibility: ["publica", "privada"],
       participant_status: ["ativo", "saida", "pendente"],
       scale_status: ["confirmado", "pendente", "ausente"],
