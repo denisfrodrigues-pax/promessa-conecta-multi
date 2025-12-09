@@ -39,6 +39,20 @@ interface BaseMembro {
   membro: Membro;
 }
 
+interface Visitante {
+  id: string;
+  nome: string;
+  telefone: string | null;
+}
+
+interface BaseVisitante {
+  id: string;
+  visitante_id: string;
+  status: string;
+  observacao: string | null;
+  visitante: Visitante;
+}
+
 export default function BaseDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -47,6 +61,7 @@ export default function BaseDetalhes() {
   const [membrosDisponiveis, setMembrosDisponiveis] = useState<Membro[]>([]);
   const [liderInfo, setLiderInfo] = useState<Membro | null>(null);
   const [todosMembros, setTodosMembros] = useState<Membro[]>([]);
+  const [visitantesBase, setVisitantesBase] = useState<BaseVisitante[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -64,6 +79,7 @@ export default function BaseDetalhes() {
       fetchBase();
       fetchMembrosBase();
       fetchTodosMembros();
+      fetchVisitantesBase();
     }
   }, [id]);
 
@@ -110,11 +126,60 @@ export default function BaseDetalhes() {
         membro:membros(id, nome, telefone, foto_perfil)
       `)
       .eq('base_id', id)
-      .eq('status', 'ativo');
+      .eq('status', 'ativo')
+      .not('membro_id', 'is', null);
 
     if (!error && data) {
       setMembrosBase(data as unknown as BaseMembro[]);
     }
+  };
+
+  const fetchVisitantesBase = async () => {
+    const { data, error } = await supabase
+      .from('bases_membros')
+      .select(`
+        id,
+        visitante_id,
+        status,
+        observacao,
+        visitante:visitantes(id, nome, telefone)
+      `)
+      .eq('base_id', id)
+      .not('visitante_id', 'is', null)
+      .neq('status', 'desligado');
+
+    if (!error && data) {
+      setVisitantesBase(data as unknown as BaseVisitante[]);
+    }
+  };
+
+  const removeVisitante = async (baseVisitanteId: string) => {
+    try {
+      const { error } = await supabase
+        .from('bases_membros')
+        .update({
+          status: 'desligado',
+          data_saida: new Date().toISOString(),
+        })
+        .eq('id', baseVisitanteId);
+
+      if (error) throw error;
+
+      toast.success('Visitante removido da base');
+      fetchVisitantesBase();
+    } catch (error: any) {
+      toast.error('Erro ao remover visitante: ' + error.message);
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      em_acompanhamento: 'Em Acompanhamento',
+      novo: 'Novo',
+      contato_iniciado: 'Contato Iniciado',
+      ativo: 'Ativo',
+    };
+    return labels[status] || status;
   };
 
   const fetchTodosMembros = async () => {
@@ -464,6 +529,57 @@ export default function BaseDetalhes() {
                     size="sm"
                     className="text-destructive hover:text-destructive"
                     onClick={() => removeMembro(bm.id)}
+                  >
+                    <UserMinus className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      {/* Visitantes em Acompanhamento */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>Visitantes em Acompanhamento ({visitantesBase.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {visitantesBase.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">Nenhum visitante nesta base</p>
+          ) : (
+            <div className="space-y-2">
+              {visitantesBase.map((bv) => (
+                <div
+                  key={bv.id}
+                  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback>{getInitials(bv.visitante.nome)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{bv.visitante.nome}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        {bv.visitante.telefone && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {bv.visitante.telefone}
+                          </span>
+                        )}
+                        <Badge variant="outline" className="text-xs">
+                          {getStatusLabel(bv.status)}
+                        </Badge>
+                      </div>
+                      {bv.observacao && (
+                        <p className="text-xs text-muted-foreground mt-1">{bv.observacao}</p>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => removeVisitante(bv.id)}
                   >
                     <UserMinus className="h-4 w-4" />
                   </Button>

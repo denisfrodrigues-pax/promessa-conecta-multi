@@ -147,9 +147,11 @@ export type Database = {
           data_entrada: string | null
           data_saida: string | null
           id: string
-          membro_id: string
+          membro_id: string | null
+          observacao: string | null
           status: string | null
           updated_at: string | null
+          visitante_id: string | null
         }
         Insert: {
           base_id: string
@@ -157,9 +159,11 @@ export type Database = {
           data_entrada?: string | null
           data_saida?: string | null
           id?: string
-          membro_id: string
+          membro_id?: string | null
+          observacao?: string | null
           status?: string | null
           updated_at?: string | null
+          visitante_id?: string | null
         }
         Update: {
           base_id?: string
@@ -167,9 +171,11 @@ export type Database = {
           data_entrada?: string | null
           data_saida?: string | null
           id?: string
-          membro_id?: string
+          membro_id?: string | null
+          observacao?: string | null
           status?: string | null
           updated_at?: string | null
+          visitante_id?: string | null
         }
         Relationships: [
           {
@@ -184,6 +190,13 @@ export type Database = {
             columns: ["membro_id"]
             isOneToOne: false
             referencedRelation: "membros"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bases_membros_visitante_id_fkey"
+            columns: ["visitante_id"]
+            isOneToOne: false
+            referencedRelation: "visitantes"
             referencedColumns: ["id"]
           },
         ]
