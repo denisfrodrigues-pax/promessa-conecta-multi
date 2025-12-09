@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Bell, Calendar, AlertCircle, Clock, Search } from 'lucide-react';
+import { Bell, Calendar, AlertCircle, Clock, Search, Send, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Loader2 } from 'lucide-react';
@@ -16,8 +19,9 @@ interface Notification {
   id: string;
   voluntario_id: string | null;
   escala_id: string | null;
-  tipo: 'nova_escala' | 'lembrete' | 'status_alterado';
+  tipo: 'nova_escala' | 'lembrete' | 'status_alterado' | 'ministerio';
   mensagem: string;
+  titulo: string | null;
   enviado_em: string | null;
   lido: boolean | null;
   created_at: string | null;
@@ -28,13 +32,25 @@ interface Notification {
   } | null;
 }
 
+interface MinistryMember {
+  id: string;
+  user_id: string;
+  profile: { id: string; nome: string } | null;
+}
+
 export default function LeaderNotificacoes() {
   const { profile } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [members, setMembers] = useState<MinistryMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTipo, setFilterTipo] = useState<string>('all');
   const [myMinisterioId, setMyMinisterioId] = useState<string | null>(null);
+  
+  // Form state
+  const [titulo, setTitulo] = useState('');
+  const [mensagem, setMensagem] = useState('');
 
   useEffect(() => {
     if (profile?.id) {
@@ -45,6 +61,7 @@ export default function LeaderNotificacoes() {
   useEffect(() => {
     if (myMinisterioId) {
       fetchNotifications();
+      fetchMembers();
     }
   }, [myMinisterioId]);
 
@@ -68,12 +85,32 @@ export default function LeaderNotificacoes() {
     }
   };
 
+  const fetchMembers = async () => {
+    if (!myMinisterioId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('ministerio_voluntarios')
+        .select(`
+          id,
+          user_id,
+          profile:profiles!ministerio_voluntarios_user_id_fkey(id, nome)
+        `)
+        .eq('ministerio_id', myMinisterioId)
+        .eq('ativo', true);
+
+      if (error) throw error;
+      setMembers(data || []);
+    } catch (error) {
+      console.error('Error fetching members:', error);
+    }
+  };
+
   const fetchNotifications = async () => {
     if (!myMinisterioId) return;
 
     setLoading(true);
     try {
-      // First get volunteers from my ministry
       const { data: volunteers } = await supabase
         .from('ministerio_voluntarios')
         .select('user_id')
@@ -85,7 +122,6 @@ export default function LeaderNotificacoes() {
         return;
       }
 
-      // Get profile IDs for these volunteers
       const userIds = volunteers.map((v) => v.user_id);
       const { data: profiles } = await supabase
         .from('profiles')
@@ -100,7 +136,6 @@ export default function LeaderNotificacoes() {
 
       const profileIds = profiles.map((p) => p.id);
 
-      // Fetch notifications for these volunteers
       const { data, error } = await supabase
         .from('notificacoes')
         .select(`
@@ -115,7 +150,7 @@ export default function LeaderNotificacoes() {
       
       const typedData = (data || []).map(item => ({
         ...item,
-        tipo: item.tipo as 'nova_escala' | 'lembrete' | 'status_alterado'
+        tipo: item.tipo as 'nova_escala' | 'lembrete' | 'status_alterado' | 'ministerio'
       }));
       
       setNotifications(typedData);
@@ -127,6 +162,47 @@ export default function LeaderNotificacoes() {
     }
   };
 
+  const handleSendNotification = async () => {
+    if (!titulo.trim() || !mensagem.trim()) {
+      toast.error('Preencha título e mensagem');
+      return;
+    }
+
+    if (members.length === 0) {
+      toast.error('Nenhum membro encontrado no ministério');
+      return;
+    }
+
+    setSending(true);
+    try {
+      const profileIds = members
+        .filter(m => m.profile?.id)
+        .map(m => m.profile!.id);
+
+      const { error } = await supabase.functions.invoke('send-notification', {
+        body: {
+          user_ids: profileIds,
+          titulo,
+          mensagem,
+          tipo: 'ministerio',
+          ministerio_id: myMinisterioId
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success('Notificação enviada para todos os membros');
+      setTitulo('');
+      setMensagem('');
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      toast.error('Erro ao enviar notificação');
+    } finally {
+      setSending(false);
+    }
+  };
+
   const getNotificationIcon = (tipo: string) => {
     switch (tipo) {
       case 'nova_escala':
@@ -135,6 +211,8 @@ export default function LeaderNotificacoes() {
         return <Clock className="w-4 h-4 text-amber-500" />;
       case 'status_alterado':
         return <AlertCircle className="w-4 h-4 text-purple-500" />;
+      case 'ministerio':
+        return <Users className="w-4 h-4 text-green-500" />;
       default:
         return <Bell className="w-4 h-4 text-muted-foreground" />;
     }
@@ -148,6 +226,8 @@ export default function LeaderNotificacoes() {
         return <Badge className="bg-amber-100 text-amber-700">Lembrete</Badge>;
       case 'status_alterado':
         return <Badge className="bg-purple-100 text-purple-700">Atualização</Badge>;
+      case 'ministerio':
+        return <Badge className="bg-green-100 text-green-700">Ministério</Badge>;
       default:
         return <Badge variant="secondary">Notificação</Badge>;
     }
@@ -157,6 +237,7 @@ export default function LeaderNotificacoes() {
     const matchesSearch =
       !searchTerm ||
       n.mensagem.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      n.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       n.voluntario?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesTipo = filterTipo === 'all' || n.tipo === filterTipo;
@@ -199,6 +280,46 @@ export default function LeaderNotificacoes() {
           <p className="text-muted-foreground">Notificações dos voluntários do seu ministério</p>
         </div>
       </div>
+
+      {/* Send notification form */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Send className="w-5 h-5" />
+            Enviar Notificação
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="titulo">Título</Label>
+            <Input
+              id="titulo"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              placeholder="Título da notificação"
+            />
+          </div>
+          <div>
+            <Label htmlFor="mensagem">Mensagem</Label>
+            <Textarea
+              id="mensagem"
+              value={mensagem}
+              onChange={(e) => setMensagem(e.target.value)}
+              placeholder="Digite a mensagem..."
+              rows={3}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Será enviada para {members.length} membro(s) do seu ministério
+            </p>
+            <Button onClick={handleSendNotification} disabled={sending}>
+              {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+              Enviar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -250,6 +371,7 @@ export default function LeaderNotificacoes() {
                 <SelectItem value="nova_escala">Nova Escala</SelectItem>
                 <SelectItem value="lembrete">Lembrete</SelectItem>
                 <SelectItem value="status_alterado">Atualização</SelectItem>
+                <SelectItem value="ministerio">Ministério</SelectItem>
               </SelectContent>
             </Select>
           </div>
