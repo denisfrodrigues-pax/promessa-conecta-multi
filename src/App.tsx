@@ -34,6 +34,7 @@ import MemberPerfil from "@/pages/member/Perfil";
 import SouNovo from "@/pages/member/SouNovo";
 import Oracao from "@/pages/member/Oracao";
 import MinhasEscalas from "@/pages/member/MinhasEscalas";
+import HistoricoEscalas from "@/pages/member/HistoricoEscalas";
 import MemberNotificacoes from "@/pages/member/Notificacoes";
 
 // Leader Pages
@@ -96,6 +97,7 @@ const App = () => (
               <Route path="/sou-novo" element={<SouNovo />} />
               <Route path="/oracao" element={<Oracao />} />
               <Route path="/minhas-escalas" element={<MinhasEscalas />} />
+              <Route path="/historico-escalas" element={<HistoricoEscalas />} />
               <Route path="/notificacoes" element={<MemberNotificacoes />} />
             </Route>
 

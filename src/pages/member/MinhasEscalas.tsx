@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Calendar, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, History } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -169,11 +170,19 @@ export default function MinhasEscalas() {
 
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-display font-bold">Minhas Escalas</h1>
-        <p className="text-muted-foreground mt-1">
-          Visualize e confirme sua participação nas escalas
-        </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Minhas Escalas</h1>
+          <p className="text-muted-foreground mt-1">
+            Visualize e confirme sua participação nas escalas
+          </p>
+        </div>
+        <Link to="/historico-escalas">
+          <Button variant="outline" size="sm">
+            <History className="w-4 h-4 mr-1" />
+            Histórico
+          </Button>
+        </Link>
       </div>
 
       <div className="space-y-8">
