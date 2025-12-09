@@ -3,7 +3,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
 import { Heart, Users, Calendar, MessageCircle, ChevronRight, Sparkles, Clock, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,8 +12,7 @@ export default function SouNovo() {
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
-    email: '',
-    culto: '',
+    melhorHorario: '',
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -27,21 +25,35 @@ export default function SouNovo() {
       return;
     }
 
+    if (!formData.telefone.trim()) {
+      toast.error('Por favor, informe seu telefone');
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await supabase
         .from('visitantes')
         .insert({
           nome: formData.nome.trim(),
-          telefone: formData.telefone.trim() || null,
-          email: formData.email.trim() || null,
-          culto: formData.culto || null,
+          telefone: formData.telefone.trim(),
         });
 
       if (error) throw error;
       
-      setSubmitted(true);
       toast.success('Cadastro realizado com sucesso!');
+      setSubmitted(true);
+      
+      // Redirect to WhatsApp
+      const whatsappNumber = '5519996083920';
+      const message = `Olá! Acabei de me cadastrar como visitante da Igreja da Promessa e gostaria de conversar.
+Meu nome é: ${formData.nome.trim()}
+Meu telefone é: ${formData.telefone.trim()}
+Melhor horário: ${formData.melhorHorario.trim() || 'Não informado'}`;
+      
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+      
     } catch (error) {
       console.error('Erro ao cadastrar:', error);
       toast.error('Erro ao cadastrar. Tente novamente.');
@@ -136,40 +148,23 @@ export default function SouNovo() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="telefone">Telefone</Label>
+                      <Label htmlFor="telefone">Telefone *</Label>
                       <Input
                         id="telefone"
                         placeholder="(00) 00000-0000"
                         value={formData.telefone}
                         onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                        required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">E-mail</Label>
+                      <Label htmlFor="melhorHorario">Melhor horário para contato</Label>
                       <Input
-                        id="email"
-                        type="email"
-                        placeholder="seu@email.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        id="melhorHorario"
+                        placeholder="Ex: Manhã, Tarde, Noite..."
+                        value={formData.melhorHorario}
+                        onChange={(e) => setFormData({ ...formData, melhorHorario: e.target.value })}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="culto">Qual culto você visitou?</Label>
-                      <Select
-                        value={formData.culto}
-                        onValueChange={(value) => setFormData({ ...formData, culto: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione (opcional)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="domingo_manha">Domingo - Manhã</SelectItem>
-                          <SelectItem value="domingo_noite">Domingo - Noite</SelectItem>
-                          <SelectItem value="quarta">Quarta-feira</SelectItem>
-                          <SelectItem value="outro">Outro</SelectItem>
-                        </SelectContent>
-                      </Select>
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
                       {loading ? 'Enviando...' : 'Quero me conectar!'}
