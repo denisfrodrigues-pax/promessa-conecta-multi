@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Users, Eye, Calendar as CalendarIcon, Download, X, Search } from 'lucide-react';
+import { Users, Eye, Calendar as CalendarIcon, Download, X, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -47,6 +47,9 @@ export default function Visitantes() {
   const [dataFinal, setDataFinal] = useState<Date | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 20;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
 
@@ -65,34 +68,65 @@ export default function Visitantes() {
     };
   }, [searchTerm]);
 
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filtroStatus, dataInicial, dataFinal, debouncedSearch]);
+
   useEffect(() => {
     fetchVisitantes();
-  }, [filtroStatus, dataInicial, dataFinal, debouncedSearch]);
+  }, [filtroStatus, dataInicial, dataFinal, debouncedSearch, page]);
+
+  // Highlight function for search results
+  const highlight = (text: string) => {
+    if (!debouncedSearch.trim()) return text;
+    const regex = new RegExp(`(${debouncedSearch})`, 'gi');
+    return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+  };
 
   const fetchVisitantes = async () => {
     try {
       setLoading(true);
+
+      // First: get total count for pagination
+      let countQuery = supabase
+        .from('visitantes')
+        .select('*', { count: 'exact', head: true });
+
+      if (filtroStatus !== 'todos') {
+        countQuery = countQuery.eq('status', filtroStatus);
+      }
+      if (debouncedSearch.trim() !== '') {
+        countQuery = countQuery.ilike('nome', `%${debouncedSearch.trim()}%`);
+      }
+      if (dataInicial) {
+        countQuery = countQuery.gte('created_at', `${format(dataInicial, 'yyyy-MM-dd')}T00:00:00`);
+      }
+      if (dataFinal) {
+        countQuery = countQuery.lte('created_at', `${format(dataFinal, 'yyyy-MM-dd')}T23:59:59`);
+      }
+
+      const { count } = await countQuery;
+      setTotal(count || 0);
+
+      // Second: get paginated data
       let query = supabase
         .from('visitantes')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range((page - 1) * limit, page * limit - 1);
 
       if (filtroStatus !== 'todos') {
         query = query.eq('status', filtroStatus);
       }
-
-      if (dataInicial) {
-        const startDate = format(dataInicial, 'yyyy-MM-dd');
-        query = query.gte('created_at', `${startDate}T00:00:00`);
-      }
-
-      if (dataFinal) {
-        const endDate = format(dataFinal, 'yyyy-MM-dd');
-        query = query.lte('created_at', `${endDate}T23:59:59`);
-      }
-
       if (debouncedSearch.trim() !== '') {
         query = query.ilike('nome', `%${debouncedSearch.trim()}%`);
+      }
+      if (dataInicial) {
+        query = query.gte('created_at', `${format(dataInicial, 'yyyy-MM-dd')}T00:00:00`);
+      }
+      if (dataFinal) {
+        query = query.lte('created_at', `${format(dataFinal, 'yyyy-MM-dd')}T23:59:59`);
       }
 
       const { data, error } = await query;
@@ -117,7 +151,10 @@ export default function Visitantes() {
     setDataInicial(undefined);
     setDataFinal(undefined);
     setSearchTerm('');
+    setPage(1);
   };
+
+  const totalPages = Math.ceil(total / limit);
 
   const hasActiveFilters = filtroStatus !== 'todos' || dataInicial || dataFinal || searchTerm.trim() !== '';
 
@@ -187,7 +224,7 @@ export default function Visitantes() {
                 <Users className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{visitantes.length}</p>
+                <p className="text-2xl font-bold">{total}</p>
                 <p className="text-sm text-muted-foreground">Total</p>
               </div>
             </div>
@@ -342,7 +379,7 @@ export default function Visitantes() {
           {hasActiveFilters && (
             <div className="mt-4">
               <Badge variant="secondary">
-                {visitantes.length} resultado{visitantes.length !== 1 ? 's' : ''} encontrado{visitantes.length !== 1 ? 's' : ''}
+                {total} resultado{total !== 1 ? 's' : ''} encontrado{total !== 1 ? 's' : ''}
               </Badge>
             </div>
           )}
@@ -379,7 +416,10 @@ export default function Visitantes() {
               <TableBody>
                 {visitantes.map((visitante) => (
                   <TableRow key={visitante.id}>
-                    <TableCell className="font-medium">{visitante.nome}</TableCell>
+                    <TableCell 
+                      className="font-medium"
+                      dangerouslySetInnerHTML={{ __html: highlight(visitante.nome) }}
+                    />
                     <TableCell>{visitante.telefone || '-'}</TableCell>
                     <TableCell>{visitante.melhor_horario || '-'}</TableCell>
                     <TableCell>{formatDate(visitante.created_at)}</TableCell>
@@ -405,6 +445,35 @@ export default function Visitantes() {
                 ))}
               </TableBody>
             </Table>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                Página {page} de {totalPages} ({total} registros)
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                >
+                  Próxima
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
