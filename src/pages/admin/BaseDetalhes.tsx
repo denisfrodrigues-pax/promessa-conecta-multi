@@ -62,6 +62,7 @@ export default function BaseDetalhes() {
   const [liderInfo, setLiderInfo] = useState<Membro | null>(null);
   const [todosMembros, setTodosMembros] = useState<Membro[]>([]);
   const [visitantesBase, setVisitantesBase] = useState<BaseVisitante[]>([]);
+  const [filtroStatusVisitante, setFiltroStatusVisitante] = useState<string>('todos');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -73,6 +74,10 @@ export default function BaseDetalhes() {
     lider_id: '',
     status: '',
   });
+
+  const visitantesFiltrados = filtroStatusVisitante === 'todos'
+    ? visitantesBase
+    : visitantesBase.filter(v => v.status === filtroStatusVisitante);
 
   useEffect(() => {
     if (id) {
@@ -540,15 +545,31 @@ export default function BaseDetalhes() {
       </Card>
       {/* Visitantes em Acompanhamento */}
       <Card className="shadow-card">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Visitantes em Acompanhamento ({visitantesBase.length})</CardTitle>
+          <Select
+            value={filtroStatusVisitante}
+            onValueChange={setFiltroStatusVisitante}
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Filtrar status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
+              <SelectItem value="novo">Novo</SelectItem>
+              <SelectItem value="contato_iniciado">Contato Iniciado</SelectItem>
+            </SelectContent>
+          </Select>
         </CardHeader>
         <CardContent>
-          {visitantesBase.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">Nenhum visitante nesta base</p>
+          {visitantesFiltrados.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              {visitantesBase.length === 0 ? 'Nenhum visitante nesta base' : 'Nenhum visitante com este status'}
+            </p>
           ) : (
             <div className="space-y-2">
-              {visitantesBase.map((bv) => (
+              {visitantesFiltrados.map((bv) => (
                 <div
                   key={bv.id}
                   className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
