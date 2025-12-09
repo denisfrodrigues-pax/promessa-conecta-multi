@@ -448,29 +448,32 @@ export default function Visitantes() {
           )}
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                Página {page} de {totalPages} ({total} registros)
-              </p>
-              <div className="flex items-center gap-2">
+          {total > 0 && (
+            <div className="flex items-center justify-between py-3 mt-4 pt-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Mostrando{" "}
+                <strong>{total === 0 ? 0 : (page - 1) * limit + 1}</strong> –{" "}
+                <strong>{Math.min(page * limit, total)}</strong> de{" "}
+                <strong>{total}</strong> visitantes
+              </div>
+
+              <div className="space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
                 >
-                  <ChevronLeft className="w-4 h-4 mr-1" />
                   Anterior
                 </Button>
+
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
+                  disabled={page * limit >= total}
+                  onClick={() => setPage(page + 1)}
                 >
                   Próxima
-                  <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
             </div>
