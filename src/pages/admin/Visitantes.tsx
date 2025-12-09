@@ -420,8 +420,8 @@ export default function Visitantes() {
                       className="font-medium"
                       dangerouslySetInnerHTML={{ __html: highlight(visitante.nome) }}
                     />
-                    <TableCell>{visitante.telefone || '-'}</TableCell>
-                    <TableCell>{visitante.melhor_horario || '-'}</TableCell>
+                    <TableCell><span dangerouslySetInnerHTML={{ __html: highlight(visitante.telefone || '-') }} /></TableCell>
+                    <TableCell><span dangerouslySetInnerHTML={{ __html: highlight(visitante.melhor_horario || '-') }} /></TableCell>
                     <TableCell>{formatDate(visitante.created_at)}</TableCell>
                     <TableCell>
                       <Badge 
