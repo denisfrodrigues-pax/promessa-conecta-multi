@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Users, Eye, Calendar as CalendarIcon, Download, X } from 'lucide-react';
+import { Users, Eye, Calendar as CalendarIcon, Download, X, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -44,11 +45,29 @@ export default function Visitantes() {
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [dataInicial, setDataInicial] = useState<Date | undefined>(undefined);
   const [dataFinal, setDataFinal] = useState<Date | undefined>(undefined);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+
+  // Debounce search term
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [searchTerm]);
 
   useEffect(() => {
     fetchVisitantes();
-  }, [filtroStatus, dataInicial, dataFinal]);
+  }, [filtroStatus, dataInicial, dataFinal, debouncedSearch]);
 
   const fetchVisitantes = async () => {
     try {
@@ -72,6 +91,10 @@ export default function Visitantes() {
         query = query.lte('created_at', `${endDate}T23:59:59`);
       }
 
+      if (debouncedSearch.trim() !== '') {
+        query = query.ilike('nome', `%${debouncedSearch.trim()}%`);
+      }
+
       const { data, error } = await query;
 
       if (error) throw error;
@@ -93,9 +116,10 @@ export default function Visitantes() {
     setFiltroStatus('todos');
     setDataInicial(undefined);
     setDataFinal(undefined);
+    setSearchTerm('');
   };
 
-  const hasActiveFilters = filtroStatus !== 'todos' || dataInicial || dataFinal;
+  const hasActiveFilters = filtroStatus !== 'todos' || dataInicial || dataFinal || searchTerm.trim() !== '';
 
   const exportToCSV = () => {
     if (visitantes.length === 0) {
@@ -211,6 +235,19 @@ export default function Visitantes() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-end gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Buscar</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nome..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-[200px] pl-9"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium" id="data-inicial-label">Data Inicial</label>
               <Popover>
