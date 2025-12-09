@@ -4,12 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, Eye, Calendar } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Users, Eye, Calendar as CalendarIcon, Download, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface Visitante {
   id: string;
@@ -37,15 +40,19 @@ const statusColors: Record<string, string> = {
 export default function Visitantes() {
   const [visitantes, setVisitantes] = useState<Visitante[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
+  const [dataInicial, setDataInicial] = useState<Date | undefined>(undefined);
+  const [dataFinal, setDataFinal] = useState<Date | undefined>(undefined);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchVisitantes();
-  }, [filtroStatus]);
+  }, [filtroStatus, dataInicial, dataFinal]);
 
   const fetchVisitantes = async () => {
     try {
+      setLoading(true);
       let query = supabase
         .from('visitantes')
         .select('*')
@@ -53,6 +60,16 @@ export default function Visitantes() {
 
       if (filtroStatus !== 'todos') {
         query = query.eq('status', filtroStatus);
+      }
+
+      if (dataInicial) {
+        const startDate = format(dataInicial, 'yyyy-MM-dd');
+        query = query.gte('created_at', `${startDate}T00:00:00`);
+      }
+
+      if (dataFinal) {
+        const endDate = format(dataFinal, 'yyyy-MM-dd');
+        query = query.lte('created_at', `${endDate}T23:59:59`);
       }
 
       const { data, error } = await query;
@@ -70,6 +87,62 @@ export default function Visitantes() {
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
     return format(new Date(dateStr), 'dd/MM/yyyy', { locale: ptBR });
+  };
+
+  const clearFilters = () => {
+    setFiltroStatus('todos');
+    setDataInicial(undefined);
+    setDataFinal(undefined);
+  };
+
+  const hasActiveFilters = filtroStatus !== 'todos' || dataInicial || dataFinal;
+
+  const exportToCSV = () => {
+    if (visitantes.length === 0) {
+      toast.error('Nenhum visitante para exportar');
+      return;
+    }
+
+    setExporting(true);
+
+    try {
+      // UTF-8 BOM for Excel compatibility
+      const BOM = '\uFEFF';
+      
+      const headers = ['ID', 'Nome', 'Telefone', 'Melhor Horário', 'Observações', 'Status', 'Data Cadastro'];
+      
+      const rows = visitantes.map(v => [
+        v.id,
+        v.nome,
+        v.telefone || '',
+        v.melhor_horario || '',
+        (v.observacoes || '').replace(/"/g, '""'),
+        statusLabels[v.status || 'novo'] || v.status || '',
+        v.created_at ? format(new Date(v.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : '',
+      ]);
+
+      const csvContent = BOM + [
+        headers.join(';'),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(';'))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `visitantes_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success(`${visitantes.length} visitantes exportados com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar CSV');
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -128,23 +201,124 @@ export default function Visitantes() {
         </Card>
       </div>
 
-      {/* Filter and List */}
+      {/* Filters */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CalendarIcon className="w-4 h-4" />
+            Filtros
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium" id="data-inicial-label">Data Inicial</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[180px] justify-start text-left font-normal",
+                      !dataInicial && "text-muted-foreground"
+                    )}
+                    aria-labelledby="data-inicial-label"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dataInicial ? format(dataInicial, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecione'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dataInicial}
+                    onSelect={setDataInicial}
+                    initialFocus
+                    className="pointer-events-auto"
+                    locale={ptBR}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium" id="data-final-label">Data Final</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[180px] justify-start text-left font-normal",
+                      !dataFinal && "text-muted-foreground"
+                    )}
+                    aria-labelledby="data-final-label"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dataFinal ? format(dataFinal, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecione'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dataFinal}
+                    onSelect={setDataFinal}
+                    initialFocus
+                    className="pointer-events-auto"
+                    locale={ptBR}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Status</label>
+              <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="novo">Novos</SelectItem>
+                  <SelectItem value="contatado">Contatados</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="w-4 h-4 mr-1" />
+                Limpar filtros
+              </Button>
+            )}
+
+            <div className="ml-auto">
+              <Button 
+                variant="outline" 
+                onClick={exportToCSV}
+                disabled={exporting || visitantes.length === 0}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {exporting ? 'Exportando...' : 'Exportar CSV'}
+              </Button>
+            </div>
+          </div>
+
+          {hasActiveFilters && (
+            <div className="mt-4">
+              <Badge variant="secondary">
+                {visitantes.length} resultado{visitantes.length !== 1 ? 's' : ''} encontrado{visitantes.length !== 1 ? 's' : ''}
+              </Badge>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* List */}
+      <Card>
+        <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+            <CalendarIcon className="w-5 h-5" />
             Lista de Visitantes
           </CardTitle>
-          <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filtrar por status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="novo">Novos</SelectItem>
-              <SelectItem value="contatado">Contatados</SelectItem>
-            </SelectContent>
-          </Select>
         </CardHeader>
         <CardContent>
           {loading ? (
