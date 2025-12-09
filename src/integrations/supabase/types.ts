@@ -911,6 +911,7 @@ export type Database = {
           data_visita: string | null
           email: string | null
           id: string
+          melhor_horario: string | null
           nome: string
           observacoes: string | null
           status: string | null
@@ -922,6 +923,7 @@ export type Database = {
           data_visita?: string | null
           email?: string | null
           id?: string
+          melhor_horario?: string | null
           nome: string
           observacoes?: string | null
           status?: string | null
@@ -933,6 +935,7 @@ export type Database = {
           data_visita?: string | null
           email?: string | null
           id?: string
+          melhor_horario?: string | null
           nome?: string
           observacoes?: string | null
           status?: string | null

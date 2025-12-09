@@ -3,6 +3,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
 import { Heart, Users, Calendar, MessageCircle, ChevronRight, Sparkles, Clock, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,9 +15,23 @@ export default function SouNovo() {
     nome: '',
     telefone: '',
     melhorHorario: '',
+    observacao: '',
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value);
+    setFormData({ ...formData, telefone: formatted });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +46,11 @@ export default function SouNovo() {
       return;
     }
 
+    if (formData.observacao.length > 300) {
+      toast.error('A observação pode ter no máximo 300 caracteres');
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await supabase
@@ -37,22 +58,14 @@ export default function SouNovo() {
         .insert({
           nome: formData.nome.trim(),
           telefone: formData.telefone.trim(),
+          melhor_horario: formData.melhorHorario || null,
+          observacoes: formData.observacao.trim() || null,
         });
 
       if (error) throw error;
       
       toast.success('Cadastro realizado com sucesso!');
       setSubmitted(true);
-      
-      // Redirect to WhatsApp
-      const whatsappNumber = '5519996083920';
-      const message = `Olá! Acabei de me cadastrar como visitante da Igreja da Promessa e gostaria de conversar.
-Meu nome é: ${formData.nome.trim()}
-Meu telefone é: ${formData.telefone.trim()}
-Melhor horário: ${formData.melhorHorario.trim() || 'Não informado'}`;
-      
-      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
       
     } catch (error) {
       console.error('Erro ao cadastrar:', error);
@@ -151,20 +164,41 @@ Melhor horário: ${formData.melhorHorario.trim() || 'Não informado'}`;
                       <Label htmlFor="telefone">Telefone *</Label>
                       <Input
                         id="telefone"
-                        placeholder="(00) 00000-0000"
+                        placeholder="(99) 99999-9999"
                         value={formData.telefone}
-                        onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                        onChange={handlePhoneChange}
                         required
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="melhorHorario">Melhor horário para contato</Label>
-                      <Input
-                        id="melhorHorario"
-                        placeholder="Ex: Manhã, Tarde, Noite..."
+                      <Select
                         value={formData.melhorHorario}
-                        onChange={(e) => setFormData({ ...formData, melhorHorario: e.target.value })}
+                        onValueChange={(value) => setFormData({ ...formData, melhorHorario: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma opção" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Manhã">Manhã</SelectItem>
+                          <SelectItem value="Tarde">Tarde</SelectItem>
+                          <SelectItem value="Noite">Noite</SelectItem>
+                          <SelectItem value="Qualquer horário">Qualquer horário</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="observacao">Observação (opcional)</Label>
+                      <Textarea
+                        id="observacao"
+                        placeholder="Alguma mensagem ou pedido especial?"
+                        maxLength={300}
+                        value={formData.observacao}
+                        onChange={(e) => setFormData({ ...formData, observacao: e.target.value })}
                       />
+                      <p className="text-right text-sm text-muted-foreground">
+                        {formData.observacao.length}/300
+                      </p>
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
                       {loading ? 'Enviando...' : 'Quero me conectar!'}
