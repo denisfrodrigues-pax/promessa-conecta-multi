@@ -60,6 +60,9 @@ const App = () => (
           <Routes>
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
+            
+            {/* Public Routes */}
+            <Route path="/sou-novo" element={<SouNovo />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
@@ -98,7 +101,6 @@ const App = () => (
               <Route path="/eventos" element={<MemberEventos />} />
               <Route path="/avisos" element={<MemberAvisos />} />
               <Route path="/perfil" element={<MemberPerfil />} />
-              <Route path="/sou-novo" element={<SouNovo />} />
               <Route path="/oracao" element={<Oracao />} />
               <Route path="/minhas-escalas" element={<MinhasEscalas />} />
               <Route path="/historico-escalas" element={<HistoricoEscalas />} />
