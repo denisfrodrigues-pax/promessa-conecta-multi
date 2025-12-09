@@ -32,6 +32,7 @@ import AdminMembroDetalhes from "@/pages/admin/MembroDetalhes";
 import AdminBases from "@/pages/admin/Bases";
 import AdminBaseNova from "@/pages/admin/BaseNova";
 import AdminBaseDetalhes from "@/pages/admin/BaseDetalhes";
+import AdminBaseRelatorio from "@/pages/admin/BaseRelatorio";
 
 // Member Pages
 import MemberHome from "@/pages/member/Home";
@@ -89,6 +90,7 @@ const App = () => (
               <Route path="membros/:id" element={<AdminMembroDetalhes />} />
               <Route path="bases" element={<AdminBases />} />
               <Route path="bases/nova" element={<AdminBaseNova />} />
+              <Route path="bases/relatorio" element={<AdminBaseRelatorio />} />
               <Route path="bases/:id" element={<AdminBaseDetalhes />} />
               <Route path="infantil" element={<AdminDashboard />} />
               <Route path="auditoria" element={<AdminDashboard />} />
