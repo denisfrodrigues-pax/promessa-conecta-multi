@@ -1,7 +1,7 @@
 import { Outlet, Navigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
-import { Home, Users, Calendar, Bell, User, Menu, X, Church } from 'lucide-react';
+import { Home, Users, Calendar, Bell, User, Menu, X, Church, CalendarCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
@@ -10,9 +10,9 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { icon: Home, label: 'Início', path: '/' },
+  { icon: CalendarCheck, label: 'Escalas', path: '/minhas-escalas' },
   { icon: Users, label: 'Grupos', path: '/grupos' },
   { icon: Calendar, label: 'Eventos', path: '/eventos' },
-  { icon: Bell, label: 'Avisos', path: '/avisos' },
   { icon: User, label: 'Perfil', path: '/perfil' },
 ];
 

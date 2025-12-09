@@ -793,23 +793,89 @@ export default function AdminEscalas() {
                 )}
               </div>
 
-              <div>
-                <h4 className="font-medium mb-3">Voluntários ({viewingGroup.voluntarios.length})</h4>
-                <div className="space-y-2">
-                  {viewingGroup.voluntarios.map((vol) => (
-                    <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div>
-                        <p className="font-medium">{vol.nome}</p>
-                        {vol.status === 'ausente' && vol.justificativa && (
-                          <p className="text-sm text-muted-foreground">
-                            Justificativa: {vol.justificativa}
-                          </p>
-                        )}
-                      </div>
-                      {getStatusBadge(vol.status)}
+              {/* Status Counters */}
+              {(() => {
+                const summary = getVoluntariosStatusSummary(viewingGroup.voluntarios);
+                return (
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-center">
+                      <p className="text-2xl font-bold text-emerald-600">{summary.confirmados}</p>
+                      <p className="text-xs text-emerald-600 font-medium">Confirmados</p>
                     </div>
-                  ))}
-                </div>
+                    <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-100 text-center">
+                      <p className="text-2xl font-bold text-yellow-600">{summary.pendentes}</p>
+                      <p className="text-xs text-yellow-600 font-medium">Pendentes</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-center">
+                      <p className="text-2xl font-bold text-red-600">{summary.ausentes}</p>
+                      <p className="text-xs text-red-600 font-medium">Recusados</p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Grouped Volunteers by Status */}
+              <div className="space-y-4">
+                {/* Confirmados */}
+                {viewingGroup.voluntarios.filter(v => v.status === 'confirmado').length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-2 text-emerald-700 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      Confirmados
+                    </h4>
+                    <div className="space-y-2">
+                      {viewingGroup.voluntarios.filter(v => v.status === 'confirmado').map((vol) => (
+                        <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-100">
+                          <p className="font-medium">{vol.nome}</p>
+                          {getStatusBadge(vol.status)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pendentes */}
+                {viewingGroup.voluntarios.filter(v => v.status === 'pendente').length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-2 text-yellow-700 flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Pendentes
+                    </h4>
+                    <div className="space-y-2">
+                      {viewingGroup.voluntarios.filter(v => v.status === 'pendente').map((vol) => (
+                        <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-100">
+                          <p className="font-medium">{vol.nome}</p>
+                          {getStatusBadge(vol.status)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recusados */}
+                {viewingGroup.voluntarios.filter(v => v.status === 'ausente').length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-2 text-red-700 flex items-center gap-2">
+                      <XCircle className="w-4 h-4" />
+                      Recusados
+                    </h4>
+                    <div className="space-y-2">
+                      {viewingGroup.voluntarios.filter(v => v.status === 'ausente').map((vol) => (
+                        <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100">
+                          <div>
+                            <p className="font-medium">{vol.nome}</p>
+                            {vol.justificativa && (
+                              <p className="text-sm text-red-600/80 mt-1">
+                                Justificativa: {vol.justificativa}
+                              </p>
+                            )}
+                          </div>
+                          {getStatusBadge(vol.status)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
