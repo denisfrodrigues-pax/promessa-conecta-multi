@@ -6,11 +6,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, User, Phone, Clock, CheckCircle, MessageCircle, UserPlus } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ArrowLeft, Save, User, Phone, Clock, CheckCircle, MessageCircle, UserPlus, Network } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+
+interface Base {
+  id: string;
+  nome: string;
+}
 
 interface Visitante {
   id: string;
@@ -39,6 +46,15 @@ export default function VisitanteDetalhes() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [markingAsContacted, setMarkingAsContacted] = useState(false);
+  const [baseModalOpen, setBaseModalOpen] = useState(false);
+  const [basesAtivas, setBasesAtivas] = useState<Base[]>([]);
+  const [savingBase, setSavingBase] = useState(false);
+  const [vinculoExistente, setVinculoExistente] = useState(false);
+  const [baseForm, setBaseForm] = useState({
+    base_id: '',
+    status: 'em_acompanhamento',
+    observacao: '',
+  });
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -50,8 +66,58 @@ export default function VisitanteDetalhes() {
   useEffect(() => {
     if (id) {
       fetchVisitante();
+      fetchBasesAtivas();
+      checkVinculoExistente();
     }
   }, [id]);
+
+  const fetchBasesAtivas = async () => {
+    const { data } = await supabase
+      .from('bases')
+      .select('id, nome')
+      .eq('status', 'ativo')
+      .order('nome');
+    if (data) setBasesAtivas(data);
+  };
+
+  const checkVinculoExistente = async () => {
+    const { data } = await supabase
+      .from('bases_membros')
+      .select('id')
+      .eq('visitante_id', id)
+      .eq('status', 'ativo')
+      .maybeSingle();
+    setVinculoExistente(!!data);
+  };
+
+  const handleSaveBase = async () => {
+    if (!baseForm.base_id) {
+      toast.error('Selecione uma base');
+      return;
+    }
+
+    setSavingBase(true);
+    try {
+      const { error } = await supabase.from('bases_membros').insert({
+        base_id: baseForm.base_id,
+        visitante_id: id,
+        status: baseForm.status,
+        observacao: baseForm.observacao.trim() || null,
+        membro_id: null,
+      } as any);
+
+      if (error) throw error;
+
+      toast.success('Visitante atribuído à base!');
+      setBaseModalOpen(false);
+      setVinculoExistente(true);
+      setBaseForm({ base_id: '', status: 'em_acompanhamento', observacao: '' });
+    } catch (error: any) {
+      toast.error('Erro: ' + error.message);
+    } finally {
+      setSavingBase(false);
+    }
+  };
 
   const fetchVisitante = async () => {
     try {
@@ -290,6 +356,38 @@ Melhor horário para contato: ${formData.melhor_horario || 'Não informado'}.`;
         </Card>
       )}
 
+      {/* Atribuir a Base */}
+      {!vinculoExistente && (
+        <Card className="border-purple-200 bg-purple-50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-purple-800">Atribuir a uma Base</p>
+                <p className="text-sm text-purple-600">Vincule este visitante a uma base para acompanhamento</p>
+              </div>
+              <Button 
+                onClick={() => setBaseModalOpen(true)}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <Network className="w-4 h-4 mr-2" />
+                Atribuir a Base
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {vinculoExistente && (
+        <Card className="border-purple-200 bg-purple-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Network className="w-5 h-5 text-purple-600" />
+              <p className="font-medium text-purple-800">Visitante já está vinculado a uma base</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Convert to Member */}
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="p-4">
@@ -308,6 +406,67 @@ Melhor horário para contato: ${formData.melhor_horario || 'Não informado'}.`;
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal Atribuir Base */}
+      <Dialog open={baseModalOpen} onOpenChange={setBaseModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Atribuir Visitante a uma Base</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Base *</Label>
+              <Select
+                value={baseForm.base_id || "none"}
+                onValueChange={(v) => setBaseForm({ ...baseForm, base_id: v === "none" ? "" : v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma base" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Selecione...</SelectItem>
+                  {basesAtivas.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Status do Acompanhamento</Label>
+              <Select
+                value={baseForm.status}
+                onValueChange={(v) => setBaseForm({ ...baseForm, status: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
+                  <SelectItem value="novo">Novo</SelectItem>
+                  <SelectItem value="contato_iniciado">Contato Iniciado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Observação (opcional)</Label>
+              <Textarea
+                value={baseForm.observacao}
+                onChange={(e) => setBaseForm({ ...baseForm, observacao: e.target.value })}
+                placeholder="Adicione uma observação..."
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setBaseModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleSaveBase} disabled={savingBase}>
+                {savingBase ? 'Salvando...' : 'Salvar'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Form */}
       <Card>
