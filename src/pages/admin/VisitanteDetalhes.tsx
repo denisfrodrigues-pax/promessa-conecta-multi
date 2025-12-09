@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, User, Phone, Mail, Calendar, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Save, User, Phone, Clock, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -16,13 +16,21 @@ interface Visitante {
   id: string;
   nome: string;
   telefone: string | null;
-  email: string | null;
-  data_visita: string | null;
-  culto: string | null;
   observacoes: string | null;
   status: string | null;
+  melhor_horario: string | null;
   created_at: string | null;
 }
+
+const statusLabels: Record<string, string> = {
+  novo: 'Novo',
+  contatado: 'Contatado',
+};
+
+const statusColors: Record<string, string> = {
+  novo: 'bg-amber-100 text-amber-800 border-amber-300',
+  contatado: 'bg-green-100 text-green-800 border-green-300',
+};
 
 export default function VisitanteDetalhes() {
   const { id } = useParams<{ id: string }>();
@@ -30,11 +38,11 @@ export default function VisitanteDetalhes() {
   const [visitante, setVisitante] = useState<Visitante | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [markingAsContacted, setMarkingAsContacted] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
-    email: '',
-    culto: '',
+    melhor_horario: '',
     observacoes: '',
     status: 'novo',
   });
@@ -59,8 +67,7 @@ export default function VisitanteDetalhes() {
       setFormData({
         nome: data.nome || '',
         telefone: data.telefone || '',
-        email: data.email || '',
-        culto: data.culto || '',
+        melhor_horario: data.melhor_horario || '',
         observacoes: data.observacoes || '',
         status: data.status || 'novo',
       });
@@ -86,10 +93,8 @@ export default function VisitanteDetalhes() {
         .update({
           nome: formData.nome.trim(),
           telefone: formData.telefone.trim() || null,
-          email: formData.email.trim() || null,
-          culto: formData.culto || null,
+          melhor_horario: formData.melhor_horario || null,
           observacoes: formData.observacoes.trim() || null,
-          status: formData.status,
         })
         .eq('id', id);
 
@@ -105,20 +110,30 @@ export default function VisitanteDetalhes() {
     }
   };
 
+  const handleMarkAsContacted = async () => {
+    setMarkingAsContacted(true);
+    try {
+      const { error } = await supabase
+        .from('visitantes')
+        .update({ status: 'contatado' })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Visitante marcado como contatado!');
+      setFormData({ ...formData, status: 'contatado' });
+      setVisitante(visitante ? { ...visitante, status: 'contatado' } : null);
+    } catch (error) {
+      console.error('Erro ao marcar como contatado:', error);
+      toast.error('Erro ao atualizar status');
+    } finally {
+      setMarkingAsContacted(false);
+    }
+  };
+
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
     return format(new Date(dateStr), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
-  };
-
-  const formatCulto = (culto: string | null) => {
-    if (!culto) return '-';
-    const cultoLabels: Record<string, string> = {
-      domingo_manha: 'Domingo - Manhã',
-      domingo_noite: 'Domingo - Noite',
-      quarta: 'Quarta-feira',
-      outro: 'Outro',
-    };
-    return cultoLabels[culto] || culto;
   };
 
   if (loading) {
@@ -137,46 +152,30 @@ export default function VisitanteDetalhes() {
     );
   }
 
+  const isNew = formData.status === 'novo';
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/visitantes')}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-display font-bold">Detalhes do Visitante</h1>
-          <p className="text-muted-foreground">Visualize e edite as informações</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/visitantes')}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-display font-bold">Detalhes do Visitante</h1>
+            <p className="text-muted-foreground">Visualize e edite as informações</p>
+          </div>
         </div>
+        <Badge 
+          variant="outline" 
+          className={`text-sm px-3 py-1 ${statusColors[formData.status]}`}
+        >
+          {statusLabels[formData.status]}
+        </Badge>
       </div>
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Data da Visita</p>
-                <p className="font-medium">{formatDate(visitante.data_visita)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Culto Visitado</p>
-                <p className="font-medium">{formatCulto(visitante.culto)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -190,7 +189,55 @@ export default function VisitanteDetalhes() {
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Melhor Horário</p>
+                <p className="font-medium">{visitante.melhor_horario || '-'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Phone className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Telefone</p>
+                <p className="font-medium">{visitante.telefone || '-'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Mark as Contacted Button */}
+      {isNew && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-amber-800">Este visitante ainda não foi contatado</p>
+                <p className="text-sm text-amber-600">Clique no botão ao lado após entrar em contato</p>
+              </div>
+              <Button 
+                onClick={handleMarkAsContacted}
+                disabled={markingAsContacted}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {markingAsContacted ? 'Atualizando...' : 'Marcar como Contatado'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Edit Form */}
       <Card>
@@ -221,34 +268,17 @@ export default function VisitanteDetalhes() {
                 onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">
-                <Mail className="w-4 h-4 inline mr-1" />
-                E-mail
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="novo">Novo</SelectItem>
-                  <SelectItem value="contatado">Contatado</SelectItem>
-                  <SelectItem value="membro_em_potencial">Membro em Potencial</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="melhor_horario">
+              <Clock className="w-4 h-4 inline mr-1" />
+              Melhor Horário para Contato
+            </Label>
+            <Input
+              id="melhor_horario"
+              value={formData.melhor_horario}
+              onChange={(e) => setFormData({ ...formData, melhor_horario: e.target.value })}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="observacoes">Observações</Label>

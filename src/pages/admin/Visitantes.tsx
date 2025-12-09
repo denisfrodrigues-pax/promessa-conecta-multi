@@ -20,19 +20,18 @@ interface Visitante {
   culto: string | null;
   observacoes: string | null;
   status: string | null;
+  melhor_horario: string | null;
   created_at: string | null;
 }
 
 const statusLabels: Record<string, string> = {
   novo: 'Novo',
   contatado: 'Contatado',
-  membro_em_potencial: 'Membro em Potencial',
 };
 
 const statusColors: Record<string, string> = {
-  novo: 'bg-blue-100 text-blue-800',
-  contatado: 'bg-yellow-100 text-yellow-800',
-  membro_em_potencial: 'bg-green-100 text-green-800',
+  novo: 'bg-amber-100 text-amber-800 border-amber-300',
+  contatado: 'bg-green-100 text-green-800 border-green-300',
 };
 
 export default function Visitantes() {
@@ -50,7 +49,7 @@ export default function Visitantes() {
       let query = supabase
         .from('visitantes')
         .select('*')
-        .order('data_visita', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (filtroStatus !== 'todos') {
         query = query.eq('status', filtroStatus);
@@ -73,17 +72,6 @@ export default function Visitantes() {
     return format(new Date(dateStr), 'dd/MM/yyyy', { locale: ptBR });
   };
 
-  const formatCulto = (culto: string | null) => {
-    if (!culto) return '-';
-    const cultoLabels: Record<string, string> = {
-      domingo_manha: 'Domingo - Manhã',
-      domingo_noite: 'Domingo - Noite',
-      quarta: 'Quarta-feira',
-      outro: 'Outro',
-    };
-    return cultoLabels[culto] || culto;
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -94,7 +82,7 @@ export default function Visitantes() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -111,8 +99,8 @@ export default function Visitantes() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                <Users className="w-5 h-5 text-amber-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
@@ -126,29 +114,14 @@ export default function Visitantes() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-yellow-600" />
+              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                <Users className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
                   {visitantes.filter((v) => v.status === 'contatado').length}
                 </p>
                 <p className="text-sm text-muted-foreground">Contatados</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {visitantes.filter((v) => v.status === 'membro_em_potencial').length}
-                </p>
-                <p className="text-sm text-muted-foreground">Em Potencial</p>
               </div>
             </div>
           </CardContent>
@@ -170,7 +143,6 @@ export default function Visitantes() {
               <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="novo">Novos</SelectItem>
               <SelectItem value="contatado">Contatados</SelectItem>
-              <SelectItem value="membro_em_potencial">Membro em Potencial</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
@@ -187,8 +159,8 @@ export default function Visitantes() {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Telefone</TableHead>
-                  <TableHead>Data da Visita</TableHead>
-                  <TableHead>Culto</TableHead>
+                  <TableHead>Melhor Horário</TableHead>
+                  <TableHead>Cadastro</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -198,10 +170,13 @@ export default function Visitantes() {
                   <TableRow key={visitante.id}>
                     <TableCell className="font-medium">{visitante.nome}</TableCell>
                     <TableCell>{visitante.telefone || '-'}</TableCell>
-                    <TableCell>{formatDate(visitante.data_visita)}</TableCell>
-                    <TableCell>{formatCulto(visitante.culto)}</TableCell>
+                    <TableCell>{visitante.melhor_horario || '-'}</TableCell>
+                    <TableCell>{formatDate(visitante.created_at)}</TableCell>
                     <TableCell>
-                      <Badge className={statusColors[visitante.status || 'novo']}>
+                      <Badge 
+                        variant="outline" 
+                        className={statusColors[visitante.status || 'novo']}
+                      >
                         {statusLabels[visitante.status || 'novo']}
                       </Badge>
                     </TableCell>
