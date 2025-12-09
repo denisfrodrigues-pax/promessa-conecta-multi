@@ -4,9 +4,11 @@ import { NavLink } from '@/components/NavLink';
 import { Home, Users, Calendar, Bell, User, Menu, X, Church, CalendarCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const navItems = [
   { icon: Home, label: 'Início', path: '/' },
@@ -18,6 +20,7 @@ const navItems = [
 
 export default function MemberLayout() {
   const { user, loading, profile, signOut, isAdmin, isLider } = useAuth();
+  const { unreadCount } = useNotifications();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (loading) {
@@ -58,6 +61,20 @@ export default function MemberLayout() {
                 <span className="text-sm">{item.label}</span>
               </NavLink>
             ))}
+            {/* Notifications */}
+            <NavLink
+              to="/notificacoes"
+              className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              activeClassName="bg-primary/10 text-primary font-medium"
+            >
+              <Bell className="w-4 h-4" />
+              <span className="text-sm">Notificações</span>
+              {unreadCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Badge>
+              )}
+            </NavLink>
             {(isAdmin || isLider) && (
               <NavLink
                 to={isAdmin ? '/admin' : '/lider'}
@@ -69,57 +86,81 @@ export default function MemberLayout() {
           </nav>
 
           {/* Mobile Menu */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="w-5 h-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-72">
-              <div className="flex flex-col h-full">
-                <div className="flex items-center gap-3 pb-6 border-b">
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                    <span className="text-primary-foreground font-bold">
-                      {profile?.nome?.charAt(0).toUpperCase()}
-                    </span>
+          <div className="flex items-center gap-2 md:hidden">
+            {/* Mobile Notification Bell */}
+            <RouterNavLink to="/notificacoes" className="relative p-2">
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              {unreadCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Badge>
+              )}
+            </RouterNavLink>
+            
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-72">
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center gap-3 pb-6 border-b">
+                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                      <span className="text-primary-foreground font-bold">
+                        {profile?.nome?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium">{profile?.nome}</p>
+                      <p className="text-sm text-muted-foreground">{profile?.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">{profile?.nome}</p>
-                    <p className="text-sm text-muted-foreground">{profile?.email}</p>
-                  </div>
-                </div>
 
-                <nav className="flex-1 py-6 space-y-1">
-                  {navItems.map((item) => (
+                  <nav className="flex-1 py-6 space-y-1">
+                    {navItems.map((item) => (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        end={item.path === '/'}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        activeClassName="bg-primary/10 text-primary font-medium"
+                      >
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </NavLink>
+                    ))}
                     <NavLink
-                      key={item.path}
-                      to={item.path}
-                      end={item.path === '/'}
+                      to="/notificacoes"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                       activeClassName="bg-primary/10 text-primary font-medium"
                     >
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.label}</span>
+                      <Bell className="w-5 h-5" />
+                      <span>Notificações</span>
+                      {unreadCount > 0 && (
+                        <Badge className="ml-auto">{unreadCount}</Badge>
+                      )}
                     </NavLink>
-                  ))}
-                  {(isAdmin || isLider) && (
-                    <NavLink
-                      to={isAdmin ? '/admin' : '/lider'}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg bg-church-gold/10 text-church-gold hover:bg-church-gold/20 transition-colors"
-                    >
-                      <span className="font-medium">{isAdmin ? 'Painel Admin' : 'Painel Líder'}</span>
-                    </NavLink>
-                  )}
-                </nav>
+                    {(isAdmin || isLider) && (
+                      <NavLink
+                        to={isAdmin ? '/admin' : '/lider'}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg bg-church-gold/10 text-church-gold hover:bg-church-gold/20 transition-colors"
+                      >
+                        <span className="font-medium">{isAdmin ? 'Painel Admin' : 'Painel Líder'}</span>
+                      </NavLink>
+                    )}
+                  </nav>
 
-                <Button variant="outline" onClick={signOut} className="mt-auto">
-                  Sair
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
+                  <Button variant="outline" onClick={signOut} className="mt-auto">
+                    Sair
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </header>
 
@@ -131,7 +172,7 @@ export default function MemberLayout() {
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t shadow-elevated z-50">
         <div className="flex justify-around py-2">
-          {navItems.slice(0, 5).map((item) => (
+          {navItems.slice(0, 4).map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -143,6 +184,19 @@ export default function MemberLayout() {
               <span className="text-xs">{item.label}</span>
             </NavLink>
           ))}
+          <NavLink
+            to="/notificacoes"
+            className="relative flex flex-col items-center gap-1 px-3 py-2 text-muted-foreground"
+            activeClassName="text-primary"
+          >
+            <Bell className="w-5 h-5" />
+            <span className="text-xs">Avisos</span>
+            {unreadCount > 0 && (
+              <Badge className="absolute top-0 right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px]">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Badge>
+            )}
+          </NavLink>
         </div>
       </nav>
     </div>

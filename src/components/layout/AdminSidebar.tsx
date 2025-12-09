@@ -1,5 +1,6 @@
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import {
   LayoutDashboard,
   Users,
@@ -17,6 +18,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -28,6 +30,7 @@ const menuItems = [
   { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
   { icon: ClipboardList, label: 'Funções', path: '/admin/funcoes-ministerio' },
   { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
+  { icon: Bell, label: 'Notificações', path: '/admin/notificacoes', showBadge: true },
   { icon: Baby, label: 'Infantil', path: '/admin/infantil' },
   { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },
   { icon: Bell, label: 'Avisos', path: '/admin/avisos' },
@@ -38,6 +41,7 @@ const menuItems = [
 export default function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { profile, signOut } = useAuth();
+  const { unreadCount } = useAdminNotifications();
 
   return (
     <aside
@@ -67,13 +71,23 @@ export default function AdminSidebar() {
             to={item.path}
             end={item.path === '/admin'}
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200',
+              'relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200',
               collapsed && 'justify-center px-2'
             )}
             activeClassName="bg-sidebar-accent text-sidebar-foreground font-medium"
           >
             <item.icon className="w-5 h-5 flex-shrink-0" />
             {!collapsed && <span className="text-sm">{item.label}</span>}
+            {item.showBadge && unreadCount > 0 && (
+              <Badge 
+                className={cn(
+                  "h-5 min-w-[20px] flex items-center justify-center p-0 text-xs bg-church-gold text-primary",
+                  collapsed ? "absolute -top-1 -right-1" : "ml-auto"
+                )}
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Badge>
+            )}
           </NavLink>
         ))}
       </nav>

@@ -638,6 +638,57 @@ export type Database = {
           },
         ]
       }
+      notificacoes: {
+        Row: {
+          created_at: string | null
+          enviado_em: string | null
+          escala_id: string | null
+          id: string
+          lido: boolean | null
+          mensagem: string
+          tipo: Database["public"]["Enums"]["notification_type"]
+          updated_at: string | null
+          voluntario_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enviado_em?: string | null
+          escala_id?: string | null
+          id?: string
+          lido?: boolean | null
+          mensagem: string
+          tipo: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string | null
+          voluntario_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enviado_em?: string | null
+          escala_id?: string | null
+          id?: string
+          lido?: boolean | null
+          mensagem?: string
+          tipo?: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string | null
+          voluntario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_escala_id_fkey"
+            columns: ["escala_id"]
+            isOneToOne: false
+            referencedRelation: "escalas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notificacoes_voluntario_id_fkey"
+            columns: ["voluntario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pedidos_oracao: {
         Row: {
           anonimo: boolean | null
@@ -859,6 +910,7 @@ export type Database = {
       communication_type: "push" | "whatsapp" | "email"
       escala_status_geral: "planejada" | "ativa" | "concluida"
       group_visibility: "publica" | "privada"
+      notification_type: "nova_escala" | "lembrete" | "status_alterado"
       participant_status: "ativo" | "saida" | "pendente"
       scale_status: "confirmado" | "pendente" | "ausente"
       user_status: "ativo" | "inativo" | "pendente"
@@ -993,6 +1045,7 @@ export const Constants = {
       communication_type: ["push", "whatsapp", "email"],
       escala_status_geral: ["planejada", "ativa", "concluida"],
       group_visibility: ["publica", "privada"],
+      notification_type: ["nova_escala", "lembrete", "status_alterado"],
       participant_status: ["ativo", "saida", "pendente"],
       scale_status: ["confirmado", "pendente", "ausente"],
       user_status: ["ativo", "inativo", "pendente"],
