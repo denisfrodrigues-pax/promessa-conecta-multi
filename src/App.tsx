@@ -23,6 +23,7 @@ import AdminEscalas from "@/pages/admin/Escalas";
 import AdminMinisterios from "@/pages/admin/Ministerios";
 import AdminVoluntariosMinisterios from "@/pages/admin/VoluntariosMinisterios";
 import AdminFuncoesMinisterio from "@/pages/admin/FuncoesMinisterio";
+import AdminNotificacoes from "@/pages/admin/Notificacoes";
 
 // Member Pages
 import MemberHome from "@/pages/member/Home";
@@ -33,11 +34,14 @@ import MemberPerfil from "@/pages/member/Perfil";
 import SouNovo from "@/pages/member/SouNovo";
 import Oracao from "@/pages/member/Oracao";
 import MinhasEscalas from "@/pages/member/MinhasEscalas";
+import MemberNotificacoes from "@/pages/member/Notificacoes";
+
 // Leader Pages
 import LeaderDashboard from "@/pages/leader/Dashboard";
 import LeaderEscalas from "@/pages/leader/Escalas";
 import LeaderMinhaEquipe from "@/pages/leader/MinhaEquipe";
 import LeaderMinhasFuncoes from "@/pages/leader/MinhasFuncoes";
+import LeaderNotificacoes from "@/pages/leader/Notificacoes";
 
 import NotFound from "./pages/NotFound";
 
@@ -65,6 +69,7 @@ const App = () => (
               <Route path="voluntarios-ministerios" element={<AdminVoluntariosMinisterios />} />
               <Route path="funcoes-ministerio" element={<AdminFuncoesMinisterio />} />
               <Route path="escalas" element={<AdminEscalas />} />
+              <Route path="notificacoes" element={<AdminNotificacoes />} />
               <Route path="infantil" element={<AdminDashboard />} />
               <Route path="auditoria" element={<AdminDashboard />} />
               <Route path="configuracoes" element={<AdminDashboard />} />
@@ -77,6 +82,7 @@ const App = () => (
               <Route path="escalas" element={<LeaderEscalas />} />
               <Route path="equipe" element={<LeaderMinhaEquipe />} />
               <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
+              <Route path="notificacoes" element={<LeaderNotificacoes />} />
               <Route path="relatorios" element={<LeaderDashboard />} />
             </Route>
 
@@ -90,6 +96,7 @@ const App = () => (
               <Route path="/sou-novo" element={<SouNovo />} />
               <Route path="/oracao" element={<Oracao />} />
               <Route path="/minhas-escalas" element={<MinhasEscalas />} />
+              <Route path="/notificacoes" element={<MemberNotificacoes />} />
             </Route>
 
             {/* 404 */}

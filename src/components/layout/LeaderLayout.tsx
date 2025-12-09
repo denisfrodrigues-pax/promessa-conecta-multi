@@ -1,10 +1,12 @@
 import { Outlet, Navigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
-import { LayoutDashboard, Users, ClipboardList, BarChart3, Home, LogOut, Church } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, BarChart3, Home, LogOut, Church, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLeaderNotifications } from '@/hooks/useLeaderNotifications';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Visão Geral', path: '/lider' },
@@ -12,11 +14,13 @@ const navItems = [
   { icon: ClipboardList, label: 'Funções', path: '/lider/funcoes' },
   { icon: Users, label: 'Meus Grupos', path: '/lider/grupos' },
   { icon: ClipboardList, label: 'Minhas Escalas', path: '/lider/escalas' },
+  { icon: Bell, label: 'Notificações', path: '/lider/notificacoes', showBadge: true },
   { icon: BarChart3, label: 'Relatórios', path: '/lider/relatorios' },
 ];
 
 export default function LeaderLayout() {
   const { user, loading, profile, signOut, isLider } = useAuth();
+  const { unreadCount } = useLeaderNotifications();
 
   if (loading) {
     return (
@@ -77,11 +81,16 @@ export default function LeaderLayout() {
                 key={item.path}
                 to={item.path}
                 end={item.path === '/lider'}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors whitespace-nowrap"
+                className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors whitespace-nowrap"
                 activeClassName="bg-primary-foreground/20 text-primary-foreground font-medium"
               >
                 <item.icon className="w-4 h-4" />
                 <span className="text-sm">{item.label}</span>
+                {item.showBadge && unreadCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-church-gold text-primary">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
               </NavLink>
             ))}
           </nav>
