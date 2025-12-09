@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, User, Phone, Clock, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Save, User, Phone, Clock, CheckCircle, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -136,6 +136,35 @@ export default function VisitanteDetalhes() {
     return format(new Date(dateStr), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   };
 
+  const formatPhoneForWhatsApp = (phone: string): string => {
+    return phone.replace(/\D/g, '');
+  };
+
+  const hasValidPhone = (): boolean => {
+    if (!formData.telefone) return false;
+    const digits = formatPhoneForWhatsApp(formData.telefone);
+    return digits.length >= 10;
+  };
+
+  const handleWhatsAppClick = () => {
+    if (!hasValidPhone()) {
+      toast.error('Telefone inválido ou não informado');
+      return;
+    }
+
+    const phone = formatPhoneForWhatsApp(formData.telefone);
+    const phoneWithCountry = phone.startsWith('55') ? phone : `55${phone}`;
+    
+    const message = `Olá! Aqui é a Igreja da Promessa — vi o cadastro de ${formData.nome}.
+Telefone: ${formData.telefone}.
+Melhor horário para contato: ${formData.melhor_horario || 'Não informado'}.`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phoneWithCountry}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -216,6 +245,28 @@ export default function VisitanteDetalhes() {
           </CardContent>
         </Card>
       </div>
+
+      {/* WhatsApp Button */}
+      {hasValidPhone() && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-green-800">Entrar em contato via WhatsApp</p>
+                <p className="text-sm text-green-600">Envie uma mensagem diretamente para o visitante</p>
+              </div>
+              <Button 
+                onClick={handleWhatsAppClick}
+                className="bg-green-600 hover:bg-green-700"
+                aria-label="Enviar mensagem no WhatsApp"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Enviar WhatsApp
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Mark as Contacted Button */}
       {isNew && (
