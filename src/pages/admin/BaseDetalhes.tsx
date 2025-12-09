@@ -300,14 +300,14 @@ export default function BaseDetalhes() {
               <div className="space-y-2">
                 <Label>Líder</Label>
                 <Select
-                  value={formData.lider_id}
-                  onValueChange={(value) => setFormData({ ...formData, lider_id: value })}
+                  value={formData.lider_id || "none"}
+                  onValueChange={(value) => setFormData({ ...formData, lider_id: value === "none" ? "" : value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione um líder" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
+                    <SelectItem value="none">Nenhum</SelectItem>
                     {todosMembros.map((m) => (
                       <SelectItem key={m.id} value={m.id}>
                         {m.nome}
