@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useNotifications, Notification } from '@/hooks/useNotifications';
+import { useNotifications, Notification, NotificationType } from '@/hooks/useNotifications';
 import { toast } from 'sonner';
-import { Bell, Calendar, AlertCircle, CheckCircle, Clock, Check } from 'lucide-react';
+import { Bell, Calendar, AlertCircle, CheckCircle, Clock, Check, Users, Megaphone } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Loader2 } from 'lucide-react';
@@ -29,40 +29,54 @@ export default function MemberNotificacoes() {
     }
   };
 
-  const getNotificationIcon = (tipo: string) => {
+  const getNotificationIcon = (tipo: NotificationType) => {
     switch (tipo) {
       case 'nova_escala':
+      case 'escala':
         return <Calendar className="w-5 h-5 text-blue-500" />;
       case 'lembrete':
         return <Clock className="w-5 h-5 text-amber-500" />;
       case 'status_alterado':
         return <AlertCircle className="w-5 h-5 text-purple-500" />;
+      case 'ministerio':
+        return <Users className="w-5 h-5 text-green-500" />;
+      case 'sistema':
+      case 'aviso_admin':
+        return <Megaphone className="w-5 h-5 text-red-500" />;
       default:
         return <Bell className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
-  const getNotificationTypeBadge = (tipo: string) => {
+  const getNotificationTypeBadge = (tipo: NotificationType) => {
     switch (tipo) {
       case 'nova_escala':
-        return <Badge className="bg-blue-100 text-blue-700">Nova Escala</Badge>;
+      case 'escala':
+        return <Badge className="bg-blue-100 text-blue-700">Escala</Badge>;
       case 'lembrete':
         return <Badge className="bg-amber-100 text-amber-700">Lembrete</Badge>;
       case 'status_alterado':
         return <Badge className="bg-purple-100 text-purple-700">Atualização</Badge>;
+      case 'ministerio':
+        return <Badge className="bg-green-100 text-green-700">Ministério</Badge>;
+      case 'sistema':
+        return <Badge className="bg-gray-100 text-gray-700">Sistema</Badge>;
+      case 'aviso_admin':
+        return <Badge className="bg-red-100 text-red-700">Aviso</Badge>;
       default:
         return <Badge variant="secondary">Notificação</Badge>;
     }
   };
 
-  const filterByType = (tipo: string | null) => {
-    if (!tipo) return notifications;
-    return notifications.filter((n) => n.tipo === tipo);
+  const filterByType = (tipos: NotificationType[] | null) => {
+    if (!tipos) return notifications;
+    return notifications.filter((n) => tipos.includes(n.tipo));
   };
 
-  const novasEscalas = filterByType('nova_escala');
-  const lembretes = filterByType('lembrete');
-  const atualizacoes = filterByType('status_alterado');
+  const escalas = filterByType(['nova_escala', 'escala', 'lembrete']);
+  const atualizacoes = filterByType(['status_alterado']);
+  const ministerio = filterByType(['ministerio']);
+  const sistema = filterByType(['sistema', 'aviso_admin']);
 
   if (loading) {
     return (
@@ -100,7 +114,10 @@ export default function MemberNotificacoes() {
                       <Badge variant="default" className="text-xs">Novo</Badge>
                     )}
                   </div>
-                  <p className="text-sm text-foreground line-clamp-2">
+                  {notification.titulo && (
+                    <p className="font-medium text-foreground mb-1">{notification.titulo}</p>
+                  )}
+                  <p className="text-sm text-muted-foreground line-clamp-2">
                     {notification.mensagem}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
@@ -139,7 +156,7 @@ export default function MemberNotificacoes() {
       </div>
 
       <Tabs defaultValue="todas" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="todas">
             Todas
             {notifications.length > 0 && (
@@ -148,19 +165,11 @@ export default function MemberNotificacoes() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="novas">
-            Novas
-            {novasEscalas.length > 0 && (
+          <TabsTrigger value="escalas">
+            Escalas
+            {escalas.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
-                {novasEscalas.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="lembretes">
-            Lembretes
-            {lembretes.length > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs">
-                {lembretes.length}
+                {escalas.length}
               </Badge>
             )}
           </TabsTrigger>
@@ -172,19 +181,38 @@ export default function MemberNotificacoes() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="ministerio">
+            Ministério
+            {ministerio.length > 0 && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {ministerio.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="sistema">
+            Sistema
+            {sistema.length > 0 && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {sistema.length}
+              </Badge>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="todas" className="mt-6">
           <NotificationList items={notifications} />
         </TabsContent>
-        <TabsContent value="novas" className="mt-6">
-          <NotificationList items={novasEscalas} />
-        </TabsContent>
-        <TabsContent value="lembretes" className="mt-6">
-          <NotificationList items={lembretes} />
+        <TabsContent value="escalas" className="mt-6">
+          <NotificationList items={escalas} />
         </TabsContent>
         <TabsContent value="atualizacoes" className="mt-6">
           <NotificationList items={atualizacoes} />
+        </TabsContent>
+        <TabsContent value="ministerio" className="mt-6">
+          <NotificationList items={ministerio} />
+        </TabsContent>
+        <TabsContent value="sistema" className="mt-6">
+          <NotificationList items={sistema} />
         </TabsContent>
       </Tabs>
 
@@ -193,7 +221,7 @@ export default function MemberNotificacoes() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {selectedNotification && getNotificationIcon(selectedNotification.tipo)}
-              Detalhes da Notificação
+              {selectedNotification?.titulo || 'Detalhes da Notificação'}
             </DialogTitle>
           </DialogHeader>
           {selectedNotification && (

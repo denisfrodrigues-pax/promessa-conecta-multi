@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
+export type NotificationType = 'nova_escala' | 'lembrete' | 'status_alterado' | 'sistema' | 'ministerio' | 'aviso_admin' | 'escala';
+
 export interface Notification {
   id: string;
   voluntario_id: string | null;
   escala_id: string | null;
-  tipo: 'nova_escala' | 'lembrete' | 'status_alterado';
+  ministerio_id: string | null;
+  tipo: NotificationType;
+  titulo: string | null;
   mensagem: string;
   enviado_em: string | null;
   lido: boolean | null;
@@ -39,7 +43,7 @@ export function useNotifications() {
 
       const typedData = (data || []).map(item => ({
         ...item,
-        tipo: item.tipo as 'nova_escala' | 'lembrete' | 'status_alterado'
+        tipo: item.tipo as NotificationType
       }));
 
       setNotifications(typedData);
@@ -109,7 +113,7 @@ export function useNotifications() {
         (payload) => {
           const newNotification = {
             ...payload.new,
-            tipo: payload.new.tipo as 'nova_escala' | 'lembrete' | 'status_alterado'
+            tipo: payload.new.tipo as NotificationType
           } as Notification;
           setNotifications((prev) => [newNotification, ...prev]);
           setUnreadCount((prev) => prev + 1);
