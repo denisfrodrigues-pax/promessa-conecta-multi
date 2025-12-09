@@ -27,6 +27,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
   { icon: Users, label: 'Usuários', path: '/admin/usuarios' },
   { icon: UserPlus, label: 'Visitantes', path: '/admin/visitantes' },
+  { icon: Users, label: 'Membros', path: '/admin/membros' },
   { icon: UsersRound, label: 'Grupos', path: '/admin/grupos' },
   { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
   { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
