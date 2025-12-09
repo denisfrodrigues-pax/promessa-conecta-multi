@@ -99,6 +99,95 @@ export type Database = {
           },
         ]
       }
+      bases: {
+        Row: {
+          created_at: string | null
+          data_criacao: string | null
+          descricao: string | null
+          id: string
+          lider_id: string | null
+          nome: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_criacao?: string | null
+          descricao?: string | null
+          id?: string
+          lider_id?: string | null
+          nome: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_criacao?: string | null
+          descricao?: string | null
+          id?: string
+          lider_id?: string | null
+          nome?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bases_lider_id_fkey"
+            columns: ["lider_id"]
+            isOneToOne: false
+            referencedRelation: "membros"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bases_membros: {
+        Row: {
+          base_id: string
+          created_at: string | null
+          data_entrada: string | null
+          data_saida: string | null
+          id: string
+          membro_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          base_id: string
+          created_at?: string | null
+          data_entrada?: string | null
+          data_saida?: string | null
+          id?: string
+          membro_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          base_id?: string
+          created_at?: string | null
+          data_entrada?: string | null
+          data_saida?: string | null
+          id?: string
+          membro_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bases_membros_base_id_fkey"
+            columns: ["base_id"]
+            isOneToOne: false
+            referencedRelation: "bases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bases_membros_membro_id_fkey"
+            columns: ["membro_id"]
+            isOneToOne: false
+            referencedRelation: "membros"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracoes_instituicao: {
         Row: {
           banner_home_url: string | null
