@@ -1,9 +1,55 @@
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
-import { Heart, Users, Calendar, MessageCircle, ChevronRight, Sparkles, MapPin, Clock } from 'lucide-react';
+import { Heart, Users, Calendar, MessageCircle, ChevronRight, Sparkles, Clock, CheckCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function SouNovo() {
+  const [formData, setFormData] = useState({
+    nome: '',
+    telefone: '',
+    email: '',
+    culto: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.nome.trim()) {
+      toast.error('Por favor, informe seu nome');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('visitantes')
+        .insert({
+          nome: formData.nome.trim(),
+          telefone: formData.telefone.trim() || null,
+          email: formData.email.trim() || null,
+          culto: formData.culto || null,
+        });
+
+      if (error) throw error;
+      
+      setSubmitted(true);
+      toast.success('Cadastro realizado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao cadastrar:', error);
+      toast.error('Erro ao cadastrar. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const steps = [
     {
       icon: Heart,
@@ -53,6 +99,88 @@ export default function SouNovo() {
       </section>
 
       <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Registration Form */}
+        <section>
+          <Card className="shadow-card max-w-lg mx-auto">
+            <CardContent className="p-6">
+              {submitted ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h2 className="text-xl font-display font-bold mb-2">Obrigado pelo cadastro!</h2>
+                  <p className="text-muted-foreground mb-4">
+                    Ficamos muito felizes com sua visita. Em breve entraremos em contato!
+                  </p>
+                  <Button variant="outline" onClick={() => setSubmitted(false)}>
+                    Cadastrar outra pessoa
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-xl font-display font-bold mb-4 text-center">
+                    Quero me conectar!
+                  </h2>
+                  <p className="text-sm text-muted-foreground text-center mb-6">
+                    Preencha o formulário abaixo para que possamos entrar em contato com você.
+                  </p>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="nome">Nome *</Label>
+                      <Input
+                        id="nome"
+                        placeholder="Seu nome completo"
+                        value={formData.nome}
+                        onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="telefone">Telefone</Label>
+                      <Input
+                        id="telefone"
+                        placeholder="(00) 00000-0000"
+                        value={formData.telefone}
+                        onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">E-mail</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="culto">Qual culto você visitou?</Label>
+                      <Select
+                        value={formData.culto}
+                        onValueChange={(value) => setFormData({ ...formData, culto: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione (opcional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="domingo_manha">Domingo - Manhã</SelectItem>
+                          <SelectItem value="domingo_noite">Domingo - Noite</SelectItem>
+                          <SelectItem value="quarta">Quarta-feira</SelectItem>
+                          <SelectItem value="outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? 'Enviando...' : 'Quero me conectar!'}
+                    </Button>
+                  </form>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
         {/* Steps */}
         <section className="space-y-4">
           <h2 className="text-xl font-display font-bold text-center mb-6">

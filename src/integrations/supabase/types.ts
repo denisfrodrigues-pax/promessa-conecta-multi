@@ -904,6 +904,42 @@ export type Database = {
         }
         Relationships: []
       }
+      visitantes: {
+        Row: {
+          created_at: string | null
+          culto: string | null
+          data_visita: string | null
+          email: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          status: string | null
+          telefone: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          culto?: string | null
+          data_visita?: string | null
+          email?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          status?: string | null
+          telefone?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          culto?: string | null
+          data_visita?: string | null
+          email?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          status?: string | null
+          telefone?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
