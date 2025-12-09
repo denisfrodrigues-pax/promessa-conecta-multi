@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, User, Phone, Clock, CheckCircle, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Save, User, Phone, Clock, CheckCircle, MessageCircle, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -289,6 +289,25 @@ Melhor horário para contato: ${formData.melhor_horario || 'Não informado'}.`;
           </CardContent>
         </Card>
       )}
+
+      {/* Convert to Member */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-blue-800">Converter em Membro</p>
+              <p className="text-sm text-blue-600">Transfira este visitante para o cadastro de membros</p>
+            </div>
+            <Button 
+              onClick={() => navigate(`/admin/membros/novo?fromVisitante=${id}`)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Converter em Membro
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Edit Form */}
       <Card>
