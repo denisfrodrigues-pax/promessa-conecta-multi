@@ -32,7 +32,7 @@ import MemberAvisos from "@/pages/member/Avisos";
 import MemberPerfil from "@/pages/member/Perfil";
 import SouNovo from "@/pages/member/SouNovo";
 import Oracao from "@/pages/member/Oracao";
-
+import MinhasEscalas from "@/pages/member/MinhasEscalas";
 // Leader Pages
 import LeaderDashboard from "@/pages/leader/Dashboard";
 import LeaderEscalas from "@/pages/leader/Escalas";
@@ -89,6 +89,7 @@ const App = () => (
               <Route path="/perfil" element={<MemberPerfil />} />
               <Route path="/sou-novo" element={<SouNovo />} />
               <Route path="/oracao" element={<Oracao />} />
+              <Route path="/minhas-escalas" element={<MinhasEscalas />} />
             </Route>
 
             {/* 404 */}

@@ -212,6 +212,7 @@ export type Database = {
       }
       escalas: {
         Row: {
+          confirmado_em: string | null
           created_at: string | null
           created_by: string | null
           data: string
@@ -230,6 +231,7 @@ export type Database = {
           voluntario_id: string | null
         }
         Insert: {
+          confirmado_em?: string | null
           created_at?: string | null
           created_by?: string | null
           data: string
@@ -248,6 +250,7 @@ export type Database = {
           voluntario_id?: string | null
         }
         Update: {
+          confirmado_em?: string | null
           created_at?: string | null
           created_by?: string | null
           data?: string
