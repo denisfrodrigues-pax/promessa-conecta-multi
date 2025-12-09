@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  UserPlus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,7 @@ import { useState } from 'react';
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
   { icon: Users, label: 'Usuários', path: '/admin/usuarios' },
+  { icon: UserPlus, label: 'Visitantes', path: '/admin/visitantes' },
   { icon: UsersRound, label: 'Grupos', path: '/admin/grupos' },
   { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
   { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
