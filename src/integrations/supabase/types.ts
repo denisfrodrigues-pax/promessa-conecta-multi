@@ -507,6 +507,57 @@ export type Database = {
         }
         Relationships: []
       }
+      membros: {
+        Row: {
+          created_at: string | null
+          data_batismo: string | null
+          data_nascimento: string | null
+          data_registro: string | null
+          email: string | null
+          endereco: string | null
+          estado_civil: string | null
+          foto_perfil: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          status: string | null
+          telefone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_batismo?: string | null
+          data_nascimento?: string | null
+          data_registro?: string | null
+          email?: string | null
+          endereco?: string | null
+          estado_civil?: string | null
+          foto_perfil?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          status?: string | null
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_batismo?: string | null
+          data_nascimento?: string | null
+          data_registro?: string | null
+          email?: string | null
+          endereco?: string | null
+          estado_civil?: string | null
+          foto_perfil?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          status?: string | null
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ministerio_funcoes: {
         Row: {
           ativo: boolean | null

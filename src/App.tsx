@@ -26,6 +26,9 @@ import AdminFuncoesMinisterio from "@/pages/admin/FuncoesMinisterio";
 import AdminNotificacoes from "@/pages/admin/Notificacoes";
 import AdminVisitantes from "@/pages/admin/Visitantes";
 import AdminVisitanteDetalhes from "@/pages/admin/VisitanteDetalhes";
+import AdminMembros from "@/pages/admin/Membros";
+import AdminMembroNovo from "@/pages/admin/MembroNovo";
+import AdminMembroDetalhes from "@/pages/admin/MembroDetalhes";
 
 // Member Pages
 import MemberHome from "@/pages/member/Home";
@@ -78,6 +81,9 @@ const App = () => (
               <Route path="notificacoes" element={<AdminNotificacoes />} />
               <Route path="visitantes" element={<AdminVisitantes />} />
               <Route path="visitantes/:id" element={<AdminVisitanteDetalhes />} />
+              <Route path="membros" element={<AdminMembros />} />
+              <Route path="membros/novo" element={<AdminMembroNovo />} />
+              <Route path="membros/:id" element={<AdminMembroDetalhes />} />
               <Route path="infantil" element={<AdminDashboard />} />
               <Route path="auditoria" element={<AdminDashboard />} />
               <Route path="configuracoes" element={<AdminDashboard />} />
