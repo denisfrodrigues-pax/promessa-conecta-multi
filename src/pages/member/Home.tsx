@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Logo } from '@/components/Logo';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Bell, Users, ChevronRight, Heart, MapPin, Clock, Sparkles } from 'lucide-react';
@@ -64,25 +64,20 @@ export default function MemberHome() {
   return (
     <div className="pb-24 md:pb-6">
       {/* Hero Banner - Premium with refined overlay */}
-      <section className="relative overflow-hidden">
+      <section className="relative rounded-xl overflow-hidden mb-10 h-[420px] md:h-[500px] flex items-center">
         <div className="absolute inset-0 bg-[url('/banner_home_placeholder.png')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-gradient-to-r from-promessa-900/40 to-promessa-700/20" />
         
-        {/* Logo no canto superior esquerdo do hero */}
-        <div className="absolute top-4 left-4 z-20">
-          <Logo size={56} variant="white" />
-        </div>
-        
-        <div className="container mx-auto px-4 py-16 relative z-10">
-          <div className="max-w-2xl pt-8">
-            <Badge className="bg-white/20 text-white border border-white/30 mb-4">
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-2xl space-y-6 flex flex-col justify-center">
+            <Badge className="bg-white/20 text-white border border-white/30 w-fit">
               <Sparkles className="w-3 h-3 mr-1" />
               Bem-vindo
             </Badge>
-            <h1 className="text-3xl md:text-4xl font-display font-bold mb-4 text-white">
+            <h1 className="text-3xl md:text-4xl font-display font-bold text-white">
               Olá, {profile?.nome?.split(' ')[0] || 'Visitante'}!
             </h1>
-            <p className="text-lg text-white/90 mb-8">
+            <p className="text-lg text-white/90">
               Seja bem-vindo à Igreja da Promessa. Aqui você encontra todas as informações e recursos da nossa comunidade.
             </p>
             <div className="flex flex-wrap gap-3">
