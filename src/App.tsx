@@ -16,7 +16,6 @@ import Auth from "@/pages/Auth";
 // Admin Pages
 import AdminDashboard from "@/pages/admin/Dashboard";
 import AdminUsuarios from "@/pages/admin/Usuarios";
-import AdminGrupos from "@/pages/admin/Grupos";
 import AdminEventos from "@/pages/admin/Eventos";
 import AdminAvisos from "@/pages/admin/Avisos";
 import AdminEscalas from "@/pages/admin/Escalas";
@@ -37,7 +36,7 @@ import AdminAcompanhamento from "@/pages/admin/Acompanhamento";
 
 // Member Pages
 import MemberHome from "@/pages/member/Home";
-import MemberGrupos from "@/pages/member/Grupos";
+
 import MemberEventos from "@/pages/member/Eventos";
 import MemberAvisos from "@/pages/member/Avisos";
 import MemberPerfil from "@/pages/member/Perfil";
@@ -76,7 +75,6 @@ const App = () => (
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="usuarios" element={<AdminUsuarios />} />
-              <Route path="grupos" element={<AdminGrupos />} />
               <Route path="eventos" element={<AdminEventos />} />
               <Route path="avisos" element={<AdminAvisos />} />
               <Route path="ministerios" element={<AdminMinisterios />} />
@@ -113,7 +111,6 @@ const App = () => (
             {/* Member Routes */}
             <Route element={<MemberLayout />}>
               <Route path="/" element={<MemberHome />} />
-              <Route path="/grupos" element={<MemberGrupos />} />
               <Route path="/eventos" element={<MemberEventos />} />
               <Route path="/avisos" element={<MemberAvisos />} />
               <Route path="/perfil" element={<MemberPerfil />} />

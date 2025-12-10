@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Save, Network, UserPlus, UserMinus, Phone, Edit, X, Search } from 'lucide-react';
+import { ArrowLeft, Save, Network, UserPlus, UserMinus, Phone, Edit, X, Search, Clock, MapPin, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -22,6 +22,11 @@ interface Base {
   descricao: string | null;
   lider_id: string | null;
   status: string;
+  dia_semana: string | null;
+  horario: string | null;
+  local: string | null;
+  capacidade: number | null;
+  visibilidade: string | null;
   data_criacao: string;
 }
 
@@ -54,6 +59,8 @@ interface BaseVisitante {
   statusAcompanhamento?: string;
 }
 
+const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
 export default function BaseDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -72,6 +79,11 @@ export default function BaseDetalhes() {
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
+    dia_semana: '',
+    horario: '',
+    local: '',
+    capacidade: 20,
+    visibilidade: 'publico',
     lider_id: '',
     status: '',
   });
@@ -106,6 +118,11 @@ export default function BaseDetalhes() {
       setFormData({
         nome: data.nome,
         descricao: data.descricao || '',
+        dia_semana: data.dia_semana || '',
+        horario: data.horario || '',
+        local: data.local || '',
+        capacidade: data.capacidade || 20,
+        visibilidade: data.visibilidade || 'publico',
         lider_id: data.lider_id || '',
         status: data.status,
       });
@@ -155,7 +172,6 @@ export default function BaseDetalhes() {
       .neq('status', 'desligado');
 
     if (!error && data) {
-      // Fetch latest acompanhamento status for each visitor
       const visitanteIds = data.map(d => d.visitante_id).filter(Boolean);
       const { data: acompData } = await supabase
         .from('acompanhamentos')
@@ -164,7 +180,6 @@ export default function BaseDetalhes() {
         .in('visitante_id', visitanteIds)
         .order('created_at', { ascending: false });
 
-      // Map latest status per visitor
       const latestStatus: Record<string, string> = {};
       for (const acomp of acompData || []) {
         if (!latestStatus[acomp.visitante_id]) {
@@ -223,7 +238,6 @@ export default function BaseDetalhes() {
   };
 
   const fetchMembrosDisponiveis = async () => {
-    // Get members not in any active base
     const { data: emBase } = await supabase
       .from('bases_membros')
       .select('membro_id')
@@ -254,6 +268,11 @@ export default function BaseDetalhes() {
         .update({
           nome: formData.nome.trim(),
           descricao: formData.descricao.trim() || null,
+          dia_semana: formData.dia_semana || null,
+          horario: formData.horario || null,
+          local: formData.local.trim() || null,
+          capacidade: formData.capacidade,
+          visibilidade: formData.visibilidade,
           lider_id: formData.lider_id || null,
           status: formData.status,
         })
@@ -354,6 +373,9 @@ export default function BaseDetalhes() {
         <Badge className={base.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
           {base.status === 'ativo' ? 'Ativo' : 'Inativo'}
         </Badge>
+        <Badge variant={base.visibilidade === 'publico' ? 'default' : 'secondary'}>
+          {base.visibilidade === 'publico' ? 'Público' : 'Privado'}
+        </Badge>
       </div>
 
       {/* Dados da Base */}
@@ -389,6 +411,66 @@ export default function BaseDetalhes() {
                   onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
                   rows={3}
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Dia da Semana</Label>
+                  <Select
+                    value={formData.dia_semana || "none"}
+                    onValueChange={(v) => setFormData({ ...formData, dia_semana: v === "none" ? "" : v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum</SelectItem>
+                      {diasSemana.map((dia) => (
+                        <SelectItem key={dia} value={dia}>{dia}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Horário</Label>
+                  <Input
+                    type="time"
+                    value={formData.horario}
+                    onChange={(e) => setFormData({ ...formData, horario: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Local</Label>
+                <Input
+                  value={formData.local}
+                  onChange={(e) => setFormData({ ...formData, local: e.target.value })}
+                  placeholder="Endereço ou local do encontro"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Capacidade</Label>
+                  <Input
+                    type="number"
+                    value={formData.capacidade}
+                    onChange={(e) => setFormData({ ...formData, capacidade: parseInt(e.target.value) || 20 })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Visibilidade</Label>
+                  <Select
+                    value={formData.visibilidade}
+                    onValueChange={(v) => setFormData({ ...formData, visibilidade: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="publico">Público</SelectItem>
+                      <SelectItem value="privado">Privado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Líder</Label>
@@ -447,6 +529,31 @@ export default function BaseDetalhes() {
                   <p className="font-medium">{base.descricao}</p>
                 </div>
               )}
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Dia e Horário</p>
+                  <p className="font-medium">
+                    {base.dia_semana && base.horario 
+                      ? `${base.dia_semana} às ${base.horario}` 
+                      : 'Não definido'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Local</p>
+                  <p className="font-medium">{base.local || 'Não definido'}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Capacidade</p>
+                  <p className="font-medium">{base.capacidade || 20} pessoas</p>
+                </div>
+              </div>
               {liderInfo && (
                 <div className="md:col-span-2">
                   <p className="text-sm text-muted-foreground mb-2">Líder</p>
@@ -506,7 +613,7 @@ export default function BaseDetalhes() {
                     filteredDisponiveis.map((membro) => (
                       <div
                         key={membro.id}
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-muted cursor-pointer"
+                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 cursor-pointer"
                         onClick={() => addMembro(membro.id)}
                       >
                         <div className="flex items-center gap-3">
@@ -516,9 +623,7 @@ export default function BaseDetalhes() {
                           </Avatar>
                           <span className="font-medium">{membro.nome}</span>
                         </div>
-                        <Button size="sm" variant="ghost">
-                          <UserPlus className="h-4 w-4" />
-                        </Button>
+                        <UserPlus className="h-4 w-4 text-muted-foreground" />
                       </div>
                     ))
                   )}
@@ -531,20 +636,17 @@ export default function BaseDetalhes() {
           {membrosBase.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">Nenhum membro nesta base</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {membrosBase.map((bm) => (
-                <div
-                  key={bm.id}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
-                >
+                <div key={bm.id} className="flex items-center justify-between p-3 rounded-lg border">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={bm.membro.foto_perfil || undefined} />
-                      <AvatarFallback>{getInitials(bm.membro.nome)}</AvatarFallback>
+                      <AvatarImage src={bm.membro?.foto_perfil || undefined} />
+                      <AvatarFallback>{getInitials(bm.membro?.nome || '')}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">{bm.membro.nome}</p>
-                      {bm.membro.telefone && (
+                      <p className="font-medium">{bm.membro?.nome}</p>
+                      {bm.membro?.telefone && (
                         <p className="text-sm text-muted-foreground flex items-center gap-1">
                           <Phone className="h-3 w-3" />
                           {bm.membro.telefone}
@@ -554,7 +656,7 @@ export default function BaseDetalhes() {
                   </div>
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     className="text-destructive hover:text-destructive"
                     onClick={() => removeMembro(bm.id)}
                   >
@@ -566,68 +668,63 @@ export default function BaseDetalhes() {
           )}
         </CardContent>
       </Card>
+
       {/* Visitantes em Acompanhamento */}
       <Card className="shadow-card">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Visitantes em Acompanhamento ({visitantesBase.length})</CardTitle>
-          <Select
-            value={filtroStatusVisitante}
-            onValueChange={setFiltroStatusVisitante}
-          >
-            <SelectTrigger className="w-44">
+          <Select value={filtroStatusVisitante} onValueChange={setFiltroStatusVisitante}>
+            <SelectTrigger className="w-48">
               <SelectValue placeholder="Filtrar status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
               <SelectItem value="novo">Novo</SelectItem>
               <SelectItem value="contato_iniciado">Contato Iniciado</SelectItem>
+              <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
               <SelectItem value="concluido">Concluído</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
         <CardContent>
           {visitantesFiltrados.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              {visitantesBase.length === 0 ? 'Nenhum visitante nesta base' : 'Nenhum visitante com este status'}
-            </p>
+            <p className="text-center text-muted-foreground py-8">Nenhum visitante encontrado</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {visitantesFiltrados.map((bv) => (
-                <div
-                  key={bv.id}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
-                >
+                <div key={bv.id} className="flex items-center justify-between p-3 rounded-lg border">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarFallback>{getInitials(bv.visitante.nome)}</AvatarFallback>
+                      <AvatarFallback>{getInitials(bv.visitante?.nome || '')}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">{bv.visitante.nome}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        {bv.visitante.telefone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {bv.visitante.telefone}
-                          </span>
-                        )}
-                        <Badge variant="outline" className="text-xs">
-                          {getStatusLabel(bv.statusAcompanhamento || bv.status)}
-                        </Badge>
-                      </div>
-                      {bv.observacao && (
-                        <p className="text-xs text-muted-foreground mt-1">{bv.observacao}</p>
+                      <p className="font-medium">{bv.visitante?.nome}</p>
+                      {bv.visitante?.telefone && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          {bv.visitante.telefone}
+                        </p>
                       )}
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => removeVisitante(bv.id)}
-                  >
-                    <UserMinus className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className={
+                      bv.statusAcompanhamento === 'concluido' ? 'bg-green-100 text-green-800' :
+                      bv.statusAcompanhamento === 'em_acompanhamento' ? 'bg-purple-100 text-purple-800' :
+                      bv.statusAcompanhamento === 'contato_iniciado' ? 'bg-blue-100 text-blue-800' :
+                      'bg-amber-100 text-amber-800'
+                    }>
+                      {getStatusLabel(bv.statusAcompanhamento || bv.status)}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => removeVisitante(bv.id)}
+                    >
+                      <UserMinus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

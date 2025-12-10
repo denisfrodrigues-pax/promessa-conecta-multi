@@ -15,6 +15,8 @@ interface Membro {
   nome: string;
 }
 
+const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
 export default function BaseNova() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -22,6 +24,11 @@ export default function BaseNova() {
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
+    dia_semana: '',
+    horario: '',
+    local: '',
+    capacidade: 20,
+    visibilidade: 'publico',
     lider_id: '',
     status: 'ativo',
   });
@@ -55,6 +62,11 @@ export default function BaseNova() {
       const { error } = await supabase.from('bases').insert({
         nome: formData.nome.trim(),
         descricao: formData.descricao.trim() || null,
+        dia_semana: formData.dia_semana || null,
+        horario: formData.horario || null,
+        local: formData.local.trim() || null,
+        capacidade: formData.capacidade,
+        visibilidade: formData.visibilidade,
         lider_id: formData.lider_id || null,
         status: formData.status,
       });
@@ -108,6 +120,69 @@ export default function BaseNova() {
                 placeholder="Descrição da base"
                 rows={3}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Dia da Semana</Label>
+                <Select
+                  value={formData.dia_semana || "none"}
+                  onValueChange={(v) => setFormData({ ...formData, dia_semana: v === "none" ? "" : v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {diasSemana.map((dia) => (
+                      <SelectItem key={dia} value={dia}>{dia}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Horário</Label>
+                <Input
+                  type="time"
+                  value={formData.horario}
+                  onChange={(e) => setFormData({ ...formData, horario: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Local</Label>
+              <Input
+                value={formData.local}
+                onChange={(e) => setFormData({ ...formData, local: e.target.value })}
+                placeholder="Endereço ou local do encontro"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Capacidade</Label>
+                <Input
+                  type="number"
+                  value={formData.capacidade}
+                  onChange={(e) => setFormData({ ...formData, capacidade: parseInt(e.target.value) || 20 })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Visibilidade</Label>
+                <Select
+                  value={formData.visibilidade}
+                  onValueChange={(v) => setFormData({ ...formData, visibilidade: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="publico">Público</SelectItem>
+                    <SelectItem value="privado">Privado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">

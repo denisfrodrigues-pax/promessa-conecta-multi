@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Search, Network, Users, Eye } from 'lucide-react';
+import { Plus, Search, Network, Users, Eye, Clock, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Base {
@@ -16,6 +16,11 @@ interface Base {
   descricao: string | null;
   lider_id: string | null;
   status: string;
+  dia_semana: string | null;
+  horario: string | null;
+  local: string | null;
+  capacidade: number | null;
+  visibilidade: string | null;
   data_criacao: string;
   lider_nome?: string;
   membros_count?: number;
@@ -49,6 +54,11 @@ export default function Bases() {
           descricao,
           lider_id,
           status,
+          dia_semana,
+          horario,
+          local,
+          capacidade,
+          visibilidade,
           data_criacao
         `)
         .order('nome');
@@ -65,7 +75,6 @@ export default function Bases() {
 
       if (error) throw error;
 
-      // Fetch leader names and member counts
       const basesWithDetails = await Promise.all(
         (data || []).map(async (base) => {
           let lider_nome = null;
@@ -125,7 +134,6 @@ export default function Bases() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Filtros */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -148,11 +156,10 @@ export default function Bases() {
             </Select>
           </div>
 
-          {/* Lista */}
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-20 w-full" />
+                <Skeleton key={i} className="h-24 w-full" />
               ))}
             </div>
           ) : bases.length === 0 ? (
@@ -165,35 +172,50 @@ export default function Bases() {
               {bases.map((base) => (
                 <Card key={base.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3
-                          className="font-medium text-foreground truncate"
-                          dangerouslySetInnerHTML={{ __html: highlight(base.nome) }}
-                        />
-                        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <h3
+                            className="font-medium text-foreground"
+                            dangerouslySetInnerHTML={{ __html: highlight(base.nome) }}
+                          />
+                          <Badge className={statusColors[base.status] || ''}>
+                            {base.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                          </Badge>
+                          <Badge variant={base.visibilidade === 'publico' ? 'default' : 'secondary'}>
+                            {base.visibilidade === 'publico' ? 'Público' : 'Privado'}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Users className="h-3.5 w-3.5" />
-                            {base.membros_count} membro{base.membros_count !== 1 ? 's' : ''}
+                            {base.membros_count} / {base.capacidade || 20}
                           </span>
                           {base.lider_nome && (
                             <span>Líder: {base.lider_nome}</span>
                           )}
+                          {base.dia_semana && base.horario && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5" />
+                              {base.dia_semana} às {base.horario}
+                            </span>
+                          )}
+                          {base.local && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3.5 w-3.5" />
+                              {base.local}
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Badge className={statusColors[base.status] || ''}>
-                          {base.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(`/admin/bases/${base.id}`)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Ver
-                        </Button>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/admin/bases/${base.id}`)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Ver
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

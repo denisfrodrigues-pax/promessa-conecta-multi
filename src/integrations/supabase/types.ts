@@ -146,34 +146,49 @@ export type Database = {
       }
       bases: {
         Row: {
+          capacidade: number | null
           created_at: string | null
           data_criacao: string | null
           descricao: string | null
+          dia_semana: string | null
+          horario: string | null
           id: string
           lider_id: string | null
+          local: string | null
           nome: string
           status: string | null
           updated_at: string | null
+          visibilidade: string | null
         }
         Insert: {
+          capacidade?: number | null
           created_at?: string | null
           data_criacao?: string | null
           descricao?: string | null
+          dia_semana?: string | null
+          horario?: string | null
           id?: string
           lider_id?: string | null
+          local?: string | null
           nome: string
           status?: string | null
           updated_at?: string | null
+          visibilidade?: string | null
         }
         Update: {
+          capacidade?: number | null
           created_at?: string | null
           data_criacao?: string | null
           descricao?: string | null
+          dia_semana?: string | null
+          horario?: string | null
           id?: string
           lider_id?: string | null
+          local?: string | null
           nome?: string
           status?: string | null
           updated_at?: string | null
+          visibilidade?: string | null
         }
         Relationships: [
           {
