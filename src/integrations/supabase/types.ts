@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      acompanhamentos: {
+        Row: {
+          base_id: string
+          created_at: string
+          id: string
+          observacao: string | null
+          status: string
+          updated_at: string
+          visitante_id: string
+        }
+        Insert: {
+          base_id: string
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          status: string
+          updated_at?: string
+          visitante_id: string
+        }
+        Update: {
+          base_id?: string
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          status?: string
+          updated_at?: string
+          visitante_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acompanhamentos_base_id_fkey"
+            columns: ["base_id"]
+            isOneToOne: false
+            referencedRelation: "bases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acompanhamentos_visitante_id_fkey"
+            columns: ["visitante_id"]
+            isOneToOne: false
+            referencedRelation: "visitantes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string

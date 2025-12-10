@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, Save, User, Phone, Clock, CheckCircle, MessageCircle, UserPlus, Network } from 'lucide-react';
+import { ArrowLeft, Save, User, Phone, Clock, CheckCircle, MessageCircle, UserPlus, Network, History } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -17,6 +17,14 @@ import { toast } from 'sonner';
 interface Base {
   id: string;
   nome: string;
+}
+
+interface AcompanhamentoHistorico {
+  id: string;
+  status: string;
+  observacao: string | null;
+  created_at: string;
+  base: { nome: string };
 }
 
 interface Visitante {
@@ -32,11 +40,17 @@ interface Visitante {
 const statusLabels: Record<string, string> = {
   novo: 'Novo',
   contatado: 'Contatado',
+  contato_iniciado: 'Contato Iniciado',
+  em_acompanhamento: 'Em Acompanhamento',
+  concluido: 'Concluído',
 };
 
 const statusColors: Record<string, string> = {
   novo: 'bg-amber-100 text-amber-800 border-amber-300',
   contatado: 'bg-green-100 text-green-800 border-green-300',
+  contato_iniciado: 'bg-blue-100 text-blue-800 border-blue-300',
+  em_acompanhamento: 'bg-purple-100 text-purple-800 border-purple-300',
+  concluido: 'bg-green-100 text-green-800 border-green-300',
 };
 
 export default function VisitanteDetalhes() {
@@ -55,6 +69,8 @@ export default function VisitanteDetalhes() {
     status: 'em_acompanhamento',
     observacao: '',
   });
+  const [acompanhamentos, setAcompanhamentos] = useState<AcompanhamentoHistorico[]>([]);
+  const [statusAtual, setStatusAtual] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -68,8 +84,23 @@ export default function VisitanteDetalhes() {
       fetchVisitante();
       fetchBasesAtivas();
       checkVinculoExistente();
+      fetchAcompanhamentos();
     }
   }, [id]);
+
+  const fetchAcompanhamentos = async () => {
+    const { data } = await supabase
+      .from('acompanhamentos')
+      .select('id, status, observacao, created_at, base:bases(nome)')
+      .eq('visitante_id', id)
+      .order('created_at', { ascending: false });
+    if (data) {
+      setAcompanhamentos(data as unknown as AcompanhamentoHistorico[]);
+      if (data.length > 0) {
+        setStatusAtual(data[0].status);
+      }
+    }
+  };
 
   const fetchBasesAtivas = async () => {
     const { data } = await supabase
@@ -108,10 +139,19 @@ export default function VisitanteDetalhes() {
 
       if (error) throw error;
 
+      // Create initial acompanhamento record
+      await supabase.from('acompanhamentos').insert({
+        visitante_id: id,
+        base_id: baseForm.base_id,
+        status: baseForm.status,
+        observacao: baseForm.observacao.trim() || null,
+      });
+
       toast.success('Visitante atribuído à base!');
       setBaseModalOpen(false);
       setVinculoExistente(true);
       setBaseForm({ base_id: '', status: 'em_acompanhamento', observacao: '' });
+      fetchAcompanhamentos();
     } catch (error: any) {
       toast.error('Erro: ' + error.message);
     } finally {
@@ -383,6 +423,59 @@ Melhor horário para contato: ${formData.melhor_horario || 'Não informado'}.`;
             <div className="flex items-center gap-2">
               <Network className="w-5 h-5 text-purple-600" />
               <p className="font-medium text-purple-800">Visitante já está vinculado a uma base</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Status Atual do Acompanhamento */}
+      {statusAtual && (
+        <Card className="border-indigo-200 bg-indigo-50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <History className="w-5 h-5 text-indigo-600" />
+                <p className="font-medium text-indigo-800">Status do Acompanhamento</p>
+              </div>
+              <Badge variant="outline" className={statusColors[statusAtual]}>
+                {statusLabels[statusAtual]}
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Histórico de Acompanhamentos */}
+      {acompanhamentos.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <History className="w-5 h-5" />
+              Histórico de Acompanhamentos ({acompanhamentos.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {acompanhamentos.map((acomp) => (
+                <div key={acomp.id} className="flex items-start justify-between p-3 rounded-lg border bg-muted/30">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className={statusColors[acomp.status]}>
+                        {statusLabels[acomp.status]}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Base: {acomp.base?.nome || '-'}
+                      </span>
+                    </div>
+                    {acomp.observacao && (
+                      <p className="text-sm text-muted-foreground">{acomp.observacao}</p>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {format(new Date(acomp.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  </span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
