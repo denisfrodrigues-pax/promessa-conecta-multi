@@ -8,15 +8,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, Save, User, Phone, Clock, CheckCircle, MessageCircle, UserPlus, Network, History } from 'lucide-react';
+import { ArrowLeft, Save, User, Phone, Clock, CheckCircle, MessageCircle, UserPlus, Network, History, MapPin, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 
-interface Base {
+interface BaseAtiva {
   id: string;
   nome: string;
+  dia_semana: string | null;
+  horario: string | null;
+  local: string | null;
+  capacidade: number | null;
+  visibilidade: string | null;
+  membros_count?: number;
 }
 
 interface AcompanhamentoHistorico {
@@ -61,7 +67,7 @@ export default function VisitanteDetalhes() {
   const [saving, setSaving] = useState(false);
   const [markingAsContacted, setMarkingAsContacted] = useState(false);
   const [baseModalOpen, setBaseModalOpen] = useState(false);
-  const [basesAtivas, setBasesAtivas] = useState<Base[]>([]);
+  const [basesAtivas, setBasesAtivas] = useState<BaseAtiva[]>([]);
   const [savingBase, setSavingBase] = useState(false);
   const [vinculoExistente, setVinculoExistente] = useState(false);
   const [baseForm, setBaseForm] = useState({
@@ -69,6 +75,7 @@ export default function VisitanteDetalhes() {
     status: 'em_acompanhamento',
     observacao: '',
   });
+  const [selectedBaseInfo, setSelectedBaseInfo] = useState<BaseAtiva | null>(null);
   const [acompanhamentos, setAcompanhamentos] = useState<AcompanhamentoHistorico[]>([]);
   const [statusAtual, setStatusAtual] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -88,6 +95,15 @@ export default function VisitanteDetalhes() {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (baseForm.base_id) {
+      const base = basesAtivas.find(b => b.id === baseForm.base_id);
+      setSelectedBaseInfo(base || null);
+    } else {
+      setSelectedBaseInfo(null);
+    }
+  }, [baseForm.base_id, basesAtivas]);
+
   const fetchAcompanhamentos = async () => {
     const { data } = await supabase
       .from('acompanhamentos')
@@ -105,10 +121,24 @@ export default function VisitanteDetalhes() {
   const fetchBasesAtivas = async () => {
     const { data } = await supabase
       .from('bases')
-      .select('id, nome')
+      .select('id, nome, dia_semana, horario, local, capacidade, visibilidade')
       .eq('status', 'ativo')
       .order('nome');
-    if (data) setBasesAtivas(data);
+    
+    if (data) {
+      // Fetch member counts for each base
+      const basesWithCount = await Promise.all(
+        data.map(async (base) => {
+          const { count } = await supabase
+            .from('bases_membros')
+            .select('*', { count: 'exact', head: true })
+            .eq('base_id', base.id)
+            .eq('status', 'ativo');
+          return { ...base, membros_count: count || 0 };
+        })
+      );
+      setBasesAtivas(basesWithCount);
+    }
   };
 
   const checkVinculoExistente = async () => {
@@ -139,7 +169,6 @@ export default function VisitanteDetalhes() {
 
       if (error) throw error;
 
-      // Create initial acompanhamento record
       await supabase.from('acompanhamentos').insert({
         visitante_id: id,
         base_id: baseForm.base_id,
@@ -502,7 +531,7 @@ Melhor horário para contato: ${formData.melhor_horario || 'Não informado'}.`;
 
       {/* Modal Atribuir Base */}
       <Dialog open={baseModalOpen} onOpenChange={setBaseModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Atribuir Visitante a uma Base</DialogTitle>
           </DialogHeader>
@@ -519,11 +548,42 @@ Melhor horário para contato: ${formData.melhor_horario || 'Não informado'}.`;
                 <SelectContent>
                   <SelectItem value="none">Selecione...</SelectItem>
                   {basesAtivas.map((b) => (
-                    <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>
+                    <SelectItem key={b.id} value={b.id}>
+                      {b.nome} ({b.membros_count}/{b.capacidade || 20})
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Base Details */}
+            {selectedBaseInfo && (
+              <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+                <p className="text-sm font-medium">{selectedBaseInfo.nome}</p>
+                <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                  {selectedBaseInfo.dia_semana && selectedBaseInfo.horario && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {selectedBaseInfo.dia_semana} às {selectedBaseInfo.horario}
+                    </span>
+                  )}
+                  {selectedBaseInfo.local && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {selectedBaseInfo.local}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    {selectedBaseInfo.membros_count} / {selectedBaseInfo.capacidade || 20}
+                  </span>
+                  <Badge variant={selectedBaseInfo.visibilidade === 'publico' ? 'default' : 'secondary'}>
+                    {selectedBaseInfo.visibilidade === 'publico' ? 'Público' : 'Privado'}
+                  </Badge>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>Status do Acompanhamento</Label>
               <Select

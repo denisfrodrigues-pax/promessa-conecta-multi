@@ -8,11 +8,22 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, RefreshCw, Users, Clock } from 'lucide-react';
+import { Search, RefreshCw, Users, Clock, MapPin, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+
+interface BaseInfo {
+  nome: string;
+  dia_semana: string | null;
+  horario: string | null;
+  local: string | null;
+  capacidade: number | null;
+  lider_id: string | null;
+  lider_nome?: string;
+  membros_count?: number;
+}
 
 interface Acompanhamento {
   id: string;
@@ -22,7 +33,7 @@ interface Acompanhamento {
   observacao: string | null;
   updated_at: string;
   visitante: { nome: string; telefone: string | null };
-  base: { nome: string };
+  base: BaseInfo;
 }
 
 const statusLabels: Record<string, string> = {
@@ -59,7 +70,6 @@ export default function Acompanhamento() {
     const inicio = startOfMonth(now).toISOString();
     const fim = endOfMonth(now).toISOString();
 
-    // Get latest acompanhamento per visitor/base pair
     let query = supabase
       .from('acompanhamentos')
       .select(`
@@ -70,7 +80,7 @@ export default function Acompanhamento() {
         observacao,
         updated_at,
         visitante:visitantes(nome, telefone),
-        base:bases(nome)
+        base:bases(nome, dia_semana, horario, local, capacidade, lider_id)
       `)
       .gte('created_at', inicio)
       .lte('created_at', fim)
@@ -99,7 +109,39 @@ export default function Acompanhamento() {
       }
     }
 
-    setAcompanhamentos(unique);
+    // Fetch leader names and member counts for each base
+    const enriched = await Promise.all(
+      unique.map(async (acomp) => {
+        let lider_nome: string | undefined;
+        let membros_count = 0;
+
+        if (acomp.base?.lider_id) {
+          const { data: lider } = await supabase
+            .from('membros')
+            .select('nome')
+            .eq('id', acomp.base.lider_id)
+            .maybeSingle();
+          lider_nome = lider?.nome;
+        }
+
+        const { count } = await supabase
+          .from('bases_membros')
+          .select('*', { count: 'exact', head: true })
+          .eq('base_id', acomp.base_id)
+          .eq('status', 'ativo');
+
+        return {
+          ...acomp,
+          base: {
+            ...acomp.base,
+            lider_nome,
+            membros_count: count || 0,
+          },
+        };
+      })
+    );
+
+    setAcompanhamentos(enriched);
     setLoading(false);
   };
 
@@ -135,6 +177,11 @@ export default function Acompanhamento() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const isBaseLotada = (base: BaseInfo) => {
+    const capacidade = base.capacidade || 20;
+    return (base.membros_count || 0) >= capacidade;
   };
 
   return (
@@ -184,7 +231,7 @@ export default function Acompanhamento() {
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-16 w-full" />
+                <Skeleton key={i} className="h-24 w-full" />
               ))}
             </div>
           ) : filtered.length === 0 ? (
@@ -196,21 +243,48 @@ export default function Acompanhamento() {
               {filtered.map((acomp) => (
                 <div
                   key={acomp.id}
-                  className="flex items-center justify-between p-4 rounded-lg border bg-card hover:shadow-sm transition-shadow"
+                  className="p-4 rounded-lg border bg-card hover:shadow-sm transition-shadow"
                 >
-                  <div className="space-y-1">
-                    <p className="font-medium">{acomp.visitante?.nome || 'Visitante'}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Base: {acomp.base?.nome || '-'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Última atualização: {format(new Date(acomp.updated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className={statusColors[acomp.status]}>
-                      {statusLabels[acomp.status]}
-                    </Badge>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium">{acomp.visitante?.nome || 'Visitante'}</p>
+                        <Badge variant="outline" className={statusColors[acomp.status]}>
+                          {statusLabels[acomp.status]}
+                        </Badge>
+                        {isBaseLotada(acomp.base) && (
+                          <Badge variant="destructive" className="flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            Lotada
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                        <span>Base: {acomp.base?.nome || '-'}</span>
+                        {acomp.base?.lider_nome && (
+                          <span>Líder: {acomp.base.lider_nome}</span>
+                        )}
+                        {acomp.base?.dia_semana && acomp.base?.horario && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {acomp.base.dia_semana} às {acomp.base.horario}
+                          </span>
+                        )}
+                        {acomp.base?.local && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {acomp.base.local}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {acomp.base?.membros_count || 0} / {acomp.base?.capacidade || 20}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Última atualização: {format(new Date(acomp.updated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      </p>
+                    </div>
                     <Button size="sm" variant="outline" onClick={() => openModal(acomp)}>
                       <RefreshCw className="h-4 w-4 mr-1" />
                       Atualizar
@@ -230,13 +304,24 @@ export default function Acompanhamento() {
           </DialogHeader>
           {selectedAcomp && (
             <div className="space-y-4">
-              <div className="p-3 rounded-lg bg-muted/50 space-y-1">
+              <div className="p-3 rounded-lg bg-muted/50 space-y-2">
                 <p className="text-sm">
                   <span className="text-muted-foreground">Visitante:</span> <strong>{selectedAcomp.visitante?.nome}</strong>
                 </p>
                 <p className="text-sm">
                   <span className="text-muted-foreground">Base:</span> {selectedAcomp.base?.nome}
                 </p>
+                {selectedAcomp.base?.dia_semana && selectedAcomp.base?.horario && (
+                  <p className="text-sm flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-muted-foreground" />
+                    {selectedAcomp.base.dia_semana} às {selectedAcomp.base.horario}
+                  </p>
+                )}
+                {selectedAcomp.base?.lider_nome && (
+                  <p className="text-sm">
+                    <span className="text-muted-foreground">Líder:</span> {selectedAcomp.base.lider_nome}
+                  </p>
+                )}
                 {selectedAcomp.observacao && (
                   <p className="text-sm">
                     <span className="text-muted-foreground">Última obs:</span> {selectedAcomp.observacao}
