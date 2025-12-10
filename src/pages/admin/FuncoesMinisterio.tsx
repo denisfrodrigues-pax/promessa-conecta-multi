@@ -253,7 +253,7 @@ export default function AdminFuncoesMinisterio() {
                       {funcoes.length} função(ões) cadastrada(s)
                     </p>
                   </div>
-                  <Button variant="gold" onClick={handleCreate}>
+                  <Button onClick={handleCreate}>
                     <Plus className="w-4 h-4 mr-2" />
                     Nova Função
                   </Button>
@@ -390,7 +390,7 @@ export default function AdminFuncoesMinisterio() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button variant="gold" onClick={handleSubmit}>
+            <Button onClick={handleSubmit}>
               {editingFuncao ? 'Salvar' : 'Criar'}
             </Button>
           </DialogFooter>

@@ -67,7 +67,7 @@ export default function MemberHome() {
         <div className="absolute inset-0 bg-[url('/banner_home_placeholder.png')] bg-cover bg-center opacity-20" />
         <div className="container mx-auto px-4 py-12 relative z-10">
           <div className="max-w-2xl">
-            <Badge className="bg-church-gold text-primary-foreground mb-4">
+            <Badge className="bg-promessa-primary-light text-primary-foreground mb-4">
               <Sparkles className="w-3 h-3 mr-1" />
               Bem-vindo
             </Badge>
@@ -78,7 +78,7 @@ export default function MemberHome() {
               Seja bem-vindo à Igreja da Promessa. Aqui você encontra todas as informações e recursos da nossa comunidade.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button asChild variant="gold" size="lg">
+              <Button asChild variant="promessa" size="lg">
                 <Link to="/sou-novo">Sou Novo Aqui</Link>
               </Button>
               <Button asChild variant="hero" size="lg" className="bg-primary-foreground/10 border border-primary-foreground/20 hover:bg-primary-foreground/20">
@@ -106,8 +106,8 @@ export default function MemberHome() {
           <Link to="/eventos" className="group">
             <Card className="shadow-card hover:shadow-elevated transition-all duration-300 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-xl bg-church-gold/10 flex items-center justify-center mb-3 group-hover:bg-church-gold/20 transition-colors">
-                  <Calendar className="w-6 h-6 text-church-gold" />
+                <div className="w-12 h-12 rounded-xl bg-promessa-secondary/20 flex items-center justify-center mb-3 group-hover:bg-promessa-secondary/30 transition-colors">
+                  <Calendar className="w-6 h-6 text-promessa-secondary" />
                 </div>
                 <h3 className="font-medium">Eventos</h3>
                 <p className="text-xs text-muted-foreground">Próximas atividades</p>

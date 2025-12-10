@@ -15,9 +15,9 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        gold: "bg-church-gold text-primary-foreground hover:bg-church-gold-dark shadow-gold hover:shadow-lg active:scale-[0.98]",
-        hero: "bg-gradient-to-r from-church-gold to-church-gold-light text-primary-foreground hover:opacity-90 shadow-gold hover:shadow-lg active:scale-[0.98] font-semibold",
-        navy: "bg-church-navy text-primary-foreground hover:bg-church-navy-light shadow-sm hover:shadow-md active:scale-[0.98]",
+        promessa: "bg-promessa-primary text-primary-foreground hover:bg-promessa-primary-dark shadow-primary hover:shadow-lg active:scale-[0.98]",
+        hero: "bg-gradient-to-r from-promessa-primary to-promessa-primary-light text-primary-foreground hover:opacity-90 shadow-primary hover:shadow-lg active:scale-[0.98] font-semibold",
+        success: "bg-success text-primary-foreground hover:bg-success/90 shadow-sm hover:shadow-md active:scale-[0.98]",
       },
       size: {
         default: "h-10 px-4 py-2",

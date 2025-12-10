@@ -233,7 +233,7 @@ export default function MinhasFuncoes() {
           <h1 className="text-2xl font-display font-bold">Funções do Ministério</h1>
           <p className="text-muted-foreground">Gerencie as funções de {ministerio.nome}</p>
         </div>
-        <Button variant="gold" onClick={handleCreate}>
+        <Button onClick={handleCreate}>
           <Plus className="w-4 h-4 mr-2" />
           Nova Função
         </Button>
@@ -366,7 +366,7 @@ export default function MinhasFuncoes() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button variant="gold" onClick={handleSubmit}>
+            <Button onClick={handleSubmit}>
               {editingFuncao ? 'Salvar' : 'Criar'}
             </Button>
           </DialogFooter>

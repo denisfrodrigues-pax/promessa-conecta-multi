@@ -115,7 +115,7 @@ export default function Auth() {
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-scale-in">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-church-gold shadow-gold mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-promessa-primary-light shadow-primary mb-4">
             <Church className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-display font-bold text-primary-foreground">
@@ -177,7 +177,7 @@ export default function Auth() {
                     {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                   </div>
 
-                  <Button type="submit" variant="gold" className="w-full" size="lg" disabled={isLoading}>
+                  <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                     {isLoading ? 'Entrando...' : 'Entrar'}
                   </Button>
                 </form>
@@ -256,7 +256,7 @@ export default function Auth() {
                     {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
                   </div>
 
-                  <Button type="submit" variant="gold" className="w-full" size="lg" disabled={isLoading}>
+                  <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                     {isLoading ? 'Criando conta...' : 'Criar Conta'}
                   </Button>
                 </form>

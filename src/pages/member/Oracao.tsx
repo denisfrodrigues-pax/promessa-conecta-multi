@@ -89,7 +89,7 @@ export default function Oracao() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="gold">
+            <Button>
               <Plus className="w-4 h-4 mr-2" />
               Novo Pedido
             </Button>
@@ -134,7 +134,7 @@ export default function Oracao() {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button variant="gold" onClick={handleSubmit}>
+              <Button onClick={handleSubmit}>
                 Enviar Pedido
               </Button>
             </DialogFooter>
@@ -185,7 +185,7 @@ export default function Oracao() {
               <p className="text-muted-foreground">
                 Nenhum pedido de oração no momento
               </p>
-              <Button variant="gold" className="mt-4" onClick={() => setIsDialogOpen(true)}>
+              <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
                 Enviar Primeiro Pedido
               </Button>
             </CardContent>

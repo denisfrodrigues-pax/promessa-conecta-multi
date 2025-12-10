@@ -301,7 +301,7 @@ export default function Usuarios() {
             <Button variant="outline" onClick={() => setEditingUser(null)}>
               Cancelar
             </Button>
-            <Button variant="gold" onClick={handleSaveEdit}>
+            <Button onClick={handleSaveEdit}>
               Salvar
             </Button>
           </DialogFooter>

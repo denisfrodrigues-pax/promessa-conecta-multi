@@ -184,7 +184,7 @@ export default function Eventos() {
           <h1 className="text-3xl font-display font-bold">Eventos</h1>
           <p className="text-muted-foreground">Gerenciamento de eventos e inscrições</p>
         </div>
-        <Button variant="gold" onClick={() => handleOpenDialog()}>
+        <Button onClick={() => handleOpenDialog()}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Evento
         </Button>
@@ -343,7 +343,7 @@ export default function Eventos() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button variant="gold" onClick={handleSave}>
+            <Button onClick={handleSave}>
               {editingEvento ? 'Salvar' : 'Criar'}
             </Button>
           </DialogFooter>

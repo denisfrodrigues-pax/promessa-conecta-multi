@@ -291,7 +291,7 @@ export default function LeaderEscalas() {
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            variant="gold"
+                            variant="success"
                             onClick={() => handleConfirmar(escala.id)}
                           >
                             <CheckCircle className="w-4 h-4 mr-1" />
