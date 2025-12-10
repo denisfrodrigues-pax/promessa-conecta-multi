@@ -100,7 +100,7 @@ const App = () => (
             {/* Leader Routes */}
             <Route path="/lider" element={<LeaderLayout />}>
               <Route index element={<LeaderDashboard />} />
-              <Route path="grupos" element={<LeaderDashboard />} />
+              <Route path="bases" element={<LeaderDashboard />} />
               <Route path="escalas" element={<LeaderEscalas />} />
               <Route path="equipe" element={<LeaderMinhaEquipe />} />
               <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
@@ -111,6 +111,7 @@ const App = () => (
             {/* Member Routes */}
             <Route element={<MemberLayout />}>
               <Route path="/" element={<MemberHome />} />
+              <Route path="/bases" element={<MemberHome />} />
               <Route path="/eventos" element={<MemberEventos />} />
               <Route path="/avisos" element={<MemberAvisos />} />
               <Route path="/perfil" element={<MemberPerfil />} />

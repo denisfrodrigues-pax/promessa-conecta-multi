@@ -8,7 +8,7 @@ import { Users, ClipboardList, Calendar, ChevronRight, CheckCircle, Clock } from
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-interface Grupo {
+interface Base {
   id: string;
   nome: string;
   dia_semana: string | null;
@@ -25,7 +25,7 @@ interface Escala {
 
 export default function LeaderDashboard() {
   const { profile } = useAuth();
-  const [grupos, setGrupos] = useState<Grupo[]>([]);
+  const [bases, setBases] = useState<Base[]>([]);
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,8 +37,8 @@ export default function LeaderDashboard() {
 
   const fetchData = async () => {
     try {
-      const [gruposRes, escalasRes] = await Promise.all([
-        supabase.from('grupos').select('*').eq('lider_id', profile?.id),
+      const [basesRes, escalasRes] = await Promise.all([
+        supabase.from('bases').select('*').eq('lider_id', profile?.id),
         supabase
           .from('escalas')
           .select('*, ministerios(nome)')
@@ -48,7 +48,7 @@ export default function LeaderDashboard() {
           .limit(5),
       ]);
 
-      setGrupos(gruposRes.data || []);
+      setBases(basesRes.data || []);
       setEscalas(escalasRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -73,8 +73,8 @@ export default function LeaderDashboard() {
                 <Users className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold font-display">{grupos.length}</p>
-                <p className="text-sm text-muted-foreground">Grupos Liderados</p>
+                <p className="text-2xl font-bold font-display">{bases.length}</p>
+                <p className="text-sm text-muted-foreground">Bases Lideradas</p>
               </div>
             </div>
           </CardContent>
@@ -110,36 +110,36 @@ export default function LeaderDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Meus Grupos */}
+        {/* Minhas Bases */}
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="font-display">Meus Grupos</CardTitle>
-              <CardDescription>Grupos que você lidera</CardDescription>
+              <CardTitle className="font-display">Minhas Bases</CardTitle>
+              <CardDescription>Bases que você lidera</CardDescription>
             </div>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/lider/grupos">
-                Ver todos <ChevronRight className="w-4 h-4 ml-1" />
+              <Link to="/lider/bases">
+                Ver todas <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
           </CardHeader>
           <CardContent>
-            {grupos.length === 0 ? (
+            {bases.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
-                Você ainda não lidera nenhum grupo
+                Você ainda não lidera nenhuma base
               </p>
             ) : (
               <div className="space-y-3">
-                {grupos.map((grupo) => (
+                {bases.map((base) => (
                   <div
-                    key={grupo.id}
+                    key={base.id}
                     className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                   >
                     <div>
-                      <p className="font-medium">{grupo.nome}</p>
-                      {grupo.dia_semana && grupo.horario && (
+                      <p className="font-medium">{base.nome}</p>
+                      {base.dia_semana && base.horario && (
                         <p className="text-sm text-muted-foreground">
-                          {grupo.dia_semana} às {grupo.horario}
+                          {base.dia_semana} às {base.horario}
                         </p>
                       )}
                     </div>
