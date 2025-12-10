@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Network, Users, CheckCircle, UserX, UserCheck, UserMinus } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { ArrowLeft, Network, Users, CheckCircle, UserX, UserCheck, UserMinus, Download } from 'lucide-react';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 interface BaseResumo {
   id: string;
@@ -15,7 +17,34 @@ interface BaseResumo {
   lider_nome: string | null;
   membros_count: number;
   visitantes_count: number;
+  capacidade: number;
 }
+
+// ===== CSV EXPORT =====
+const exportToCSV = (bases: BaseResumo[], stats: any) => {
+  const headers = ['base', 'lider', 'membros', 'visitantes', 'capacidade', 'status'];
+  const rows = bases.map((b) => [
+    b.nome,
+    b.lider_nome || '',
+    b.membros_count.toString(),
+    b.visitantes_count.toString(),
+    b.capacidade.toString(),
+    b.status,
+  ]);
+
+  const csvContent = [headers, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `relatorio_bases_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
 
 export default function BaseRelatorio() {
   const navigate = useNavigate();
@@ -36,37 +65,31 @@ export default function BaseRelatorio() {
 
   const fetchData = async () => {
     try {
-      // Fetch all bases
       const { data: basesData } = await supabase
         .from('bases')
-        .select('id, nome, status, lider_id')
+        .select('id, nome, status, lider_id, capacidade')
         .order('nome');
 
-      // Fetch all active base_membros relations (members)
       const { data: basesMembrosData } = await supabase
         .from('bases_membros')
         .select('base_id, membro_id, visitante_id')
         .eq('status', 'ativo');
 
-      // Fetch all base_visitantes relations (not desligado)
       const { data: basesVisitantesData } = await supabase
         .from('bases_membros')
         .select('base_id, visitante_id')
         .not('visitante_id', 'is', null)
         .neq('status', 'desligado');
 
-      // Fetch total active members
       const { count: totalMembros } = await supabase
         .from('membros')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'ativo');
 
-      // Fetch total visitors
       const { count: totalVisitantes } = await supabase
         .from('visitantes')
         .select('*', { count: 'exact', head: true });
 
-      // Build base summaries
       const basesWithDetails: BaseResumo[] = await Promise.all(
         (basesData || []).map(async (base) => {
           let lider_nome = null;
@@ -94,13 +117,13 @@ export default function BaseRelatorio() {
             lider_nome,
             membros_count,
             visitantes_count,
+            capacidade: base.capacidade || 20,
           };
         })
       );
 
-      // Calculate stats
       const membrosEmBases = new Set(
-        (basesMembrosData || []).filter(bm => bm.membro_id).map((bm) => bm.membro_id)
+        (basesMembrosData || []).filter((bm) => bm.membro_id).map((bm) => bm.membro_id)
       ).size;
 
       const visitantesEmBases = new Set(
@@ -124,6 +147,15 @@ export default function BaseRelatorio() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (bases.length === 0) {
+      toast.error('Nenhum dado para exportar');
+      return;
+    }
+    exportToCSV(bases, stats);
+    toast.success('CSV exportado!');
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -141,19 +173,25 @@ export default function BaseRelatorio() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/bases')}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <p className="text-sm text-muted-foreground">Bases &gt; Relatório</p>
-          <h1 className="text-2xl font-bold">Relatório de Bases</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/bases')}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-xl font-display font-bold">Relatório de Bases</h1>
+            <p className="text-sm text-muted-foreground">Visão geral das bases e participantes</p>
+          </div>
         </div>
+        <Button variant="outline" size="sm" onClick={handleExportCSV}>
+          <Download className="h-4 w-4 mr-1" />
+          Exportar CSV
+        </Button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card className="shadow-card">
+        <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-blue-100">
@@ -167,7 +205,7 @@ export default function BaseRelatorio() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-card">
+        <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-green-100">
@@ -181,7 +219,7 @@ export default function BaseRelatorio() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-card">
+        <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-purple-100">
@@ -195,7 +233,7 @@ export default function BaseRelatorio() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-card">
+        <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-orange-100">
@@ -209,7 +247,7 @@ export default function BaseRelatorio() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-card">
+        <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-teal-100">
@@ -223,7 +261,7 @@ export default function BaseRelatorio() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-card">
+        <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-rose-100">
@@ -238,47 +276,50 @@ export default function BaseRelatorio() {
         </Card>
       </div>
 
-      {/* Table */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Resumo por Base</CardTitle>
+      {/* Bases List */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Resumo por Base</CardTitle>
         </CardHeader>
         <CardContent>
           {bases.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">Nenhuma base cadastrada</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Base</TableHead>
-                  <TableHead>Líder</TableHead>
-                  <TableHead className="text-center">Membros</TableHead>
-                  <TableHead className="text-center">Visitantes</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bases.map((base) => (
-                  <TableRow key={base.id}>
-                    <TableCell className="font-medium">{base.nome}</TableCell>
-                    <TableCell>{base.lider_nome || '-'}</TableCell>
-                    <TableCell className="text-center">{base.membros_count}</TableCell>
-                    <TableCell className="text-center">{base.visitantes_count}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge
-                        className={
-                          base.status === 'ativo'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }
-                      >
-                        {base.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="space-y-3">
+              {bases.map((base) => {
+                const totalPessoas = base.membros_count + base.visitantes_count;
+                const ocupacao = Math.min(100, (totalPessoas / base.capacidade) * 100);
+                const isLotada = totalPessoas >= base.capacidade;
+
+                return (
+                  <div key={base.id} className="p-4 rounded-lg border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{base.nome}</span>
+                        <Badge
+                          variant="outline"
+                          className={base.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
+                        >
+                          {base.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                        {isLotada && <Badge variant="destructive">Lotada</Badge>}
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {base.lider_nome || 'Sem líder'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span>{base.membros_count} membros</span>
+                      <span>{base.visitantes_count} visitantes</span>
+                      <span>{totalPessoas}/{base.capacidade} total</span>
+                    </div>
+
+                    <Progress value={ocupacao} className={`h-2 ${isLotada ? '[&>div]:bg-destructive' : ''}`} />
+                  </div>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
