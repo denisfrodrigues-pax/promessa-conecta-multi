@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Church, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -115,13 +116,13 @@ export default function Auth() {
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-scale-in">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-promessa-primary-light shadow-primary mb-4">
-            <Church className="w-8 h-8 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <Logo size={72} className="logo-shadow" />
           </div>
-          <h1 className="text-3xl font-display font-bold text-primary-foreground">
+          <h1 className="text-3xl font-display font-bold text-white">
             Igreja da Promessa
           </h1>
-          <p className="text-primary-foreground/80 mt-2">
+          <p className="text-white/80 mt-2">
             Sistema de Gestão e Comunicação
           </p>
         </div>
@@ -265,7 +266,7 @@ export default function Auth() {
           </Tabs>
         </Card>
 
-        <p className="text-center text-primary-foreground/60 text-sm mt-6">
+        <p className="text-center text-white/60 text-sm mt-6">
           © 2024 Igreja da Promessa. Todos os direitos reservados.
         </p>
       </div>

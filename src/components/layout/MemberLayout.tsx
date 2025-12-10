@@ -1,12 +1,12 @@
 import { Outlet, Navigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
-import { Home, Users, Calendar, Bell, User, Menu, X, Church, CalendarCheck } from 'lucide-react';
+import { Logo } from '@/components/Logo';
+import { Home, Users, Calendar, Bell, User, Menu, CalendarCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/hooks/useNotifications';
 
@@ -41,9 +41,7 @@ export default function MemberLayout() {
       <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <RouterNavLink to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-promessa-700 flex items-center justify-center">
-              <Church className="w-5 h-5 text-white" />
-            </div>
+            <Logo size={40} />
             <span className="font-display font-bold text-lg hidden sm:block text-promessa-700">Igreja da Promessa</span>
           </RouterNavLink>
 
