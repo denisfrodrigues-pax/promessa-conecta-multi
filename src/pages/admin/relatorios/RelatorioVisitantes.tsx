@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { UserPlus, Download, FileText, Search, MessageCircle } from 'lucide-react';
+import { UserPlus, Download, FileText, MessageCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { format, subDays, subMonths, subYears, startOfMonth, endOfMonth } from 'date-fns';
+import { format, subDays, subMonths, subYears } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { exportToCSV, exportToPDF } from '@/utils/exportUtils';
-import { getWhatsAppUrl, hasValidPhone } from '@/lib/formatters';
+import { getWhatsAppUrl, hasValidPhone, formatPhoneBR } from '@/lib/formatters';
 
 const COLORS = ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981'];
 const statusLabels: Record<string, string> = {
@@ -30,6 +30,7 @@ const statusColors: Record<string, string> = {
 export default function RelatorioVisitantes() {
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
+  const [exportingPDF, setExportingPDF] = useState(false);
   const [visitantes, setVisitantes] = useState<any[]>([]);
   const [periodo, setPeriodo] = useState('mes');
   const [filtroStatus, setFiltroStatus] = useState('todos');
@@ -111,9 +112,39 @@ export default function RelatorioVisitantes() {
     })), 'relatorio_visitantes');
   };
 
-  const handleExportPDF = () => {
-    if (reportRef.current) exportToPDF(reportRef.current, 'relatorio_visitantes');
+  const handleExportPDF = async () => {
+    if (!reportRef.current) return;
+    setExportingPDF(true);
+    try {
+      await exportToPDF(reportRef.current, 'relatorio_visitantes');
+      toast.success('PDF exportado com sucesso.');
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Não foi possível gerar o PDF.');
+    } finally {
+      setExportingPDF(false);
+    }
   };
+
+  const totalPages = Math.ceil(total / limit);
+  const startItem = (page - 1) * limit + 1;
+  const endItem = Math.min(page * limit, total);
+
+  const PaginationControls = () => (
+    <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+      <span className="text-sm text-muted-foreground">
+        Mostrando {startItem} – {endItem} de {total}
+      </span>
+      <div className="space-x-2">
+        <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+          Anterior
+        </Button>
+        <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+          Próxima
+        </Button>
+      </div>
+    </div>
+  );
 
   if (loading) {
     return <div className="space-y-6"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>;
@@ -128,7 +159,10 @@ export default function RelatorioVisitantes() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCSV}><Download className="w-4 h-4 mr-2" />CSV</Button>
-          <Button variant="outline" onClick={handleExportPDF}><FileText className="w-4 h-4 mr-2" />PDF</Button>
+          <Button variant="outline" onClick={handleExportPDF} disabled={exportingPDF}>
+            {exportingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+            {exportingPDF ? 'Gerando...' : 'PDF'}
+          </Button>
         </div>
       </div>
 
@@ -175,8 +209,8 @@ export default function RelatorioVisitantes() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader><CardTitle className="text-base">Visitantes por Mês</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader><CardTitle className="text-base font-bold">Visitantes por Mês</CardTitle></CardHeader>
+          <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={chartData.mensal}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -189,8 +223,8 @@ export default function RelatorioVisitantes() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-base">Status dos Visitantes</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader><CardTitle className="text-base font-bold">Status dos Visitantes</CardTitle></CardHeader>
+          <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie data={chartData.status} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
@@ -206,8 +240,9 @@ export default function RelatorioVisitantes() {
 
       {/* Table */}
       <Card>
-        <CardHeader><CardTitle className="text-base">Lista de Visitantes</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base font-bold">Lista de Visitantes</CardTitle></CardHeader>
         <CardContent>
+          {total > limit && <div className="mb-4"><PaginationControls /></div>}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -224,7 +259,7 @@ export default function RelatorioVisitantes() {
                     <td className="p-2 font-medium">{v.nome}</td>
                     <td className="p-2">
                       <div className="flex items-center gap-2">
-                        {v.telefone || '–'}
+                        {v.telefone ? formatPhoneBR(v.telefone) : '–'}
                         {hasValidPhone(v.telefone) && (
                           <button onClick={() => window.open(getWhatsAppUrl(v.telefone), '_blank')} className="text-green-600">
                             <MessageCircle className="w-4 h-4" />
@@ -239,15 +274,7 @@ export default function RelatorioVisitantes() {
               </tbody>
             </table>
           </div>
-          {total > limit && (
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-sm text-muted-foreground">Página {page} de {Math.ceil(total / limit)}</span>
-              <div className="space-x-2">
-                <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Anterior</Button>
-                <Button variant="outline" size="sm" disabled={page * limit >= total} onClick={() => setPage(p => p + 1)}>Próxima</Button>
-              </div>
-            </div>
-          )}
+          {total > limit && <div className="mt-4"><PaginationControls /></div>}
         </CardContent>
       </Card>
     </div>
