@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Users, UserPlus, Network, Baby, Wallet, BarChart3, 
-  Download, FileText, TrendingUp, Calendar
+  Download, FileText, TrendingUp, Loader2
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -20,6 +21,7 @@ const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
 export default function RelatorioGeral() {
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
+  const [exportingPDF, setExportingPDF] = useState(false);
   const [kpis, setKpis] = useState({
     visitantesMes: 0,
     taxaConversao: 0,
@@ -160,9 +162,17 @@ export default function RelatorioGeral() {
     exportToCSV(data, 'relatorio_geral');
   };
 
-  const handleExportPDF = () => {
-    if (reportRef.current) {
-      exportToPDF(reportRef.current, 'relatorio_geral');
+  const handleExportPDF = async () => {
+    if (!reportRef.current) return;
+    setExportingPDF(true);
+    try {
+      await exportToPDF(reportRef.current, 'relatorio_geral');
+      toast.success('PDF exportado com sucesso.');
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Não foi possível gerar o PDF.');
+    } finally {
+      setExportingPDF(false);
     }
   };
 
@@ -189,9 +199,9 @@ export default function RelatorioGeral() {
             <Download className="w-4 h-4 mr-2" />
             CSV
           </Button>
-          <Button variant="outline" onClick={handleExportPDF}>
-            <FileText className="w-4 h-4 mr-2" />
-            PDF
+          <Button variant="outline" onClick={handleExportPDF} disabled={exportingPDF}>
+            {exportingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+            {exportingPDF ? 'Gerando...' : 'PDF'}
           </Button>
         </div>
       </div>
@@ -283,9 +293,9 @@ export default function RelatorioGeral() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Visitantes - Últimos 6 meses</CardTitle>
+            <CardTitle className="text-base font-bold">Visitantes - Últimos 6 meses</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={chartData.visitantesMensal}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -300,9 +310,9 @@ export default function RelatorioGeral() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Membros por Status</CardTitle>
+            <CardTitle className="text-base font-bold">Membros por Status</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie data={chartData.membrosStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
@@ -319,9 +329,9 @@ export default function RelatorioGeral() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Financeiro - Entradas vs Saídas</CardTitle>
+            <CardTitle className="text-base font-bold">Financeiro - Entradas vs Saídas</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={chartData.financeiroMensal}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -338,9 +348,9 @@ export default function RelatorioGeral() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Check-ins Kids por Sala</CardTitle>
+            <CardTitle className="text-base font-bold">Check-ins Kids por Sala</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={chartData.checkinsSalas} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
