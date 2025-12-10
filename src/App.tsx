@@ -41,6 +41,15 @@ import KidsResponsaveis from "@/pages/admin/kids/KidsResponsaveis";
 import KidsSalas from "@/pages/admin/kids/KidsSalas";
 import KidsRelatorio from "@/pages/admin/kids/KidsRelatorio";
 
+// Financeiro Pages
+import FinanceiroDashboard from "@/pages/admin/financeiro/FinanceiroDashboard";
+import Transacoes from "@/pages/admin/financeiro/Transacoes";
+import TransacaoForm from "@/pages/admin/financeiro/TransacaoForm";
+import Contas from "@/pages/admin/financeiro/Contas";
+import Categorias from "@/pages/admin/financeiro/Categorias";
+import FinanceiroRelatorio from "@/pages/admin/financeiro/FinanceiroRelatorio";
+import FinanceiroAuditoria from "@/pages/admin/financeiro/FinanceiroAuditoria";
+
 // Member Pages
 import MemberHome from "@/pages/member/Home";
 import BasesPublic from "@/pages/member/BasesPublic";
@@ -108,6 +117,15 @@ const App = () => (
               <Route path="kids/responsaveis" element={<KidsResponsaveis />} />
               <Route path="kids/salas" element={<KidsSalas />} />
               <Route path="kids/relatorio" element={<KidsRelatorio />} />
+              {/* Financeiro Routes */}
+              <Route path="financeiro" element={<FinanceiroDashboard />} />
+              <Route path="financeiro/transacoes" element={<Transacoes />} />
+              <Route path="financeiro/transacoes/novo" element={<TransacaoForm />} />
+              <Route path="financeiro/transacoes/:id" element={<TransacaoForm />} />
+              <Route path="financeiro/contas" element={<Contas />} />
+              <Route path="financeiro/categorias" element={<Categorias />} />
+              <Route path="financeiro/relatorios" element={<FinanceiroRelatorio />} />
+              <Route path="financeiro/auditoria" element={<FinanceiroAuditoria />} />
               <Route path="auditoria" element={<AdminDashboard />} />
               <Route path="configuracoes" element={<AdminDashboard />} />
             </Route>
