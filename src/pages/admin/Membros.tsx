@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { highlightText, formatPhoneBR } from '@/lib/formatters';
 
 interface Base {
   id: string;
@@ -31,6 +32,7 @@ interface Membro {
   telefone: string | null;
   foto_perfil: string | null;
   status: string | null;
+  estado_civil: string | null;
   data_batismo: string | null;
   data_nascimento: string | null;
   created_at: string | null;
@@ -52,6 +54,13 @@ const statusColors: Record<string, string> = {
   desligado: 'bg-red-100 text-red-800 border-red-300',
   transferido: 'bg-orange-100 text-orange-800 border-orange-300',
   em_acompanhamento: 'bg-blue-100 text-blue-800 border-blue-300',
+};
+
+const estadoCivilLabels: Record<string, string> = {
+  solteiro: 'Solteiro(a)',
+  casado: 'Casado(a)',
+  divorciado: 'Divorciado(a)',
+  viuvo: 'Viúvo(a)',
 };
 
 // Helper functions - same pattern as other modules
@@ -239,7 +248,7 @@ export default function Membros() {
       let query = supabase
         .from('membros')
         .select(`
-          id, nome, telefone, foto_perfil, status, data_batismo, data_nascimento, created_at,
+          id, nome, telefone, foto_perfil, status, estado_civil, data_batismo, data_nascimento, created_at,
           bases_membros!left(base_id, bases(id, nome))
         `)
         .order('nome', { ascending: true })
@@ -480,6 +489,7 @@ export default function Membros() {
             <div className="space-y-3">
               {membros.map((membro) => {
                 const baseAtual = getBaseAtual(membro);
+                const phoneFormatted = membro.telefone ? formatPhoneBR(membro.telefone) : null;
                 return (
                   <div
                     key={membro.id}
@@ -488,7 +498,10 @@ export default function Membros() {
                     {/* Name and Phone */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium truncate">{membro.nome}</p>
+                        <p 
+                          className="font-medium truncate"
+                          dangerouslySetInnerHTML={{ __html: highlightText(membro.nome, debouncedSearch) }}
+                        />
                         {hasValidPhone(membro.telefone) && (
                           <button
                             onClick={(e) => handleWhatsAppClick(e, membro.telefone)}
@@ -499,9 +512,28 @@ export default function Membros() {
                           </button>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {membro.telefone || 'Sem telefone'}
-                      </p>
+                      <p 
+                        className="text-sm text-muted-foreground"
+                        dangerouslySetInnerHTML={{ 
+                          __html: phoneFormatted 
+                            ? highlightText(phoneFormatted, debouncedSearch) 
+                            : 'Sem telefone' 
+                        }}
+                      />
+                    </div>
+
+                    {/* Estado Civil */}
+                    <div className="text-sm text-muted-foreground min-w-[100px] hidden lg:block">
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: membro.estado_civil 
+                          ? highlightText(estadoCivilLabels[membro.estado_civil] || membro.estado_civil, debouncedSearch) 
+                          : '–' 
+                      }} />
+                    </div>
+
+                    {/* Data Batismo */}
+                    <div className="text-sm text-muted-foreground min-w-[90px] hidden md:block">
+                      {membro.data_batismo ? formatDateTime(membro.data_batismo) : '–'}
                     </div>
 
                     {/* Status Badge */}
@@ -513,17 +545,12 @@ export default function Membros() {
                     </Badge>
 
                     {/* Base */}
-                    <div className="text-sm text-muted-foreground min-w-[120px]">
+                    <div className="text-sm text-muted-foreground min-w-[120px] hidden xl:block">
                       {baseAtual ? (
                         <span className="font-medium text-primary">{baseAtual}</span>
                       ) : (
                         <span className="italic">Sem base</span>
                       )}
-                    </div>
-
-                    {/* Date */}
-                    <div className="text-sm text-muted-foreground min-w-[90px]">
-                      {formatDateTime(membro.created_at)}
                     </div>
 
                     {/* Action Button */}

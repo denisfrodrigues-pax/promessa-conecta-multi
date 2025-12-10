@@ -50,6 +50,14 @@ import Categorias from "@/pages/admin/financeiro/Categorias";
 import FinanceiroRelatorio from "@/pages/admin/financeiro/FinanceiroRelatorio";
 import FinanceiroAuditoria from "@/pages/admin/financeiro/FinanceiroAuditoria";
 
+// Relatorios Pages
+import RelatorioGeral from "@/pages/admin/relatorios/RelatorioGeral";
+import RelatorioVisitantes from "@/pages/admin/relatorios/RelatorioVisitantes";
+import RelatorioBases from "@/pages/admin/relatorios/RelatorioBases";
+import RelatorioMembros from "@/pages/admin/relatorios/RelatorioMembros";
+import RelatorioFinanceiro from "@/pages/admin/relatorios/RelatorioFinanceiro";
+import RelatorioKids from "@/pages/admin/relatorios/RelatorioKids";
+
 // Member Pages
 import MemberHome from "@/pages/member/Home";
 import BasesPublic from "@/pages/member/BasesPublic";
@@ -126,6 +134,13 @@ const App = () => (
               <Route path="financeiro/categorias" element={<Categorias />} />
               <Route path="financeiro/relatorios" element={<FinanceiroRelatorio />} />
               <Route path="financeiro/auditoria" element={<FinanceiroAuditoria />} />
+              {/* Relatorios Routes */}
+              <Route path="relatorios" element={<RelatorioGeral />} />
+              <Route path="relatorios/visitantes" element={<RelatorioVisitantes />} />
+              <Route path="relatorios/bases" element={<RelatorioBases />} />
+              <Route path="relatorios/membros" element={<RelatorioMembros />} />
+              <Route path="relatorios/financeiro" element={<RelatorioFinanceiro />} />
+              <Route path="relatorios/kids" element={<RelatorioKids />} />
               <Route path="auditoria" element={<AdminDashboard />} />
               <Route path="configuracoes" element={<AdminDashboard />} />
             </Route>

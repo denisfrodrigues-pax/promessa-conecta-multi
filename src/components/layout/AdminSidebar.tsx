@@ -47,7 +47,16 @@ const menuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
   { icon: Users, label: 'Usuários', path: '/admin/usuarios' },
   { icon: UserPlus, label: 'Visitantes', path: '/admin/visitantes' },
-  { icon: Users, label: 'Membros', path: '/admin/membros' },
+  { 
+    icon: Users, 
+    label: 'Membros', 
+    path: '/admin/membros',
+    submenu: [
+      { icon: Users, label: 'Lista de Membros', path: '/admin/membros' },
+      { icon: UserPlus, label: 'Novo Membro', path: '/admin/membros/novo' },
+      { icon: FileText, label: 'Relatório', path: '/admin/membros/relatorio' },
+    ]
+  },
   { icon: Network, label: 'Bases', path: '/admin/bases' },
   { icon: BarChart3, label: 'Relatório Bases', path: '/admin/bases/relatorio' },
   { icon: Users, label: 'Acompanhamento', path: '/admin/acompanhamento' },
@@ -79,6 +88,19 @@ const menuItems: MenuItem[] = [
       { icon: Tag, label: 'Categorias', path: '/admin/financeiro/categorias' },
       { icon: FileText, label: 'Relatórios', path: '/admin/financeiro/relatorios' },
       { icon: History, label: 'Auditoria', path: '/admin/financeiro/auditoria' },
+    ]
+  },
+  {
+    icon: BarChart3,
+    label: 'Relatórios',
+    path: '/admin/relatorios',
+    submenu: [
+      { icon: LayoutDashboard, label: 'Consolidado Geral', path: '/admin/relatorios' },
+      { icon: UserPlus, label: 'Visitantes', path: '/admin/relatorios/visitantes' },
+      { icon: Network, label: 'Bases', path: '/admin/relatorios/bases' },
+      { icon: Users, label: 'Membros', path: '/admin/relatorios/membros' },
+      { icon: Wallet, label: 'Financeiro', path: '/admin/relatorios/financeiro' },
+      { icon: Baby, label: 'Kids', path: '/admin/relatorios/kids' },
     ]
   },
   { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },
