@@ -1,10 +1,10 @@
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
+import { useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
-  UsersRound,
   Calendar,
   Bell,
   Church,
@@ -15,17 +15,30 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Shield,
   UserPlus,
   Network,
   BarChart3,
+  CheckSquare,
+  User,
+  MapPin,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
-const menuItems = [
+interface MenuItem {
+  icon: React.ElementType;
+  label: string;
+  path: string;
+  showBadge?: boolean;
+  submenu?: { icon: React.ElementType; label: string; path: string }[];
+}
+
+const menuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
   { icon: Users, label: 'Usuários', path: '/admin/usuarios' },
   { icon: UserPlus, label: 'Visitantes', path: '/admin/visitantes' },
@@ -38,7 +51,18 @@ const menuItems = [
   { icon: ClipboardList, label: 'Funções', path: '/admin/funcoes-ministerio' },
   { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
   { icon: Bell, label: 'Notificações', path: '/admin/notificacoes', showBadge: true },
-  { icon: Baby, label: 'Kids', path: '/admin/kids' },
+  { 
+    icon: Baby, 
+    label: 'Kids', 
+    path: '/admin/kids',
+    submenu: [
+      { icon: CheckSquare, label: 'Check-ins', path: '/admin/kids' },
+      { icon: Baby, label: 'Crianças', path: '/admin/kids/criancas' },
+      { icon: User, label: 'Responsáveis', path: '/admin/kids/responsaveis' },
+      { icon: MapPin, label: 'Salas', path: '/admin/kids/salas' },
+      { icon: FileText, label: 'Relatório', path: '/admin/kids/relatorio' },
+    ]
+  },
   { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },
   { icon: Bell, label: 'Avisos', path: '/admin/avisos' },
   { icon: Shield, label: 'Auditoria', path: '/admin/auditoria' },
@@ -47,8 +71,27 @@ const menuItems = [
 
 export default function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   const { profile, signOut } = useAuth();
   const { unreadCount } = useAdminNotifications();
+  const location = useLocation();
+
+  const isSubmenuActive = (item: MenuItem) => {
+    if (!item.submenu) return false;
+    return item.submenu.some(sub => location.pathname === sub.path || location.pathname.startsWith(sub.path + '/'));
+  };
+
+  const toggleSubmenu = (path: string) => {
+    setExpandedMenus(prev => 
+      prev.includes(path) 
+        ? prev.filter(p => p !== path)
+        : [...prev, path]
+    );
+  };
+
+  const isExpanded = (path: string) => {
+    return expandedMenus.includes(path) || menuItems.find(m => m.path === path && isSubmenuActive(m));
+  };
 
   return (
     <aside
@@ -73,29 +116,76 @@ export default function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
         {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === '/admin'}
-            className={cn(
-              'relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200',
-              collapsed && 'justify-center px-2'
-            )}
-            activeClassName="bg-sidebar-accent text-sidebar-foreground font-medium"
-          >
-            <item.icon className="w-5 h-5 flex-shrink-0" />
-            {!collapsed && <span className="text-sm">{item.label}</span>}
-            {item.showBadge && unreadCount > 0 && (
-              <Badge 
-                className={cn(
-                  "h-5 min-w-[20px] flex items-center justify-center p-0 text-xs bg-church-gold text-primary",
-                  collapsed ? "absolute -top-1 -right-1" : "ml-auto"
+          <div key={item.path}>
+            {item.submenu ? (
+              // Menu with submenu
+              <div>
+                <button
+                  onClick={() => toggleSubmenu(item.path)}
+                  className={cn(
+                    'w-full relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200',
+                    collapsed && 'justify-center px-2',
+                    isSubmenuActive(item) && 'bg-sidebar-accent text-sidebar-foreground font-medium'
+                  )}
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  {!collapsed && (
+                    <>
+                      <span className="text-sm flex-1 text-left">{item.label}</span>
+                      <ChevronDown 
+                        className={cn(
+                          'w-4 h-4 transition-transform duration-200',
+                          isExpanded(item.path) && 'rotate-180'
+                        )} 
+                      />
+                    </>
+                  )}
+                </button>
+                
+                {/* Submenu items */}
+                {!collapsed && isExpanded(item.path) && (
+                  <div className="mt-1 ml-4 pl-4 border-l border-sidebar-border/50 space-y-1">
+                    {item.submenu.map((subItem) => (
+                      <NavLink
+                        key={subItem.path}
+                        to={subItem.path}
+                        end={subItem.path === '/admin/kids'}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200 text-sm"
+                        activeClassName="bg-sidebar-accent/70 text-sidebar-foreground font-medium"
+                      >
+                        <subItem.icon className="w-4 h-4" />
+                        <span>{subItem.label}</span>
+                      </NavLink>
+                    ))}
+                  </div>
                 )}
+              </div>
+            ) : (
+              // Regular menu item
+              <NavLink
+                to={item.path}
+                end={item.path === '/admin'}
+                className={cn(
+                  'relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200',
+                  collapsed && 'justify-center px-2'
+                )}
+                activeClassName="bg-sidebar-accent text-sidebar-foreground font-medium"
               >
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </Badge>
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && <span className="text-sm">{item.label}</span>}
+                {item.showBadge && unreadCount > 0 && (
+                  <Badge 
+                    className={cn(
+                      "h-5 min-w-[20px] flex items-center justify-center p-0 text-xs bg-church-gold text-primary",
+                      collapsed ? "absolute -top-1 -right-1" : "ml-auto"
+                    )}
+                  >
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Badge>
+                )}
+              </NavLink>
             )}
-          </NavLink>
+          </div>
         ))}
       </nav>
 
