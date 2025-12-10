@@ -32,6 +32,7 @@ const menuItems = [
   { icon: Users, label: 'Membros', path: '/admin/membros' },
   { icon: Network, label: 'Bases', path: '/admin/bases' },
   { icon: BarChart3, label: 'Relatório Bases', path: '/admin/bases/relatorio' },
+  { icon: Users, label: 'Acompanhamento', path: '/admin/acompanhamento' },
   { icon: UsersRound, label: 'Grupos', path: '/admin/grupos' },
   { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
   { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },

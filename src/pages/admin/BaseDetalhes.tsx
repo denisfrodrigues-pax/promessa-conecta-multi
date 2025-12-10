@@ -51,6 +51,7 @@ interface BaseVisitante {
   status: string;
   observacao: string | null;
   visitante: Visitante;
+  statusAcompanhamento?: string;
 }
 
 export default function BaseDetalhes() {
@@ -77,7 +78,7 @@ export default function BaseDetalhes() {
 
   const visitantesFiltrados = filtroStatusVisitante === 'todos'
     ? visitantesBase
-    : visitantesBase.filter(v => v.status === filtroStatusVisitante);
+    : visitantesBase.filter(v => (v.statusAcompanhamento || v.status) === filtroStatusVisitante);
 
   useEffect(() => {
     if (id) {
@@ -154,7 +155,28 @@ export default function BaseDetalhes() {
       .neq('status', 'desligado');
 
     if (!error && data) {
-      setVisitantesBase(data as unknown as BaseVisitante[]);
+      // Fetch latest acompanhamento status for each visitor
+      const visitanteIds = data.map(d => d.visitante_id).filter(Boolean);
+      const { data: acompData } = await supabase
+        .from('acompanhamentos')
+        .select('visitante_id, status, created_at')
+        .eq('base_id', id)
+        .in('visitante_id', visitanteIds)
+        .order('created_at', { ascending: false });
+
+      // Map latest status per visitor
+      const latestStatus: Record<string, string> = {};
+      for (const acomp of acompData || []) {
+        if (!latestStatus[acomp.visitante_id]) {
+          latestStatus[acomp.visitante_id] = acomp.status;
+        }
+      }
+
+      const enriched = (data as unknown as BaseVisitante[]).map(bv => ({
+        ...bv,
+        statusAcompanhamento: latestStatus[bv.visitante_id] || bv.status,
+      }));
+      setVisitantesBase(enriched);
     }
   };
 
@@ -182,6 +204,7 @@ export default function BaseDetalhes() {
       em_acompanhamento: 'Em Acompanhamento',
       novo: 'Novo',
       contato_iniciado: 'Contato Iniciado',
+      concluido: 'Concluído',
       ativo: 'Ativo',
     };
     return labels[status] || status;
@@ -559,6 +582,7 @@ export default function BaseDetalhes() {
               <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
               <SelectItem value="novo">Novo</SelectItem>
               <SelectItem value="contato_iniciado">Contato Iniciado</SelectItem>
+              <SelectItem value="concluido">Concluído</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
@@ -588,7 +612,7 @@ export default function BaseDetalhes() {
                           </span>
                         )}
                         <Badge variant="outline" className="text-xs">
-                          {getStatusLabel(bv.status)}
+                          {getStatusLabel(bv.statusAcompanhamento || bv.status)}
                         </Badge>
                       </div>
                       {bv.observacao && (
