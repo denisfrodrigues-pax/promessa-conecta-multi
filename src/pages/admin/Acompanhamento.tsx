@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, RefreshCw, Users, Clock, MapPin, AlertTriangle } from 'lucide-react';
+import { Search, RefreshCw, Users, Clock, MapPin, AlertTriangle, Download, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -48,6 +48,64 @@ const statusColors: Record<string, string> = {
   contato_iniciado: 'bg-blue-100 text-blue-800 border-blue-300',
   em_acompanhamento: 'bg-purple-100 text-purple-800 border-purple-300',
   concluido: 'bg-green-100 text-green-800 border-green-300',
+};
+
+// Helper: Clean phone number (remove non-numeric chars)
+const cleanPhone = (phone: string | null): string => {
+  if (!phone) return '';
+  return phone.replace(/\D/g, '');
+};
+
+// Helper: Check if phone is valid
+const hasValidPhone = (phone: string | null): boolean => {
+  const cleaned = cleanPhone(phone);
+  return cleaned.length >= 10;
+};
+
+// Helper: Generate WhatsApp URL
+const getWhatsAppUrl = (phone: string | null): string => {
+  const cleaned = cleanPhone(phone);
+  const message = encodeURIComponent('Olá! Sou da Igreja da Promessa. Estou entrando em contato sobre sua visita recente :)');
+  return `https://wa.me/55${cleaned}?text=${message}`;
+};
+
+// Helper: Export to CSV
+const exportToCSV = (data: Acompanhamento[]) => {
+  const headers = ['visitante_nome', 'visitante_telefone', 'base_nome', 'status', 'observacao', 'data'];
+  
+  const rows = data.map((acomp) => [
+    acomp.visitante?.nome || '',
+    acomp.visitante?.telefone || '',
+    acomp.base?.nome || '',
+    statusLabels[acomp.status] || acomp.status,
+    acomp.observacao || '',
+    format(new Date(acomp.updated_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }),
+  ]);
+
+  // Escape CSV values
+  const escapeCSV = (value: string) => {
+    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  };
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map((row) => row.map(escapeCSV).join(',')),
+  ].join('\n');
+
+  // Add BOM for Excel compatibility
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `acompanhamentos_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
 
 export default function Acompanhamento() {
@@ -184,9 +242,23 @@ export default function Acompanhamento() {
     return (base.membros_count || 0) >= capacidade;
   };
 
+  const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      toast.error('Nenhum dado para exportar');
+      return;
+    }
+    exportToCSV(filtered);
+    toast.success('CSV exportado com sucesso!');
+  };
+
+  const handleWhatsAppClick = (phone: string | null) => {
+    if (!hasValidPhone(phone)) return;
+    window.open(getWhatsAppUrl(phone), '_blank');
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-display font-bold flex items-center gap-2">
             <Users className="h-6 w-6" />
@@ -194,6 +266,10 @@ export default function Acompanhamento() {
           </h1>
           <p className="text-muted-foreground">Acompanhe visitantes vinculados às bases</p>
         </div>
+        <Button variant="outline" onClick={handleExportCSV} disabled={loading || filtered.length === 0}>
+          <Download className="h-4 w-4 mr-2" />
+          Exportar CSV
+        </Button>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
@@ -249,6 +325,16 @@ export default function Acompanhamento() {
                     <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium">{acomp.visitante?.nome || 'Visitante'}</p>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
+                          disabled={!hasValidPhone(acomp.visitante?.telefone)}
+                          onClick={() => handleWhatsAppClick(acomp.visitante?.telefone)}
+                          title={hasValidPhone(acomp.visitante?.telefone) ? 'Enviar WhatsApp' : 'Telefone não disponível'}
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
                         <Badge variant="outline" className={statusColors[acomp.status]}>
                           {statusLabels[acomp.status]}
                         </Badge>
@@ -306,7 +392,8 @@ export default function Acompanhamento() {
             <div className="space-y-4">
               <div className="p-3 rounded-lg bg-muted/50 space-y-2">
                 <p className="text-sm">
-                  <span className="text-muted-foreground">Visitante:</span> <strong>{selectedAcomp.visitante?.nome}</strong>
+                  <span className="text-muted-foreground">Visitante:</span>{' '}
+                  <strong>{selectedAcomp.visitante?.nome}</strong>
                 </p>
                 <p className="text-sm">
                   <span className="text-muted-foreground">Base:</span> {selectedAcomp.base?.nome}
@@ -322,10 +409,17 @@ export default function Acompanhamento() {
                     <span className="text-muted-foreground">Líder:</span> {selectedAcomp.base.lider_nome}
                   </p>
                 )}
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Status atual:</span>{' '}
+                  <Badge variant="outline" className={`${statusColors[selectedAcomp.status]} text-xs`}>
+                    {statusLabels[selectedAcomp.status]}
+                  </Badge>
+                </p>
                 {selectedAcomp.observacao && (
-                  <p className="text-sm">
-                    <span className="text-muted-foreground">Última obs:</span> {selectedAcomp.observacao}
-                  </p>
+                  <div className="pt-2 border-t mt-2">
+                    <p className="text-xs text-muted-foreground mb-1">Última observação:</p>
+                    <p className="text-sm bg-background p-2 rounded border">{selectedAcomp.observacao}</p>
+                  </div>
                 )}
               </div>
               <div className="space-y-2">
