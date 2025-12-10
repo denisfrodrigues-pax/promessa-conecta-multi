@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Logo } from '@/components/Logo';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Bell, Users, ChevronRight, Heart, MapPin, Clock, Sparkles } from 'lucide-react';
@@ -66,8 +67,14 @@ export default function MemberHome() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/banner_home_placeholder.png')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-gradient-to-r from-promessa-900/40 to-promessa-700/20" />
+        
+        {/* Logo no canto superior esquerdo do hero */}
+        <div className="absolute top-4 left-4 z-20">
+          <Logo size={56} variant="white" />
+        </div>
+        
         <div className="container mx-auto px-4 py-16 relative z-10">
-          <div className="max-w-2xl">
+          <div className="max-w-2xl pt-8">
             <Badge className="bg-white/20 text-white border border-white/30 mb-4">
               <Sparkles className="w-3 h-3 mr-1" />
               Bem-vindo

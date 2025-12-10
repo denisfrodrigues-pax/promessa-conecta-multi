@@ -1,4 +1,5 @@
 import { NavLink } from '@/components/NavLink';
+import { Logo } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import { useLocation } from 'react-router-dom';
@@ -7,7 +8,6 @@ import {
   Users,
   Calendar,
   Bell,
-  Church,
   Music,
   ClipboardList,
   Baby,
@@ -141,10 +141,11 @@ export default function AdminSidebar() {
       )}
     >
       {/* Header - Clean Premium */}
-      <div className="p-4 flex items-center gap-3 border-b border-neutral-200">
-        <div className="w-10 h-10 rounded-xl bg-promessa-700 flex items-center justify-center flex-shrink-0">
-          <Church className="w-5 h-5 text-white" />
-        </div>
+      <div className={cn(
+        "p-4 flex items-center border-b border-neutral-200",
+        collapsed ? "justify-center" : "gap-3"
+      )}>
+        <Logo size={collapsed ? 32 : 40} />
         {!collapsed && (
           <div className="animate-fade-in">
             <p className="text-sm font-semibold text-promessa-700">Painel Admin</p>
