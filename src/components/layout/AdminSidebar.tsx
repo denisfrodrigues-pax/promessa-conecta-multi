@@ -24,6 +24,11 @@ import {
   User,
   MapPin,
   FileText,
+  Wallet,
+  ArrowLeftRight,
+  CreditCard,
+  Tag,
+  History,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -61,6 +66,19 @@ const menuItems: MenuItem[] = [
       { icon: User, label: 'Responsáveis', path: '/admin/kids/responsaveis' },
       { icon: MapPin, label: 'Salas', path: '/admin/kids/salas' },
       { icon: FileText, label: 'Relatório', path: '/admin/kids/relatorio' },
+    ]
+  },
+  {
+    icon: Wallet,
+    label: 'Financeiro',
+    path: '/admin/financeiro',
+    submenu: [
+      { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/financeiro' },
+      { icon: ArrowLeftRight, label: 'Transações', path: '/admin/financeiro/transacoes' },
+      { icon: CreditCard, label: 'Contas', path: '/admin/financeiro/contas' },
+      { icon: Tag, label: 'Categorias', path: '/admin/financeiro/categorias' },
+      { icon: FileText, label: 'Relatórios', path: '/admin/financeiro/relatorios' },
+      { icon: History, label: 'Auditoria', path: '/admin/financeiro/auditoria' },
     ]
   },
   { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },
