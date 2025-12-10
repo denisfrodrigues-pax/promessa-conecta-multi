@@ -4,16 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { Users, Eye, Calendar as CalendarIcon, Download, X, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Users, Eye, Download, Search, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 
 interface Visitante {
   id: string;
@@ -30,21 +27,79 @@ interface Visitante {
 
 const statusLabels: Record<string, string> = {
   novo: 'Novo',
-  contatado: 'Contatado',
+  contato_iniciado: 'Contato Iniciado',
+  em_acompanhamento: 'Em Acompanhamento',
+  concluido: 'Concluído',
 };
 
 const statusColors: Record<string, string> = {
   novo: 'bg-amber-100 text-amber-800 border-amber-300',
-  contatado: 'bg-green-100 text-green-800 border-green-300',
+  contato_iniciado: 'bg-blue-100 text-blue-800 border-blue-300',
+  em_acompanhamento: 'bg-purple-100 text-purple-800 border-purple-300',
+  concluido: 'bg-green-100 text-green-800 border-green-300',
+};
+
+// Helper: Clean phone number (remove non-numeric chars)
+const cleanPhone = (phone: string | null): string => {
+  if (!phone) return '';
+  return phone.replace(/\D/g, '');
+};
+
+// Helper: Check if phone is valid
+const hasValidPhone = (phone: string | null): boolean => {
+  const cleaned = cleanPhone(phone);
+  return cleaned.length >= 10;
+};
+
+// Helper: Generate WhatsApp URL
+const getWhatsAppUrl = (phone: string | null): string => {
+  const cleaned = cleanPhone(phone);
+  const message = encodeURIComponent('Olá! Sou da Igreja da Promessa. Estou entrando em contato sobre sua visita :)');
+  return `https://wa.me/55${cleaned}?text=${message}`;
+};
+
+// Helper: Export to CSV
+const exportToCSV = (data: Visitante[]) => {
+  const headers = ['nome', 'telefone', 'status', 'data_criacao', 'ultima_atualizacao'];
+  
+  const rows = data.map((v) => [
+    v.nome || '',
+    v.telefone || '',
+    statusLabels[v.status || 'novo'] || v.status || '',
+    v.created_at ? format(new Date(v.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : '',
+    v.created_at ? format(new Date(v.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : '',
+  ]);
+
+  // Escape CSV values
+  const escapeCSV = (value: string) => {
+    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  };
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map((row) => row.map(escapeCSV).join(',')),
+  ].join('\n');
+
+  // Add BOM for Excel compatibility
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `visitantes_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
 
 export default function Visitantes() {
   const [visitantes, setVisitantes] = useState<Visitante[]>([]);
   const [loading, setLoading] = useState(true);
-  const [exporting, setExporting] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
-  const [dataInicial, setDataInicial] = useState<Date | undefined>(undefined);
-  const [dataFinal, setDataFinal] = useState<Date | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -71,22 +126,19 @@ export default function Visitantes() {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [filtroStatus, dataInicial, dataFinal, debouncedSearch]);
+  }, [filtroStatus, debouncedSearch]);
 
   useEffect(() => {
     fetchVisitantes();
-  }, [filtroStatus, dataInicial, dataFinal, debouncedSearch, page]);
-
-  // Highlight function for search results
-  const highlight = (text: string) => {
-    if (!debouncedSearch.trim()) return text;
-    const regex = new RegExp(`(${debouncedSearch})`, 'gi');
-    return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
-  };
+  }, [filtroStatus, debouncedSearch, page]);
 
   const fetchVisitantes = async () => {
     try {
       setLoading(true);
+
+      // Build search filter for name OR phone
+      const searchClean = debouncedSearch.trim();
+      const searchNumeric = cleanPhone(searchClean);
 
       // First: get total count for pagination
       let countQuery = supabase
@@ -96,14 +148,10 @@ export default function Visitantes() {
       if (filtroStatus !== 'todos') {
         countQuery = countQuery.eq('status', filtroStatus);
       }
-      if (debouncedSearch.trim() !== '') {
-        countQuery = countQuery.ilike('nome', `%${debouncedSearch.trim()}%`);
-      }
-      if (dataInicial) {
-        countQuery = countQuery.gte('created_at', `${format(dataInicial, 'yyyy-MM-dd')}T00:00:00`);
-      }
-      if (dataFinal) {
-        countQuery = countQuery.lte('created_at', `${format(dataFinal, 'yyyy-MM-dd')}T23:59:59`);
+      
+      if (searchClean !== '') {
+        // Search by name OR phone (cleaned)
+        countQuery = countQuery.or(`nome.ilike.%${searchClean}%,telefone.ilike.%${searchNumeric}%,telefone.ilike.%${searchClean}%`);
       }
 
       const { count } = await countQuery;
@@ -119,14 +167,9 @@ export default function Visitantes() {
       if (filtroStatus !== 'todos') {
         query = query.eq('status', filtroStatus);
       }
-      if (debouncedSearch.trim() !== '') {
-        query = query.ilike('nome', `%${debouncedSearch.trim()}%`);
-      }
-      if (dataInicial) {
-        query = query.gte('created_at', `${format(dataInicial, 'yyyy-MM-dd')}T00:00:00`);
-      }
-      if (dataFinal) {
-        query = query.lte('created_at', `${format(dataFinal, 'yyyy-MM-dd')}T23:59:59`);
+      
+      if (searchClean !== '') {
+        query = query.or(`nome.ilike.%${searchClean}%,telefone.ilike.%${searchNumeric}%,telefone.ilike.%${searchClean}%`);
       }
 
       const { data, error } = await query;
@@ -146,334 +189,153 @@ export default function Visitantes() {
     return format(new Date(dateStr), 'dd/MM/yyyy', { locale: ptBR });
   };
 
-  const clearFilters = () => {
-    setFiltroStatus('todos');
-    setDataInicial(undefined);
-    setDataFinal(undefined);
-    setSearchTerm('');
-    setPage(1);
-  };
-
   const totalPages = Math.ceil(total / limit);
 
-  const hasActiveFilters = filtroStatus !== 'todos' || dataInicial || dataFinal || searchTerm.trim() !== '';
-
-  const exportToCSV = () => {
+  const handleExportCSV = () => {
     if (visitantes.length === 0) {
       toast.error('Nenhum visitante para exportar');
       return;
     }
+    exportToCSV(visitantes);
+    toast.success('CSV exportado com sucesso!');
+  };
 
-    setExporting(true);
-
-    try {
-      // UTF-8 BOM for Excel compatibility
-      const BOM = '\uFEFF';
-      
-      const headers = ['ID', 'Nome', 'Telefone', 'Melhor Horário', 'Observações', 'Status', 'Data Cadastro'];
-      
-      const rows = visitantes.map(v => [
-        v.id,
-        v.nome,
-        v.telefone || '',
-        v.melhor_horario || '',
-        (v.observacoes || '').replace(/"/g, '""'),
-        statusLabels[v.status || 'novo'] || v.status || '',
-        v.created_at ? format(new Date(v.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : '',
-      ]);
-
-      const csvContent = BOM + [
-        headers.join(';'),
-        ...rows.map(row => row.map(cell => `"${cell}"`).join(';'))
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `visitantes_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      toast.success(`${visitantes.length} visitantes exportados com sucesso!`);
-    } catch (error) {
-      console.error('Erro ao exportar:', error);
-      toast.error('Erro ao exportar CSV');
-    } finally {
-      setExporting(false);
-    }
+  const handleWhatsAppClick = (phone: string | null) => {
+    if (!hasValidPhone(phone)) return;
+    window.open(getWhatsAppUrl(phone), '_blank');
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Visitantes</h1>
+          <h1 className="text-2xl font-display font-bold flex items-center gap-2">
+            <Users className="h-6 w-6" />
+            Visitantes
+          </h1>
           <p className="text-muted-foreground">Gerencie os visitantes da igreja</p>
         </div>
+        <Button variant="outline" onClick={handleExportCSV} disabled={loading || visitantes.length === 0}>
+          <Download className="h-4 w-4 mr-2" />
+          Exportar CSV
+        </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{total}</p>
-                <p className="text-sm text-muted-foreground">Total</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {visitantes.filter((v) => v.status === 'novo').length}
-                </p>
-                <p className="text-sm text-muted-foreground">Novos</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {visitantes.filter((v) => v.status === 'contatado').length}
-                </p>
-                <p className="text-sm text-muted-foreground">Contatados</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Filtros inline */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome ou telefone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+          <SelectTrigger className="w-full md:w-52">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos</SelectItem>
+            <SelectItem value="novo">Novo</SelectItem>
+            <SelectItem value="contato_iniciado">Contato Iniciado</SelectItem>
+            <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
+            <SelectItem value="concluido">Concluído</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Filters */}
+      {/* Lista */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CalendarIcon className="w-4 h-4" />
-            Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap items-end gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Buscar</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-[200px] pl-9"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium" id="data-inicial-label">Data Inicial</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-[180px] justify-start text-left font-normal",
-                      !dataInicial && "text-muted-foreground"
-                    )}
-                    aria-labelledby="data-inicial-label"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dataInicial ? format(dataInicial, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecione'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dataInicial}
-                    onSelect={setDataInicial}
-                    initialFocus
-                    className="pointer-events-auto"
-                    locale={ptBR}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium" id="data-final-label">Data Final</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-[180px] justify-start text-left font-normal",
-                      !dataFinal && "text-muted-foreground"
-                    )}
-                    aria-labelledby="data-final-label"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dataFinal ? format(dataFinal, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecione'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dataFinal}
-                    onSelect={setDataFinal}
-                    initialFocus
-                    className="pointer-events-auto"
-                    locale={ptBR}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="novo">Novos</SelectItem>
-                  <SelectItem value="contatado">Contatados</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters}>
-                <X className="w-4 h-4 mr-1" />
-                Limpar filtros
-              </Button>
-            )}
-
-            <div className="ml-auto">
-              <Button 
-                variant="outline" 
-                onClick={exportToCSV}
-                disabled={exporting || visitantes.length === 0}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                {exporting ? 'Exportando...' : 'Exportar CSV'}
-              </Button>
-            </div>
-          </div>
-
-          {hasActiveFilters && (
-            <div className="mt-4">
-              <Badge variant="secondary">
-                {total} resultado{total !== 1 ? 's' : ''} encontrado{total !== 1 ? 's' : ''}
-              </Badge>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5" />
-            Lista de Visitantes
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Visitantes ({total})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Carregando...</div>
-          ) : visitantes.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhum visitante encontrado
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-20 w-full" />
+              ))}
             </div>
+          ) : visitantes.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              Nenhum visitante encontrado
+            </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead>Melhor Horário</TableHead>
-                  <TableHead>Cadastro</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visitantes.map((visitante) => (
-                  <TableRow key={visitante.id}>
-                    <TableCell 
-                      className="font-medium"
-                      dangerouslySetInnerHTML={{ __html: highlight(visitante.nome) }}
-                    />
-                    <TableCell><span dangerouslySetInnerHTML={{ __html: highlight(visitante.telefone || '-') }} /></TableCell>
-                    <TableCell><span dangerouslySetInnerHTML={{ __html: highlight(visitante.melhor_horario || '-') }} /></TableCell>
-                    <TableCell>{formatDate(visitante.created_at)}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant="outline" 
-                        className={statusColors[visitante.status || 'novo']}
-                      >
-                        {statusLabels[visitante.status || 'novo']}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/admin/visitantes/${visitante.id}`)}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        Ver
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="space-y-3">
+              {visitantes.map((visitante) => (
+                <div
+                  key={visitante.id}
+                  className="p-4 rounded-lg border bg-card hover:shadow-sm transition-shadow"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium truncate">{visitante.nome}</p>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
+                          disabled={!hasValidPhone(visitante.telefone)}
+                          onClick={() => handleWhatsAppClick(visitante.telefone)}
+                          title={hasValidPhone(visitante.telefone) ? 'Enviar WhatsApp' : 'Telefone não disponível'}
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
+                        <Badge variant="outline" className={statusColors[visitante.status || 'novo']}>
+                          {statusLabels[visitante.status || 'novo']}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mt-1">
+                        <span>{visitante.telefone || 'Sem telefone'}</span>
+                        <span>Cadastro: {formatDate(visitante.created_at)}</span>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/admin/visitantes/${visitante.id}`)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Ver Detalhes
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
 
-          {/* Pagination */}
-          {total > 0 && (
-            <div className="flex items-center justify-between py-3 mt-4 pt-4 border-t">
-              <div className="text-sm text-muted-foreground">
-                Mostrando{" "}
-                <strong>{total === 0 ? 0 : (page - 1) * limit + 1}</strong> –{" "}
-                <strong>{Math.min(page * limit, total)}</strong> de{" "}
-                <strong>{total}</strong> visitantes
-              </div>
-
-              <div className="space-x-2">
+          {/* Paginação */}
+          {total > limit && (
+            <div className="flex items-center justify-between py-4 mt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                Mostrando <strong>{(page - 1) * limit + 1}</strong> – <strong>{Math.min(page * limit, total)}</strong> de <strong>{total}</strong>
+              </p>
+              <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={page === 1}
                   onClick={() => setPage(page - 1)}
                 >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
                   Anterior
                 </Button>
-
+                <span className="text-sm text-muted-foreground px-2">
+                  {page} / {totalPages}
+                </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={page * limit >= total}
+                  disabled={page >= totalPages}
                   onClick={() => setPage(page + 1)}
                 >
                   Próxima
+                  <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </div>
