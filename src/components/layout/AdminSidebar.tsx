@@ -38,7 +38,7 @@ const menuItems = [
   { icon: ClipboardList, label: 'Funções', path: '/admin/funcoes-ministerio' },
   { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
   { icon: Bell, label: 'Notificações', path: '/admin/notificacoes', showBadge: true },
-  { icon: Baby, label: 'Infantil', path: '/admin/infantil' },
+  { icon: Baby, label: 'Kids', path: '/admin/kids' },
   { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },
   { icon: Bell, label: 'Avisos', path: '/admin/avisos' },
   { icon: Shield, label: 'Auditoria', path: '/admin/auditoria' },

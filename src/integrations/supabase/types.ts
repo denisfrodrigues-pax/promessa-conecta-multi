@@ -261,6 +261,77 @@ export type Database = {
           },
         ]
       }
+      checkins_kids: {
+        Row: {
+          checkin_at: string
+          checkout_at: string | null
+          checkout_responsavel_id: string | null
+          created_at: string
+          crianca_id: string
+          id: string
+          observacao: string | null
+          responsavel_id: string
+          sala_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          checkin_at?: string
+          checkout_at?: string | null
+          checkout_responsavel_id?: string | null
+          created_at?: string
+          crianca_id: string
+          id?: string
+          observacao?: string | null
+          responsavel_id: string
+          sala_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          checkin_at?: string
+          checkout_at?: string | null
+          checkout_responsavel_id?: string | null
+          created_at?: string
+          crianca_id?: string
+          id?: string
+          observacao?: string | null
+          responsavel_id?: string
+          sala_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkins_kids_checkout_responsavel_id_fkey"
+            columns: ["checkout_responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_kids_crianca_id_fkey"
+            columns: ["crianca_id"]
+            isOneToOne: false
+            referencedRelation: "criancas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_kids_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_kids_sala_id_fkey"
+            columns: ["sala_id"]
+            isOneToOne: false
+            referencedRelation: "salas_kids"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracoes_instituicao: {
         Row: {
           banner_home_url: string | null
@@ -368,6 +439,45 @@ export type Database = {
             columns: ["turma_id"]
             isOneToOne: false
             referencedRelation: "turmas_infantil"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      criancas_responsaveis: {
+        Row: {
+          created_at: string
+          crianca_id: string
+          id: string
+          responsavel_id: string
+          tipo_relacao: string | null
+        }
+        Insert: {
+          created_at?: string
+          crianca_id: string
+          id?: string
+          responsavel_id: string
+          tipo_relacao?: string | null
+        }
+        Update: {
+          created_at?: string
+          crianca_id?: string
+          id?: string
+          responsavel_id?: string
+          tipo_relacao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "criancas_responsaveis_crianca_id_fkey"
+            columns: ["crianca_id"]
+            isOneToOne: false
+            referencedRelation: "criancas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "criancas_responsaveis_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis"
             referencedColumns: ["id"]
           },
         ]
@@ -1058,6 +1168,63 @@ export type Database = {
           telefone?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      responsaveis: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          observacoes: string | null
+          telefone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          observacoes?: string | null
+          telefone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          telefone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      salas_kids: {
+        Row: {
+          capacidade: number | null
+          created_at: string
+          id: string
+          nome: string
+          observacao: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          capacidade?: number | null
+          created_at?: string
+          id?: string
+          nome: string
+          observacao?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          capacidade?: number | null
+          created_at?: string
+          id?: string
+          nome?: string
+          observacao?: string | null
+          status?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
