@@ -34,6 +34,11 @@ import AdminBaseNova from "@/pages/admin/BaseNova";
 import AdminBaseDetalhes from "@/pages/admin/BaseDetalhes";
 import AdminBaseRelatorio from "@/pages/admin/BaseRelatorio";
 import AdminAcompanhamento from "@/pages/admin/Acompanhamento";
+import KidsCheckins from "@/pages/admin/kids/KidsCheckins";
+import KidsCheckinDetalhes from "@/pages/admin/kids/KidsCheckinDetalhes";
+import KidsCriancas from "@/pages/admin/kids/KidsCriancas";
+import KidsResponsaveis from "@/pages/admin/kids/KidsResponsaveis";
+import KidsSalas from "@/pages/admin/kids/KidsSalas";
 
 // Member Pages
 import MemberHome from "@/pages/member/Home";
@@ -95,7 +100,11 @@ const App = () => (
               <Route path="bases/relatorio" element={<AdminBaseRelatorio />} />
               <Route path="bases/:id" element={<AdminBaseDetalhes />} />
               <Route path="acompanhamento" element={<AdminAcompanhamento />} />
-              <Route path="infantil" element={<AdminDashboard />} />
+              <Route path="kids" element={<KidsCheckins />} />
+              <Route path="kids/checkin/:id" element={<KidsCheckinDetalhes />} />
+              <Route path="kids/criancas" element={<KidsCriancas />} />
+              <Route path="kids/responsaveis" element={<KidsResponsaveis />} />
+              <Route path="kids/salas" element={<KidsSalas />} />
               <Route path="auditoria" element={<AdminDashboard />} />
               <Route path="configuracoes" element={<AdminDashboard />} />
             </Route>
