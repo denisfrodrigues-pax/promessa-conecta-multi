@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Save, Upload, User, Phone, Mail, MapPin, Calendar, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -16,6 +17,12 @@ const estadoCivilOptions = [
   { value: 'casado', label: 'Casado(a)' },
   { value: 'divorciado', label: 'Divorciado(a)' },
   { value: 'viuvo', label: 'Viúvo(a)' },
+];
+
+const statusOptions = [
+  { value: 'ativo', label: 'Ativo' },
+  { value: 'inativo', label: 'Inativo' },
+  { value: 'em_acompanhamento', label: 'Em Acompanhamento' },
 ];
 
 export default function MembroNovo() {
@@ -77,6 +84,7 @@ export default function MembroNovo() {
           telefone: data.telefone || '',
           email: data.email || '',
           observacoes: observacoes.trim(),
+          status: 'em_acompanhamento',
         }));
       }
     } catch (error) {
@@ -168,6 +176,14 @@ export default function MembroNovo() {
         }
       }
 
+      // Update visitor status if converting from visitor
+      if (fromVisitante) {
+        await supabase
+          .from('visitantes')
+          .update({ status: 'concluido' })
+          .eq('id', fromVisitante);
+      }
+
       toast.success('Membro criado com sucesso!');
       navigate('/admin/membros');
     } catch (error) {
@@ -184,8 +200,18 @@ export default function MembroNovo() {
 
   if (loadingVisitante) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Carregando dados do visitante...</p>
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-10" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-[250px]" />
+            <Skeleton className="h-4 w-[180px]" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-[300px]" />
+          <Skeleton className="h-[500px] lg:col-span-2" />
+        </div>
       </div>
     );
   }
@@ -353,8 +379,11 @@ export default function MembroNovo() {
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ativo">Ativo</SelectItem>
-                      <SelectItem value="inativo">Inativo</SelectItem>
+                      {statusOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
