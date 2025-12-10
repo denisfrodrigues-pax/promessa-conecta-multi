@@ -466,6 +466,36 @@ export default function Membros() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Pagination Top */}
+          {!loading && total > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 mb-4 border-b">
+              <div className="text-sm text-muted-foreground">
+                Mostrando{" "}
+                <strong>{total === 0 ? 0 : (page - 1) * limit + 1}</strong> –{" "}
+                <strong>{Math.min(page * limit, total)}</strong> de{" "}
+                <strong>{total}</strong> membros
+              </div>
+              <div className="space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                >
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page * limit >= total}
+                  onClick={() => setPage(page + 1)}
+                >
+                  Próxima
+                </Button>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="space-y-3">
               {[...Array(6)].map((_, i) => (
