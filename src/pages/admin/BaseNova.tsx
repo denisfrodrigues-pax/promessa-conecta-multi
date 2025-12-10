@@ -38,15 +38,13 @@ export default function BaseNova() {
   }, []);
 
   const fetchMembros = async () => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('membros')
       .select('id, nome')
       .eq('status', 'ativo')
       .order('nome');
 
-    if (!error && data) {
-      setMembros(data);
-    }
+    if (data) setMembros(data);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,35 +82,41 @@ export default function BaseNova() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      {/* Header */}
+      <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate('/admin/bases')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Network className="h-6 w-6" />
-          Nova Base
-        </h1>
+        <div>
+          <h1 className="text-xl font-display font-bold flex items-center gap-2">
+            <Network className="h-5 w-5" />
+            Nova Base
+          </h1>
+          <p className="text-sm text-muted-foreground">Preencha os dados para criar uma nova base</p>
+        </div>
       </div>
 
-      <Card className="shadow-card max-w-2xl">
-        <CardHeader>
-          <CardTitle>Dados da Base</CardTitle>
+      {/* Form Card */}
+      <Card className="max-w-2xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Dados da Base</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nome">Nome *</Label>
+            {/* Nome */}
+            <div className="space-y-1.5">
+              <Label htmlFor="nome" className="text-xs text-muted-foreground">Nome *</Label>
               <Input
                 id="nome"
                 value={formData.nome}
                 onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                 placeholder="Nome da base"
-                required
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="descricao">Descrição</Label>
+            {/* Descrição */}
+            <div className="space-y-1.5">
+              <Label htmlFor="descricao" className="text-xs text-muted-foreground">Descrição</Label>
               <Textarea
                 id="descricao"
                 value={formData.descricao}
@@ -122,12 +126,13 @@ export default function BaseNova() {
               />
             </div>
 
+            {/* Dia + Horário */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Dia da Semana</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Dia da Semana</Label>
                 <Select
-                  value={formData.dia_semana || "none"}
-                  onValueChange={(v) => setFormData({ ...formData, dia_semana: v === "none" ? "" : v })}
+                  value={formData.dia_semana || 'none'}
+                  onValueChange={(v) => setFormData({ ...formData, dia_semana: v === 'none' ? '' : v })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione" />
@@ -140,8 +145,8 @@ export default function BaseNova() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Horário</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Horário</Label>
                 <Input
                   type="time"
                   value={formData.horario}
@@ -150,8 +155,9 @@ export default function BaseNova() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Local</Label>
+            {/* Local */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Local</Label>
               <Input
                 value={formData.local}
                 onChange={(e) => setFormData({ ...formData, local: e.target.value })}
@@ -159,17 +165,19 @@ export default function BaseNova() {
               />
             </div>
 
+            {/* Capacidade + Visibilidade */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Capacidade</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Capacidade</Label>
                 <Input
                   type="number"
                   value={formData.capacidade}
                   onChange={(e) => setFormData({ ...formData, capacidade: parseInt(e.target.value) || 20 })}
+                  min={1}
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Visibilidade</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Visibilidade</Label>
                 <Select
                   value={formData.visibilidade}
                   onValueChange={(v) => setFormData({ ...formData, visibilidade: v })}
@@ -185,31 +193,31 @@ export default function BaseNova() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="lider">Líder</Label>
+            {/* Líder */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Líder</Label>
               <Select
-                value={formData.lider_id || "none"}
-                onValueChange={(value) => setFormData({ ...formData, lider_id: value === "none" ? "" : value })}
+                value={formData.lider_id || 'none'}
+                onValueChange={(v) => setFormData({ ...formData, lider_id: v === 'none' ? '' : v })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um líder" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
-                  {membros.map((membro) => (
-                    <SelectItem key={membro.id} value={membro.id}>
-                      {membro.nome}
-                    </SelectItem>
+                  {membros.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+            {/* Status */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value })}
+                onValueChange={(v) => setFormData({ ...formData, status: v })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -221,12 +229,13 @@ export default function BaseNova() {
               </Select>
             </div>
 
-            <div className="flex gap-3 pt-4">
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => navigate('/admin/bases')}>
-                Cancelar
+                Voltar
               </Button>
               <Button type="submit" disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-4 w-4 mr-1" />
                 {loading ? 'Salvando...' : 'Criar Base'}
               </Button>
             </div>

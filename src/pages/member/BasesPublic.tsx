@@ -4,6 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, MapPin, Clock, ChevronRight, Search, Home } from 'lucide-react';
 
@@ -17,16 +19,30 @@ interface Base {
   capacidade: number | null;
   visibilidade: string | null;
   lider_id: string | null;
-  lider: {
-    nome: string;
-  } | null;
+  lider: { nome: string } | null;
   membros_count: number;
 }
+
+const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
+const formatDiaHorario = (dia: string | null, horario: string | null) => {
+  if (!dia && !horario) return null;
+  const parts = [];
+  if (dia) parts.push(dia.toLowerCase());
+  if (horario) parts.push(horario);
+  return parts.join(' • ');
+};
+
+const isLotada = (membrosCount: number, capacidade: number | null) => {
+  if (!capacidade) return false;
+  return membrosCount >= capacidade;
+};
 
 export default function BasesPublic() {
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [filtroDia, setFiltroDia] = useState('todos');
 
   useEffect(() => {
     fetchBases();
@@ -34,18 +50,10 @@ export default function BasesPublic() {
 
   const fetchBases = async () => {
     try {
-      const { data: basesData, error } = await supabase
+      const { data, error } = await supabase
         .from('bases')
         .select(`
-          id,
-          nome,
-          descricao,
-          dia_semana,
-          horario,
-          local,
-          capacidade,
-          visibilidade,
-          lider_id,
+          id, nome, descricao, dia_semana, horario, local, capacidade, visibilidade, lider_id,
           lider:membros!bases_lider_id_fkey(nome)
         `)
         .eq('status', 'ativo')
@@ -53,19 +61,14 @@ export default function BasesPublic() {
 
       if (error) throw error;
 
-      // Get member counts for each base
       const basesWithCounts = await Promise.all(
-        (basesData || []).map(async (base) => {
+        (data || []).map(async (base) => {
           const { count } = await supabase
             .from('bases_membros')
             .select('*', { count: 'exact', head: true })
             .eq('base_id', base.id)
             .eq('status', 'ativo');
-
-          return {
-            ...base,
-            membros_count: count || 0,
-          };
+          return { ...base, membros_count: count || 0 };
         })
       );
 
@@ -77,24 +80,16 @@ export default function BasesPublic() {
     }
   };
 
-  const formatDiaHorario = (dia: string | null, horario: string | null) => {
-    if (!dia && !horario) return null;
-    const parts = [];
-    if (dia) parts.push(dia.toLowerCase());
-    if (horario) parts.push(horario);
-    return parts.join(' • ');
-  };
+  const filtered = bases.filter((base) => {
+    const searchLower = search.toLowerCase();
+    const matchesSearch =
+      base.nome.toLowerCase().includes(searchLower) ||
+      base.local?.toLowerCase().includes(searchLower) ||
+      base.lider?.nome?.toLowerCase().includes(searchLower);
 
-  const isLotada = (base: Base) => {
-    if (!base.capacidade) return false;
-    return base.membros_count >= base.capacidade;
-  };
-
-  const filteredBases = bases.filter((base) =>
-    base.nome.toLowerCase().includes(search.toLowerCase()) ||
-    base.local?.toLowerCase().includes(search.toLowerCase()) ||
-    base.lider?.nome?.toLowerCase().includes(search.toLowerCase())
-  );
+    const matchesDia = filtroDia === 'todos' || base.dia_semana === filtroDia;
+    return matchesSearch && matchesDia;
+  });
 
   return (
     <div className="pb-24 md:pb-6">
@@ -114,43 +109,50 @@ export default function BasesPublic() {
               Nossas Bases são pequenos grupos onde você pode crescer na fé, fazer amizades e ser acompanhado de perto.
             </p>
             <Button asChild variant="gold" size="lg">
-              <Link to="/sou-novo">Sou Novo Aqui</Link>
+              <Link to="/sou-novo">Quero Participar</Link>
             </Button>
           </div>
         </div>
       </section>
 
       <div className="container mx-auto px-4 py-8 space-y-6">
-        {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome, local ou líder..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome, local ou líder..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={filtroDia} onValueChange={setFiltroDia}>
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder="Dia" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os dias</SelectItem>
+              {diasSemana.map((dia) => (
+                <SelectItem key={dia} value={dia}>{dia}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Stats */}
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>{filteredBases.length} {filteredBases.length === 1 ? 'base encontrada' : 'bases encontradas'}</span>
+          <span>{filtered.length} {filtered.length === 1 ? 'base encontrada' : 'bases encontradas'}</span>
         </div>
 
-        {/* Bases Grid */}
+        {/* List */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-6">
-                  <div className="h-6 bg-muted rounded w-3/4 mb-3" />
-                  <div className="h-4 bg-muted rounded w-full mb-2" />
-                  <div className="h-4 bg-muted rounded w-2/3" />
-                </CardContent>
-              </Card>
+              <Skeleton key={i} className="h-56" />
             ))}
           </div>
-        ) : filteredBases.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -159,7 +161,7 @@ export default function BasesPublic() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredBases.map((base) => (
+            {filtered.map((base) => (
               <Link key={base.id} to={`/bases/${base.id}`}>
                 <Card className="shadow-card hover:shadow-elevated transition-all duration-300 h-full group">
                   <CardContent className="p-6">
@@ -167,10 +169,8 @@ export default function BasesPublic() {
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                         <Users className="w-6 h-6 text-primary" />
                       </div>
-                      {isLotada(base) && (
-                        <Badge variant="destructive" className="text-xs">
-                          Lotada
-                        </Badge>
+                      {isLotada(base.membros_count, base.capacidade) && (
+                        <Badge variant="destructive" className="text-xs">Lotada</Badge>
                       )}
                     </div>
 

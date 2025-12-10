@@ -3,8 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, MapPin, Clock, ArrowLeft, User, Info, Eye, AlertCircle } from 'lucide-react';
+import { Users, MapPin, Clock, ArrowLeft, User, Info, AlertCircle } from 'lucide-react';
 
 interface Base {
   id: string;
@@ -16,11 +18,17 @@ interface Base {
   capacidade: number | null;
   visibilidade: string | null;
   lider_id: string | null;
-  lider: {
-    nome: string;
-  } | null;
+  lider: { nome: string } | null;
   membros_count: number;
 }
+
+const formatDiaHorario = (dia: string | null, horario: string | null) => {
+  if (!dia && !horario) return null;
+  const parts = [];
+  if (dia) parts.push(dia.toLowerCase());
+  if (horario) parts.push(horario);
+  return parts.join(' • ');
+};
 
 export default function BaseDetalhesPublic() {
   const { id } = useParams<{ id: string }>();
@@ -28,9 +36,7 @@ export default function BaseDetalhesPublic() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id) {
-      fetchBase();
-    }
+    if (id) fetchBase();
   }, [id]);
 
   const fetchBase = async () => {
@@ -38,15 +44,7 @@ export default function BaseDetalhesPublic() {
       const { data, error } = await supabase
         .from('bases')
         .select(`
-          id,
-          nome,
-          descricao,
-          dia_semana,
-          horario,
-          local,
-          capacidade,
-          visibilidade,
-          lider_id,
+          id, nome, descricao, dia_semana, horario, local, capacidade, visibilidade, lider_id,
           lider:membros!bases_lider_id_fkey(nome)
         `)
         .eq('id', id)
@@ -55,30 +53,18 @@ export default function BaseDetalhesPublic() {
 
       if (error) throw error;
 
-      // Get member count
       const { count } = await supabase
         .from('bases_membros')
         .select('*', { count: 'exact', head: true })
         .eq('base_id', id)
         .eq('status', 'ativo');
 
-      setBase({
-        ...data,
-        membros_count: count || 0,
-      });
+      setBase({ ...data, membros_count: count || 0 });
     } catch (error) {
       console.error('Error fetching base:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDiaHorario = (dia: string | null, horario: string | null) => {
-    if (!dia && !horario) return null;
-    const parts = [];
-    if (dia) parts.push(dia.toLowerCase());
-    if (horario) parts.push(horario);
-    return parts.join(' • ');
   };
 
   const isLotada = () => {
@@ -94,9 +80,9 @@ export default function BaseDetalhesPublic() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-muted rounded w-1/4" />
-          <div className="h-64 bg-muted rounded" />
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-1/4" />
+          <Skeleton className="h-64" />
         </div>
       </div>
     );
@@ -144,7 +130,7 @@ export default function BaseDetalhesPublic() {
               <Users className="w-8 h-8 text-primary-foreground" />
             </div>
             <div>
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-3 mb-2 flex-wrap">
                 <h1 className="text-3xl md:text-4xl font-display font-bold">
                   {base.nome}
                 </h1>
@@ -209,18 +195,6 @@ export default function BaseDetalhesPublic() {
                     </div>
                   </div>
                 )}
-
-                {base.visibilidade && (
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                    <div className="w-10 h-10 rounded-lg bg-rose-100 flex items-center justify-center">
-                      <Eye className="w-5 h-5 text-rose-500" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Visibilidade</p>
-                      <p className="font-medium capitalize">{base.visibilidade}</p>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
@@ -248,14 +222,10 @@ export default function BaseDetalhesPublic() {
 
                 {base.capacidade && (
                   <>
-                    <div className="w-full bg-muted rounded-full h-3 mb-2">
-                      <div
-                        className={`h-3 rounded-full transition-all ${
-                          isLotada() ? 'bg-destructive' : 'bg-primary'
-                        }`}
-                        style={{ width: `${getOcupacaoPercent()}%` }}
-                      />
-                    </div>
+                    <Progress
+                      value={getOcupacaoPercent()}
+                      className={`h-3 mb-2 ${isLotada() ? '[&>div]:bg-destructive' : ''}`}
+                    />
                     <p className="text-xs text-center text-muted-foreground">
                       {Math.round(getOcupacaoPercent())}% ocupada
                     </p>
