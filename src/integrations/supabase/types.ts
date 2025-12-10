@@ -100,6 +100,44 @@ export type Database = {
           },
         ]
       }
+      auditoria_financeira: {
+        Row: {
+          acao: string
+          created_at: string | null
+          entidade: string
+          entidade_id: string | null
+          id: string
+          payload: Json | null
+          usuario_id: string | null
+        }
+        Insert: {
+          acao: string
+          created_at?: string | null
+          entidade: string
+          entidade_id?: string | null
+          id?: string
+          payload?: Json | null
+          usuario_id?: string | null
+        }
+        Update: {
+          acao?: string
+          created_at?: string | null
+          entidade?: string
+          entidade_id?: string | null
+          id?: string
+          payload?: Json | null
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auditoria_financeira_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       avisos: {
         Row: {
           conteudo: string
@@ -261,6 +299,33 @@ export type Database = {
           },
         ]
       }
+      categorias_financeiras: {
+        Row: {
+          created_at: string | null
+          descricao: string | null
+          id: string
+          natureza: string
+          nome: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          natureza: string
+          nome: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          natureza?: string
+          nome?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       checkins_kids: {
         Row: {
           checkin_at: string
@@ -386,6 +451,42 @@ export type Database = {
           telefone?: string | null
           updated_at?: string | null
           urls_transmissao?: Json | null
+        }
+        Relationships: []
+      }
+      contas_financeiras: {
+        Row: {
+          created_at: string | null
+          descricao: string | null
+          id: string
+          moeda: string | null
+          nome: string
+          saldo: number | null
+          status: string | null
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          moeda?: string | null
+          nome: string
+          saldo?: number | null
+          status?: string | null
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          moeda?: string | null
+          nome?: string
+          saldo?: number | null
+          status?: string | null
+          tipo?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1228,6 +1329,106 @@ export type Database = {
         }
         Relationships: []
       }
+      transacoes_financeiras: {
+        Row: {
+          categoria_id: string | null
+          conta_id: string | null
+          created_at: string | null
+          criado_por: string | null
+          data_operacao: string
+          descricao: string | null
+          evento_id: string | null
+          id: string
+          membro_id: string | null
+          nota: string | null
+          referencia: string | null
+          status: string | null
+          tipo: string
+          updated_at: string | null
+          valor: number
+          visitante_id: string | null
+        }
+        Insert: {
+          categoria_id?: string | null
+          conta_id?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          data_operacao: string
+          descricao?: string | null
+          evento_id?: string | null
+          id?: string
+          membro_id?: string | null
+          nota?: string | null
+          referencia?: string | null
+          status?: string | null
+          tipo: string
+          updated_at?: string | null
+          valor: number
+          visitante_id?: string | null
+        }
+        Update: {
+          categoria_id?: string | null
+          conta_id?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          data_operacao?: string
+          descricao?: string | null
+          evento_id?: string | null
+          id?: string
+          membro_id?: string | null
+          nota?: string | null
+          referencia?: string | null
+          status?: string | null
+          tipo?: string
+          updated_at?: string | null
+          valor?: number
+          visitante_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transacoes_financeiras_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_financeiras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas_financeiras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_membro_id_fkey"
+            columns: ["membro_id"]
+            isOneToOne: false
+            referencedRelation: "membros"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_visitante_id_fkey"
+            columns: ["visitante_id"]
+            isOneToOne: false
+            referencedRelation: "visitantes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       turmas_infantil: {
         Row: {
           created_at: string | null
@@ -1336,6 +1537,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      recalcula_saldo_conta: { Args: { p_conta_id: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "lider" | "voluntario" | "membro" | "visitante"
