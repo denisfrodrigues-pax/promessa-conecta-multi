@@ -149,36 +149,29 @@ export default function Acompanhamento() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nome do visitante..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="novo">Novo</SelectItem>
-                <SelectItem value="contato_iniciado">Contato Iniciado</SelectItem>
-                <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
-                <SelectItem value="concluido">Concluído</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome do visitante..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+          <SelectTrigger className="w-full md:w-48">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos</SelectItem>
+            <SelectItem value="novo">Novo</SelectItem>
+            <SelectItem value="contato_iniciado">Contato Iniciado</SelectItem>
+            <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
+            <SelectItem value="concluido">Concluído</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <Card>
         <CardHeader>
@@ -237,9 +230,19 @@ export default function Acompanhamento() {
           </DialogHeader>
           {selectedAcomp && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Visitante: <strong>{selectedAcomp.visitante?.nome}</strong>
-              </p>
+              <div className="p-3 rounded-lg bg-muted/50 space-y-1">
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Visitante:</span> <strong>{selectedAcomp.visitante?.nome}</strong>
+                </p>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Base:</span> {selectedAcomp.base?.nome}
+                </p>
+                {selectedAcomp.observacao && (
+                  <p className="text-sm">
+                    <span className="text-muted-foreground">Última obs:</span> {selectedAcomp.observacao}
+                  </p>
+                )}
+              </div>
               <div className="space-y-2">
                 <Label>Novo Status</Label>
                 <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
