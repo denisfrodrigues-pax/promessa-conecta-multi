@@ -84,10 +84,10 @@ export default function SouNovo() {
     },
     {
       icon: Users,
-      title: 'Encontre seu Grupo',
-      description: 'Participe de um pequeno grupo e desenvolva amizades significativas.',
+      title: 'Encontre sua Base',
+      description: 'Participe de uma base e desenvolva amizades significativas.',
       color: 'bg-primary/10 text-primary',
-      action: { label: 'Ver Grupos', path: '/grupos' },
+      action: { label: 'Ver Bases', path: '/bases' },
     },
     {
       icon: Calendar,

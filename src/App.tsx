@@ -36,7 +36,8 @@ import AdminAcompanhamento from "@/pages/admin/Acompanhamento";
 
 // Member Pages
 import MemberHome from "@/pages/member/Home";
-
+import BasesPublic from "@/pages/member/BasesPublic";
+import BaseDetalhesPublic from "@/pages/member/BaseDetalhesPublic";
 import MemberEventos from "@/pages/member/Eventos";
 import MemberAvisos from "@/pages/member/Avisos";
 import MemberPerfil from "@/pages/member/Perfil";
@@ -111,7 +112,8 @@ const App = () => (
             {/* Member Routes */}
             <Route element={<MemberLayout />}>
               <Route path="/" element={<MemberHome />} />
-              <Route path="/bases" element={<MemberHome />} />
+              <Route path="/bases" element={<BasesPublic />} />
+              <Route path="/bases/:id" element={<BaseDetalhesPublic />} />
               <Route path="/eventos" element={<MemberEventos />} />
               <Route path="/avisos" element={<MemberAvisos />} />
               <Route path="/perfil" element={<MemberPerfil />} />

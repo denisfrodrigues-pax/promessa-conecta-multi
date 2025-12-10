@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 interface DashboardStats {
   totalUsers: number;
-  activeGroups: number;
+  activeBases: number;
   upcomingEvents: number;
   recentAnnouncements: number;
 }
@@ -15,7 +15,7 @@ interface DashboardStats {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
-    activeGroups: 0,
+    activeBases: 0,
     upcomingEvents: 0,
     recentAnnouncements: 0,
   });
@@ -28,9 +28,9 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const [usersRes, groupsRes, eventsRes, announcementsRes, recentUsersRes] = await Promise.all([
+      const [usersRes, basesRes, eventsRes, announcementsRes, recentUsersRes] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('grupos').select('id', { count: 'exact', head: true }),
+        supabase.from('bases').select('id', { count: 'exact', head: true }).eq('status', 'ativo'),
         supabase.from('eventos').select('id', { count: 'exact', head: true }).gte('data_inicio', new Date().toISOString()),
         supabase.from('avisos').select('id', { count: 'exact', head: true }).eq('publico', true),
         supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(5),
@@ -38,7 +38,7 @@ export default function AdminDashboard() {
 
       setStats({
         totalUsers: usersRes.count || 0,
-        activeGroups: groupsRes.count || 0,
+        activeBases: basesRes.count || 0,
         upcomingEvents: eventsRes.count || 0,
         recentAnnouncements: announcementsRes.count || 0,
       });
@@ -61,12 +61,12 @@ export default function AdminDashboard() {
       link: '/admin/usuarios',
     },
     {
-      title: 'Grupos Ativos',
-      value: stats.activeGroups,
+      title: 'Bases Ativas',
+      value: stats.activeBases,
       icon: UsersRound,
       color: 'bg-church-gold',
-      description: 'Pequenos grupos',
-      link: '/admin/grupos',
+      description: 'Pequenas comunidades',
+      link: '/admin/bases',
     },
     {
       title: 'Eventos Próximos',
@@ -181,9 +181,9 @@ export default function AdminDashboard() {
               </Link>
             </Button>
             <Button asChild variant="outline" className="w-full justify-start">
-              <Link to="/admin/grupos">
+              <Link to="/admin/bases">
                 <UsersRound className="w-4 h-4 mr-2" />
-                Gerenciar Grupos
+                Gerenciar Bases
               </Link>
             </Button>
             <Button asChild variant="outline" className="w-full justify-start">
