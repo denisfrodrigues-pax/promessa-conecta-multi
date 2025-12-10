@@ -41,7 +41,19 @@
 
     --radius: 0.625rem;
 
-    /* Church Promessa specific tokens */
+    /* Church Promessa full palette */
+    --promessa-50: 135 26% 96%;
+    --promessa-100: 134 27% 87%;
+    --promessa-200: 132 25% 76%;
+    --promessa-300: 131 24% 65%;
+    --promessa-400: 130 24% 53%;
+    --promessa-500: 130 25% 47%;
+    --promessa-600: 130 24% 39%;
+    --promessa-700: 120 30% 32%;
+    --promessa-800: 120 31% 23%;
+    --promessa-900: 120 31% 14%;
+    
+    /* Legacy tokens mapped to palette */
     --promessa-primary: 130 25% 47%;
     --promessa-primary-dark: 120 30% 32%;
     --promessa-primary-light: 127 24% 56%;
@@ -55,6 +67,15 @@
     --success: 122 39% 49%;
     --warning: 41 80% 53%;
     --error: 2 64% 58%;
+    
+    /* Neutral palette for UI */
+    --neutral-50: 10 43% 97%;
+    --neutral-100: 150 14% 92%;
+    --neutral-200: 190 8% 85%;
+    --neutral-500: 190 6% 40%;
+    --neutral-700: 200 8% 25%;
+    --neutral-800: 200 8% 18%;
+    --neutral-900: 200 8% 13%;
     
     /* Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(130 25% 47%) 0%, hsl(120 30% 32%) 50%, hsl(153 19% 59% / 0.3) 100%);

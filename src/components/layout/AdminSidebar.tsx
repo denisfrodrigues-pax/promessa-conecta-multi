@@ -136,24 +136,24 @@ export default function AdminSidebar() {
   return (
     <aside
       className={cn(
-        'h-screen bg-gradient-sidebar sticky top-0 flex flex-col transition-all duration-300',
+        'h-screen bg-neutral-50 border-r border-neutral-200 sticky top-0 flex flex-col transition-all duration-300',
         collapsed ? 'w-16' : 'w-64'
       )}
     >
-      {/* Header */}
-      <div className="p-4 flex items-center gap-3 border-b border-sidebar-border">
-        <div className="w-10 h-10 rounded-xl bg-promessa-primary-light flex items-center justify-center flex-shrink-0">
-          <Church className="w-5 h-5 text-primary-foreground" />
+      {/* Header - Clean Premium */}
+      <div className="p-4 flex items-center gap-3 border-b border-neutral-200">
+        <div className="w-10 h-10 rounded-xl bg-promessa-700 flex items-center justify-center flex-shrink-0">
+          <Church className="w-5 h-5 text-white" />
         </div>
         {!collapsed && (
           <div className="animate-fade-in">
-            <h2 className="font-display font-bold text-sidebar-foreground text-sm">Igreja da Promessa</h2>
-            <p className="text-xs text-sidebar-foreground/60">Painel Admin</p>
+            <p className="text-sm font-semibold text-promessa-700">Painel Admin</p>
+            <p className="text-xs text-neutral-500">Igreja da Promessa</p>
           </div>
         )}
       </div>
 
-      {/* Navigation */}
+      {/* Navigation - Clean Premium */}
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
         {menuItems.map((item) => (
           <div key={item.path}>
@@ -163,9 +163,9 @@ export default function AdminSidebar() {
                 <button
                   onClick={() => toggleSubmenu(item.path)}
                   className={cn(
-                    'w-full relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200',
+                    'w-full relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-700 hover:bg-promessa-50 hover:text-promessa-700 transition-all duration-200',
                     collapsed && 'justify-center px-2',
-                    isSubmenuActive(item) && 'bg-sidebar-accent text-sidebar-foreground font-medium'
+                    isSubmenuActive(item) && 'bg-promessa-100 text-promessa-700 font-medium'
                   )}
                 >
                   <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -184,14 +184,14 @@ export default function AdminSidebar() {
                 
                 {/* Submenu items */}
                 {!collapsed && isExpanded(item.path) && (
-                  <div className="mt-1 ml-4 pl-4 border-l border-sidebar-border/50 space-y-1">
+                  <div className="mt-1 ml-4 pl-4 border-l border-neutral-200 space-y-1">
                     {item.submenu.map((subItem) => (
                       <NavLink
                         key={subItem.path}
                         to={subItem.path}
                         end={subItem.path === '/admin/kids'}
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200 text-sm"
-                        activeClassName="bg-sidebar-accent/70 text-sidebar-foreground font-medium"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-neutral-600 hover:bg-promessa-50 hover:text-promessa-700 transition-all duration-200 text-sm"
+                        activeClassName="bg-promessa-100 text-promessa-700 font-medium"
                       >
                         <subItem.icon className="w-4 h-4" />
                         <span>{subItem.label}</span>
@@ -206,17 +206,17 @@ export default function AdminSidebar() {
                 to={item.path}
                 end
                 className={cn(
-                  'relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200',
+                  'relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-700 hover:bg-promessa-50 hover:text-promessa-700 transition-all duration-200',
                   collapsed && 'justify-center px-2'
                 )}
-                activeClassName="bg-sidebar-accent text-sidebar-foreground font-medium"
+                activeClassName="bg-promessa-100 text-promessa-700 font-medium"
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {!collapsed && <span className="text-sm">{item.label}</span>}
                 {item.showBadge && unreadCount > 0 && (
                   <Badge 
                     className={cn(
-                      "h-5 min-w-[20px] flex items-center justify-center p-0 text-xs bg-promessa-primary-light text-primary-foreground",
+                      "h-5 min-w-[20px] flex items-center justify-center p-0 text-xs bg-promessa-500 text-white",
                       collapsed ? "absolute -top-1 -right-1" : "ml-auto"
                     )}
                   >
@@ -229,18 +229,18 @@ export default function AdminSidebar() {
         ))}
       </nav>
 
-      {/* Profile & Actions */}
-      <div className="p-3 border-t border-sidebar-border space-y-2">
+      {/* Profile & Actions - Clean Premium */}
+      <div className="p-3 border-t border-neutral-200 space-y-2">
         {!collapsed && profile && (
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent/50">
-            <div className="w-8 h-8 rounded-full bg-promessa-primary flex items-center justify-center">
-              <span className="text-xs font-bold text-primary-foreground">
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-neutral-100">
+            <div className="w-8 h-8 rounded-full bg-promessa-700 flex items-center justify-center">
+              <span className="text-xs font-bold text-white">
                 {profile.nome?.charAt(0).toUpperCase()}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">{profile.nome}</p>
-              <p className="text-xs text-sidebar-foreground/60 truncate">{profile.email}</p>
+              <p className="text-sm font-medium text-neutral-800 truncate">{profile.nome}</p>
+              <p className="text-xs text-neutral-500 truncate">{profile.email}</p>
             </div>
           </div>
         )}
@@ -249,7 +249,7 @@ export default function AdminSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent flex-1"
+            className="text-neutral-500 hover:text-promessa-700 hover:bg-promessa-50 flex-1"
             onClick={() => setCollapsed(!collapsed)}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -257,7 +257,7 @@ export default function AdminSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            className="text-sidebar-foreground/60 hover:text-destructive hover:bg-sidebar-accent"
+            className="text-neutral-500 hover:text-destructive hover:bg-red-50"
             onClick={signOut}
           >
             <LogOut className="w-4 h-4" />
