@@ -29,6 +29,8 @@ import {
   CreditCard,
   Tag,
   History,
+  Home,
+  Briefcase,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,13 +59,27 @@ const menuItems: MenuItem[] = [
       { icon: FileText, label: 'Relatório', path: '/admin/membros/relatorio' },
     ]
   },
-  { icon: Network, label: 'Bases', path: '/admin/bases' },
-  { icon: BarChart3, label: 'Relatório Bases', path: '/admin/bases/relatorio' },
+  { 
+    icon: Network, 
+    label: 'Bases', 
+    path: '/admin/bases',
+    submenu: [
+      { icon: Network, label: 'Lista de Bases', path: '/admin/bases' },
+      { icon: FileText, label: 'Relatório', path: '/admin/bases/relatorio' },
+    ]
+  },
   { icon: Users, label: 'Acompanhamento', path: '/admin/acompanhamento' },
-  { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
-  { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
-  { icon: ClipboardList, label: 'Funções', path: '/admin/funcoes-ministerio' },
-  { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
+  {
+    icon: Briefcase,
+    label: 'Serviço',
+    path: '/admin/ministerios',
+    submenu: [
+      { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
+      { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
+      { icon: ClipboardList, label: 'Funções', path: '/admin/funcoes-ministerio' },
+      { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
+    ]
+  },
   { icon: Bell, label: 'Notificações', path: '/admin/notificacoes', showBadge: true },
   { 
     icon: Baby, 
@@ -232,6 +248,18 @@ export default function AdminSidebar() {
 
       {/* Profile & Actions - Clean Premium */}
       <div className="p-3 border-t border-neutral-200 space-y-2">
+        {/* Back to Portal Button */}
+        <NavLink
+          to="/"
+          className={cn(
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-promessa-700 hover:bg-promessa-50 hover:text-promessa-900 transition-all duration-200',
+            collapsed && 'justify-center px-2'
+          )}
+        >
+          <Home className="w-5 h-5 flex-shrink-0" />
+          {!collapsed && <span className="text-sm font-medium">Voltar ao Portal</span>}
+        </NavLink>
+
         {!collapsed && profile && (
           <div className="flex items-center gap-3 p-2 rounded-lg bg-neutral-100">
             <div className="w-8 h-8 rounded-full bg-promessa-700 flex items-center justify-center">

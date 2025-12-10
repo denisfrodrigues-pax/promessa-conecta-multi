@@ -8,13 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bell, Calendar, AlertCircle, Clock, Search, Plus, Send, Users, Megaphone } from 'lucide-react';
+import { Bell, Calendar, AlertCircle, Clock, Search, Plus, Send, Users, Megaphone, Trash2, CheckCheck, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Loader2 } from 'lucide-react';
 
 type NotificationType = 'nova_escala' | 'lembrete' | 'status_alterado' | 'sistema' | 'ministerio' | 'aviso_admin';
 
@@ -53,6 +53,8 @@ export default function AdminNotificacoes() {
   const [usuarios, setUsuarios] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [clearingAll, setClearingAll] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMinisterio, setFilterMinisterio] = useState<string>('all');
   const [filterTipo, setFilterTipo] = useState<string>('all');
@@ -194,6 +196,84 @@ export default function AdminNotificacoes() {
     }
   };
 
+  const handleDeleteNotification = async (id: string) => {
+    setDeleting(id);
+    try {
+      const { error } = await supabase
+        .from('notificacoes')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      toast.success('Notificação excluída');
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      toast.error('Erro ao excluir notificação');
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const handleClearAll = async () => {
+    setClearingAll(true);
+    try {
+      const { error } = await supabase
+        .from('notificacoes')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+
+      if (error) throw error;
+      
+      setNotifications([]);
+      toast.success('Todas as notificações foram excluídas');
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+      toast.error('Erro ao limpar notificações');
+    } finally {
+      setClearingAll(false);
+    }
+  };
+
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('notificacoes')
+        .update({ lido: true })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, lido: true } : n)
+      );
+      toast.success('Marcada como lida');
+    } catch (error) {
+      console.error('Error marking as read:', error);
+      toast.error('Erro ao marcar como lida');
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      const { error } = await supabase
+        .from('notificacoes')
+        .update({ lido: true })
+        .eq('lido', false);
+
+      if (error) throw error;
+      
+      setNotifications(prev => 
+        prev.map(n => ({ ...n, lido: true }))
+      );
+      toast.success('Todas marcadas como lidas');
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+      toast.error('Erro ao marcar todas como lidas');
+    }
+  };
+
   const getNotificationIcon = (tipo: NotificationType) => {
     switch (tipo) {
       case 'nova_escala':
@@ -271,10 +351,44 @@ export default function AdminNotificacoes() {
           <h1 className="text-2xl font-display font-bold">Notificações</h1>
           <p className="text-muted-foreground">Gerencie e envie notificações</p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nova Notificação
-        </Button>
+        <div className="flex gap-2">
+          {stats.naoLidas > 0 && (
+            <Button variant="outline" onClick={handleMarkAllAsRead}>
+              <CheckCheck className="w-4 h-4 mr-2" />
+              Marcar todas como lidas
+            </Button>
+          )}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="text-destructive hover:text-destructive" disabled={notifications.length === 0}>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Limpar tudo
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Limpar todas as notificações?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta ação não pode ser desfeita. Todas as {notifications.length} notificações serão excluídas permanentemente.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleClearAll}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={clearingAll}
+                >
+                  {clearingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Limpar tudo'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nova Notificação
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -367,12 +481,13 @@ export default function AdminNotificacoes() {
                 <TableHead className="max-w-[300px]">Mensagem</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredNotifications.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     Nenhuma notificação encontrada
                   </TableCell>
                 </TableRow>
@@ -404,6 +519,53 @@ export default function AdminNotificacoes() {
                       ) : (
                         <Badge variant="default">Não lida</Badge>
                       )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {!notification.lido && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleMarkAsRead(notification.id)}
+                            title="Marcar como lida"
+                          >
+                            <CheckCheck className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              disabled={deleting === notification.id}
+                            >
+                              {deleting === notification.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir notificação?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteNotification(notification.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
