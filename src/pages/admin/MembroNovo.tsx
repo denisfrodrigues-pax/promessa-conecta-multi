@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Save, Upload, User, Phone, Mail, MapPin, Calendar, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { formatPhoneBR } from '@/lib/formatters';
 
 const estadoCivilOptions = [
   { value: 'solteiro', label: 'Solteiro(a)' },
@@ -289,8 +290,9 @@ export default function MembroNovo() {
                   <Input
                     id="telefone"
                     value={formData.telefone}
-                    onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, telefone: formatPhoneBR(e.target.value) })}
                     placeholder="(00) 00000-0000"
+                    maxLength={15}
                   />
                 </div>
 
