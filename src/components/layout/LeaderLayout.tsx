@@ -12,7 +12,7 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Visão Geral', path: '/lider' },
   { icon: Users, label: 'Minha Equipe', path: '/lider/equipe' },
   { icon: ClipboardList, label: 'Funções', path: '/lider/funcoes' },
-  { icon: Users, label: 'Meus Grupos', path: '/lider/grupos' },
+  { icon: Users, label: 'Minhas Bases', path: '/lider/bases' },
   { icon: ClipboardList, label: 'Minhas Escalas', path: '/lider/escalas' },
   { icon: Bell, label: 'Notificações', path: '/lider/notificacoes', showBadge: true },
   { icon: BarChart3, label: 'Relatórios', path: '/lider/relatorios' },

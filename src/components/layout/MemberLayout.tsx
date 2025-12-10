@@ -13,7 +13,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 const navItems = [
   { icon: Home, label: 'Início', path: '/' },
   { icon: CalendarCheck, label: 'Escalas', path: '/minhas-escalas' },
-  { icon: Users, label: 'Grupos', path: '/grupos' },
+  { icon: Users, label: 'Bases', path: '/bases' },
   { icon: Calendar, label: 'Eventos', path: '/eventos' },
   { icon: User, label: 'Perfil', path: '/perfil' },
 ];

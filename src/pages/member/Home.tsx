@@ -82,7 +82,7 @@ export default function MemberHome() {
                 <Link to="/sou-novo">Sou Novo Aqui</Link>
               </Button>
               <Button asChild variant="hero" size="lg" className="bg-primary-foreground/10 border border-primary-foreground/20 hover:bg-primary-foreground/20">
-                <Link to="/grupos">Encontrar um Grupo</Link>
+                <Link to="/bases">Encontrar uma Base</Link>
               </Button>
             </div>
           </div>
@@ -92,14 +92,14 @@ export default function MemberHome() {
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Quick Actions */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link to="/grupos" className="group">
+          <Link to="/bases" className="group">
             <Card className="shadow-card hover:shadow-elevated transition-all duration-300 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
                   <Users className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="font-medium">Grupos</h3>
-                <p className="text-xs text-muted-foreground">Encontre seu grupo</p>
+                <h3 className="font-medium">Bases</h3>
+                <p className="text-xs text-muted-foreground">Encontre sua base</p>
               </CardContent>
             </Card>
           </Link>
