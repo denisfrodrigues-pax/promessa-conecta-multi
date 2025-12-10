@@ -197,7 +197,6 @@ export default function MemberEventos() {
                         <Badge variant="secondary">Vagas Esgotadas</Badge>
                       ) : (
                         <Button
-                          variant="gold"
                           size="sm"
                           onClick={() => handleInscrever(evento.id)}
                         >

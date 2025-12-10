@@ -142,7 +142,7 @@ export default function AdminSidebar() {
     >
       {/* Header */}
       <div className="p-4 flex items-center gap-3 border-b border-sidebar-border">
-        <div className="w-10 h-10 rounded-xl bg-church-gold flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-promessa-primary-light flex items-center justify-center flex-shrink-0">
           <Church className="w-5 h-5 text-primary-foreground" />
         </div>
         {!collapsed && (
@@ -216,7 +216,7 @@ export default function AdminSidebar() {
                 {item.showBadge && unreadCount > 0 && (
                   <Badge 
                     className={cn(
-                      "h-5 min-w-[20px] flex items-center justify-center p-0 text-xs bg-church-gold text-primary",
+                      "h-5 min-w-[20px] flex items-center justify-center p-0 text-xs bg-promessa-primary-light text-primary-foreground",
                       collapsed ? "absolute -top-1 -right-1" : "ml-auto"
                     )}
                   >
@@ -233,7 +233,7 @@ export default function AdminSidebar() {
       <div className="p-3 border-t border-sidebar-border space-y-2">
         {!collapsed && profile && (
           <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent/50">
-            <div className="w-8 h-8 rounded-full bg-church-gold flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-promessa-primary flex items-center justify-center">
               <span className="text-xs font-bold text-primary-foreground">
                 {profile.nome?.charAt(0).toUpperCase()}
               </span>

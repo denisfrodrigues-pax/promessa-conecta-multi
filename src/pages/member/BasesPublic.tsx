@@ -108,7 +108,7 @@ export default function BasesPublic() {
             <p className="text-lg text-primary-foreground/80 mb-6">
               Nossas Bases são pequenos grupos onde você pode crescer na fé, fazer amizades e ser acompanhado de perto.
             </p>
-            <Button asChild variant="gold" size="lg">
+            <Button asChild size="lg">
               <Link to="/sou-novo">Quero Participar</Link>
             </Button>
           </div>

@@ -525,7 +525,7 @@ export default function AdminEscalas() {
           <h1 className="text-2xl font-display font-bold">Escalas</h1>
           <p className="text-muted-foreground">Gerencie as escalas de ministérios e voluntários</p>
         </div>
-        <Button variant="gold" onClick={handleCreate}>
+        <Button onClick={handleCreate}>
           <Plus className="w-4 h-4 mr-2" />
           Nova Escala
         </Button>
@@ -885,7 +885,7 @@ export default function AdminEscalas() {
               Fechar
             </Button>
             {viewingGroup && (
-              <Button variant="gold" onClick={() => {
+              <Button onClick={() => {
                 setIsViewDialogOpen(false);
                 handleEdit(viewingGroup);
               }}>
@@ -1106,7 +1106,7 @@ export default function AdminEscalas() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button variant="gold" onClick={handleSubmit}>
+            <Button onClick={handleSubmit}>
               {editingGroup ? 'Salvar' : 'Criar Escala'}
             </Button>
           </DialogFooter>

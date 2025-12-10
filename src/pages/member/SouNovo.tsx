@@ -282,7 +282,7 @@ export default function SouNovo() {
           <p className="text-muted-foreground mb-6">
             Complete seu cadastro e faça parte da nossa comunidade
           </p>
-          <Button asChild variant="gold" size="lg">
+          <Button asChild size="lg">
             <Link to="/perfil">Completar Meu Cadastro</Link>
           </Button>
         </section>

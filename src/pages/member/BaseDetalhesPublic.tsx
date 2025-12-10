@@ -249,7 +249,7 @@ export default function BaseDetalhesPublic() {
                 <p className="text-sm text-primary-foreground/80 mb-4">
                   Entre em contato conosco para conhecer esta base e começar a participar.
                 </p>
-                <Button asChild variant="gold" className="w-full">
+                <Button asChild className="w-full">
                   <Link to="/sou-novo">Quero Participar</Link>
                 </Button>
               </CardContent>

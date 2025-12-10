@@ -179,7 +179,7 @@ export default function MemberPerfil() {
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button variant="gold" onClick={handleSave} disabled={loading} className="flex-1">
+            <Button onClick={handleSave} disabled={loading} className="flex-1">
               <Save className="w-4 h-4 mr-2" />
               {loading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>

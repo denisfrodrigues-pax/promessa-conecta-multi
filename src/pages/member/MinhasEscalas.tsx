@@ -231,7 +231,7 @@ export default function MinhasEscalas() {
                           <div className="flex gap-2">
                             <Button
                               size="sm"
-                              variant="gold"
+                              variant="success"
                               onClick={() => handleConfirmar(escala)}
                               disabled={isSubmitting}
                             >
