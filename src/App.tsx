@@ -39,6 +39,7 @@ import KidsCheckinDetalhes from "@/pages/admin/kids/KidsCheckinDetalhes";
 import KidsCriancas from "@/pages/admin/kids/KidsCriancas";
 import KidsResponsaveis from "@/pages/admin/kids/KidsResponsaveis";
 import KidsSalas from "@/pages/admin/kids/KidsSalas";
+import KidsRelatorio from "@/pages/admin/kids/KidsRelatorio";
 
 // Member Pages
 import MemberHome from "@/pages/member/Home";
@@ -105,6 +106,7 @@ const App = () => (
               <Route path="kids/criancas" element={<KidsCriancas />} />
               <Route path="kids/responsaveis" element={<KidsResponsaveis />} />
               <Route path="kids/salas" element={<KidsSalas />} />
+              <Route path="kids/relatorio" element={<KidsRelatorio />} />
               <Route path="auditoria" element={<AdminDashboard />} />
               <Route path="configuracoes" element={<AdminDashboard />} />
             </Route>
