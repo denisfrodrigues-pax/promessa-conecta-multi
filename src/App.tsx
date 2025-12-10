@@ -28,6 +28,7 @@ import AdminVisitanteDetalhes from "@/pages/admin/VisitanteDetalhes";
 import AdminMembros from "@/pages/admin/Membros";
 import AdminMembroNovo from "@/pages/admin/MembroNovo";
 import AdminMembroDetalhes from "@/pages/admin/MembroDetalhes";
+import AdminMembroRelatorio from "@/pages/admin/MembroRelatorio";
 import AdminBases from "@/pages/admin/Bases";
 import AdminBaseNova from "@/pages/admin/BaseNova";
 import AdminBaseDetalhes from "@/pages/admin/BaseDetalhes";
@@ -87,6 +88,7 @@ const App = () => (
               <Route path="visitantes/:id" element={<AdminVisitanteDetalhes />} />
               <Route path="membros" element={<AdminMembros />} />
               <Route path="membros/novo" element={<AdminMembroNovo />} />
+              <Route path="membros/relatorio" element={<AdminMembroRelatorio />} />
               <Route path="membros/:id" element={<AdminMembroDetalhes />} />
               <Route path="bases" element={<AdminBases />} />
               <Route path="bases/nova" element={<AdminBaseNova />} />

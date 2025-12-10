@@ -4,11 +4,26 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Eye, Search, X, Plus, UserCheck, UserX } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { 
+  Users, Eye, Search, X, Plus, Download, MessageCircle, 
+  UserCheck, Calendar, ChevronRight, BarChart3 
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+interface Base {
+  id: string;
+  nome: string;
+}
+
+interface BaseMembro {
+  base_id: string;
+  bases: Base | null;
+}
 
 interface Membro {
   id: string;
@@ -17,28 +32,103 @@ interface Membro {
   foto_perfil: string | null;
   status: string | null;
   data_batismo: string | null;
+  data_nascimento: string | null;
   created_at: string | null;
+  bases_membros?: BaseMembro[];
 }
 
+// Status labels and colors - same pattern as Visitantes/Acompanhamento
 const statusLabels: Record<string, string> = {
   ativo: 'Ativo',
   inativo: 'Inativo',
+  desligado: 'Desligado',
+  transferido: 'Transferido',
+  em_acompanhamento: 'Em Acompanhamento',
 };
 
 const statusColors: Record<string, string> = {
   ativo: 'bg-green-100 text-green-800 border-green-300',
   inativo: 'bg-gray-100 text-gray-800 border-gray-300',
+  desligado: 'bg-red-100 text-red-800 border-red-300',
+  transferido: 'bg-orange-100 text-orange-800 border-orange-300',
+  em_acompanhamento: 'bg-blue-100 text-blue-800 border-blue-300',
+};
+
+// Helper functions - same pattern as other modules
+const cleanPhone = (phone: string | null): string => {
+  if (!phone) return '';
+  return phone.replace(/\D/g, '');
+};
+
+const hasValidPhone = (phone: string | null): boolean => {
+  const cleaned = cleanPhone(phone);
+  return cleaned.length >= 10;
+};
+
+const getWhatsAppUrl = (phone: string | null): string => {
+  const cleaned = cleanPhone(phone);
+  const msg = encodeURIComponent('Olá! Sou da Igreja da Promessa. Estou entrando em contato :)');
+  return `https://wa.me/55${cleaned}?text=${msg}`;
+};
+
+const formatDateTime = (date: string | null) => {
+  if (!date) return '–';
+  return format(new Date(date), "dd/MM/yyyy", { locale: ptBR });
+};
+
+const calculateAge = (birthDate: string | null): number | null => {
+  if (!birthDate) return null;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
+
+// CSV Export function
+const exportToCSV = (data: Membro[]) => {
+  const headers = ['ID', 'Nome', 'Telefone', 'Status', 'Base Atual', 'Data Nascimento', 'Idade', 'Batizado', 'Data Cadastro'];
+  
+  const rows = data.map(m => {
+    const baseAtual = m.bases_membros?.find(bm => bm.bases)?.bases?.nome || '';
+    const age = calculateAge(m.data_nascimento);
+    return [
+      m.id,
+      `"${m.nome.replace(/"/g, '""')}"`,
+      m.telefone || '',
+      statusLabels[m.status || 'ativo'] || m.status || '',
+      `"${baseAtual.replace(/"/g, '""')}"`,
+      m.data_nascimento || '',
+      age !== null ? String(age) : '',
+      m.data_batismo ? 'Sim' : 'Não',
+      m.created_at ? format(new Date(m.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : ''
+    ].join(',');
+  });
+
+  const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `membros_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
 };
 
 export default function Membros() {
   const [membros, setMembros] = useState<Membro[]>([]);
+  const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
-  const [filtroBatizado, setFiltroBatizado] = useState<string>('todos');
+  const [filtroBase, setFiltroBase] = useState<string>('todos');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [stats, setStats] = useState({ total: 0, ativos: 0, batizados: 0 });
   const limit = 12;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
@@ -57,21 +147,64 @@ export default function Membros() {
   // Reset page on filter change
   useEffect(() => {
     setPage(1);
-  }, [filtroStatus, filtroBatizado, debouncedSearch]);
+  }, [filtroStatus, filtroBase, debouncedSearch]);
+
+  useEffect(() => {
+    fetchBases();
+    fetchStats();
+  }, []);
 
   useEffect(() => {
     fetchMembros();
-  }, [filtroStatus, filtroBatizado, debouncedSearch, page]);
+  }, [filtroStatus, filtroBase, debouncedSearch, page]);
 
-  const highlight = (text: string) => {
-    if (!debouncedSearch.trim()) return text;
-    const regex = new RegExp(`(${debouncedSearch})`, 'gi');
-    return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+  const fetchBases = async () => {
+    const { data } = await supabase
+      .from('bases')
+      .select('id, nome')
+      .eq('status', 'ativo')
+      .order('nome');
+    setBases(data || []);
+  };
+
+  const fetchStats = async () => {
+    const { count: totalCount } = await supabase
+      .from('membros')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: ativosCount } = await supabase
+      .from('membros')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'ativo');
+
+    const { count: batizadosCount } = await supabase
+      .from('membros')
+      .select('*', { count: 'exact', head: true })
+      .not('data_batismo', 'is', null);
+
+    setStats({
+      total: totalCount || 0,
+      ativos: ativosCount || 0,
+      batizados: batizadosCount || 0,
+    });
   };
 
   const fetchMembros = async () => {
     try {
       setLoading(true);
+
+      // Build base filter if needed
+      let memberIdsInBase: string[] | null = null;
+      if (filtroBase !== 'todos') {
+        const { data: baseMembers } = await supabase
+          .from('bases_membros')
+          .select('membro_id')
+          .eq('base_id', filtroBase)
+          .eq('status', 'ativo')
+          .not('membro_id', 'is', null);
+        
+        memberIdsInBase = baseMembers?.map(bm => bm.membro_id).filter(Boolean) as string[] || [];
+      }
 
       // Count query
       let countQuery = supabase
@@ -81,13 +214,22 @@ export default function Membros() {
       if (filtroStatus !== 'todos') {
         countQuery = countQuery.eq('status', filtroStatus);
       }
-      if (filtroBatizado === 'sim') {
-        countQuery = countQuery.not('data_batismo', 'is', null);
-      } else if (filtroBatizado === 'nao') {
-        countQuery = countQuery.is('data_batismo', null);
-      }
       if (debouncedSearch.trim()) {
-        countQuery = countQuery.ilike('nome', `%${debouncedSearch.trim()}%`);
+        const cleanedSearch = cleanPhone(debouncedSearch);
+        if (cleanedSearch.length >= 3) {
+          countQuery = countQuery.or(`nome.ilike.%${debouncedSearch.trim()}%,telefone.ilike.%${cleanedSearch}%`);
+        } else {
+          countQuery = countQuery.ilike('nome', `%${debouncedSearch.trim()}%`);
+        }
+      }
+      if (memberIdsInBase !== null) {
+        if (memberIdsInBase.length === 0) {
+          setMembros([]);
+          setTotal(0);
+          setLoading(false);
+          return;
+        }
+        countQuery = countQuery.in('id', memberIdsInBase);
       }
 
       const { count } = await countQuery;
@@ -96,26 +238,38 @@ export default function Membros() {
       // Data query
       let query = supabase
         .from('membros')
-        .select('id, nome, telefone, foto_perfil, status, data_batismo, created_at')
+        .select(`
+          id, nome, telefone, foto_perfil, status, data_batismo, data_nascimento, created_at,
+          bases_membros!left(base_id, bases(id, nome))
+        `)
         .order('nome', { ascending: true })
         .range((page - 1) * limit, page * limit - 1);
 
       if (filtroStatus !== 'todos') {
         query = query.eq('status', filtroStatus);
       }
-      if (filtroBatizado === 'sim') {
-        query = query.not('data_batismo', 'is', null);
-      } else if (filtroBatizado === 'nao') {
-        query = query.is('data_batismo', null);
-      }
       if (debouncedSearch.trim()) {
-        query = query.ilike('nome', `%${debouncedSearch.trim()}%`);
+        const cleanedSearch = cleanPhone(debouncedSearch);
+        if (cleanedSearch.length >= 3) {
+          query = query.or(`nome.ilike.%${debouncedSearch.trim()}%,telefone.ilike.%${cleanedSearch}%`);
+        } else {
+          query = query.ilike('nome', `%${debouncedSearch.trim()}%`);
+        }
+      }
+      if (memberIdsInBase !== null) {
+        query = query.in('id', memberIdsInBase);
       }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      setMembros(data || []);
+      // Process bases_membros to get active base
+      const processedData = (data || []).map(m => ({
+        ...m,
+        bases_membros: (m.bases_membros as unknown as BaseMembro[])?.filter(bm => bm.bases) || []
+      }));
+
+      setMembros(processedData);
     } catch (error) {
       console.error('Erro ao buscar membros:', error);
       toast.error('Erro ao carregar membros');
@@ -126,31 +280,59 @@ export default function Membros() {
 
   const clearFilters = () => {
     setFiltroStatus('todos');
-    setFiltroBatizado('todos');
+    setFiltroBase('todos');
     setSearchTerm('');
     setPage(1);
   };
 
-  const hasActiveFilters = filtroStatus !== 'todos' || filtroBatizado !== 'todos' || searchTerm.trim() !== '';
+  const hasActiveFilters = filtroStatus !== 'todos' || filtroBase !== 'todos' || searchTerm.trim() !== '';
 
-  const getInitials = (nome: string) => {
-    return nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  const handleExportCSV = () => {
+    if (membros.length === 0) {
+      toast.error('Nenhum membro para exportar');
+      return;
+    }
+    exportToCSV(membros);
+    toast.success('CSV exportado com sucesso!');
+  };
+
+  const handleWhatsAppClick = (e: React.MouseEvent, telefone: string | null) => {
+    e.stopPropagation();
+    if (hasValidPhone(telefone)) {
+      window.open(getWhatsAppUrl(telefone), '_blank');
+    }
+  };
+
+  const getBaseAtual = (membro: Membro): string | null => {
+    const activeBase = membro.bases_membros?.find(bm => bm.bases);
+    return activeBase?.bases?.nome || null;
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-display font-bold">Membros</h1>
           <p className="text-muted-foreground">Gerencie os membros da igreja</p>
         </div>
-        <Button onClick={() => navigate('/admin/membros/novo')}>
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Membro
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/admin/membros/relatorio')}>
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Relatório
+          </Button>
+          <Button variant="outline" onClick={handleExportCSV}>
+            <Download className="w-4 h-4 mr-2" />
+            Exportar CSV
+          </Button>
+          <Button onClick={() => navigate('/admin/membros/novo')}>
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Membro
+          </Button>
+        </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -159,7 +341,7 @@ export default function Membros() {
                 <Users className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{total}</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
                 <p className="text-sm text-muted-foreground">Total</p>
               </div>
             </div>
@@ -172,9 +354,7 @@ export default function Membros() {
                 <UserCheck className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {membros.filter(m => m.status === 'ativo').length}
-                </p>
+                <p className="text-2xl font-bold">{stats.ativos}</p>
                 <p className="text-sm text-muted-foreground">Ativos</p>
               </div>
             </div>
@@ -184,12 +364,10 @@ export default function Membros() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
+                <Calendar className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {membros.filter(m => m.data_batismo).length}
-                </p>
+                <p className="text-2xl font-bold">{stats.batizados}</p>
                 <p className="text-sm text-muted-foreground">Batizados</p>
               </div>
             </div>
@@ -199,7 +377,7 @@ export default function Membros() {
 
       {/* Filters */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Search className="w-4 h-4" />
             Filtros
@@ -207,15 +385,15 @@ export default function Membros() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-end gap-4">
-            <div className="space-y-2">
+            <div className="space-y-2 flex-1 min-w-[200px]">
               <label className="text-sm font-medium">Buscar</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por nome..."
+                  placeholder="Buscar por nome ou telefone..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-[220px] pl-9"
+                  className="pl-9"
                 />
               </div>
             </div>
@@ -223,27 +401,31 @@ export default function Membros() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
               <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
                   <SelectItem value="ativo">Ativos</SelectItem>
                   <SelectItem value="inativo">Inativos</SelectItem>
+                  <SelectItem value="desligado">Desligados</SelectItem>
+                  <SelectItem value="transferido">Transferidos</SelectItem>
+                  <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Batizado</label>
-              <Select value={filtroBatizado} onValueChange={setFiltroBatizado}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Batizado" />
+              <label className="text-sm font-medium">Base</label>
+              <Select value={filtroBase} onValueChange={setFiltroBase}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Base" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="sim">Sim</SelectItem>
-                  <SelectItem value="nao">Não</SelectItem>
+                  <SelectItem value="todos">Todas as bases</SelectItem>
+                  {bases.map(base => (
+                    <SelectItem key={base.id} value={base.id}>{base.nome}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -266,7 +448,7 @@ export default function Membros() {
         </CardContent>
       </Card>
 
-      {/* Members Grid */}
+      {/* Members List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -276,61 +458,93 @@ export default function Membros() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+            <div className="space-y-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 border rounded-lg">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-3 w-[150px]" />
+                  </div>
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-9 w-24" />
+                </div>
+              ))}
+            </div>
           ) : membros.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhum membro encontrado
+            <div className="text-center py-12 text-muted-foreground">
+              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Nenhum membro encontrado</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {membros.map((membro) => (
-                <Card key={membro.id} className="shadow-card hover:shadow-elevated transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={membro.foto_perfil || undefined} alt={membro.nome} />
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {getInitials(membro.nome)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p 
-                          className="font-medium truncate"
-                          dangerouslySetInnerHTML={{ __html: highlight(membro.nome) }}
-                        />
-                        <p className="text-sm text-muted-foreground truncate">
-                          {membro.telefone || 'Sem telefone'}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge variant="outline" className={statusColors[membro.status || 'ativo']}>
-                            {statusLabels[membro.status || 'ativo']}
-                          </Badge>
-                          {membro.data_batismo && (
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                              Batizado
-                            </Badge>
-                          )}
-                        </div>
+            <div className="space-y-3">
+              {membros.map((membro) => {
+                const baseAtual = getBaseAtual(membro);
+                return (
+                  <div
+                    key={membro.id}
+                    className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    {/* Name and Phone */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium truncate">{membro.nome}</p>
+                        {hasValidPhone(membro.telefone) && (
+                          <button
+                            onClick={(e) => handleWhatsAppClick(e, membro.telefone)}
+                            className="text-green-600 hover:text-green-700 flex-shrink-0"
+                            title="Abrir WhatsApp"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
+                      <p className="text-sm text-muted-foreground">
+                        {membro.telefone || 'Sem telefone'}
+                      </p>
                     </div>
+
+                    {/* Status Badge */}
+                    <Badge 
+                      variant="outline" 
+                      className={statusColors[membro.status || 'ativo']}
+                    >
+                      {statusLabels[membro.status || 'ativo']}
+                    </Badge>
+
+                    {/* Base */}
+                    <div className="text-sm text-muted-foreground min-w-[120px]">
+                      {baseAtual ? (
+                        <span className="font-medium text-primary">{baseAtual}</span>
+                      ) : (
+                        <span className="italic">Sem base</span>
+                      )}
+                    </div>
+
+                    {/* Date */}
+                    <div className="text-sm text-muted-foreground min-w-[90px]">
+                      {formatDateTime(membro.created_at)}
+                    </div>
+
+                    {/* Action Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full mt-4"
                       onClick={() => navigate(`/admin/membros/${membro.id}`)}
                     >
                       <Eye className="w-4 h-4 mr-1" />
-                      Ver
+                      Detalhes
+                      <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           )}
 
           {/* Pagination */}
           {total > 0 && (
-            <div className="flex items-center justify-between py-3 mt-4 pt-4 border-t">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 mt-4 border-t">
               <div className="text-sm text-muted-foreground">
                 Mostrando{" "}
                 <strong>{total === 0 ? 0 : (page - 1) * limit + 1}</strong> –{" "}
