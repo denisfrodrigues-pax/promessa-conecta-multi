@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Download, FileText, UserPlus, UserMinus, Calendar, MessageCircle } from 'lucide-react';
+import { Users, Download, FileText, UserPlus, UserMinus, Calendar, MessageCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subMonths, startOfMonth, endOfMonth, differenceInYears } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -18,6 +19,7 @@ const statusLabels: Record<string, string> = { ativo: 'Ativo', inativo: 'Inativo
 export default function RelatorioMembros() {
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
+  const [exportingPDF, setExportingPDF] = useState(false);
   const [membros, setMembros] = useState<any[]>([]);
   const [filtroStatus, setFiltroStatus] = useState('todos');
   const [page, setPage] = useState(1);
@@ -112,8 +114,18 @@ export default function RelatorioMembros() {
     })), 'relatorio_membros');
   };
 
-  const handleExportPDF = () => {
-    if (reportRef.current) exportToPDF(reportRef.current, 'relatorio_membros');
+  const handleExportPDF = async () => {
+    if (!reportRef.current) return;
+    setExportingPDF(true);
+    try {
+      await exportToPDF(reportRef.current, 'relatorio_membros');
+      toast.success('PDF exportado com sucesso.');
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Não foi possível gerar o PDF.');
+    } finally {
+      setExportingPDF(false);
+    }
   };
 
   if (loading) {
@@ -129,7 +141,10 @@ export default function RelatorioMembros() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCSV}><Download className="w-4 h-4 mr-2" />CSV</Button>
-          <Button variant="outline" onClick={handleExportPDF}><FileText className="w-4 h-4 mr-2" />PDF</Button>
+          <Button variant="outline" onClick={handleExportPDF} disabled={exportingPDF}>
+            {exportingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+            {exportingPDF ? 'Gerando...' : 'PDF'}
+          </Button>
         </div>
       </div>
 

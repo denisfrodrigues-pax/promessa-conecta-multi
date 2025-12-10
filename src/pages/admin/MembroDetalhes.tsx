@@ -19,7 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { formatPhoneBR } from '@/lib/formatters';
+import { formatPhoneBR, cleanPhone } from '@/lib/formatters';
 
 interface Membro {
   id: string;
@@ -110,12 +110,7 @@ const estadoCivilOptions = [
   { value: 'viuvo', label: 'Viúvo(a)' },
 ];
 
-// Helper functions
-const cleanPhone = (phone: string | null): string => {
-  if (!phone) return '';
-  return phone.replace(/\D/g, '');
-};
-
+// Helper functions (cleanPhone imported from formatters)
 const hasValidPhone = (phone: string | null): boolean => {
   return cleanPhone(phone).length >= 10;
 };
@@ -430,7 +425,7 @@ export default function MembroDetalhes() {
         .from('membros')
         .update({
           nome: formData.nome.trim(),
-          telefone: formData.telefone.trim() || null,
+          telefone: cleanPhone(formData.telefone) || null,
           email: formData.email.trim() || null,
           data_nascimento: formData.data_nascimento || null,
           endereco: formData.endereco.trim() || null,
@@ -738,9 +733,10 @@ export default function MembroDetalhes() {
                 </Label>
                 <Input
                   id="telefone"
-                  value={formData.telefone}
-                  onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                  value={formatPhoneBR(formData.telefone)}
+                  onChange={(e) => setFormData({ ...formData, telefone: formatPhoneBR(e.target.value) })}
                   disabled={!isEditing}
+                  placeholder="(00) 00000-0000"
                 />
               </div>
 
