@@ -62,26 +62,27 @@ export default function MemberHome() {
 
   return (
     <div className="pb-24 md:pb-6">
-      {/* Hero Banner */}
-      <section className="bg-gradient-hero text-primary-foreground relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/banner_home_placeholder.png')] bg-cover bg-center opacity-20" />
-        <div className="container mx-auto px-4 py-12 relative z-10">
+      {/* Hero Banner - Premium with refined overlay */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/banner_home_placeholder.png')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-gradient-to-r from-promessa-900/40 to-promessa-700/20" />
+        <div className="container mx-auto px-4 py-16 relative z-10">
           <div className="max-w-2xl">
-            <Badge className="bg-promessa-primary-light text-primary-foreground mb-4">
+            <Badge className="bg-white/20 text-white border border-white/30 mb-4">
               <Sparkles className="w-3 h-3 mr-1" />
               Bem-vindo
             </Badge>
-            <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">
+            <h1 className="text-3xl md:text-4xl font-display font-bold mb-4 text-white">
               Olá, {profile?.nome?.split(' ')[0] || 'Visitante'}!
             </h1>
-            <p className="text-lg text-primary-foreground/80 mb-6">
+            <p className="text-lg text-white/90 mb-8">
               Seja bem-vindo à Igreja da Promessa. Aqui você encontra todas as informações e recursos da nossa comunidade.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button asChild variant="promessa" size="lg">
+              <Button asChild variant="promessa" size="lg" className="bg-white text-promessa-700 hover:bg-white/90 font-semibold">
                 <Link to="/sou-novo">Sou Novo Aqui</Link>
               </Button>
-              <Button asChild variant="hero" size="lg" className="bg-primary-foreground/10 border border-primary-foreground/20 hover:bg-primary-foreground/20">
+              <Button asChild size="lg" className="bg-white/10 text-white border border-white/30 hover:bg-white/20 font-semibold">
                 <Link to="/bases">Encontrar uma Base</Link>
               </Button>
             </div>
@@ -90,48 +91,48 @@ export default function MemberHome() {
       </section>
 
       <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Quick Actions */}
+        {/* Quick Actions - Premium Cards */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link to="/bases" className="group">
-            <Card className="shadow-card hover:shadow-elevated transition-all duration-300 h-full">
+            <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
-                  <Users className="w-6 h-6 text-primary" />
+                <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
+                  <Users className="w-6 h-6" />
                 </div>
-                <h3 className="font-medium">Bases</h3>
+                <h3 className="font-medium text-foreground">Bases</h3>
                 <p className="text-xs text-muted-foreground">Encontre sua base</p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/eventos" className="group">
-            <Card className="shadow-card hover:shadow-elevated transition-all duration-300 h-full">
+            <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-xl bg-promessa-secondary/20 flex items-center justify-center mb-3 group-hover:bg-promessa-secondary/30 transition-colors">
-                  <Calendar className="w-6 h-6 text-promessa-secondary" />
+                <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
+                  <Calendar className="w-6 h-6" />
                 </div>
-                <h3 className="font-medium">Eventos</h3>
+                <h3 className="font-medium text-foreground">Eventos</h3>
                 <p className="text-xs text-muted-foreground">Próximas atividades</p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/oracao" className="group">
-            <Card className="shadow-card hover:shadow-elevated transition-all duration-300 h-full">
+            <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center mb-3 group-hover:bg-rose-200 transition-colors">
-                  <Heart className="w-6 h-6 text-rose-500" />
+                <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
+                  <Heart className="w-6 h-6" />
                 </div>
-                <h3 className="font-medium">Oração</h3>
+                <h3 className="font-medium text-foreground">Oração</h3>
                 <p className="text-xs text-muted-foreground">Pedidos de oração</p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/avisos" className="group">
-            <Card className="shadow-card hover:shadow-elevated transition-all duration-300 h-full">
+            <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center mb-3 group-hover:bg-violet-200 transition-colors">
-                  <Bell className="w-6 h-6 text-violet-500" />
+                <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
+                  <Bell className="w-6 h-6" />
                 </div>
-                <h3 className="font-medium">Avisos</h3>
+                <h3 className="font-medium text-foreground">Avisos</h3>
                 <p className="text-xs text-muted-foreground">Comunicados</p>
               </CardContent>
             </Card>
@@ -150,11 +151,11 @@ export default function MemberHome() {
           </div>
           <div className="space-y-3">
             {avisos.map((aviso) => (
-              <Card key={aviso.id} className="shadow-soft hover:shadow-card transition-shadow">
+              <Card key={aviso.id} className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
-                      <Bell className="w-5 h-5 text-violet-500" />
+                    <div className="p-2.5 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                      <Bell className="w-5 h-5 text-promessa-700" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium">{aviso.titulo}</h3>
@@ -190,10 +191,10 @@ export default function MemberHome() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {eventos.map((evento) => (
               <Link key={evento.id} to={`/eventos/${evento.id}`}>
-                <Card className="shadow-card hover:shadow-elevated transition-all duration-300 h-full overflow-hidden group">
-                  <div className="aspect-video bg-gradient-hero relative">
+                <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full overflow-hidden group">
+                  <div className="aspect-video bg-gradient-to-br from-promessa-500 to-promessa-700 relative">
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Calendar className="w-10 h-10 text-primary-foreground/30" />
+                      <Calendar className="w-10 h-10 text-white/30" />
                     </div>
                   </div>
                   <CardContent className="p-4">

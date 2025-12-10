@@ -2,17 +2,18 @@
 // Baseada na cor real da logo (#5A9462)
 
 export const colors = {
-  // Primary (base logo)
+  // Primary (base logo) - full palette
   primary: {
-    900: "#1F3A25",
-    800: "#2F5738",
-    700: "#3F724A",
-    600: "#4E8D5D",
+    50: "#F2F7F4",
+    100: "#D9E8DF",
+    200: "#B4D1C0",
+    300: "#8FBBA0",
+    400: "#6BA481",
     500: "#5A9462", // Cor da logo
-    400: "#73A97A",
-    300: "#8FBE92",
-    200: "#B6D8BA",
-    100: "#D9ECDD",
+    600: "#4B7B51",
+    700: "#396939",
+    800: "#2A4A2A",
+    900: "#1A2F1A",
     DEFAULT: "#5A9462",
     dark: "#396939",
     light: "#73A97A",
@@ -32,8 +33,8 @@ export const colors = {
   // Neutrals
   neutral: {
     950: "#0D0E0F",
-    900: "#1F2324",
-    800: "#2A2E2F",
+    900: "#1A2F1A",
+    800: "#2A4A2A",
     700: "#353A3B",
     600: "#3E4546",
     500: "#5A6364",
@@ -81,7 +82,7 @@ export const cssVars = {
 
 // Recharts color palette for graphs
 export const chartColors = {
-  primary: colors.primary.DEFAULT,
+  primary: colors.primary[500],
   primaryLight: colors.primary[300],
   primaryDark: colors.primary[700],
   secondary: colors.secondary.DEFAULT,
@@ -91,6 +92,9 @@ export const chartColors = {
   warning: colors.warning,
   error: colors.error,
   neutral: colors.neutral[400],
+  // Chart specific fills and strokes
+  fill: "#5A9462",
+  stroke: "#396939",
 } as const;
 
 export default colors;

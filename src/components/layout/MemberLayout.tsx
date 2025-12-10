@@ -37,14 +37,14 @@ export default function MemberLayout() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b shadow-soft">
+      {/* Header - Premium White Navbar */}
+      <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <RouterNavLink to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <Church className="w-5 h-5 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-xl bg-promessa-700 flex items-center justify-center">
+              <Church className="w-5 h-5 text-white" />
             </div>
-            <span className="font-display font-bold text-lg hidden sm:block">Igreja da Promessa</span>
+            <span className="font-display font-bold text-lg hidden sm:block text-promessa-700">Igreja da Promessa</span>
           </RouterNavLink>
 
           {/* Desktop Nav */}
@@ -54,8 +54,8 @@ export default function MemberLayout() {
                 key={item.path}
                 to={item.path}
                 end={item.path === '/'}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                activeClassName="bg-primary/10 text-primary font-medium"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50 transition-colors"
+                activeClassName="bg-promessa-100 text-promessa-700 font-medium"
               >
                 <item.icon className="w-4 h-4" />
                 <span className="text-sm">{item.label}</span>
@@ -64,24 +64,23 @@ export default function MemberLayout() {
             {/* Notifications */}
             <NavLink
               to="/notificacoes"
-              className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              activeClassName="bg-primary/10 text-primary font-medium"
+              className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50 transition-colors"
+              activeClassName="bg-promessa-100 text-promessa-700 font-medium"
             >
               <Bell className="w-4 h-4" />
               <span className="text-sm">Notificações</span>
               {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-promessa-500 text-white">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </Badge>
               )}
             </NavLink>
             {(isAdmin || isLider) && (
-              <NavLink
-                to={isAdmin ? '/admin' : '/lider'}
-                className="ml-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-church-gold text-primary-foreground hover:bg-church-gold-dark transition-colors"
-              >
-                <span className="text-sm font-medium">{isAdmin ? 'Admin' : 'Líder'}</span>
-              </NavLink>
+              <Button asChild variant="promessa" className="ml-2 font-semibold">
+                <RouterNavLink to={isAdmin ? '/admin' : '/lider'}>
+                  {isAdmin ? 'Painel Admin' : 'Painel Líder'}
+                </RouterNavLink>
+              </Button>
             )}
           </nav>
 
@@ -147,7 +146,7 @@ export default function MemberLayout() {
                       <NavLink
                         to={isAdmin ? '/admin' : '/lider'}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg bg-church-gold/10 text-church-gold hover:bg-church-gold/20 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg bg-promessa-100 text-promessa-700 hover:bg-promessa-200 transition-colors"
                       >
                         <span className="font-medium">{isAdmin ? 'Painel Admin' : 'Painel Líder'}</span>
                       </NavLink>
