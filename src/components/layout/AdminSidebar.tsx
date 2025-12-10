@@ -39,7 +39,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
   { icon: Users, label: 'Usuários', path: '/admin/usuarios' },
   { icon: UserPlus, label: 'Visitantes', path: '/admin/visitantes' },
   { icon: Users, label: 'Membros', path: '/admin/membros' },
@@ -164,7 +164,7 @@ export default function AdminSidebar() {
               // Regular menu item
               <NavLink
                 to={item.path}
-                end={item.path === '/admin'}
+                end
                 className={cn(
                   'relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200',
                   collapsed && 'justify-center px-2'
