@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import {
   Users,
   UserPlus,
@@ -211,28 +212,43 @@ export default function AdminDashboard() {
   };
 
   const fetchChartData = async (): Promise<ChartData[]> => {
-    const months: ChartData[] = [];
     const now = new Date();
     
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    // Create date ranges for all 6 months
+    const monthRanges = Array.from({ length: 6 }, (_, i) => {
+      const monthOffset = 5 - i;
+      const date = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1);
       const startOfMonth = date.toISOString();
       const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString();
-      
-      const { count } = await supabase
-        .from('visitantes')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', startOfMonth)
-        .lte('created_at', endOfMonth);
-      
       const monthName = date.toLocaleDateString('pt-BR', { month: 'short' });
-      months.push({
-        month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
-        visitantes: count || 0,
-      });
+      return { startOfMonth, endOfMonth, monthName };
+    });
+
+    try {
+      // Execute all 6 queries in parallel using Promise.all
+      const results = await Promise.all(
+        monthRanges.map(({ startOfMonth, endOfMonth }) =>
+          supabase
+            .from('visitantes')
+            .select('id', { count: 'exact', head: true })
+            .gte('created_at', startOfMonth)
+            .lte('created_at', endOfMonth)
+        )
+      );
+
+      // Map results to chart data format
+      return monthRanges.map((range, index) => ({
+        month: range.monthName.charAt(0).toUpperCase() + range.monthName.slice(1),
+        visitantes: results[index].count || 0,
+      }));
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+      toast.error('Erro ao carregar dados do gráfico');
+      return monthRanges.map(range => ({
+        month: range.monthName.charAt(0).toUpperCase() + range.monthName.slice(1),
+        visitantes: 0,
+      }));
     }
-    
-    return months;
   };
 
   const fetchAlerts = async (): Promise<Alert[]> => {
