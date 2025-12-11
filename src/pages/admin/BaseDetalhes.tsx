@@ -124,6 +124,7 @@ export default function BaseDetalhes() {
   const [membrosDisponiveis, setMembrosDisponiveis] = useState<Membro[]>([]);
   const [liderInfo, setLiderInfo] = useState<Membro | null>(null);
   const [todosMembros, setTodosMembros] = useState<Membro[]>([]);
+  const [todosProfiles, setTodosProfiles] = useState<{ id: string; nome: string }[]>([]);
   const [visitantesBase, setVisitantesBase] = useState<BaseVisitante[]>([]);
   const [filtroStatusVisitante, setFiltroStatusVisitante] = useState('todos');
   const [loading, setLoading] = useState(true);
@@ -155,6 +156,7 @@ export default function BaseDetalhes() {
       fetchBase(),
       fetchMembrosBase(),
       fetchTodosMembros(),
+      fetchTodosProfiles(),
       fetchVisitantesBase(),
     ]);
     setLoading(false);
@@ -179,11 +181,12 @@ export default function BaseDetalhes() {
 
       if (data.lider_id) {
         const { data: lider } = await supabase
-          .from('membros')
-          .select('id, nome, telefone, foto_perfil')
+          .from('profiles')
+          .select('id, nome, telefone, foto_url')
           .eq('id', data.lider_id)
           .maybeSingle();
-        setLiderInfo(lider);
+        // Map foto_url to foto_perfil for interface compatibility
+        setLiderInfo(lider ? { ...lider, foto_perfil: lider.foto_url } : null);
       }
     }
   };
@@ -234,6 +237,11 @@ export default function BaseDetalhes() {
   const fetchTodosMembros = async () => {
     const { data } = await supabase.from('membros').select('id, nome, telefone, foto_perfil').eq('status', 'ativo').order('nome');
     if (data) setTodosMembros(data);
+  };
+
+  const fetchTodosProfiles = async () => {
+    const { data } = await supabase.from('profiles').select('id, nome').eq('status', 'ativo').order('nome');
+    if (data) setTodosProfiles(data);
   };
 
   const fetchMembrosDisponiveis = async () => {
@@ -417,7 +425,7 @@ export default function BaseDetalhes() {
                     <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Nenhum</SelectItem>
-                      {todosMembros.map((m) => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}
+                      {todosProfiles.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>

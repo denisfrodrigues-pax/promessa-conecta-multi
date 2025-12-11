@@ -117,7 +117,7 @@ export default function Bases() {
 
           if (base.lider_id) {
             const { data: lider } = await supabase
-              .from('membros')
+              .from('profiles')
               .select('nome, telefone')
               .eq('id', base.lider_id)
               .maybeSingle();

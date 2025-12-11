@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Save, Network } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface Membro {
+interface Profile {
   id: string;
   nome: string;
 }
@@ -20,7 +20,7 @@ const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado',
 export default function BaseNova() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [membros, setMembros] = useState<Membro[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
@@ -34,17 +34,17 @@ export default function BaseNova() {
   });
 
   useEffect(() => {
-    fetchMembros();
+    fetchProfiles();
   }, []);
 
-  const fetchMembros = async () => {
+  const fetchProfiles = async () => {
     const { data } = await supabase
-      .from('membros')
+      .from('profiles')
       .select('id, nome')
       .eq('status', 'ativo')
       .order('nome');
 
-    if (data) setMembros(data);
+    if (data) setProfiles(data);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -205,8 +205,8 @@ export default function BaseNova() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
-                  {membros.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
+                  {profiles.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
