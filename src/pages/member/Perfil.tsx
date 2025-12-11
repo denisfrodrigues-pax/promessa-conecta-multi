@@ -50,22 +50,23 @@ export default function MemberPerfil() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-24 md:pb-6 max-w-2xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-display font-bold">Meu Perfil</h1>
-        <p className="text-muted-foreground">Gerencie suas informações pessoais</p>
+    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-2xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold tracking-tight">Meu Perfil</h1>
+        <p className="text-muted-foreground mt-1">Gerencie suas informações pessoais</p>
       </div>
 
-      {/* Profile Header */}
-      <Card className="shadow-card mb-6">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-gradient-hero flex items-center justify-center">
-              <span className="text-3xl font-bold text-primary-foreground">
+      {/* Profile Header - Premium */}
+      <Card className="shadow-card border-0 mb-6 overflow-hidden">
+        <div className="h-24 bg-gradient-to-r from-promessa to-promessa-dark" />
+        <CardContent className="p-6 pt-0">
+          <div className="flex items-end gap-4 -mt-12">
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-promessa-light to-promessa flex items-center justify-center shadow-lg border-4 border-background">
+              <span className="text-4xl font-bold text-white">
                 {profile?.nome?.charAt(0).toUpperCase()}
               </span>
             </div>
-            <div>
+            <div className="pb-2">
               <h2 className="text-xl font-display font-bold">{profile?.nome}</h2>
               <p className="text-muted-foreground">{profile?.email}</p>
             </div>
@@ -73,10 +74,10 @@ export default function MemberPerfil() {
         </CardContent>
       </Card>
 
-      {/* Profile Form */}
+      {/* Profile Form - Premium */}
       <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="font-display">Informações Pessoais</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="font-display text-lg">Informações Pessoais</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

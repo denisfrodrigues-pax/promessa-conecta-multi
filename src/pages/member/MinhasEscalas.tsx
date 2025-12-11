@@ -122,21 +122,21 @@ export default function MinhasEscalas() {
     switch (status) {
       case 'confirmado':
         return (
-          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+          <Badge variant="success">
             <CheckCircle className="w-3 h-3 mr-1" />
             Confirmado
           </Badge>
         );
       case 'ausente':
         return (
-          <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
+          <Badge variant="destructive">
             <XCircle className="w-3 h-3 mr-1" />
             Recusado
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+          <Badge variant="warning">
             <Clock className="w-3 h-3 mr-1" />
             Pendente
           </Badge>
@@ -159,10 +159,22 @@ export default function MinhasEscalas() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-48" />
-          <div className="h-24 bg-muted rounded" />
-          <div className="h-24 bg-muted rounded" />
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <div className="h-8 w-48 bg-muted rounded-xl animate-pulse" />
+            <div className="h-4 w-64 bg-muted rounded-lg animate-pulse" />
+          </div>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="p-4 rounded-2xl border border-border/50 bg-card">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-muted animate-pulse" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-5 w-32 bg-muted rounded-lg animate-pulse" />
+                  <div className="h-4 w-48 bg-muted rounded-lg animate-pulse" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -170,15 +182,15 @@ export default function MinhasEscalas() {
 
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">Minhas Escalas</h1>
+          <h1 className="text-3xl font-display font-bold tracking-tight">Minhas Escalas</h1>
           <p className="text-muted-foreground mt-1">
             Visualize e confirme sua participação nas escalas
           </p>
         </div>
         <Link to="/historico-escalas">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="shadow-sm">
             <History className="w-4 h-4 mr-1" />
             Histórico
           </Button>

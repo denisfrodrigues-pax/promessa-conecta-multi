@@ -45,10 +45,10 @@ export default function MemberAvisos() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-24 md:pb-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-display font-bold">Avisos</h1>
-        <p className="text-muted-foreground">Comunicados e informações importantes</p>
+    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold tracking-tight">Avisos</h1>
+        <p className="text-muted-foreground mt-1">Comunicados e informações importantes</p>
       </div>
 
       <div className="relative mb-6">
@@ -65,17 +65,17 @@ export default function MemberAvisos() {
         {filteredAvisos.map((aviso, index) => (
           <Card 
             key={aviso.id} 
-            className="shadow-card animate-slide-up"
+            className="shadow-card border-0 animate-slide-up"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
-                  <Bell className="w-6 h-6 text-violet-500" />
+                <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center flex-shrink-0">
+                  <Bell className="w-7 h-7 text-violet-500" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-display font-semibold text-lg mb-2">{aviso.titulo}</h3>
-                  <p className="text-muted-foreground whitespace-pre-wrap">{aviso.conteudo}</p>
+                  <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{aviso.conteudo}</p>
                   <p className="text-sm text-muted-foreground mt-4">
                     {format(new Date(aviso.data_publicacao), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
                   </p>

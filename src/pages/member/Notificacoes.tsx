@@ -139,16 +139,16 @@ export default function MemberNotificacoes() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-24 md:pb-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-display font-bold">Notificações</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-display font-bold tracking-tight">Notificações</h1>
+          <p className="text-muted-foreground mt-1">
             {unreadCount > 0 ? `${unreadCount} não lida(s)` : 'Todas lidas'}
           </p>
         </div>
         {unreadCount > 0 && (
-          <Button variant="outline" onClick={handleMarkAllAsRead}>
+          <Button variant="outline" onClick={handleMarkAllAsRead} className="shadow-sm">
             <Check className="w-4 h-4 mr-2" />
             Marcar tudo como lido
           </Button>
