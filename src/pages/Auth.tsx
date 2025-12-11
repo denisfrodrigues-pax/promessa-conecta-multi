@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
+import { supabase } from '@/integrations/supabase/client';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, Church, Users, Heart } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, Church, Users, Heart, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -26,12 +28,20 @@ const signupSchema = z.object({
   path: ['confirmPassword'],
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Email inválido'),
+});
+
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({ nome: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   
   const { signIn, signUp, user } = useAuth();
   const { config } = useChurchConfig();
@@ -111,6 +121,46 @@ export default function Auth() {
       toast.success('Conta criada com sucesso! Bem-vindo!');
       navigate('/');
     }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    try {
+      forgotPasswordSchema.parse({ email: forgotPasswordEmail });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        setErrors({ forgotEmail: err.errors[0].message });
+        return;
+      }
+    }
+
+    setForgotPasswordLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        toast.error('Erro ao enviar email. Tente novamente.');
+      } else {
+        setForgotPasswordSent(true);
+        toast.success('Email de recuperação enviado!');
+      }
+    } catch (error) {
+      toast.error('Erro ao enviar email. Tente novamente.');
+    } finally {
+      setForgotPasswordLoading(false);
+    }
+  };
+
+  const closeForgotPasswordModal = () => {
+    setShowForgotPassword(false);
+    setForgotPasswordEmail('');
+    setForgotPasswordSent(false);
+    setErrors({});
   };
 
   const churchName = config?.nome_igreja || 'Igreja da Promessa';
@@ -306,6 +356,16 @@ export default function Auth() {
                   >
                     {isLoading ? 'Entrando...' : 'Entrar'}
                   </Button>
+
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPassword(true)}
+                      className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
+                    >
+                      Esqueceu sua senha?
+                    </button>
+                  </div>
                 </form>
               </TabsContent>
 
@@ -409,6 +469,73 @@ export default function Auth() {
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      <Dialog open={showForgotPassword} onOpenChange={closeForgotPasswordModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center font-display">
+              {forgotPasswordSent ? 'Email Enviado!' : 'Recuperar Senha'}
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              {forgotPasswordSent 
+                ? 'Verifique sua caixa de entrada e siga as instruções do email para redefinir sua senha.'
+                : 'Digite seu email para receber um link de recuperação de senha.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+
+          {forgotPasswordSent ? (
+            <div className="flex flex-col items-center py-6">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <p className="text-sm text-muted-foreground text-center mb-4">
+                Enviamos um email para <strong>{forgotPasswordEmail}</strong>
+              </p>
+              <Button onClick={closeForgotPasswordModal} className="w-full">
+                Fechar
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleForgotPassword} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="forgot-email">Email</Label>
+                <div className="relative group">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    className="pl-11 h-12"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  />
+                </div>
+                {errors.forgotEmail && <p className="text-sm text-destructive">{errors.forgotEmail}</p>}
+              </div>
+
+              <div className="flex gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={closeForgotPasswordModal}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="flex-1"
+                  disabled={forgotPasswordLoading}
+                >
+                  {forgotPasswordLoading ? 'Enviando...' : 'Enviar Email'}
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
