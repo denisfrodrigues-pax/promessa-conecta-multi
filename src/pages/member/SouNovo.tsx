@@ -106,50 +106,54 @@ export default function SouNovo() {
 
   return (
     <div className="pb-24 md:pb-6">
-      {/* Hero Section */}
-      <section className="bg-gradient-hero text-primary-foreground relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/banner_sou_novo_placeholder.png')] bg-cover bg-center opacity-20" />
-        <div className="container mx-auto px-4 py-16 relative z-10 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-church-gold shadow-gold mb-6">
-            <Sparkles className="w-8 h-8 text-primary-foreground" />
+      {/* Hero Section - Premium */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/banner_sou_novo_placeholder.png')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-gradient-to-r from-promessa-900/90 via-promessa-800/70 to-promessa-700/50" />
+        <div className="container mx-auto px-4 py-20 relative z-10 text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl mb-8">
+            <Sparkles className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">
+          <h1 className="text-4xl md:text-5xl font-display font-bold mb-6 text-white tracking-tight">
             Sou Novo Aqui
           </h1>
-          <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto">
+          <p className="text-xl text-white/90 max-w-2xl mx-auto leading-relaxed">
             Seja muito bem-vindo à Igreja da Promessa! Estamos muito felizes em tê-lo conosco.
             Aqui você vai encontrar uma família que se importa com você.
           </p>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Registration Form */}
+      <div className="container mx-auto px-4 py-12 space-y-12">
+        {/* Registration Form - Premium */}
         <section>
-          <Card className="shadow-card max-w-lg mx-auto">
-            <CardContent className="p-6">
+          <Card className="shadow-xl border-0 max-w-lg mx-auto overflow-hidden">
+            <div className="h-2 bg-gradient-to-r from-promessa to-promessa-dark" />
+            <CardContent className="p-8">
               {submitted ? (
                 <div className="text-center py-8">
-                  <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  <div className="w-20 h-20 rounded-full bg-promessa/10 flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle className="w-10 h-10 text-promessa" />
                   </div>
-                  <h2 className="text-xl font-display font-bold mb-2">Obrigado pelo cadastro!</h2>
-                  <p className="text-muted-foreground mb-4">
+                  <h2 className="text-2xl font-display font-bold mb-3">Obrigado pelo cadastro!</h2>
+                  <p className="text-muted-foreground mb-6 leading-relaxed">
                     Ficamos muito felizes com sua visita. Em breve entraremos em contato!
                   </p>
-                  <Button variant="outline" onClick={() => setSubmitted(false)}>
+                  <Button variant="outline" onClick={() => setSubmitted(false)} className="shadow-sm">
                     Cadastrar outra pessoa
                   </Button>
                 </div>
               ) : (
                 <>
-                  <h2 className="text-xl font-display font-bold mb-4 text-center">
-                    Quero me conectar!
-                  </h2>
-                  <p className="text-sm text-muted-foreground text-center mb-6">
-                    Preencha o formulário abaixo para que possamos entrar em contato com você.
-                  </p>
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="text-center mb-8">
+                    <h2 className="text-2xl font-display font-bold mb-2">
+                      Quero me conectar!
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Preencha o formulário abaixo para que possamos entrar em contato com você.
+                    </p>
+                  </div>
+                  <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="space-y-2">
                       <Label htmlFor="nome">Nome *</Label>
                       <Input
@@ -200,7 +204,7 @@ export default function SouNovo() {
                         {formData.observacao.length}/300
                       </p>
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
+                    <Button type="submit" className="w-full h-12 text-base shadow-lg" disabled={loading}>
                       {loading ? 'Enviando...' : 'Quero me conectar!'}
                     </Button>
                   </form>
@@ -210,24 +214,24 @@ export default function SouNovo() {
           </Card>
         </section>
 
-        {/* Steps */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-display font-bold text-center mb-6">
+        {/* Steps - Premium */}
+        <section className="space-y-6">
+          <h2 className="text-2xl font-display font-bold text-center">
             Seus Próximos Passos
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {steps.map((step, index) => (
-              <Card key={index} className="shadow-card hover:shadow-elevated transition-all duration-300">
+              <Card key={index} className="shadow-card border-0 hover:shadow-xl transition-all duration-300 group">
                 <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className={`w-12 h-12 rounded-xl ${step.color} flex items-center justify-center flex-shrink-0`}>
-                      <step.icon className="w-6 h-6" />
+                  <div className="flex items-start gap-5">
+                    <div className={`w-14 h-14 rounded-2xl ${step.color} flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+                      <step.icon className="w-7 h-7" />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-display font-semibold text-lg mb-2">{step.title}</h3>
-                      <p className="text-muted-foreground text-sm mb-3">{step.description}</p>
+                      <p className="text-muted-foreground text-sm mb-4 leading-relaxed">{step.description}</p>
                       {step.action && (
-                        <Button asChild variant="ghost" size="sm" className="p-0 h-auto">
+                        <Button asChild variant="ghost" size="sm" className="p-0 h-auto text-primary hover:text-primary/80">
                           <Link to={step.action.path}>
                             {step.action.label} <ChevronRight className="w-4 h-4 ml-1" />
                           </Link>
@@ -241,48 +245,48 @@ export default function SouNovo() {
           </div>
         </section>
 
-        {/* Info Section */}
+        {/* Info Section - Premium */}
         <section>
-          <Card className="shadow-card bg-gradient-card">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-display font-bold mb-6">Nossos Cultos</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg bg-background shadow-soft">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="font-medium">Domingo</span>
+          <Card className="shadow-card border-0 bg-gradient-to-br from-promessa/5 to-promessa/10 overflow-hidden">
+            <CardContent className="p-8">
+              <h2 className="text-2xl font-display font-bold mb-8 text-center">Nossos Cultos</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
+                  <div className="inline-flex items-center gap-2 mb-3 text-promessa">
+                    <Clock className="w-5 h-5" />
+                    <span className="font-semibold">Domingo</span>
                   </div>
-                  <p className="text-2xl font-display font-bold">10:00</p>
-                  <p className="text-sm text-muted-foreground">Culto da Família</p>
+                  <p className="text-4xl font-display font-bold text-promessa-dark mb-1">10:00</p>
+                  <p className="text-muted-foreground">Culto da Família</p>
                 </div>
-                <div className="p-4 rounded-lg bg-background shadow-soft">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="font-medium">Domingo</span>
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
+                  <div className="inline-flex items-center gap-2 mb-3 text-promessa">
+                    <Clock className="w-5 h-5" />
+                    <span className="font-semibold">Domingo</span>
                   </div>
-                  <p className="text-2xl font-display font-bold">19:00</p>
-                  <p className="text-sm text-muted-foreground">Culto de Celebração</p>
+                  <p className="text-4xl font-display font-bold text-promessa-dark mb-1">19:00</p>
+                  <p className="text-muted-foreground">Culto de Celebração</p>
                 </div>
-                <div className="p-4 rounded-lg bg-background shadow-soft">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="font-medium">Quarta</span>
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
+                  <div className="inline-flex items-center gap-2 mb-3 text-promessa">
+                    <Clock className="w-5 h-5" />
+                    <span className="font-semibold">Quarta</span>
                   </div>
-                  <p className="text-2xl font-display font-bold">19:30</p>
-                  <p className="text-sm text-muted-foreground">Culto de Ensino</p>
+                  <p className="text-4xl font-display font-bold text-promessa-dark mb-1">19:30</p>
+                  <p className="text-muted-foreground">Culto de Ensino</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </section>
 
-        {/* CTA */}
-        <section className="text-center py-8">
-          <h2 className="text-xl font-display font-bold mb-4">Pronto para dar o próximo passo?</h2>
-          <p className="text-muted-foreground mb-6">
+        {/* CTA - Premium */}
+        <section className="text-center py-12">
+          <h2 className="text-2xl font-display font-bold mb-4">Pronto para dar o próximo passo?</h2>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             Complete seu cadastro e faça parte da nossa comunidade
           </p>
-          <Button asChild size="lg">
+          <Button asChild size="lg" className="h-12 px-8 shadow-lg">
             <Link to="/perfil">Completar Meu Cadastro</Link>
           </Button>
         </section>

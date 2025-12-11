@@ -81,15 +81,15 @@ export default function Oracao() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-24 md:pb-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-display font-bold">Pedidos de Oração</h1>
-          <p className="text-muted-foreground">Compartilhe seus pedidos e ore pela comunidade</p>
+          <h1 className="text-3xl font-display font-bold tracking-tight">Pedidos de Oração</h1>
+          <p className="text-muted-foreground mt-1">Compartilhe seus pedidos e ore pela comunidade</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="shadow-sm">
               <Plus className="w-4 h-4 mr-2" />
               Novo Pedido
             </Button>

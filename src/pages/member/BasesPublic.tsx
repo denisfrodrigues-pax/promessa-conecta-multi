@@ -93,29 +93,30 @@ export default function BasesPublic() {
 
   return (
     <div className="pb-24 md:pb-6">
-      {/* Hero Section */}
-      <section className="bg-gradient-hero text-primary-foreground relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/banner_home_placeholder.png')] bg-cover bg-center opacity-20" />
-        <div className="container mx-auto px-4 py-12 relative z-10">
+      {/* Hero Section - Premium */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/banner_home_placeholder.png')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-gradient-to-r from-promessa-900/90 via-promessa-800/70 to-promessa-700/50" />
+        <div className="container mx-auto px-4 py-16 relative z-10">
           <div className="max-w-2xl">
-            <Badge className="bg-church-gold text-primary-foreground mb-4">
+            <Badge className="bg-white/20 text-white border border-white/30 mb-4">
               <Home className="w-3 h-3 mr-1" />
               Comunidade
             </Badge>
-            <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 text-white tracking-tight">
               Encontre uma Base
             </h1>
-            <p className="text-lg text-primary-foreground/80 mb-6">
+            <p className="text-xl text-white/90 mb-8 leading-relaxed">
               Nossas Bases são pequenos grupos onde você pode crescer na fé, fazer amizades e ser acompanhado de perto.
             </p>
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="bg-white text-promessa-700 hover:bg-white/90 shadow-lg">
               <Link to="/sou-novo">Quero Participar</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-8 space-y-6">
+      <div className="container mx-auto px-4 py-10 space-y-6">
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-md">
@@ -142,14 +143,26 @@ export default function BasesPublic() {
 
         {/* Stats */}
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>{filtered.length} {filtered.length === 1 ? 'base encontrada' : 'bases encontradas'}</span>
+          <span className="font-medium">{filtered.length} {filtered.length === 1 ? 'base encontrada' : 'bases encontradas'}</span>
         </div>
 
         {/* List */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Skeleton key={i} className="h-56" />
+              <div key={i} className="p-6 rounded-2xl border border-border/50 bg-card">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-muted animate-pulse" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-5 w-3/4 bg-muted rounded-lg animate-pulse" />
+                    <div className="h-4 w-1/2 bg-muted rounded-lg animate-pulse" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 w-full bg-muted rounded-lg animate-pulse" />
+                  <div className="h-4 w-2/3 bg-muted rounded-lg animate-pulse" />
+                </div>
+              </div>
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -160,14 +173,14 @@ export default function BasesPublic() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((base) => (
               <Link key={base.id} to={`/bases/${base.id}`}>
-                <Card className="shadow-card hover:shadow-elevated transition-all duration-300 h-full group">
+                <Card className="shadow-card border-0 hover:shadow-xl transition-all duration-300 h-full group">
                   <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                        <Users className="w-6 h-6 text-primary" />
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                        <Users className="w-7 h-7 text-primary" />
                       </div>
                       {isLotada(base.membros_count, base.capacidade) && (
                         <Badge variant="destructive" className="text-xs">Lotada</Badge>

@@ -115,10 +115,10 @@ export default function MemberEventos() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-24 md:pb-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-display font-bold">Eventos</h1>
-        <p className="text-muted-foreground">Próximos eventos e atividades</p>
+    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold tracking-tight">Eventos</h1>
+        <p className="text-muted-foreground mt-1">Próximos eventos e atividades</p>
       </div>
 
       <div className="relative mb-6">
