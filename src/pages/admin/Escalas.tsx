@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, CheckCircle, Clock, XCircle, Search, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, CheckCircle, Clock, XCircle, Search, Eye, MessageCircle, Send, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -35,6 +35,7 @@ interface Profile {
   nome: string;
   user_id: string;
   email?: string;
+  telefone?: string | null;
   funcao_principal_id?: string | null;
 }
 
@@ -109,10 +110,17 @@ export default function AdminEscalas() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<EscalaGroup | null>(null);
   const [viewingGroup, setViewingGroup] = useState<EscalaGroup | null>(null);
   const [deletingGroup, setDeletingGroup] = useState<EscalaGroup | null>(null);
   const [formData, setFormData] = useState<EscalaFormData>(initialFormData);
+  const [selectedVoluntarioForWhatsApp, setSelectedVoluntarioForWhatsApp] = useState<{
+    id: string;
+    nome: string;
+    telefone: string | null;
+  } | null>(null);
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
   
   // Filters
   const [filterMinisterio, setFilterMinisterio] = useState<string>('all');
@@ -214,7 +222,7 @@ export default function AdminEscalas() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, nome, user_id')
+        .select('id, nome, user_id, telefone')
         .order('nome');
 
       if (error) throw error;
@@ -236,7 +244,7 @@ export default function AdminEscalas() {
           user_id,
           ativo,
           funcao_principal_id,
-          profile:profiles!ministerio_voluntarios_user_id_fkey(id, nome, email, user_id)
+          profile:profiles!ministerio_voluntarios_user_id_fkey(id, nome, email, user_id, telefone)
         `)
         .eq('ministerio_id', ministerioId)
         .eq('ativo', true);
@@ -251,6 +259,7 @@ export default function AdminEscalas() {
           nome: item.profile!.nome,
           email: item.profile!.email,
           user_id: item.profile!.user_id,
+          telefone: item.profile!.telefone,
           funcao_principal_id: item.funcao_principal_id,
         }))
         .sort((a, b) => a.nome.localeCompare(b.nome));
@@ -341,6 +350,74 @@ export default function AdminEscalas() {
   const handleView = (group: EscalaGroup) => {
     setViewingGroup(group);
     setIsViewDialogOpen(true);
+  };
+
+  const handleOpenWhatsAppDialog = async (voluntarioId: string, voluntarioNome: string) => {
+    // Fetch the volunteer's phone number
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('telefone')
+        .eq('id', voluntarioId)
+        .single();
+
+      if (error) throw error;
+
+      setSelectedVoluntarioForWhatsApp({
+        id: voluntarioId,
+        nome: voluntarioNome,
+        telefone: data?.telefone || null,
+      });
+      setIsWhatsAppDialogOpen(true);
+    } catch (error) {
+      console.error('Error fetching volunteer phone:', error);
+      toast.error('Erro ao buscar telefone do voluntário');
+    }
+  };
+
+  const handleSendWhatsAppReminder = async () => {
+    if (!selectedVoluntarioForWhatsApp || !viewingGroup) return;
+    
+    if (!selectedVoluntarioForWhatsApp.telefone) {
+      toast.error('Este voluntário não possui telefone cadastrado');
+      return;
+    }
+
+    setSendingWhatsApp(true);
+
+    try {
+      // Format the reminder message
+      const dataFormatada = format(new Date(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR });
+      const horario = viewingGroup.horario || 'horário a confirmar';
+      const ministerio = viewingGroup.ministerio_nome || 'ministério';
+      const funcao = viewingGroup.funcao;
+
+      const mensagem = `Olá ${selectedVoluntarioForWhatsApp.nome}, você está escalado(a) para ${funcao} no ${ministerio} no dia ${dataFormatada} às ${horario}. Acesse o sistema para confirmar sua presença.`;
+
+      // Call the Edge Function
+      const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
+        body: {
+          phone_number: selectedVoluntarioForWhatsApp.telefone,
+          message_body: mensagem,
+          template_id: 'escala_reminder',
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success(`Lembrete enviado para ${selectedVoluntarioForWhatsApp.nome}`);
+        setIsWhatsAppDialogOpen(false);
+        setSelectedVoluntarioForWhatsApp(null);
+      } else {
+        throw new Error(data?.error || 'Erro ao enviar mensagem');
+      }
+    } catch (error) {
+      console.error('Error sending WhatsApp reminder:', error);
+      toast.error('Erro ao enviar lembrete via WhatsApp');
+    } finally {
+      setSendingWhatsApp(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -827,7 +904,18 @@ export default function AdminEscalas() {
                       {viewingGroup.voluntarios.filter(v => v.status === 'confirmado').map((vol) => (
                         <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-100">
                           <p className="font-medium">{vol.nome}</p>
-                          {getStatusBadge(vol.status)}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenWhatsAppDialog(vol.voluntario_id, vol.nome)}
+                              className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100"
+                              title="Enviar lembrete via WhatsApp"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                            </Button>
+                            {getStatusBadge(vol.status)}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -845,7 +933,18 @@ export default function AdminEscalas() {
                       {viewingGroup.voluntarios.filter(v => v.status === 'pendente').map((vol) => (
                         <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-100">
                           <p className="font-medium">{vol.nome}</p>
-                          {getStatusBadge(vol.status)}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenWhatsAppDialog(vol.voluntario_id, vol.nome)}
+                              className="h-8 w-8 p-0 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100"
+                              title="Enviar lembrete via WhatsApp"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                            </Button>
+                            {getStatusBadge(vol.status)}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -870,7 +969,18 @@ export default function AdminEscalas() {
                               </p>
                             )}
                           </div>
-                          {getStatusBadge(vol.status)}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenWhatsAppDialog(vol.voluntario_id, vol.nome)}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-100"
+                              title="Enviar lembrete via WhatsApp"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                            </Button>
+                            {getStatusBadge(vol.status)}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -893,6 +1003,84 @@ export default function AdminEscalas() {
                 Editar
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* WhatsApp Reminder Dialog */}
+      <Dialog open={isWhatsAppDialogOpen} onOpenChange={setIsWhatsAppDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-green-600" />
+              Enviar Lembrete WhatsApp
+            </DialogTitle>
+            <DialogDescription>
+              Enviar lembrete da escala via WhatsApp
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedVoluntarioForWhatsApp && viewingGroup && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-muted/50 space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Voluntário:</span>
+                  <span className="font-medium">{selectedVoluntarioForWhatsApp.nome}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Telefone:</span>
+                  <span className="font-medium">
+                    {selectedVoluntarioForWhatsApp.telefone || (
+                      <span className="text-destructive">Não cadastrado</span>
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+                <p className="text-sm font-medium text-green-800 mb-2">Prévia da mensagem:</p>
+                <p className="text-sm text-green-700">
+                  Olá {selectedVoluntarioForWhatsApp.nome}, você está escalado(a) para {viewingGroup.funcao} no {viewingGroup.ministerio_nome || 'ministério'} no dia {format(new Date(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR })} às {viewingGroup.horario || 'horário a confirmar'}. Acesse o sistema para confirmar sua presença.
+                </p>
+              </div>
+
+              {!selectedVoluntarioForWhatsApp.telefone && (
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <p className="text-sm text-destructive">
+                    Este voluntário não possui telefone cadastrado. Por favor, atualize o cadastro antes de enviar o lembrete.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsWhatsAppDialogOpen(false);
+                setSelectedVoluntarioForWhatsApp(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSendWhatsAppReminder}
+              disabled={sendingWhatsApp || !selectedVoluntarioForWhatsApp?.telefone}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {sendingWhatsApp ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Enviar Lembrete
+                </>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
