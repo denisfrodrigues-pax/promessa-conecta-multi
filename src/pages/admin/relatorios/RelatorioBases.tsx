@@ -204,7 +204,7 @@ export default function RelatorioBases() {
                 <XAxis type="number" domain={[0, 100]} />
                 <YAxis dataKey="nome" type="category" width={100} />
                 <Tooltip formatter={(v: number) => `${v}%`} />
-                <Bar dataKey="ocupacao" fill="#8b5cf6" />
+                <Bar dataKey="ocupacao" fill="#5A9462" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -218,7 +218,7 @@ export default function RelatorioBases() {
                 <XAxis dataKey="mes" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="novos" stroke="#10b981" strokeWidth={2} />
+                <Line type="monotone" dataKey="novos" stroke="#396939" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>

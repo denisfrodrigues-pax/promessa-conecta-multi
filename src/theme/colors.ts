@@ -80,21 +80,50 @@ export const cssVars = {
   "--color-error": colors.error,
 } as const;
 
-// Recharts color palette for graphs
+// Recharts color palette for graphs - Igreja da Promessa Official Colors
 export const chartColors = {
-  primary: colors.primary[500],
-  primaryLight: colors.primary[300],
-  primaryDark: colors.primary[700],
+  // Primary chart colors (official church green)
+  primary: "#5A9462",
+  primaryLight: "#73A97A",
+  primaryDark: "#396939",
+  
+  // Secondary palette
   secondary: colors.secondary.DEFAULT,
   secondaryLight: colors.secondary[300],
   accent: colors.accent,
+  
+  // Semantic colors
   success: colors.success,
   warning: colors.warning,
   error: colors.error,
   neutral: colors.neutral[400],
-  // Chart specific fills and strokes
-  fill: "#5A9462",
-  stroke: "#396939",
+  
+  // Chart specific fills and strokes - OFFICIAL COLORS
+  fill: "#5A9462",      // Verde principal da logo
+  stroke: "#396939",    // Verde escuro para bordas/linhas
+  
+  // Gradients for area charts
+  fillGradientStart: "#5A9462",
+  fillGradientEnd: "rgba(90, 148, 98, 0.1)",
+  
+  // Multi-series colors
+  series: [
+    "#5A9462", // Primary green
+    "#396939", // Dark green
+    "#73A97A", // Light green
+    "#85A89A", // Secondary sage
+    "#B7CEC4", // Light sage
+    "#E6A327", // Warning/accent
+  ],
+} as const;
+
+// Default chart configuration for consistent styling
+export const defaultChartConfig = {
+  fill: chartColors.fill,
+  stroke: chartColors.stroke,
+  strokeWidth: 2,
+  radius: 4,
+  animationDuration: 300,
 } as const;
 
 export default colors;

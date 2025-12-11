@@ -214,7 +214,7 @@ export default function RelatorioKids() {
                 <XAxis dataKey="dia" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="checkins" stroke="#ec4899" strokeWidth={2} />
+                <Line type="monotone" dataKey="checkins" stroke="#396939" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -228,7 +228,7 @@ export default function RelatorioKids() {
                 <XAxis type="number" />
                 <YAxis dataKey="sala" type="category" width={100} />
                 <Tooltip />
-                <Bar dataKey="checkins" fill="#8b5cf6" />
+                <Bar dataKey="checkins" fill="#5A9462" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

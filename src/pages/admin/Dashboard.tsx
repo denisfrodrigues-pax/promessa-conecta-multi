@@ -454,8 +454,9 @@ export default function AdminDashboard() {
                   <Area
                     type="monotone"
                     dataKey="visitantes"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary) / 0.2)"
+                    stroke="#396939"
+                    fill="#5A9462"
+                    fillOpacity={0.3}
                     strokeWidth={2}
                   />
                 </AreaChart>

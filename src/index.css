@@ -94,6 +94,18 @@
     --shadow-elevated: 0 8px 24px -6px hsl(130 25% 47% / 0.15);
     --shadow-primary: 0 4px 16px -4px hsl(130 25% 47% / 0.25);
 
+    /* Chart Colors - Igreja da Promessa Official */
+    --chart-primary: 130 25% 47%;
+    --chart-primary-dark: 120 30% 32%;
+    --chart-primary-light: 127 24% 56%;
+    --chart-fill: 130 25% 47%;
+    --chart-stroke: 120 30% 32%;
+    --chart-1: 130 25% 47%;
+    --chart-2: 120 30% 32%;
+    --chart-3: 127 24% 56%;
+    --chart-4: 153 19% 59%;
+    --chart-5: 152 22% 76%;
+
     /* Sidebar */
     --sidebar-background: 120 30% 25%;
     --sidebar-foreground: 150 14% 96%;

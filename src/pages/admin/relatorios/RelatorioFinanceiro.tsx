@@ -10,7 +10,7 @@ import { ptBR } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { exportToCSV, exportToPDF } from '@/utils/exportUtils';
 
-const COLORS = ['#10b981', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4'];
+const COLORS = ['#5A9462', '#D9534F', '#396939', '#E6A327', '#73A97A', '#85A89A'];
 
 export default function RelatorioFinanceiro() {
   const reportRef = useRef<HTMLDivElement>(null);
@@ -226,8 +226,8 @@ export default function RelatorioFinanceiro() {
                 <YAxis />
                 <Tooltip formatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
                 <Legend />
-                <Bar dataKey="entradas" name="Entradas" fill="#10b981" />
-                <Bar dataKey="saidas" name="Saídas" fill="#ef4444" />
+                <Bar dataKey="entradas" name="Entradas" fill="#5A9462" />
+                <Bar dataKey="saidas" name="Saídas" fill="#D9534F" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
