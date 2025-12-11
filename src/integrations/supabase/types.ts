@@ -1564,7 +1564,13 @@ export type Database = {
       recalcula_saldo_conta: { Args: { p_conta_id: string }; Returns: number }
     }
     Enums: {
-      app_role: "admin" | "lider" | "voluntario" | "membro" | "visitante"
+      app_role:
+        | "admin"
+        | "lider"
+        | "voluntario"
+        | "membro"
+        | "visitante"
+        | "financeiro"
       communication_type: "push" | "whatsapp" | "email"
       escala_status_geral: "planejada" | "ativa" | "concluida"
       group_visibility: "publica" | "privada"
@@ -1705,7 +1711,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "lider", "voluntario", "membro", "visitante"],
+      app_role: [
+        "admin",
+        "lider",
+        "voluntario",
+        "membro",
+        "visitante",
+        "financeiro",
+      ],
       communication_type: ["push", "whatsapp", "email"],
       escala_status_geral: ["planejada", "ativa", "concluida"],
       group_visibility: ["publica", "privada"],
