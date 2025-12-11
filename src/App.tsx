@@ -76,6 +76,7 @@ import MemberNotificacoes from "@/pages/member/Notificacoes";
 // Leader Pages
 import LeaderDashboard from "@/pages/leader/Dashboard";
 import LeaderBases from "@/pages/leader/Bases";
+import LeaderBaseDetalhes from "@/pages/leader/LeaderBaseDetalhes";
 import LeaderRelatorios from "@/pages/leader/Relatorios";
 import LeaderEscalas from "@/pages/leader/Escalas";
 import LeaderMinhaEquipe from "@/pages/leader/MinhaEquipe";
@@ -156,6 +157,7 @@ const App = () => (
             <Route path="/lider" element={<LeaderLayout />}>
               <Route index element={<LeaderDashboard />} />
               <Route path="bases" element={<LeaderBases />} />
+              <Route path="bases/:id" element={<LeaderBaseDetalhes />} />
               <Route path="escalas" element={<LeaderEscalas />} />
               <Route path="equipe" element={<LeaderMinhaEquipe />} />
               <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
