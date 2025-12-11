@@ -71,7 +71,7 @@ export default function Index() {
                 <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
-            <Button asChild size="xl" variant="outline" className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm">
+            <Button asChild size="xl" className="bg-transparent border border-white/30 text-white hover:bg-white/10 backdrop-blur-sm">
               <Link to="/sou-novo">
                 Sou Novo Aqui
                 <Sparkles className="w-5 h-5" />
