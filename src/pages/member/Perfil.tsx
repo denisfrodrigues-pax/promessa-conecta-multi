@@ -5,10 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Mail, Phone, MapPin, Calendar, Save, LogOut } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Save, LogOut, Bell, BellOff } from 'lucide-react';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export default function MemberPerfil() {
   const { profile, signOut } = useAuth();
@@ -21,6 +23,14 @@ export default function MemberPerfil() {
     sexo: (profile as any)?.sexo || '',
     estado_civil: (profile as any)?.estado_civil || '',
   });
+
+  const { 
+    isSupported: pushSupported, 
+    isSubscribed: pushEnabled, 
+    isLoading: pushLoading,
+    permission: pushPermission,
+    toggleSubscription 
+  } = usePushNotifications();
 
   const handleSave = async () => {
     if (!profile) return;
@@ -49,6 +59,10 @@ export default function MemberPerfil() {
     }
   };
 
+  const handlePushToggle = async () => {
+    await toggleSubscription();
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-2xl">
       <div className="mb-8">
@@ -70,6 +84,47 @@ export default function MemberPerfil() {
               <h2 className="text-xl font-display font-bold">{profile?.nome}</h2>
               <p className="text-muted-foreground">{profile?.email}</p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Notifications Settings */}
+      <Card className="shadow-card mb-6">
+        <CardHeader className="pb-4">
+          <CardTitle className="font-display text-lg flex items-center gap-2">
+            <Bell className="w-5 h-5" />
+            Notificações
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                {pushEnabled ? (
+                  <Bell className="w-4 h-4 text-primary" />
+                ) : (
+                  <BellOff className="w-4 h-4 text-muted-foreground" />
+                )}
+                <Label htmlFor="push-notifications" className="font-medium">
+                  Notificações Push
+                </Label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {!pushSupported 
+                  ? 'Não suportado neste navegador'
+                  : pushPermission === 'denied'
+                  ? 'Permissão negada. Habilite nas configurações do navegador.'
+                  : pushEnabled 
+                  ? 'Você receberá alertas de escalas, eventos e avisos'
+                  : 'Receba alertas de escalas, eventos e avisos'}
+              </p>
+            </div>
+            <Switch
+              id="push-notifications"
+              checked={pushEnabled}
+              onCheckedChange={handlePushToggle}
+              disabled={!pushSupported || pushLoading || pushPermission === 'denied'}
+            />
           </div>
         </CardContent>
       </Card>
