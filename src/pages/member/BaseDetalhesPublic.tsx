@@ -45,7 +45,7 @@ export default function BaseDetalhesPublic() {
         .from('bases')
         .select(`
           id, nome, descricao, dia_semana, horario, local, capacidade, visibilidade, lider_id,
-          lider:membros!bases_lider_id_fkey(nome)
+          lider:profiles!bases_lider_id_fkey(nome)
         `)
         .eq('id', id)
         .eq('status', 'ativo')
@@ -63,7 +63,13 @@ export default function BaseDetalhesPublic() {
         .eq('base_id', id)
         .eq('status', 'ativo');
 
-      setBase({ ...data, membros_count: count || 0 });
+      // Handle the lider being an array from the join
+      const liderData = Array.isArray(data.lider) ? data.lider[0] : data.lider;
+      setBase({ 
+        ...data, 
+        lider: liderData || null,
+        membros_count: count || 0 
+      });
     } catch (error) {
       console.error('Error fetching base:', error);
     } finally {

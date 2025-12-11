@@ -64,6 +64,7 @@ import MemberHome from "@/pages/member/Home";
 import BasesPublic from "@/pages/member/BasesPublic";
 import BaseDetalhesPublic from "@/pages/member/BaseDetalhesPublic";
 import MemberEventos from "@/pages/member/Eventos";
+import MemberEventoDetalhes from "@/pages/member/EventoDetalhes";
 import MemberAvisos from "@/pages/member/Avisos";
 import MemberPerfil from "@/pages/member/Perfil";
 import SouNovo from "@/pages/member/SouNovo";
@@ -168,6 +169,7 @@ const App = () => (
               <Route path="/bases" element={<BasesPublic />} />
               <Route path="/bases/:id" element={<BaseDetalhesPublic />} />
               <Route path="/eventos" element={<MemberEventos />} />
+              <Route path="/eventos/:id" element={<MemberEventoDetalhes />} />
               <Route path="/avisos" element={<MemberAvisos />} />
               <Route path="/perfil" element={<MemberPerfil />} />
               <Route path="/oracao" element={<Oracao />} />

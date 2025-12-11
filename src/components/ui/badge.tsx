@@ -20,6 +20,8 @@ const badgeVariants = cva(
         success: "border-promessa-300 bg-promessa-100 text-promessa-800",
         // Warning - atenção (pendente)
         warning: "border-amber-300 bg-amber-100 text-amber-800",
+        // Danger - erro/crítico (alias para destructive)
+        danger: "border-red-300 bg-red-100 text-red-800",
         // Info - azul suave (neutro/info)
         info: "border-blue-300 bg-blue-100 text-blue-800",
         // Promessa branded
@@ -32,6 +34,8 @@ const badgeVariants = cva(
         voluntario: "border-promessa-300 bg-promessa-100 text-promessa-800",
         // Membro - azul
         membro: "border-blue-300 bg-blue-100 text-blue-800",
+        // Visitante - cinza
+        visitante: "border-neutral-300 bg-neutral-100 text-neutral-700",
       },
     },
     defaultVariants: {

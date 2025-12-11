@@ -54,7 +54,7 @@ export default function BasesPublic() {
         .from('bases')
         .select(`
           id, nome, descricao, dia_semana, horario, local, capacidade, visibilidade, lider_id,
-          lider:membros!bases_lider_id_fkey(nome)
+          lider:profiles!bases_lider_id_fkey(nome)
         `)
         .eq('status', 'ativo')
         .order('nome');
@@ -68,7 +68,14 @@ export default function BasesPublic() {
             .select('*', { count: 'exact', head: true })
             .eq('base_id', base.id)
             .eq('status', 'ativo');
-          return { ...base, membros_count: count || 0 };
+          
+          // Handle the lider being an array from the join
+          const liderData = Array.isArray(base.lider) ? base.lider[0] : base.lider;
+          return { 
+            ...base, 
+            lider: liderData || null,
+            membros_count: count || 0 
+          };
         })
       );
 
