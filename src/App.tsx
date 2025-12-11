@@ -13,6 +13,7 @@ import LeaderLayout from "@/components/layout/LeaderLayout";
 // Auth
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
+import InstallPWA from "@/pages/InstallPWA";
 import Index from "@/pages/Index";
 
 // Admin Pages
@@ -103,6 +104,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/install" element={<InstallPWA />} />
             <Route path="/sou-novo" element={<SouNovo />} />
 
             {/* Admin Routes */}
