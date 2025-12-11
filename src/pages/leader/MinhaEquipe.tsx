@@ -313,20 +313,22 @@ export default function LeaderMinhaEquipe() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Minha Equipe</h1>
-        <p className="text-muted-foreground">Gerencie os voluntários do ministério {ministerio.nome}</p>
+    <div className="p-8 space-y-8">
+      <div>
+        <h1 className="text-3xl font-display font-bold tracking-tight">Minha Equipe</h1>
+        <p className="text-muted-foreground mt-1">Gerencie os voluntários do ministério {ministerio.nome}</p>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="shadow-card">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-3 text-lg">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
               Voluntários - {ministerio.nome}
             </CardTitle>
-            <Button onClick={handleOpenAddDialog}>
+            <Button onClick={handleOpenAddDialog} className="shadow-sm">
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Voluntário
             </Button>
@@ -337,7 +339,7 @@ export default function LeaderMinhaEquipe() {
               placeholder="Buscar voluntário..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
+              className="pl-10"
             />
           </div>
         </CardHeader>

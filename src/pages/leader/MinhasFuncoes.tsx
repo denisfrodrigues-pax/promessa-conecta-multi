@@ -227,21 +227,21 @@ export default function MinhasFuncoes() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Funções do Ministério</h1>
-          <p className="text-muted-foreground">Gerencie as funções de {ministerio.nome}</p>
+          <h1 className="text-3xl font-display font-bold tracking-tight">Funções do Ministério</h1>
+          <p className="text-muted-foreground mt-1">Gerencie as funções de {ministerio.nome}</p>
         </div>
-        <Button onClick={handleCreate}>
+        <Button onClick={handleCreate} className="shadow-sm">
           <Plus className="w-4 h-4 mr-2" />
           Nova Função
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{ministerio.nome}</CardTitle>
+      <Card className="shadow-card">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg">{ministerio.nome}</CardTitle>
           <p className="text-sm text-muted-foreground">
             {funcoes.length} função(ões) cadastrada(s)
           </p>

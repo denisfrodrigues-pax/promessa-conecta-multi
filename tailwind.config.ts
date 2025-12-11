@@ -62,6 +62,9 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         promessa: {
+          DEFAULT: "hsl(var(--promessa-primary))",
+          dark: "hsl(var(--promessa-primary-dark))",
+          light: "hsl(var(--promessa-primary-light))",
           50: "hsl(var(--promessa-50))",
           100: "hsl(var(--promessa-100))",
           200: "hsl(var(--promessa-200))",
