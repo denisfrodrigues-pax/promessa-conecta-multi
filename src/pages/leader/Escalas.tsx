@@ -196,21 +196,21 @@ export default function LeaderEscalas() {
     switch (status) {
       case 'confirmado':
         return (
-          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+          <Badge variant="success">
             <CheckCircle className="w-3 h-3 mr-1" />
             Confirmado
           </Badge>
         );
       case 'ausente':
         return (
-          <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
+          <Badge variant="destructive">
             <XCircle className="w-3 h-3 mr-1" />
             Ausente
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+          <Badge variant="warning">
             <Clock className="w-3 h-3 mr-1" />
             Pendente
           </Badge>
@@ -221,11 +221,11 @@ export default function LeaderEscalas() {
   const getStatusGeralBadge = (status: string | null) => {
     switch (status) {
       case 'ativa':
-        return <Badge className="bg-blue-100 text-blue-700">Ativa</Badge>;
+        return <Badge variant="info">Ativa</Badge>;
       case 'concluida':
-        return <Badge className="bg-gray-100 text-gray-700">Concluída</Badge>;
+        return <Badge variant="secondary">Concluída</Badge>;
       default:
-        return <Badge className="bg-purple-100 text-purple-700">Planejada</Badge>;
+        return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Planejada</Badge>;
     }
   };
 

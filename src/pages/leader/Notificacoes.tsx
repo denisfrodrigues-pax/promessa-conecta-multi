@@ -273,24 +273,26 @@ export default function LeaderNotificacoes() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">Notificações</h1>
-          <p className="text-muted-foreground">Notificações dos voluntários do seu ministério</p>
+          <h1 className="text-3xl font-display font-bold tracking-tight">Notificações</h1>
+          <p className="text-muted-foreground mt-1">Notificações dos voluntários do seu ministério</p>
         </div>
       </div>
 
       {/* Send notification form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Send className="w-5 h-5" />
+      <Card className="shadow-card border-0 bg-gradient-to-br from-primary/5 to-primary/10">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+              <Send className="w-5 h-5 text-primary" />
+            </div>
             Enviar Notificação
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="titulo">Título</Label>
             <Input
               id="titulo"
@@ -299,7 +301,7 @@ export default function LeaderNotificacoes() {
               placeholder="Título da notificação"
             />
           </div>
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="mensagem">Mensagem</Label>
             <Textarea
               id="mensagem"
@@ -309,11 +311,11 @@ export default function LeaderNotificacoes() {
               rows={3}
             />
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pt-2">
             <p className="text-sm text-muted-foreground">
-              Será enviada para {members.length} membro(s) do seu ministério
+              Será enviada para <span className="font-semibold text-foreground">{members.length}</span> membro(s) do seu ministério
             </p>
-            <Button onClick={handleSendNotification} disabled={sending}>
+            <Button onClick={handleSendNotification} disabled={sending} className="shadow-sm">
               {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
               Enviar
             </Button>
@@ -323,28 +325,28 @@ export default function LeaderNotificacoes() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-sm text-muted-foreground">Total</div>
+        <Card className="shadow-card">
+          <CardContent className="p-5">
+            <div className="text-3xl font-bold font-display">{stats.total}</div>
+            <div className="text-sm text-muted-foreground font-medium">Total</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.novasEscalas}</div>
-            <div className="text-sm text-muted-foreground">Novas Escalas</div>
+        <Card className="shadow-card border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/20 dark:to-blue-900/10">
+          <CardContent className="p-5">
+            <div className="text-3xl font-bold font-display text-blue-600">{stats.novasEscalas}</div>
+            <div className="text-sm text-muted-foreground font-medium">Novas Escalas</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-amber-600">{stats.lembretes}</div>
-            <div className="text-sm text-muted-foreground">Lembretes</div>
+        <Card className="shadow-card border-0 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/20 dark:to-amber-900/10">
+          <CardContent className="p-5">
+            <div className="text-3xl font-bold font-display text-amber-600">{stats.lembretes}</div>
+            <div className="text-sm text-muted-foreground font-medium">Lembretes</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">{stats.atualizacoes}</div>
-            <div className="text-sm text-muted-foreground">Atualizações</div>
+        <Card className="shadow-card border-0 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/20 dark:to-purple-900/10">
+          <CardContent className="p-5">
+            <div className="text-3xl font-bold font-display text-purple-600">{stats.atualizacoes}</div>
+            <div className="text-sm text-muted-foreground font-medium">Atualizações</div>
           </CardContent>
         </Card>
       </div>

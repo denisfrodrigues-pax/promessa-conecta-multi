@@ -58,51 +58,51 @@ export default function LeaderDashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-display font-bold">Olá, {profile?.nome?.split(' ')[0]}!</h1>
-        <p className="text-muted-foreground">Confira suas atividades e responsabilidades</p>
+        <h1 className="text-3xl font-display font-bold tracking-tight">Olá, {profile?.nome?.split(' ')[0]}!</h1>
+        <p className="text-muted-foreground mt-1">Confira suas atividades e responsabilidades</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="shadow-card">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="shadow-card border-0 bg-gradient-to-br from-primary/5 to-primary/10">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary" />
+              <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center shadow-sm">
+                <Users className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold font-display">{bases.length}</p>
-                <p className="text-sm text-muted-foreground">Bases Lideradas</p>
+                <p className="text-3xl font-bold font-display text-primary">{bases.length}</p>
+                <p className="text-sm text-muted-foreground font-medium">Bases Lideradas</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="shadow-card">
+        <Card className="shadow-card border-0 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/20 dark:to-amber-900/10">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-church-gold/10 flex items-center justify-center">
-                <ClipboardList className="w-6 h-6 text-church-gold" />
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/15 flex items-center justify-center shadow-sm">
+                <ClipboardList className="w-7 h-7 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold font-display">{escalas.length}</p>
-                <p className="text-sm text-muted-foreground">Próximas Escalas</p>
+                <p className="text-3xl font-bold font-display text-amber-700 dark:text-amber-500">{escalas.length}</p>
+                <p className="text-sm text-muted-foreground font-medium">Próximas Escalas</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="shadow-card">
+        <Card className="shadow-card border-0 bg-gradient-to-br from-promessa/5 to-promessa/10">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-emerald-600" />
+              <div className="w-14 h-14 rounded-2xl bg-promessa/15 flex items-center justify-center shadow-sm">
+                <CheckCircle className="w-7 h-7 text-promessa" />
               </div>
               <div>
-                <p className="text-2xl font-bold font-display">
+                <p className="text-3xl font-bold font-display text-promessa">
                   {escalas.filter((e) => e.status === 'confirmado').length}
                 </p>
-                <p className="text-sm text-muted-foreground">Escalas Confirmadas</p>
+                <p className="text-sm text-muted-foreground font-medium">Escalas Confirmadas</p>
               </div>
             </div>
           </CardContent>
@@ -112,12 +112,12 @@ export default function LeaderDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Minhas Bases */}
         <Card className="shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
-              <CardTitle className="font-display">Minhas Bases</CardTitle>
+              <CardTitle className="font-display text-lg">Minhas Bases</CardTitle>
               <CardDescription>Bases que você lidera</CardDescription>
             </div>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
               <Link to="/lider/bases">
                 Ver todas <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
@@ -125,25 +125,26 @@ export default function LeaderDashboard() {
           </CardHeader>
           <CardContent>
             {bases.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Você ainda não lidera nenhuma base
-              </p>
+              <div className="text-center py-10">
+                <Users className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
+                <p className="text-muted-foreground">Você ainda não lidera nenhuma base</p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {bases.map((base) => (
                   <div
                     key={base.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-200 cursor-pointer group"
                   >
                     <div>
-                      <p className="font-medium">{base.nome}</p>
+                      <p className="font-semibold group-hover:text-primary transition-colors">{base.nome}</p>
                       {base.dia_semana && base.horario && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground mt-0.5">
                           {base.dia_semana} às {base.horario}
                         </p>
                       )}
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                   </div>
                 ))}
               </div>
@@ -153,12 +154,12 @@ export default function LeaderDashboard() {
 
         {/* Minhas Escalas */}
         <Card className="shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
-              <CardTitle className="font-display">Próximas Escalas</CardTitle>
+              <CardTitle className="font-display text-lg">Próximas Escalas</CardTitle>
               <CardDescription>Suas escalas de serviço</CardDescription>
             </div>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
               <Link to="/lider/escalas">
                 Ver todas <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
@@ -166,36 +167,43 @@ export default function LeaderDashboard() {
           </CardHeader>
           <CardContent>
             {escalas.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Nenhuma escala programada
-              </p>
+              <div className="text-center py-10">
+                <Calendar className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
+                <p className="text-muted-foreground">Nenhuma escala programada</p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {escalas.map((escala) => (
                   <div
                     key={escala.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                    className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-200"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
-                        <span className="text-xs font-bold text-primary">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex flex-col items-center justify-center shadow-sm">
+                        <span className="text-sm font-bold text-primary">
                           {format(new Date(escala.data), 'dd')}
                         </span>
-                        <span className="text-[10px] text-primary uppercase">
+                        <span className="text-[10px] text-primary uppercase font-medium">
                           {format(new Date(escala.data), 'MMM', { locale: ptBR })}
                         </span>
                       </div>
                       <div>
-                        <p className="font-medium">{escala.funcao}</p>
+                        <p className="font-semibold">{escala.funcao}</p>
                         <p className="text-sm text-muted-foreground">
                           {escala.ministerios?.nome || 'Ministério'}
                         </p>
                       </div>
                     </div>
                     {escala.status === 'confirmado' ? (
-                      <CheckCircle className="w-5 h-5 text-emerald-600" />
+                      <div className="flex items-center gap-2 text-promessa">
+                        <CheckCircle className="w-5 h-5" />
+                        <span className="text-xs font-medium hidden sm:inline">Confirmado</span>
+                      </div>
                     ) : (
-                      <Clock className="w-5 h-5 text-yellow-500" />
+                      <div className="flex items-center gap-2 text-amber-500">
+                        <Clock className="w-5 h-5" />
+                        <span className="text-xs font-medium hidden sm:inline">Pendente</span>
+                      </div>
                     )}
                   </div>
                 ))}
