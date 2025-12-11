@@ -72,9 +72,9 @@ export default function LeaderNotificacoes() {
         .from('ministerios')
         .select('id')
         .eq('lider_id', profile?.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       setMyMinisterioId(data?.id || null);
       
       if (!data?.id) {

@@ -62,7 +62,7 @@ export async function notifyStatusChanged(
       ministerios(nome, lider_id)
     `)
     .eq('id', escalaId)
-    .single();
+    .maybeSingle();
 
   if (!escala) return;
 
@@ -97,7 +97,7 @@ export async function notifyStatusChanged(
         .from('profiles')
         .select('id')
         .eq('user_id', adminRole.user_id)
-        .single();
+        .maybeSingle();
 
       if (adminProfile && adminProfile.id !== escala.ministerios?.lider_id) {
         await createNotification({

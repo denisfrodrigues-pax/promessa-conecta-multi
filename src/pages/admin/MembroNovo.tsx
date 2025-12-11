@@ -62,9 +62,10 @@ export default function MembroNovo() {
         .from('visitantes')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) return;
 
       if (data) {
         let observacoes = data.observacoes || '';

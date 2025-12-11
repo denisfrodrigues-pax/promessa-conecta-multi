@@ -26,7 +26,7 @@ export function useLeaderNotifications() {
         .from('ministerios')
         .select('id')
         .eq('lider_id', profile.id)
-        .single();
+        .maybeSingle();
 
       if (!ministry) {
         setUnreadCount(0);

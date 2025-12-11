@@ -106,9 +106,14 @@ export default function TransacaoForm() {
         .from("transacoes_financeiras")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        toast.error("Transação não encontrada");
+        navigate("/admin/financeiro/transacoes");
+        return;
+      }
       if (data) {
         setTipo(data.tipo);
         setContaId(data.conta_id || "");
