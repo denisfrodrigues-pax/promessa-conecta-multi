@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Search, Plus, Download, Edit, Trash2, MoreHorizontal, UserPlus } from 'lucide-react';
+import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface User {
@@ -62,21 +63,21 @@ export default function Usuarios() {
     return userRole?.role || 'membro';
   };
 
-  const getRoleBadgeColor = (role: string) => {
+  const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-destructive';
-      case 'lider': return 'bg-church-gold';
-      case 'voluntario': return 'bg-emerald-600';
-      default: return 'bg-primary';
+      case 'admin': return 'destructive';
+      case 'lider': return 'warning';
+      case 'voluntario': return 'success';
+      default: return 'secondary';
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'ativo': return <Badge variant="outline" className="border-emerald-500 text-emerald-600">Ativo</Badge>;
-      case 'inativo': return <Badge variant="outline" className="border-red-500 text-red-600">Inativo</Badge>;
-      case 'pendente': return <Badge variant="outline" className="border-yellow-500 text-yellow-600">Pendente</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
+      case 'ativo': return <Badge variant="success">Ativo</Badge>;
+      case 'inativo': return <Badge variant="destructive">Inativo</Badge>;
+      case 'pendente': return <Badge variant="warning">Pendente</Badge>;
+      default: return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
@@ -150,25 +151,78 @@ export default function Usuarios() {
       user.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  const stats = {
+    total: users.length,
+    ativos: users.filter(u => u.status === 'ativo').length,
+    admins: roles.filter(r => r.role === 'admin').length,
+  };
+
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold">Usuários</h1>
-          <p className="text-muted-foreground">Gerenciamento de membros e visitantes</p>
+          <h1 className="text-3xl font-display font-bold text-foreground">Usuários</h1>
+          <p className="text-muted-foreground mt-1">Gerenciamento de membros e visitantes</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={exportCSV}>
-            <Download className="w-4 h-4 mr-2" />
-            Exportar CSV
-          </Button>
-        </div>
+        <Button variant="outline" onClick={exportCSV} className="group">
+          <Download className="w-4 h-4 mr-2 transition-transform group-hover:-translate-y-0.5" />
+          Exportar CSV
+        </Button>
       </div>
 
-      <Card className="shadow-card">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="shadow-card border-0 animate-fade-in">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-promessa-500 to-promessa-700 flex items-center justify-center shadow-lg">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-3xl font-bold font-display">{stats.total}</p>
+                <p className="text-sm text-muted-foreground">Total de Usuários</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="shadow-card border-0 animate-fade-in" style={{ animationDelay: '100ms' }}>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg">
+                <UserCheck className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-3xl font-bold font-display">{stats.ativos}</p>
+                <p className="text-sm text-muted-foreground">Usuários Ativos</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="shadow-card border-0 animate-fade-in" style={{ animationDelay: '200ms' }}>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-3xl font-bold font-display">{stats.admins}</p>
+                <p className="text-sm text-muted-foreground">Administradores</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Users Table */}
+      <Card className="shadow-card border-0">
         <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <CardTitle className="flex items-center gap-2 font-display">
+              <Users className="w-5 h-5 text-primary" />
+              Lista de Usuários
+            </CardTitle>
+            <div className="relative w-full sm:w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por nome ou email..."
@@ -180,69 +234,89 @@ export default function Usuarios() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead>Usuário</TableHead>
-                  <TableHead>Função</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Cadastro</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id} className="hover:bg-muted/30">
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-primary font-semibold">
-                            {user.nome.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-medium">{user.nome}</p>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={`${getRoleBadgeColor(getUserRole(user.user_id))} text-white`}>
-                        {getUserRole(user.user_id)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(user.status)}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(user)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Editar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="w-12 h-12 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-3 w-1/4" />
+                  </div>
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-border/50 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableHead className="font-semibold">Usuário</TableHead>
+                    <TableHead className="font-semibold">Função</TableHead>
+                    <TableHead className="font-semibold">Status</TableHead>
+                    <TableHead className="font-semibold">Cadastro</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
-                ))}
-                {filteredUsers.length === 0 && !loading && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      Nenhum usuário encontrado
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user, index) => (
+                    <TableRow 
+                      key={user.id} 
+                      className="hover:bg-muted/20 transition-colors animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/10">
+                            <span className="text-primary font-semibold text-lg">
+                              {user.nome.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">{user.nome}</p>
+                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getRoleBadgeVariant(getUserRole(user.user_id))}>
+                          {getUserRole(user.user_id)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(user.status)}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="hover:bg-muted">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEdit(user)}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {filteredUsers.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                        <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <p>Nenhum usuário encontrado</p>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
