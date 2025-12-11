@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +35,7 @@ export default function Auth() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   const { signIn, signUp, user } = useAuth();
+  const { config } = useChurchConfig();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -112,15 +114,26 @@ export default function Auth() {
     }
   };
 
+  const churchName = config?.nome_igreja || 'Igreja da Promessa';
+  const hasCustomLogo = config?.logo_url && !config.logo_url.includes('placeholder');
+
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-scale-in">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <Logo size={72} className="logo-shadow" />
+            {hasCustomLogo ? (
+              <img 
+                src={config.logo_url!} 
+                alt={churchName}
+                className="max-h-20 max-w-[200px] object-contain"
+              />
+            ) : (
+              <Logo size={72} className="logo-shadow" />
+            )}
           </div>
           <h1 className="text-3xl font-display font-bold text-white">
-            Igreja da Promessa
+            {churchName}
           </h1>
           <p className="text-white/80 mt-2">
             Sistema de Gestão e Comunicação
@@ -267,7 +280,7 @@ export default function Auth() {
         </Card>
 
         <p className="text-center text-white/60 text-sm mt-6">
-          © 2024 Igreja da Promessa. Todos os direitos reservados.
+          © 2024 {churchName}. Todos os direitos reservados.
         </p>
       </div>
     </div>
