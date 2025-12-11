@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+// Usando <a> padrão para navegação completa
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Sparkles } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -28,24 +28,22 @@ export default function Index() {
           <Button 
             size="xl" 
             className="bg-white text-promessa-700 hover:bg-white/90 shadow-lg"
-            asChild
           >
-            <Link to="/auth">
+            <a href="/auth" className="flex items-center">
               Acessar Sistema
               <ChevronRight className="w-5 h-5 ml-2" />
-            </Link>
+            </a>
           </Button>
 
           <Button 
             size="xl" 
             variant="outline"
             className="border-white text-white hover:bg-white/10"
-            asChild
           >
-            <Link to="/sou-novo">
+            <a href="/sou-novo" className="flex items-center">
               Sou Novo Aqui
               <Sparkles className="w-5 h-5 ml-2" />
-            </Link>
+            </a>
           </Button>
 
         </div>
