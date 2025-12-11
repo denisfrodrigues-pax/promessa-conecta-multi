@@ -198,9 +198,14 @@ export default function MembroDetalhes() {
         .from('membros')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        toast.error('Membro não encontrado');
+        navigate('/admin/membros');
+        return;
+      }
 
       setMembro(data);
       setFormData({
@@ -246,7 +251,7 @@ export default function MembroDetalhes() {
             .from('membros')
             .select('id, nome, telefone')
             .eq('id', base.lider_id)
-            .single();
+            .maybeSingle();
           lider = liderData;
         }
 
@@ -302,7 +307,7 @@ export default function MembroDetalhes() {
               .from('membros')
               .select('id, nome, telefone')
               .eq('id', base.lider_id)
-              .single();
+              .maybeSingle();
             lider = liderData;
           }
 
@@ -351,7 +356,7 @@ export default function MembroDetalhes() {
             .from('membros')
             .select('id, nome, telefone')
             .eq('id', base.lider_id)
-            .single();
+            .maybeSingle();
           lider = liderData;
         }
 

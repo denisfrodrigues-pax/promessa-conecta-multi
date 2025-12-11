@@ -74,10 +74,16 @@ import MemberNotificacoes from "@/pages/member/Notificacoes";
 
 // Leader Pages
 import LeaderDashboard from "@/pages/leader/Dashboard";
+import LeaderBases from "@/pages/leader/Bases";
+import LeaderRelatorios from "@/pages/leader/Relatorios";
 import LeaderEscalas from "@/pages/leader/Escalas";
 import LeaderMinhaEquipe from "@/pages/leader/MinhaEquipe";
 import LeaderMinhasFuncoes from "@/pages/leader/MinhasFuncoes";
 import LeaderNotificacoes from "@/pages/leader/Notificacoes";
+
+// Admin placeholder pages
+import AdminAuditoria from "@/pages/admin/Auditoria";
+import AdminConfiguracoes from "@/pages/admin/Configuracoes";
 
 import NotFound from "./pages/NotFound";
 
@@ -141,19 +147,19 @@ const App = () => (
               <Route path="relatorios/membros" element={<RelatorioMembros />} />
               <Route path="relatorios/financeiro" element={<RelatorioFinanceiro />} />
               <Route path="relatorios/kids" element={<RelatorioKids />} />
-              <Route path="auditoria" element={<AdminDashboard />} />
-              <Route path="configuracoes" element={<AdminDashboard />} />
+              <Route path="auditoria" element={<AdminAuditoria />} />
+              <Route path="configuracoes" element={<AdminConfiguracoes />} />
             </Route>
 
             {/* Leader Routes */}
             <Route path="/lider" element={<LeaderLayout />}>
               <Route index element={<LeaderDashboard />} />
-              <Route path="bases" element={<LeaderDashboard />} />
+              <Route path="bases" element={<LeaderBases />} />
               <Route path="escalas" element={<LeaderEscalas />} />
               <Route path="equipe" element={<LeaderMinhaEquipe />} />
               <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
               <Route path="notificacoes" element={<LeaderNotificacoes />} />
-              <Route path="relatorios" element={<LeaderDashboard />} />
+              <Route path="relatorios" element={<LeaderRelatorios />} />
             </Route>
 
             {/* Member Routes */}

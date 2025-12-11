@@ -147,10 +147,16 @@ export default function VisitanteDetalhes() {
       .from('visitantes')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       toast.error('Erro ao carregar visitante');
+      navigate('/admin/visitantes');
+      return;
+    }
+
+    if (!data) {
+      toast.error('Visitante não encontrado');
       navigate('/admin/visitantes');
       return;
     }

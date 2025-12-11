@@ -49,9 +49,13 @@ export default function BaseDetalhesPublic() {
         `)
         .eq('id', id)
         .eq('status', 'ativo')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        setBase(null);
+        return;
+      }
 
       const { count } = await supabase
         .from('bases_membros')
