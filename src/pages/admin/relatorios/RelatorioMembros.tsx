@@ -13,7 +13,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { exportToCSV, exportToPDF } from '@/utils/exportUtils';
 import { getWhatsAppUrl, hasValidPhone, formatPhoneBR } from '@/lib/formatters';
 
-const COLORS = ['#10b981', '#6b7280', '#3b82f6', '#f59e0b', '#8b5cf6'];
+const COLORS = ['#5A9462', '#396939', '#73A97A', '#85A89A', '#B7CEC4'];
 const statusLabels: Record<string, string> = { ativo: 'Ativo', inativo: 'Inativo' };
 
 export default function RelatorioMembros() {
@@ -221,7 +221,7 @@ export default function RelatorioMembros() {
                 <XAxis dataKey="mes" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="novos" stroke="#3b82f6" strokeWidth={2} />
+                <Line type="monotone" dataKey="novos" stroke="#396939" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -235,7 +235,7 @@ export default function RelatorioMembros() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="value" fill="#8b5cf6" />
+                <Bar dataKey="value" fill="#5A9462" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

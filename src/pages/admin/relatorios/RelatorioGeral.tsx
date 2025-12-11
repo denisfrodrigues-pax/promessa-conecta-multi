@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 import { exportToCSV, exportToPDF } from '@/utils/exportUtils';
 
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+const COLORS = ['#5A9462', '#396939', '#73A97A', '#D9534F', '#85A89A', '#E6A327'];
 
 export default function RelatorioGeral() {
   const reportRef = useRef<HTMLDivElement>(null);
@@ -302,7 +302,7 @@ export default function RelatorioGeral() {
                 <XAxis dataKey="mes" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="visitantes" stroke="#3b82f6" strokeWidth={2} />
+                <Line type="monotone" dataKey="visitantes" stroke="#396939" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -339,8 +339,8 @@ export default function RelatorioGeral() {
                 <YAxis />
                 <Tooltip formatter={(value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
                 <Legend />
-                <Bar dataKey="entradas" name="Entradas" fill="#10b981" />
-                <Bar dataKey="saidas" name="Saídas" fill="#ef4444" />
+                <Bar dataKey="entradas" name="Entradas" fill="#5A9462" />
+                <Bar dataKey="saidas" name="Saídas" fill="#D9534F" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -357,7 +357,7 @@ export default function RelatorioGeral() {
                 <XAxis type="number" />
                 <YAxis dataKey="sala" type="category" width={100} />
                 <Tooltip />
-                <Bar dataKey="checkins" fill="#8b5cf6" />
+                <Bar dataKey="checkins" fill="#5A9462" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

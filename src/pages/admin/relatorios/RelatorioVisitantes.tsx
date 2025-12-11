@@ -13,7 +13,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { exportToCSV, exportToPDF } from '@/utils/exportUtils';
 import { getWhatsAppUrl, hasValidPhone, formatPhoneBR } from '@/lib/formatters';
 
-const COLORS = ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981'];
+const COLORS = ['#5A9462', '#396939', '#73A97A', '#85A89A', '#B7CEC4', '#E6A327'];
 const statusLabels: Record<string, string> = {
   novo: 'Novo',
   contato_iniciado: 'Contato Iniciado',
@@ -217,7 +217,7 @@ export default function RelatorioVisitantes() {
                 <XAxis dataKey="mes" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="visitantes" stroke="#3b82f6" strokeWidth={2} />
+                <Line type="monotone" dataKey="visitantes" stroke="#396939" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
