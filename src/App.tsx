@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 // Layouts
@@ -97,8 +97,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
+        <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -182,8 +181,7 @@ const App = () => (
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        </Routes>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
