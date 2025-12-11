@@ -67,6 +67,7 @@ export default function Usuarios() {
     switch (role) {
       case 'admin': return 'admin';
       case 'lider': return 'lider';
+      case 'financeiro': return 'admin'; // Uses admin styling (red/important)
       case 'voluntario': return 'voluntario';
       case 'membro': return 'membro';
       default: return 'secondary';
@@ -77,6 +78,7 @@ export default function Usuarios() {
     switch (role) {
       case 'admin': return 'Admin';
       case 'lider': return 'Líder';
+      case 'financeiro': return 'Financeiro';
       case 'voluntario': return 'Voluntário';
       case 'membro': return 'Membro';
       case 'visitante': return 'Visitante';
@@ -126,7 +128,7 @@ export default function Usuarios() {
 
       const { error: insertRoleError } = await supabase
         .from('user_roles')
-        .insert([{ user_id: editingUser.user_id, role: editData.role as 'admin' | 'lider' | 'voluntario' | 'membro' | 'visitante' }]);
+        .insert([{ user_id: editingUser.user_id, role: editData.role as 'admin' | 'lider' | 'financeiro' | 'voluntario' | 'membro' | 'visitante' }]);
 
       toast.success('Usuário atualizado com sucesso');
       setEditingUser(null);
@@ -375,6 +377,7 @@ export default function Usuarios() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="financeiro">Financeiro</SelectItem>
                   <SelectItem value="lider">Líder</SelectItem>
                   <SelectItem value="voluntario">Voluntário</SelectItem>
                   <SelectItem value="membro">Membro</SelectItem>
