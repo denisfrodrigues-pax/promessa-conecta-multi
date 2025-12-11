@@ -88,6 +88,7 @@ import LeaderNotificacoes from "@/pages/leader/Notificacoes";
 // Admin placeholder pages
 import AdminAuditoria from "@/pages/admin/Auditoria";
 import AdminConfiguracoes from "@/pages/admin/Configuracoes";
+import WhatsAppTest from "@/pages/admin/WhatsAppTest";
 
 import NotFound from "./pages/NotFound";
 
@@ -154,6 +155,7 @@ const App = () => (
               <Route path="relatorios/kids" element={<RelatorioKids />} />
               <Route path="auditoria" element={<AdminAuditoria />} />
               <Route path="configuracoes" element={<AdminConfiguracoes />} />
+              <Route path="whatsapp-test" element={<WhatsAppTest />} />
             </Route>
 
             {/* Leader Routes */}
