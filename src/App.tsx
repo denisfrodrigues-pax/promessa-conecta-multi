@@ -12,6 +12,7 @@ import LeaderLayout from "@/components/layout/LeaderLayout";
 
 // Auth
 import Auth from "@/pages/Auth";
+import Index from "@/pages/Index";
 
 // Admin Pages
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -90,10 +91,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Auth */}
-            <Route path="/auth" element={<Auth />} />
-            
             {/* Public Routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/sou-novo" element={<SouNovo />} />
 
             {/* Admin Routes */}
@@ -158,7 +158,7 @@ const App = () => (
 
             {/* Member Routes */}
             <Route element={<MemberLayout />}>
-              <Route path="/" element={<MemberHome />} />
+              <Route path="/home" element={<MemberHome />} />
               <Route path="/bases" element={<BasesPublic />} />
               <Route path="/bases/:id" element={<BaseDetalhesPublic />} />
               <Route path="/eventos" element={<MemberEventos />} />
