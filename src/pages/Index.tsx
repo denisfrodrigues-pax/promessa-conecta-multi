@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, Calendar, Heart, ChevronRight, Sparkles } from 'lucide-react';
@@ -23,12 +23,6 @@ const benefits = [
 ];
 
 export default function Index() {
-  const navigate = useNavigate();
-
-  const handleNavigate = (path: string) => {
-    console.log('Button clicked, navigating to:', path);
-    navigate(path);
-  };
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
@@ -79,18 +73,22 @@ export default function Index() {
             <Button 
               size="xl" 
               className="bg-white text-promessa-700 hover:bg-white/90 shadow-xl hover:shadow-2xl group"
-              onClick={() => handleNavigate('/auth')}
+              asChild
             >
-              Acessar Sistema
-              <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              <Link to="/auth">
+                Acessar Sistema
+                <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </Link>
             </Button>
             <Button 
               size="xl" 
               className="bg-transparent border border-white/30 text-white hover:bg-white/10 backdrop-blur-sm"
-              onClick={() => handleNavigate('/sou-novo')}
+              asChild
             >
-              Sou Novo Aqui
-              <Sparkles className="w-5 h-5" />
+              <Link to="/sou-novo">
+                Sou Novo Aqui
+                <Sparkles className="w-5 h-5" />
+              </Link>
             </Button>
           </div>
         </div>
@@ -169,10 +167,12 @@ export default function Index() {
             size="lg" 
             variant="promessa" 
             className="group"
-            onClick={() => handleNavigate('/auth')}
+            asChild
           >
-            Fazer Login
-            <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            <Link to="/auth">
+              Fazer Login
+              <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </Link>
           </Button>
         </div>
       </section>
