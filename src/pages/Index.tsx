@@ -25,16 +25,21 @@ const benefits = [
 export default function Index() {
   const navigate = useNavigate();
 
+  const handleNavigate = (path: string) => {
+    console.log('Button clicked, navigating to:', path);
+    navigate(path);
+  };
+
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Hero Section */}
       <section className="relative min-h-[80vh] flex items-center justify-center">
         {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-hero opacity-95" />
+        <div className="absolute inset-0 bg-gradient-hero opacity-95 pointer-events-none" />
         
         {/* Pattern Overlay */}
         <div 
-          className="absolute inset-0 opacity-10"
+          className="absolute inset-0 opacity-10 pointer-events-none"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}
@@ -70,7 +75,7 @@ export default function Index() {
             <Button 
               size="xl" 
               className="bg-white text-promessa-700 hover:bg-white/90 shadow-xl hover:shadow-2xl group"
-              onClick={() => navigate('/auth')}
+              onClick={() => handleNavigate('/auth')}
             >
               Acessar Sistema
               <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
@@ -78,7 +83,7 @@ export default function Index() {
             <Button 
               size="xl" 
               className="bg-transparent border border-white/30 text-white hover:bg-white/10 backdrop-blur-sm"
-              onClick={() => navigate('/sou-novo')}
+              onClick={() => handleNavigate('/sou-novo')}
             >
               Sou Novo Aqui
               <Sparkles className="w-5 h-5" />
@@ -160,7 +165,7 @@ export default function Index() {
             size="lg" 
             variant="promessa" 
             className="group"
-            onClick={() => navigate('/auth')}
+            onClick={() => handleNavigate('/auth')}
           >
             Fazer Login
             <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
