@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, ClipboardList, Calendar, ChevronRight, CheckCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
@@ -25,6 +26,7 @@ interface Escala {
 
 export default function LeaderDashboard() {
   const { profile } = useAuth();
+  const { config } = useChurchConfig();
   const [bases, setBases] = useState<Base[]>([]);
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,11 +59,23 @@ export default function LeaderDashboard() {
     }
   };
 
+  const hasCustomLogo = config?.logo_url && !config.logo_url.includes('placeholder');
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-display font-bold tracking-tight">Olá, {profile?.nome?.split(' ')[0]}!</h1>
-        <p className="text-muted-foreground mt-1">Confira suas atividades e responsabilidades</p>
+      {/* Header with optional logo */}
+      <div className="flex items-start gap-4">
+        {hasCustomLogo && (
+          <img 
+            src={config.logo_url!} 
+            alt={config.nome_igreja || 'Logo'}
+            className="h-12 w-auto object-contain"
+          />
+        )}
+        <div>
+          <h1 className="text-3xl font-display font-bold tracking-tight">Olá, {profile?.nome?.split(' ')[0]}!</h1>
+          <p className="text-muted-foreground mt-1">Confira suas atividades e responsabilidades</p>
+        </div>
       </div>
 
       {/* Stats */}
@@ -132,8 +146,9 @@ export default function LeaderDashboard() {
             ) : (
               <div className="space-y-3">
                 {bases.map((base) => (
-                  <div
+                  <Link
                     key={base.id}
+                    to={`/lider/bases/${base.id}`}
                     className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-200 cursor-pointer group"
                   >
                     <div>
@@ -145,7 +160,7 @@ export default function LeaderDashboard() {
                       )}
                     </div>
                     <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

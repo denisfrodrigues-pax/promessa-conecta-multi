@@ -1,6 +1,7 @@
 import { NavLink } from '@/components/NavLink';
 import { Logo } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
+import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import { useLocation } from 'react-router-dom';
 import {
@@ -134,6 +135,7 @@ export default function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   const { profile, signOut } = useAuth();
+  const { config } = useChurchConfig();
   const { unreadCount } = useAdminNotifications();
   const location = useLocation();
 
@@ -154,6 +156,9 @@ export default function AdminSidebar() {
     return expandedMenus.includes(path) || menuItems.find(m => m.path === path && isSubmenuActive(m));
   };
 
+  const hasCustomLogo = config?.logo_url && !config.logo_url.includes('placeholder');
+  const churchName = config?.nome_igreja || 'Igreja da Promessa';
+
   return (
     <aside
       className={cn(
@@ -166,11 +171,22 @@ export default function AdminSidebar() {
         "p-4 flex items-center border-b border-neutral-200",
         collapsed ? "justify-center" : "gap-3"
       )}>
-        <Logo size={collapsed ? 32 : 40} />
+        {hasCustomLogo ? (
+          <img 
+            src={config.logo_url!} 
+            alt={churchName}
+            className={cn(
+              "object-contain",
+              collapsed ? "max-h-8 max-w-8" : "max-h-10 max-w-[120px]"
+            )}
+          />
+        ) : (
+          <Logo size={collapsed ? 32 : 40} />
+        )}
         {!collapsed && (
-          <div className="animate-fade-in">
+          <div className="animate-fade-in min-w-0">
             <p className="text-sm font-semibold text-promessa-700">Painel Admin</p>
-            <p className="text-xs text-neutral-500">Igreja da Promessa</p>
+            <p className="text-xs text-neutral-500 truncate">{churchName}</p>
           </div>
         )}
       </div>

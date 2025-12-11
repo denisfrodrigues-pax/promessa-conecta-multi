@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,7 +25,10 @@ import {
   MapPin,
   Mail,
   Globe,
-  History
+  History,
+  Upload,
+  X,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface Configuracoes {
@@ -47,11 +50,6 @@ interface Configuracoes {
   notificacoes_lideres: boolean | null;
   notificacoes_email: boolean | null;
   notificacoes_push: boolean | null;
-  cores: {
-    primary?: string;
-    secondary?: string;
-    accent?: string;
-  } | null;
 }
 
 // Mock de logs para demonstração
@@ -61,12 +59,15 @@ const mockLogs = [
   { id: 3, acao: 'Notificações ativadas', data: new Date(Date.now() - 172800000).toISOString(), usuario: 'Admin', status: 'sucesso' },
 ];
 
+const MAX_FILE_SIZE = 1024 * 1024; // 1MB
+const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+
 function ConfiguracoesSkeleton() {
   return (
     <div className="space-y-6 p-6">
       <Skeleton className="h-8 w-64" />
       <div className="grid gap-6 md:grid-cols-2">
-        <Skeleton className="h-[400px]" />
+        <Skeleton className="h-[500px]" />
         <Skeleton className="h-[400px]" />
       </div>
       <Skeleton className="h-[300px]" />
@@ -79,6 +80,7 @@ export default function Configuracoes() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [config, setConfig] = useState<Configuracoes | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
   const [nomeIgreja, setNomeIgreja] = useState('');
@@ -95,6 +97,12 @@ export default function Configuracoes() {
   const [notificacoesLideres, setNotificacoesLideres] = useState(true);
   const [notificacoesEmail, setNotificacoesEmail] = useState(false);
   const [notificacoesPush, setNotificacoesPush] = useState(false);
+
+  // Logo state
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     fetchConfiguracoes();
@@ -116,6 +124,7 @@ export default function Configuracoes() {
         setEndereco(data.endereco || '');
         setTelefone(data.telefone || '');
         setEmail(data.email || '');
+        setLogoUrl(data.logo_url || null);
         
         const urls = data.urls_transmissao as { youtube?: string; instagram?: string } | null;
         setInstagram(urls?.instagram || '');
@@ -138,14 +147,96 @@ export default function Configuracoes() {
     }
   }
 
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error('Tipo de arquivo não permitido. Use PNG, JPG ou WebP.');
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('Arquivo muito grande. Tamanho máximo: 1MB');
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setLogoPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    setLogoFile(file);
+  }
+
+  function handleRemoveLogo() {
+    setLogoPreview(null);
+    setLogoFile(null);
+    setLogoUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }
+
+  async function uploadLogo(): Promise<string | null> {
+    if (!logoFile) return logoUrl;
+
+    setUploadingLogo(true);
+    try {
+      // Delete old logo if exists
+      if (logoUrl && !logoUrl.includes('placeholder')) {
+        const oldPath = logoUrl.split('/').pop();
+        if (oldPath) {
+          await supabase.storage.from('logos').remove([oldPath]);
+        }
+      }
+
+      // Upload new logo
+      const fileExt = logoFile.name.split('.').pop();
+      const fileName = `church-logo-${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('logos')
+        .upload(fileName, logoFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('logos')
+        .getPublicUrl(data.path);
+
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('Erro ao fazer upload da logo:', error);
+      toast.error('Erro ao fazer upload da logo');
+      return logoUrl;
+    } finally {
+      setUploadingLogo(false);
+    }
+  }
+
   async function handleSave() {
     setSaving(true);
     try {
+      // Upload logo first if there's a new file
+      let finalLogoUrl = logoUrl;
+      if (logoFile) {
+        finalLogoUrl = await uploadLogo();
+      }
+
       const updateData = {
         nome_igreja: nomeIgreja,
         endereco,
         telefone,
         email,
+        logo_url: finalLogoUrl,
         urls_transmissao: { youtube, instagram },
         facebook,
         capacidade_base_padrao: capacidadeBase,
@@ -173,6 +264,11 @@ export default function Configuracoes() {
         if (error) throw error;
       }
 
+      // Clear file state after successful save
+      setLogoFile(null);
+      setLogoPreview(null);
+      setLogoUrl(finalLogoUrl);
+
       toast.success('Configurações atualizadas com sucesso!');
       fetchConfiguracoes();
     } catch (error) {
@@ -195,6 +291,8 @@ export default function Configuracoes() {
     return <ConfiguracoesSkeleton />;
   }
 
+  const displayLogo = logoPreview || logoUrl;
+
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -208,8 +306,8 @@ export default function Configuracoes() {
             Gerencie as configurações gerais do sistema
           </p>
         </div>
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? (
+        <Button onClick={handleSave} disabled={saving || uploadingLogo}>
+          {saving || uploadingLogo ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           ) : (
             <Save className="w-4 h-4 mr-2" />
@@ -231,6 +329,63 @@ export default function Configuracoes() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Logo Upload */}
+            <div className="space-y-3">
+              <Label>Logo da Igreja</Label>
+              <div className="flex items-start gap-4">
+                {/* Logo Preview */}
+                <div className="w-24 h-24 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/30 overflow-hidden">
+                  {displayLogo ? (
+                    <img 
+                      src={displayLogo} 
+                      alt="Logo preview" 
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <ImageIcon className="w-8 h-8 text-muted-foreground/50" />
+                  )}
+                </div>
+                
+                {/* Upload Controls */}
+                <div className="flex-1 space-y-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {displayLogo ? 'Trocar Logo' : 'Enviar Logo'}
+                  </Button>
+                  {displayLogo && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemoveLogo}
+                      className="w-full text-destructive hover:text-destructive"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Remover
+                    </Button>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    PNG, JPG ou WebP. Máx. 1MB. Proporção recomendada: 1:1
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
             <div className="space-y-2">
               <Label htmlFor="nome_igreja">Nome da Igreja</Label>
               <Input

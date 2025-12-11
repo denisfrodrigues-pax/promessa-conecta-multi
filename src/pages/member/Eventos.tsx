@@ -5,10 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { toast } from 'sonner';
 import { Search, Calendar, MapPin, Clock, Users, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Link } from 'react-router-dom';
 
 interface Evento {
   id: string;
@@ -22,6 +24,7 @@ interface Evento {
 
 export default function MemberEventos() {
   const { profile } = useAuth();
+  const { config } = useChurchConfig();
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [inscricoes, setInscricoes] = useState<string[]>([]);
   const [inscricoesCount, setInscricoesCount] = useState<Record<string, number>>({});
@@ -114,11 +117,24 @@ export default function MemberEventos() {
     evento.titulo.toLowerCase().includes(search.toLowerCase())
   );
 
+  const hasCustomLogo = config?.logo_url && !config.logo_url.includes('placeholder');
+  const churchName = config?.nome_igreja || 'Igreja da Promessa';
+
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold tracking-tight">Eventos</h1>
-        <p className="text-muted-foreground mt-1">Próximos eventos e atividades</p>
+      {/* Header with optional logo */}
+      <div className="mb-8 flex items-start gap-4">
+        {hasCustomLogo && (
+          <img 
+            src={config.logo_url!} 
+            alt={churchName}
+            className="h-10 w-auto object-contain"
+          />
+        )}
+        <div>
+          <h1 className="text-3xl font-display font-bold tracking-tight">Eventos</h1>
+          <p className="text-muted-foreground mt-1">Próximos eventos e atividades</p>
+        </div>
       </div>
 
       <div className="relative mb-6">
@@ -157,7 +173,9 @@ export default function MemberEventos() {
                 <CardContent className="flex-1 p-4">
                   <div className="flex flex-col h-full">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-display font-semibold text-lg">{evento.titulo}</h3>
+                      <Link to={`/eventos/${evento.id}`} className="hover:text-primary transition-colors">
+                        <h3 className="font-display font-semibold text-lg">{evento.titulo}</h3>
+                      </Link>
                       {isInscrito && (
                         <Badge className="bg-primary text-primary-foreground">
                           <CheckCircle className="w-3 h-3 mr-1" />
@@ -184,7 +202,7 @@ export default function MemberEventos() {
                       </div>
                     </div>
 
-                    <div className="mt-auto">
+                    <div className="mt-auto flex gap-2">
                       {isInscrito ? (
                         <Button
                           variant="outline"
@@ -203,6 +221,9 @@ export default function MemberEventos() {
                           Inscrever-se
                         </Button>
                       )}
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link to={`/eventos/${evento.id}`}>Ver Detalhes</Link>
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
