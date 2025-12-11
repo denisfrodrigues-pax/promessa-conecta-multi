@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { useNotifications } from '@/hooks/useNotifications';
 
 const navItems = [
-  { icon: Home, label: 'Início', path: '/' },
+  { icon: Home, label: 'Início', path: '/home' },
   { icon: CalendarCheck, label: 'Escalas', path: '/minhas-escalas' },
   { icon: Users, label: 'Bases', path: '/bases' },
   { icon: Calendar, label: 'Eventos', path: '/eventos' },
@@ -40,7 +40,7 @@ export default function MemberLayout() {
       {/* Header - Premium White Navbar */}
       <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <RouterNavLink to="/" className="flex items-center gap-3">
+          <RouterNavLink to="/home" className="flex items-center gap-3">
             <Logo size={40} />
             <span className="font-display font-bold text-lg hidden sm:block text-promessa-700">Igreja da Promessa</span>
           </RouterNavLink>

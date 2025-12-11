@@ -19,7 +19,7 @@ export default function AdminLayout() {
   }
 
   if (!isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   return (
