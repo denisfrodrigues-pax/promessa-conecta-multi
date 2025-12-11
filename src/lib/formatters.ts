@@ -7,11 +7,20 @@ export const formatPhoneBR = (value: string): string => {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 };
 
-// Highlight search term in text
+// Escape HTML entities to prevent XSS
+const escapeHtml = (text: string): string => text
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#039;');
+
+// Highlight search term in text (XSS-safe)
 export const highlightText = (text: string, searchTerm: string): string => {
-  if (!searchTerm.trim() || !text) return text;
+  if (!searchTerm.trim() || !text) return escapeHtml(text);
+  const escaped = escapeHtml(text);
   const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-  return text.replace(regex, '<mark class="bg-yellow-200 text-yellow-900 px-0.5 rounded">$1</mark>');
+  return escaped.replace(regex, '<mark class="bg-yellow-200 text-yellow-900 px-0.5 rounded">$1</mark>');
 };
 
 // Clean phone number
