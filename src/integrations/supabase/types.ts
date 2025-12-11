@@ -401,56 +401,80 @@ export type Database = {
         Row: {
           banner_home_url: string | null
           banner_sou_novo_url: string | null
+          bases_publicas: boolean | null
+          capacidade_base_padrao: number | null
           chave_whatsapp: string | null
           cores: Json | null
           created_at: string | null
           email: string | null
           endereco: string | null
+          facebook: string | null
           favicon_url: string | null
           id: string
           logo_monochrome_url: string | null
           logo_url: string | null
+          membros_editam_perfil: boolean | null
           nome_igreja: string | null
+          notificacoes_email: boolean | null
+          notificacoes_lideres: boolean | null
+          notificacoes_push: boolean | null
           pix_info: Json | null
           telefone: string | null
           updated_at: string | null
           urls_transmissao: Json | null
+          visitantes_auto: boolean | null
         }
         Insert: {
           banner_home_url?: string | null
           banner_sou_novo_url?: string | null
+          bases_publicas?: boolean | null
+          capacidade_base_padrao?: number | null
           chave_whatsapp?: string | null
           cores?: Json | null
           created_at?: string | null
           email?: string | null
           endereco?: string | null
+          facebook?: string | null
           favicon_url?: string | null
           id?: string
           logo_monochrome_url?: string | null
           logo_url?: string | null
+          membros_editam_perfil?: boolean | null
           nome_igreja?: string | null
+          notificacoes_email?: boolean | null
+          notificacoes_lideres?: boolean | null
+          notificacoes_push?: boolean | null
           pix_info?: Json | null
           telefone?: string | null
           updated_at?: string | null
           urls_transmissao?: Json | null
+          visitantes_auto?: boolean | null
         }
         Update: {
           banner_home_url?: string | null
           banner_sou_novo_url?: string | null
+          bases_publicas?: boolean | null
+          capacidade_base_padrao?: number | null
           chave_whatsapp?: string | null
           cores?: Json | null
           created_at?: string | null
           email?: string | null
           endereco?: string | null
+          facebook?: string | null
           favicon_url?: string | null
           id?: string
           logo_monochrome_url?: string | null
           logo_url?: string | null
+          membros_editam_perfil?: boolean | null
           nome_igreja?: string | null
+          notificacoes_email?: boolean | null
+          notificacoes_lideres?: boolean | null
+          notificacoes_push?: boolean | null
           pix_info?: Json | null
           telefone?: string | null
           updated_at?: string | null
           urls_transmissao?: Json | null
+          visitantes_auto?: boolean | null
         }
         Relationships: []
       }
