@@ -11,15 +11,58 @@
 
 @layer base {
   :root {
+    /* ------------------------------
+       PALETA PREMIUM
+    ------------------------------ */
+    --color-primary: 130 25% 47%;
+    --color-primary-foreground: 0 0% 100%;
+
+    --color-surface-0: 0 0% 100%;
+    --color-surface-1: 0 0% 99%;
+    --color-surface-2: 0 0% 96%;
+    --color-surface-3: 0 0% 94%;
+
+    --color-border: 0 0% 90%;
+    --color-border-strong: 0 0% 84%;
+
+    --color-text-1: 0 0% 7%;
+    --color-text-2: 0 0% 27%;
+    --color-text-3: 0 0% 40%;
+
+    /* ------------------------------
+       RADII
+    ------------------------------ */
+    --radius-card: 1rem;
+    --radius-container: 1.25rem;
+    --radius-full: 9999px;
+
+    /* ------------------------------
+       SHADOWS PREMIUM
+    ------------------------------ */
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-soft: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-strong: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-elevated: 0 8px 24px rgba(0,0,0,0.10);
+    --shadow-primary: 0 4px 16px -4px hsl(130 25% 47% / 0.25);
+
+    /* ------------------------------
+       SPACING SYSTEM
+    ------------------------------ */
+    --space-xs: 0.375rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+
     /* Igreja da Promessa - Green Theme */
-    --background: 10 43% 97%;
-    --foreground: 200 8% 13%;
+    --background: 0 0% 99%;
+    --foreground: 0 0% 7%;
 
     --card: 0 0% 100%;
-    --card-foreground: 200 8% 13%;
+    --card-foreground: 0 0% 7%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 200 8% 13%;
+    --popover-foreground: 0 0% 7%;
 
     /* Primary Green - #5A9462 */
     --primary: 130 25% 47%;
@@ -27,11 +70,11 @@
 
     /* Secondary Sage Green - #85A89A */
     --secondary: 153 19% 59%;
-    --secondary-foreground: 200 8% 13%;
+    --secondary-foreground: 0 0% 7%;
 
-    /* Muted - Soft Gray-Green */
-    --muted: 150 14% 96%;
-    --muted-foreground: 190 6% 40%;
+    /* Muted - Soft Gray */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
 
     /* Accent - Deep Green #396939 */
     --accent: 120 30% 32%;
@@ -40,8 +83,8 @@
     --destructive: 2 64% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 190 8% 85%;
-    --input: 190 8% 85%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
     --ring: 130 25% 47%;
 
     --radius: 0.625rem;
@@ -64,9 +107,9 @@
     --promessa-primary-light: 127 24% 56%;
     --promessa-secondary: 153 19% 59%;
     --promessa-secondary-light: 152 22% 76%;
-    --promessa-bg: 10 43% 97%;
+    --promessa-bg: 0 0% 99%;
     --promessa-surface: 0 0% 100%;
-    --promessa-surface-alt: 150 14% 96%;
+    --promessa-surface-alt: 0 0% 96%;
     
     /* Semantic colors */
     --success: 122 39% 49%;
@@ -74,25 +117,19 @@
     --error: 2 64% 58%;
     
     /* Neutral palette for UI */
-    --neutral-50: 10 43% 97%;
-    --neutral-100: 150 14% 92%;
-    --neutral-200: 190 8% 85%;
-    --neutral-500: 190 6% 40%;
-    --neutral-700: 200 8% 25%;
-    --neutral-800: 200 8% 18%;
-    --neutral-900: 200 8% 13%;
+    --neutral-50: 0 0% 98%;
+    --neutral-100: 0 0% 96%;
+    --neutral-200: 0 0% 90%;
+    --neutral-500: 0 0% 40%;
+    --neutral-700: 0 0% 25%;
+    --neutral-800: 0 0% 18%;
+    --neutral-900: 0 0% 7%;
     
     /* Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(130 25% 47%) 0%, hsl(120 30% 32%) 50%, hsl(153 19% 59% / 0.3) 100%);
     --gradient-primary: linear-gradient(135deg, hsl(130 25% 47%) 0%, hsl(127 24% 56%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(150 14% 98%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%);
     --gradient-sidebar: linear-gradient(180deg, hsl(120 30% 28%) 0%, hsl(120 30% 22%) 100%);
-
-    /* Shadows */
-    --shadow-soft: 0 2px 8px -2px hsl(130 25% 47% / 0.08);
-    --shadow-card: 0 4px 16px -4px hsl(130 25% 47% / 0.12);
-    --shadow-elevated: 0 8px 24px -6px hsl(130 25% 47% / 0.15);
-    --shadow-primary: 0 4px 16px -4px hsl(130 25% 47% / 0.25);
 
     /* Chart Colors - Igreja da Promessa Official */
     --chart-primary: 130 25% 47%;
@@ -108,11 +145,11 @@
 
     /* Sidebar */
     --sidebar-background: 120 30% 25%;
-    --sidebar-foreground: 150 14% 96%;
+    --sidebar-foreground: 0 0% 96%;
     --sidebar-primary: 130 25% 47%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 120 30% 32%;
-    --sidebar-accent-foreground: 150 14% 96%;
+    --sidebar-accent-foreground: 0 0% 96%;
     --sidebar-border: 120 25% 30%;
     --sidebar-ring: 130 25% 47%;
   }
