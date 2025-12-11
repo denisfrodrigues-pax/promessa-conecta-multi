@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Bell, Calendar, AlertCircle, Clock, Search, Send, Users } from 'lucide-react';
+import { Bell, Calendar, AlertCircle, Clock, Search, Send, Users, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Loader2 } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -44,6 +44,7 @@ export default function LeaderNotificacoes() {
   const [members, setMembers] = useState<MinistryMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTipo, setFilterTipo] = useState<string>('all');
   const [myMinisterioId, setMyMinisterioId] = useState<string | null>(null);
@@ -203,6 +204,26 @@ export default function LeaderNotificacoes() {
     }
   };
 
+  const handleDeleteNotification = async (id: string) => {
+    setDeletingId(id);
+    try {
+      const { error } = await supabase
+        .from('notificacoes')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      toast.success('Notificação excluída');
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      toast.error('Erro ao excluir notificação');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const getNotificationIcon = (tipo: string) => {
     switch (tipo) {
       case 'nova_escala':
@@ -212,22 +233,22 @@ export default function LeaderNotificacoes() {
       case 'status_alterado':
         return <AlertCircle className="w-4 h-4 text-purple-500" />;
       case 'ministerio':
-        return <Users className="w-4 h-4 text-green-500" />;
+        return <Users className="w-4 h-4 text-promessa-600" />;
       default:
-        return <Bell className="w-4 h-4 text-muted-foreground" />;
+        return <Bell className="w-4 h-4 text-neutral-500" />;
     }
   };
 
   const getNotificationTypeBadge = (tipo: string) => {
     switch (tipo) {
       case 'nova_escala':
-        return <Badge className="bg-blue-100 text-blue-700">Nova Escala</Badge>;
+        return <Badge variant="info">Nova Escala</Badge>;
       case 'lembrete':
-        return <Badge className="bg-amber-100 text-amber-700">Lembrete</Badge>;
+        return <Badge variant="warning">Lembrete</Badge>;
       case 'status_alterado':
-        return <Badge className="bg-purple-100 text-purple-700">Atualização</Badge>;
+        return <Badge variant="promessa">Atualização</Badge>;
       case 'ministerio':
-        return <Badge className="bg-green-100 text-green-700">Ministério</Badge>;
+        return <Badge variant="success">Ministério</Badge>;
       default:
         return <Badge variant="secondary">Notificação</Badge>;
     }
@@ -263,9 +284,9 @@ export default function LeaderNotificacoes() {
   if (!myMinisterioId) {
     return (
       <div className="text-center py-12">
-        <Bell className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
-        <h2 className="text-xl font-semibold mb-2">Nenhum ministério encontrado</h2>
-        <p className="text-muted-foreground">
+        <Bell className="w-16 h-16 mx-auto text-neutral-300 mb-4" />
+        <h2 className="text-xl font-semibold mb-2 text-neutral-800">Nenhum ministério encontrado</h2>
+        <p className="text-neutral-500">
           Você precisa ser líder de um ministério para ver notificações.
         </p>
       </div>
@@ -276,46 +297,48 @@ export default function LeaderNotificacoes() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">Notificações</h1>
-          <p className="text-muted-foreground mt-1">Notificações dos voluntários do seu ministério</p>
+          <h1 className="text-3xl font-display font-bold tracking-tight text-neutral-800">Notificações</h1>
+          <p className="text-neutral-500 mt-1">Notificações dos voluntários do seu ministério</p>
         </div>
       </div>
 
       {/* Send notification form */}
-      <Card className="shadow-card border-0 bg-gradient-to-br from-primary/5 to-primary/10">
+      <Card className="shadow-card border-neutral-200 bg-gradient-to-br from-promessa-50 to-promessa-100/50">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-              <Send className="w-5 h-5 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-lg text-neutral-800">
+            <div className="w-10 h-10 rounded-xl bg-promessa-100 flex items-center justify-center">
+              <Send className="w-5 h-5 text-promessa-700" />
             </div>
             Enviar Notificação
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="titulo">Título</Label>
+            <Label htmlFor="titulo" className="text-neutral-700">Título</Label>
             <Input
               id="titulo"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               placeholder="Título da notificação"
+              className="border-neutral-200"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="mensagem">Mensagem</Label>
+            <Label htmlFor="mensagem" className="text-neutral-700">Mensagem</Label>
             <Textarea
               id="mensagem"
               value={mensagem}
               onChange={(e) => setMensagem(e.target.value)}
               placeholder="Digite a mensagem..."
               rows={3}
+              className="border-neutral-200"
             />
           </div>
           <div className="flex items-center justify-between pt-2">
-            <p className="text-sm text-muted-foreground">
-              Será enviada para <span className="font-semibold text-foreground">{members.length}</span> membro(s) do seu ministério
+            <p className="text-sm text-neutral-500">
+              Será enviada para <span className="font-semibold text-neutral-700">{members.length}</span> membro(s) do seu ministério
             </p>
-            <Button onClick={handleSendNotification} disabled={sending} className="shadow-sm">
+            <Button onClick={handleSendNotification} disabled={sending} className="bg-promessa-600 hover:bg-promessa-700">
               {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
               Enviar
             </Button>
@@ -325,47 +348,47 @@ export default function LeaderNotificacoes() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="shadow-card">
+        <Card className="shadow-card border-neutral-200">
           <CardContent className="p-5">
-            <div className="text-3xl font-bold font-display">{stats.total}</div>
-            <div className="text-sm text-muted-foreground font-medium">Total</div>
+            <div className="text-3xl font-bold font-display text-neutral-800">{stats.total}</div>
+            <div className="text-sm text-neutral-500 font-medium">Total</div>
           </CardContent>
         </Card>
-        <Card className="shadow-card border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/20 dark:to-blue-900/10">
+        <Card className="shadow-card border-0 bg-gradient-to-br from-blue-50 to-blue-100/50">
           <CardContent className="p-5">
-            <div className="text-3xl font-bold font-display text-blue-600">{stats.novasEscalas}</div>
-            <div className="text-sm text-muted-foreground font-medium">Novas Escalas</div>
+            <div className="text-3xl font-bold font-display text-blue-700">{stats.novasEscalas}</div>
+            <div className="text-sm text-neutral-500 font-medium">Novas Escalas</div>
           </CardContent>
         </Card>
-        <Card className="shadow-card border-0 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/20 dark:to-amber-900/10">
+        <Card className="shadow-card border-0 bg-gradient-to-br from-amber-50 to-amber-100/50">
           <CardContent className="p-5">
-            <div className="text-3xl font-bold font-display text-amber-600">{stats.lembretes}</div>
-            <div className="text-sm text-muted-foreground font-medium">Lembretes</div>
+            <div className="text-3xl font-bold font-display text-amber-700">{stats.lembretes}</div>
+            <div className="text-sm text-neutral-500 font-medium">Lembretes</div>
           </CardContent>
         </Card>
-        <Card className="shadow-card border-0 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/20 dark:to-purple-900/10">
+        <Card className="shadow-card border-0 bg-gradient-to-br from-purple-50 to-purple-100/50">
           <CardContent className="p-5">
-            <div className="text-3xl font-bold font-display text-purple-600">{stats.atualizacoes}</div>
-            <div className="text-sm text-muted-foreground font-medium">Atualizações</div>
+            <div className="text-3xl font-bold font-display text-purple-700">{stats.atualizacoes}</div>
+            <div className="text-sm text-neutral-500 font-medium">Atualizações</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="border-neutral-200">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <Input
                 placeholder="Buscar por mensagem ou voluntário..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 border-neutral-200"
               />
             </div>
             <Select value={filterTipo} onValueChange={setFilterTipo}>
-              <SelectTrigger className="w-full md:w-[200px]">
+              <SelectTrigger className="w-full md:w-[200px] border-neutral-200">
                 <SelectValue placeholder="Filtrar por tipo" />
               </SelectTrigger>
               <SelectContent>
@@ -381,39 +404,40 @@ export default function LeaderNotificacoes() {
       </Card>
 
       {/* Table */}
-      <Card>
+      <Card className="border-neutral-200">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Voluntário</TableHead>
-                <TableHead className="max-w-[300px]">Mensagem</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Status</TableHead>
+              <TableRow className="bg-neutral-50 hover:bg-neutral-50 border-neutral-200">
+                <TableHead className="text-neutral-700 font-semibold">Tipo</TableHead>
+                <TableHead className="text-neutral-700 font-semibold">Voluntário</TableHead>
+                <TableHead className="max-w-[300px] text-neutral-700 font-semibold">Mensagem</TableHead>
+                <TableHead className="text-neutral-700 font-semibold">Data</TableHead>
+                <TableHead className="text-neutral-700 font-semibold">Status</TableHead>
+                <TableHead className="text-right text-neutral-700 font-semibold">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredNotifications.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-8 text-neutral-500">
                     Nenhuma notificação encontrada
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredNotifications.map((notification) => (
-                  <TableRow key={notification.id}>
+                  <TableRow key={notification.id} className="border-neutral-200 hover:bg-neutral-50">
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {getNotificationIcon(notification.tipo)}
                         {getNotificationTypeBadge(notification.tipo)}
                       </div>
                     </TableCell>
-                    <TableCell>{notification.voluntario?.nome || '-'}</TableCell>
+                    <TableCell className="text-neutral-700">{notification.voluntario?.nome || '-'}</TableCell>
                     <TableCell className="max-w-[300px]">
-                      <p className="truncate">{notification.mensagem}</p>
+                      <p className="truncate text-neutral-700">{notification.mensagem}</p>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-neutral-600">
                       {notification.created_at &&
                         format(new Date(notification.created_at), 'dd/MM/yyyy HH:mm', {
                           locale: ptBR,
@@ -423,8 +447,43 @@ export default function LeaderNotificacoes() {
                       {notification.lido ? (
                         <Badge variant="secondary">Lida</Badge>
                       ) : (
-                        <Badge variant="default">Não lida</Badge>
+                        <Badge variant="promessa">Não lida</Badge>
                       )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-neutral-400 hover:text-red-600 hover:bg-red-50"
+                            disabled={deletingId === notification.id}
+                          >
+                            {deletingId === notification.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir notificação?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteNotification(notification.id)}
+                              className="bg-red-600 text-white hover:bg-red-700"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))

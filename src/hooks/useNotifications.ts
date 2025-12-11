@@ -73,6 +73,27 @@ export function useNotifications() {
     }
   };
 
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notificacoes')
+        .delete()
+        .eq('id', notificationId);
+
+      if (error) throw error;
+
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+      setUnreadCount((prev) => {
+        const wasUnread = notifications.find(n => n.id === notificationId)?.lido === false;
+        return wasUnread ? Math.max(0, prev - 1) : prev;
+      });
+      return true;
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      return false;
+    }
+  };
+
   const markAllAsRead = async () => {
     if (!profile?.id) return;
 
@@ -132,6 +153,7 @@ export function useNotifications() {
     loading,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
     refetch: fetchNotifications,
   };
 }

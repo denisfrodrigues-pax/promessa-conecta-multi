@@ -63,12 +63,24 @@ export default function Usuarios() {
     return userRole?.role || 'membro';
   };
 
-  const getRoleBadgeVariant = (role: string) => {
+  const getRoleBadgeVariant = (role: string): "admin" | "lider" | "voluntario" | "membro" | "secondary" => {
     switch (role) {
-      case 'admin': return 'destructive';
-      case 'lider': return 'warning';
-      case 'voluntario': return 'success';
+      case 'admin': return 'admin';
+      case 'lider': return 'lider';
+      case 'voluntario': return 'voluntario';
+      case 'membro': return 'membro';
       default: return 'secondary';
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'admin': return 'Admin';
+      case 'lider': return 'Líder';
+      case 'voluntario': return 'Voluntário';
+      case 'membro': return 'Membro';
+      case 'visitante': return 'Visitante';
+      default: return role;
     }
   };
 
@@ -281,7 +293,7 @@ export default function Usuarios() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={getRoleBadgeVariant(getUserRole(user.user_id))}>
-                          {getUserRole(user.user_id)}
+                          {getRoleLabel(getUserRole(user.user_id))}
                         </Badge>
                       </TableCell>
                       <TableCell>{getStatusBadge(user.status)}</TableCell>

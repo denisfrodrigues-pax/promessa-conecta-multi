@@ -4,17 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useNotifications, Notification, NotificationType } from '@/hooks/useNotifications';
 import { toast } from 'sonner';
-import { Bell, Calendar, AlertCircle, CheckCircle, Clock, Check, Users, Megaphone } from 'lucide-react';
+import { Bell, Calendar, AlertCircle, CheckCircle, Clock, Check, Users, Megaphone, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Loader2 } from 'lucide-react';
 
 export default function MemberNotificacoes() {
-  const { notifications, loading, markAsRead, markAllAsRead, unreadCount } = useNotifications();
+  const { notifications, loading, markAsRead, markAllAsRead, deleteNotification, unreadCount } = useNotifications();
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleMarkAllAsRead = async () => {
     await markAllAsRead();
@@ -29,6 +30,18 @@ export default function MemberNotificacoes() {
     }
   };
 
+  const handleDelete = async (e: React.MouseEvent, notificationId: string) => {
+    e.stopPropagation();
+    setDeletingId(notificationId);
+    const success = await deleteNotification(notificationId);
+    if (success) {
+      toast.success('Notificação excluída');
+    } else {
+      toast.error('Erro ao excluir notificação');
+    }
+    setDeletingId(null);
+  };
+
   const getNotificationIcon = (tipo: NotificationType) => {
     switch (tipo) {
       case 'nova_escala':
@@ -39,12 +52,12 @@ export default function MemberNotificacoes() {
       case 'status_alterado':
         return <AlertCircle className="w-5 h-5 text-purple-500" />;
       case 'ministerio':
-        return <Users className="w-5 h-5 text-green-500" />;
+        return <Users className="w-5 h-5 text-promessa-600" />;
       case 'sistema':
       case 'aviso_admin':
         return <Megaphone className="w-5 h-5 text-red-500" />;
       default:
-        return <Bell className="w-5 h-5 text-muted-foreground" />;
+        return <Bell className="w-5 h-5 text-neutral-500" />;
     }
   };
 
@@ -52,17 +65,17 @@ export default function MemberNotificacoes() {
     switch (tipo) {
       case 'nova_escala':
       case 'escala':
-        return <Badge className="bg-blue-100 text-blue-700">Escala</Badge>;
+        return <Badge variant="info">Escala</Badge>;
       case 'lembrete':
-        return <Badge className="bg-amber-100 text-amber-700">Lembrete</Badge>;
+        return <Badge variant="warning">Lembrete</Badge>;
       case 'status_alterado':
-        return <Badge className="bg-purple-100 text-purple-700">Atualização</Badge>;
+        return <Badge variant="promessa">Atualização</Badge>;
       case 'ministerio':
-        return <Badge className="bg-green-100 text-green-700">Ministério</Badge>;
+        return <Badge variant="success">Ministério</Badge>;
       case 'sistema':
-        return <Badge className="bg-gray-100 text-gray-700">Sistema</Badge>;
+        return <Badge variant="secondary">Sistema</Badge>;
       case 'aviso_admin':
-        return <Badge className="bg-red-100 text-red-700">Aviso</Badge>;
+        return <Badge variant="admin">Aviso</Badge>;
       default:
         return <Badge variant="secondary">Notificação</Badge>;
     }
@@ -89,7 +102,7 @@ export default function MemberNotificacoes() {
   const NotificationList = ({ items }: { items: Notification[] }) => (
     <div className="space-y-3">
       {items.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="text-center py-8 text-neutral-500">
           <Bell className="w-12 h-12 mx-auto mb-3 opacity-20" />
           <p>Nenhuma notificação nesta categoria</p>
         </div>
@@ -97,8 +110,8 @@ export default function MemberNotificacoes() {
         items.map((notification) => (
           <Card
             key={notification.id}
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              !notification.lido ? 'border-primary/50 bg-primary/5' : ''
+            className={`cursor-pointer transition-all hover:shadow-md border-neutral-200 ${
+              !notification.lido ? 'border-promessa-300 bg-promessa-50/50' : 'bg-white'
             }`}
             onClick={() => handleOpenNotification(notification)}
           >
@@ -111,25 +124,61 @@ export default function MemberNotificacoes() {
                   <div className="flex items-center gap-2 mb-1">
                     {getNotificationTypeBadge(notification.tipo)}
                     {!notification.lido && (
-                      <Badge variant="default" className="text-xs">Novo</Badge>
+                      <Badge variant="promessa" className="text-xs">Novo</Badge>
                     )}
                   </div>
                   {notification.titulo && (
-                    <p className="font-medium text-foreground mb-1">{notification.titulo}</p>
+                    <p className="font-medium text-neutral-800 mb-1">{notification.titulo}</p>
                   )}
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                  <p className="text-sm text-neutral-600 line-clamp-2">
                     {notification.mensagem}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className="text-xs text-neutral-500 mt-2">
                     {notification.created_at &&
                       format(new Date(notification.created_at), "dd/MM/yyyy 'às' HH:mm", {
                         locale: ptBR,
                       })}
                   </p>
                 </div>
-                {notification.lido && (
-                  <CheckCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                )}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {notification.lido && (
+                    <CheckCircle className="w-4 h-4 text-neutral-400" />
+                  )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-neutral-400 hover:text-red-600 hover:bg-red-50"
+                        onClick={(e) => e.stopPropagation()}
+                        disabled={deletingId === notification.id}
+                      >
+                        {deletingId === notification.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir notificação?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={(e) => handleDelete(e, notification.id)}
+                          className="bg-red-600 text-white hover:bg-red-700"
+                        >
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -142,13 +191,13 @@ export default function MemberNotificacoes() {
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">Notificações</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-3xl font-display font-bold tracking-tight text-neutral-800">Notificações</h1>
+          <p className="text-neutral-500 mt-1">
             {unreadCount > 0 ? `${unreadCount} não lida(s)` : 'Todas lidas'}
           </p>
         </div>
         {unreadCount > 0 && (
-          <Button variant="outline" onClick={handleMarkAllAsRead} className="shadow-sm">
+          <Button variant="outline" onClick={handleMarkAllAsRead} className="border-neutral-200 text-neutral-700 hover:bg-neutral-50">
             <Check className="w-4 h-4 mr-2" />
             Marcar tudo como lido
           </Button>
@@ -156,8 +205,8 @@ export default function MemberNotificacoes() {
       </div>
 
       <Tabs defaultValue="todas" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="todas">
+        <TabsList className="grid w-full grid-cols-5 bg-neutral-100">
+          <TabsTrigger value="todas" className="text-neutral-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
             Todas
             {notifications.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -165,7 +214,7 @@ export default function MemberNotificacoes() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="escalas">
+          <TabsTrigger value="escalas" className="text-neutral-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
             Escalas
             {escalas.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -173,7 +222,7 @@ export default function MemberNotificacoes() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="atualizacoes">
+          <TabsTrigger value="atualizacoes" className="text-neutral-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
             Atualizações
             {atualizacoes.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -181,7 +230,7 @@ export default function MemberNotificacoes() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="ministerio">
+          <TabsTrigger value="ministerio" className="text-neutral-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
             Ministério
             {ministerio.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -189,7 +238,7 @@ export default function MemberNotificacoes() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="sistema">
+          <TabsTrigger value="sistema" className="text-neutral-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
             Sistema
             {sistema.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -217,9 +266,9 @@ export default function MemberNotificacoes() {
       </Tabs>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="border-neutral-200">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-neutral-800">
               {selectedNotification && getNotificationIcon(selectedNotification.tipo)}
               {selectedNotification?.titulo || 'Detalhes da Notificação'}
             </DialogTitle>
@@ -229,8 +278,8 @@ export default function MemberNotificacoes() {
               <div className="flex items-center gap-2">
                 {getNotificationTypeBadge(selectedNotification.tipo)}
               </div>
-              <p className="text-foreground">{selectedNotification.mensagem}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-neutral-700">{selectedNotification.mensagem}</p>
+              <p className="text-sm text-neutral-500">
                 Recebida em:{' '}
                 {selectedNotification.created_at &&
                   format(new Date(selectedNotification.created_at), "dd/MM/yyyy 'às' HH:mm", {

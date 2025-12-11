@@ -48,39 +48,42 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
   { icon: Users, label: 'Usuários', path: '/admin/usuarios' },
-  { icon: UserPlus, label: 'Visitantes', path: '/admin/visitantes' },
+  // === MEMBROS ===
   { 
     icon: Users, 
     label: 'Membros', 
     path: '/admin/membros',
     submenu: [
       { icon: Users, label: 'Lista de Membros', path: '/admin/membros' },
-      { icon: UserPlus, label: 'Novo Membro', path: '/admin/membros/novo' },
-      { icon: FileText, label: 'Relatório', path: '/admin/membros/relatorio' },
+      { icon: UserPlus, label: 'Visitantes', path: '/admin/visitantes' },
+      { icon: FileText, label: 'Relatório Membros', path: '/admin/membros/relatorio' },
     ]
   },
+  // === BASES ===
   { 
     icon: Network, 
     label: 'Bases', 
     path: '/admin/bases',
     submenu: [
       { icon: Network, label: 'Lista de Bases', path: '/admin/bases' },
-      { icon: FileText, label: 'Relatório', path: '/admin/bases/relatorio' },
+      { icon: FileText, label: 'Relatório Bases', path: '/admin/bases/relatorio' },
     ]
   },
-  { icon: Users, label: 'Acompanhamento', path: '/admin/acompanhamento' },
+  // === EQUIPE & OPERAÇÕES ===
   {
     icon: Briefcase,
-    label: 'Serviço',
+    label: 'Equipe & Operações',
     path: '/admin/ministerios',
     submenu: [
-      { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
       { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
       { icon: ClipboardList, label: 'Funções', path: '/admin/funcoes-ministerio' },
       { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
+      { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
+      { icon: Users, label: 'Acompanhamento', path: '/admin/acompanhamento' },
     ]
   },
   { icon: Bell, label: 'Notificações', path: '/admin/notificacoes', showBadge: true },
+  // === KIDS ===
   { 
     icon: Baby, 
     label: 'Kids', 
@@ -93,6 +96,7 @@ const menuItems: MenuItem[] = [
       { icon: FileText, label: 'Relatório', path: '/admin/kids/relatorio' },
     ]
   },
+  // === FINANCEIRO ===
   {
     icon: Wallet,
     label: 'Financeiro',
@@ -106,6 +110,7 @@ const menuItems: MenuItem[] = [
       { icon: History, label: 'Auditoria', path: '/admin/financeiro/auditoria' },
     ]
   },
+  // === RELATÓRIOS ===
   {
     icon: BarChart3,
     label: 'Relatórios',
@@ -248,16 +253,16 @@ export default function AdminSidebar() {
 
       {/* Profile & Actions - Clean Premium */}
       <div className="p-3 border-t border-neutral-200 space-y-2">
-        {/* Back to Portal Button */}
+        {/* Back to Member Area Button */}
         <NavLink
-          to="/"
+          to="/home"
           className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-promessa-700 hover:bg-promessa-50 hover:text-promessa-900 transition-all duration-200',
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg bg-promessa-50 text-promessa-700 hover:bg-promessa-100 hover:text-promessa-900 transition-all duration-200 border border-promessa-200',
             collapsed && 'justify-center px-2'
           )}
         >
           <Home className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span className="text-sm font-medium">Voltar ao Portal</span>}
+          {!collapsed && <span className="text-sm font-medium">Área do Membro</span>}
         </NavLink>
 
         {!collapsed && profile && (
