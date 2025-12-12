@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, CheckCircle, Clock, XCircle, Search, Eye, MessageCircle, Send, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, CheckCircle, Clock, XCircle, Search, Eye, MessageCircle, Send, Loader2, History, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -86,6 +86,7 @@ interface EscalaFormData {
   responsavel_id: string;
   voluntarios_ids: string[];
   status_geral: string;
+  lembrete_automatico_dias_antes: number | null;
 }
 
 const initialFormData: EscalaFormData = {
@@ -97,6 +98,7 @@ const initialFormData: EscalaFormData = {
   responsavel_id: '',
   voluntarios_ids: [],
   status_geral: 'planejada',
+  lembrete_automatico_dias_antes: null,
 };
 
 export default function AdminEscalas() {
@@ -123,6 +125,18 @@ export default function AdminEscalas() {
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
   const [isBatchWhatsAppDialogOpen, setIsBatchWhatsAppDialogOpen] = useState(false);
   const [sendingBatchWhatsApp, setSendingBatchWhatsApp] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [communicationHistory, setCommunicationHistory] = useState<Array<{
+    id: string;
+    voluntario_id: string | null;
+    voluntario_nome?: string;
+    tipo: string;
+    status: string;
+    mensagem_preview: string | null;
+    detalhes_erro: string | null;
+    created_at: string;
+  }>>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   
   // Filters
   const [filterMinisterio, setFilterMinisterio] = useState<string>('all');
@@ -331,6 +345,8 @@ export default function AdminEscalas() {
 
   const handleEdit = (group: EscalaGroup) => {
     setEditingGroup(group);
+    // Get lembrete_automatico_dias_antes from first escala in group
+    const firstEscala = escalas.find(e => group.voluntarios.some(v => v.id === e.id));
     setFormData({
       ministerio_id: group.ministerio_id || '',
       data: new Date(group.data),
@@ -340,6 +356,7 @@ export default function AdminEscalas() {
       responsavel_id: group.responsavel_id || '',
       voluntarios_ids: group.voluntarios.map((v) => v.voluntario_id),
       status_geral: group.status_geral || 'planejada',
+      lembrete_automatico_dias_antes: (firstEscala as any)?.lembrete_automatico_dias_antes || null,
     });
     // Load volunteers and functions for the ministry
     if (group.ministerio_id) {
@@ -352,6 +369,50 @@ export default function AdminEscalas() {
   const handleView = (group: EscalaGroup) => {
     setViewingGroup(group);
     setIsViewDialogOpen(true);
+  };
+
+  const handleViewHistory = async () => {
+    if (!viewingGroup) return;
+    
+    setLoadingHistory(true);
+    setIsHistoryDialogOpen(true);
+    
+    try {
+      // Get all escala IDs from the group
+      const escalaIds = viewingGroup.voluntarios.map(v => v.id);
+      
+      const { data, error } = await supabase
+        .from('historico_comunicacoes')
+        .select(`
+          id,
+          voluntario_id,
+          tipo,
+          status,
+          mensagem_preview,
+          detalhes_erro,
+          created_at
+        `)
+        .in('escala_id', escalaIds)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Map voluntario names
+      const historyWithNames = (data || []).map(h => {
+        const vol = viewingGroup.voluntarios.find(v => v.voluntario_id === h.voluntario_id);
+        return {
+          ...h,
+          voluntario_nome: vol?.nome || 'Desconhecido',
+        };
+      });
+
+      setCommunicationHistory(historyWithNames);
+    } catch (error) {
+      console.error('Error fetching communication history:', error);
+      toast.error('Erro ao carregar histórico');
+    } finally {
+      setLoadingHistory(false);
+    }
   };
 
   const handleOpenWhatsAppDialog = async (voluntarioId: string, voluntarioNome: string) => {
@@ -642,6 +703,7 @@ export default function AdminEscalas() {
           voluntario_id: voluntarioId,
           status_geral: formData.status_geral as 'planejada' | 'ativa' | 'concluida',
           status: 'pendente' as const,
+          lembrete_automatico_dias_antes: formData.lembrete_automatico_dias_antes,
         }));
 
         const { error } = await supabase
@@ -662,6 +724,7 @@ export default function AdminEscalas() {
           voluntario_id: voluntarioId,
           status_geral: formData.status_geral as 'planejada' | 'ativa' | 'concluida',
           status: 'pendente' as const,
+          lembrete_automatico_dias_antes: formData.lembrete_automatico_dias_antes,
         }));
 
         const { error } = await supabase
@@ -1149,15 +1212,27 @@ export default function AdminEscalas() {
           )}
 
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            {viewingGroup && viewingGroup.voluntarios.filter(v => v.status === 'pendente').length > 0 && (
-              <Button
-                onClick={() => setIsBatchWhatsAppDialogOpen(true)}
-                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Lembrar Pendentes ({viewingGroup.voluntarios.filter(v => v.status === 'pendente').length})
-              </Button>
-            )}
+            <div className="flex gap-2 w-full sm:w-auto">
+              {viewingGroup && (
+                <Button
+                  variant="outline"
+                  onClick={handleViewHistory}
+                  className="w-full sm:w-auto"
+                >
+                  <History className="w-4 h-4 mr-2" />
+                  Histórico
+                </Button>
+              )}
+              {viewingGroup && viewingGroup.voluntarios.filter(v => v.status === 'pendente').length > 0 && (
+                <Button
+                  onClick={() => setIsBatchWhatsAppDialogOpen(true)}
+                  className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Lembrar ({viewingGroup.voluntarios.filter(v => v.status === 'pendente').length})
+                </Button>
+              )}
+            </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
                 Fechar
@@ -1335,6 +1410,93 @@ export default function AdminEscalas() {
         </DialogContent>
       </Dialog>
 
+      {/* Communication History Dialog */}
+      <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="w-5 h-5" />
+              Histórico de Comunicações
+            </DialogTitle>
+            <DialogDescription>
+              Registro de mensagens enviadas para esta escala
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingHistory ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : communicationHistory.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>Nenhuma comunicação registrada para esta escala</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {communicationHistory.map((item) => (
+                <div 
+                  key={item.id} 
+                  className={cn(
+                    "p-3 rounded-lg border",
+                    item.status === 'sucesso' && "bg-emerald-50 border-emerald-200",
+                    item.status === 'sem_telefone' && "bg-yellow-50 border-yellow-200",
+                    item.status === 'erro_api' && "bg-red-50 border-red-200"
+                  )}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{item.voluntario_nome}</span>
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-xs",
+                          item.tipo === 'whatsapp_auto' && "bg-blue-100 text-blue-700 border-blue-200"
+                        )}
+                      >
+                        {item.tipo === 'whatsapp_auto' ? 'Automático' : 'Manual'}
+                      </Badge>
+                    </div>
+                    <Badge 
+                      variant="outline"
+                      className={cn(
+                        "text-xs",
+                        item.status === 'sucesso' && "bg-emerald-100 text-emerald-700 border-emerald-200",
+                        item.status === 'sem_telefone' && "bg-yellow-100 text-yellow-700 border-yellow-200",
+                        item.status === 'erro_api' && "bg-red-100 text-red-700 border-red-200"
+                      )}
+                    >
+                      {item.status === 'sucesso' && 'Enviado'}
+                      {item.status === 'sem_telefone' && 'Sem telefone'}
+                      {item.status === 'erro_api' && 'Erro'}
+                    </Badge>
+                  </div>
+                  {item.mensagem_preview && (
+                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                      {item.mensagem_preview}
+                    </p>
+                  )}
+                  {item.detalhes_erro && item.status !== 'sucesso' && (
+                    <p className="text-xs text-red-600 mb-2">
+                      {item.detalhes_erro}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(item.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsHistoryDialogOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -1460,21 +1622,47 @@ export default function AdminEscalas() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Status Geral</Label>
-              <Select
-                value={formData.status_geral}
-                onValueChange={(value) => setFormData({ ...formData, status_geral: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="planejada">Planejada</SelectItem>
-                  <SelectItem value="ativa">Ativa</SelectItem>
-                  <SelectItem value="concluida">Concluída</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Status Geral</Label>
+                <Select
+                  value={formData.status_geral}
+                  onValueChange={(value) => setFormData({ ...formData, status_geral: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="planejada">Planejada</SelectItem>
+                    <SelectItem value="ativa">Ativa</SelectItem>
+                    <SelectItem value="concluida">Concluída</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Bell className="w-4 h-4" />
+                  Lembrete Automático
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    max={30}
+                    placeholder="Dias"
+                    value={formData.lembrete_automatico_dias_antes ?? ''}
+                    onChange={(e) => setFormData({ 
+                      ...formData, 
+                      lembrete_automatico_dias_antes: e.target.value ? parseInt(e.target.value) : null 
+                    })}
+                    className="w-20"
+                  />
+                  <span className="text-sm text-muted-foreground">dias antes</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Deixe vazio para desativar
+                </p>
+              </div>
             </div>
 
             <div className="space-y-2">
