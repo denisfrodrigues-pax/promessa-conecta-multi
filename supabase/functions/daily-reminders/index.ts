@@ -5,6 +5,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface Escala {
+  id: string;
+  data: string;
+  funcao: string;
+  horario: string | null;
+  voluntario_id: string;
+  ministerio_id: string;
+  lembrete_automatico_dias_antes: number | null;
+  ministerios: { nome: string }[] | null;
+  voluntario: { id: string; nome: string; telefone: string | null }[] | null;
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -30,86 +42,183 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get tomorrow's date
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const today = new Date();
+    console.log(`Running daily reminders for date: ${today.toISOString().split('T')[0]}`);
 
-    console.log(`Looking for escalas on date: ${tomorrowStr}`);
-
-    // Find all escalas scheduled for tomorrow
+    // Find all escalas with automatic reminders configured
     const { data: escalas, error: escalasError } = await supabase
       .from('escalas')
       .select(`
         id,
         data,
         funcao,
+        horario,
         voluntario_id,
         ministerio_id,
-        ministerios(nome)
+        lembrete_automatico_dias_antes,
+        ministerios(nome),
+        voluntario:profiles!escalas_voluntario_id_fkey(id, nome, telefone)
       `)
-      .eq('data', tomorrowStr)
-      .not('voluntario_id', 'is', null);
+      .not('lembrete_automatico_dias_antes', 'is', null)
+      .not('voluntario_id', 'is', null)
+      .eq('status', 'pendente');
 
     if (escalasError) {
       console.error('Error fetching escalas:', escalasError);
       throw escalasError;
     }
 
-    console.log(`Found ${escalas?.length || 0} escalas for tomorrow`);
+    console.log(`Found ${escalas?.length || 0} escalas with automatic reminders configured`);
 
     let notificationsCreated = 0;
+    let whatsappSent = 0;
+    let whatsappFailed = 0;
+    let skippedAlreadySent = 0;
 
-    // Create reminder notifications for each escala
-    for (const escala of escalas || []) {
-      // Check if a reminder was already sent for this escala
+  for (const escala of (escalas || []) as Escala[]) {
+    const voluntarioData = Array.isArray(escala.voluntario) ? escala.voluntario[0] : escala.voluntario;
+    if (!escala.lembrete_automatico_dias_antes || !voluntarioData) continue;
+
+      // Calculate if today is the right day to send the reminder
+      const escalaDate = new Date(escala.data);
+      const diffTime = escalaDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays !== escala.lembrete_automatico_dias_antes) {
+        continue; // Not the right day to send this reminder
+      }
+
+      console.log(`Processing escala ${escala.id} - ${diffDays} days before`);
+
+      // Check if automatic reminder was already sent today for this escala
+      const todayStr = today.toISOString().split('T')[0];
       const { data: existingReminder } = await supabase
-        .from('notificacoes')
+        .from('historico_comunicacoes')
         .select('id')
         .eq('escala_id', escala.id)
-        .eq('tipo', 'lembrete')
+        .eq('tipo', 'whatsapp_auto')
+        .gte('created_at', `${todayStr}T00:00:00`)
+        .lte('created_at', `${todayStr}T23:59:59`)
         .maybeSingle();
 
-      if (!existingReminder) {
-        // Handle ministerios - can be object or array depending on Supabase response
-        let ministerioNome = 'um ministério';
-        if (escala.ministerios) {
-          if (Array.isArray(escala.ministerios)) {
-            ministerioNome = escala.ministerios[0]?.nome || 'um ministério';
-          } else {
-            ministerioNome = (escala.ministerios as { nome: string }).nome || 'um ministério';
-          }
-        }
-        
-        const dataFormatada = new Date(escala.data).toLocaleDateString('pt-BR');
+      if (existingReminder) {
+        console.log(`Skipping escala ${escala.id} - already sent today`);
+        skippedAlreadySent++;
+        continue;
+      }
 
-        const { error: insertError } = await supabase
-          .from('notificacoes')
-          .insert({
-            voluntario_id: escala.voluntario_id,
-            escala_id: escala.id,
-            ministerio_id: escala.ministerio_id,
-            tipo: 'lembrete',
-            titulo: 'Lembrete de escala',
-            mensagem: `Amanhã você serve no ${ministerioNome} como ${escala.funcao}.`,
+      // Get ministerio name
+      let ministerioNome = 'um ministério';
+      if (escala.ministerios) {
+        if (Array.isArray(escala.ministerios) && escala.ministerios.length > 0) {
+          ministerioNome = escala.ministerios[0]?.nome || 'um ministério';
+        }
+      }
+
+      const dataFormatada = new Date(escala.data).toLocaleDateString('pt-BR');
+      const horario = escala.horario || 'horário a confirmar';
+      const voluntario = voluntarioData;
+
+      // Create in-app notification
+      const { error: notifError } = await supabase
+        .from('notificacoes')
+        .insert({
+          voluntario_id: escala.voluntario_id,
+          escala_id: escala.id,
+          ministerio_id: escala.ministerio_id,
+          tipo: 'lembrete',
+          titulo: 'Lembrete de escala',
+          mensagem: `Em ${diffDays} dia(s) você serve no ${ministerioNome} como ${escala.funcao}.`,
+        });
+
+      if (!notifError) {
+        notificationsCreated++;
+      }
+
+      // Send WhatsApp if phone is available
+      if (voluntario.telefone) {
+        try {
+          const mensagem = `Olá ${voluntario.nome}, você está escalado(a) para ${escala.funcao} no ${ministerioNome} no dia ${dataFormatada} às ${horario}. Acesse o sistema para confirmar sua presença.`;
+          const mensagemPreview = mensagem.substring(0, 255);
+
+          // Call send-whatsapp-message function
+          const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-message`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({
+              phone_number: voluntario.telefone,
+              message_body: mensagem,
+              template_id: 'escala_reminder_auto',
+            }),
           });
 
-        if (insertError) {
-          console.error('Error creating notification:', insertError);
-        } else {
-          notificationsCreated++;
+          const whatsappData = await whatsappResponse.json();
+
+          if (whatsappData.success) {
+            whatsappSent++;
+            // Log success
+            await supabase.from('historico_comunicacoes').insert({
+              escala_id: escala.id,
+              voluntario_id: voluntario.id,
+              tipo: 'whatsapp_auto',
+              status: 'sucesso',
+              mensagem_preview: mensagemPreview,
+              detalhes_erro: null,
+            });
+          } else {
+            whatsappFailed++;
+            // Log error
+            await supabase.from('historico_comunicacoes').insert({
+              escala_id: escala.id,
+              voluntario_id: voluntario.id,
+              tipo: 'whatsapp_auto',
+              status: 'erro_api',
+              mensagem_preview: mensagemPreview,
+              detalhes_erro: whatsappData.error || 'Erro na API de WhatsApp',
+            });
+          }
+        } catch (err) {
+          whatsappFailed++;
+          console.error('Error sending WhatsApp:', err);
+          // Log error
+          await supabase.from('historico_comunicacoes').insert({
+            escala_id: escala.id,
+            voluntario_id: voluntario.id,
+            tipo: 'whatsapp_auto',
+            status: 'erro_api',
+            mensagem_preview: null,
+            detalhes_erro: err instanceof Error ? err.message : 'Erro desconhecido',
+          });
         }
+      } else {
+        // Log sem_telefone
+        await supabase.from('historico_comunicacoes').insert({
+          escala_id: escala.id,
+          voluntario_id: voluntario.id,
+          tipo: 'whatsapp_auto',
+          status: 'sem_telefone',
+          mensagem_preview: null,
+          detalhes_erro: 'Voluntário não possui telefone cadastrado',
+        });
       }
     }
 
-    console.log(`Created ${notificationsCreated} reminder notifications`);
+    const summary = {
+      success: true,
+      notifications_created: notificationsCreated,
+      whatsapp_sent: whatsappSent,
+      whatsapp_failed: whatsappFailed,
+      skipped_already_sent: skippedAlreadySent,
+      date: today.toISOString().split('T')[0],
+    };
+
+    console.log('Daily reminders summary:', summary);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Created ${notificationsCreated} reminder notifications`,
-        date: tomorrowStr 
-      }),
+      JSON.stringify(summary),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
