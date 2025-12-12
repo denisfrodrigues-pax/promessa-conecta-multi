@@ -121,6 +121,8 @@ export default function AdminEscalas() {
     telefone: string | null;
   } | null>(null);
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
+  const [isBatchWhatsAppDialogOpen, setIsBatchWhatsAppDialogOpen] = useState(false);
+  const [sendingBatchWhatsApp, setSendingBatchWhatsApp] = useState(false);
   
   // Filters
   const [filterMinisterio, setFilterMinisterio] = useState<string>('all');
@@ -417,6 +419,92 @@ export default function AdminEscalas() {
       toast.error('Erro ao enviar lembrete via WhatsApp');
     } finally {
       setSendingWhatsApp(false);
+    }
+  };
+
+  const handleSendBatchWhatsAppReminders = async () => {
+    if (!viewingGroup) return;
+
+    const pendingVolunteers = viewingGroup.voluntarios.filter(v => v.status === 'pendente');
+    
+    if (pendingVolunteers.length === 0) {
+      toast.info('Não há voluntários pendentes para enviar lembretes');
+      return;
+    }
+
+    setSendingBatchWhatsApp(true);
+    
+    let successCount = 0;
+    let failedNoPhone = 0;
+    let failedError = 0;
+
+    try {
+      // Fetch all volunteer phones in one query
+      const voluntarioIds = pendingVolunteers.map(v => v.voluntario_id);
+      const { data: phonesData, error: phonesError } = await supabase
+        .from('profiles')
+        .select('id, telefone')
+        .in('id', voluntarioIds);
+
+      if (phonesError) throw phonesError;
+
+      const phoneMap = new Map(phonesData?.map(p => [p.id, p.telefone]) || []);
+
+      // Format common message parts
+      const dataFormatada = format(new Date(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR });
+      const horario = viewingGroup.horario || 'horário a confirmar';
+      const ministerio = viewingGroup.ministerio_nome || 'ministério';
+      const funcao = viewingGroup.funcao;
+
+      // Send messages to each volunteer
+      for (const vol of pendingVolunteers) {
+        const telefone = phoneMap.get(vol.voluntario_id);
+        
+        if (!telefone) {
+          failedNoPhone++;
+          continue;
+        }
+
+        try {
+          const mensagem = `Olá ${vol.nome}, você está escalado(a) para ${funcao} no ${ministerio} no dia ${dataFormatada} às ${horario}. Acesse o sistema para confirmar sua presença.`;
+
+          const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
+            body: {
+              phone_number: telefone,
+              message_body: mensagem,
+              template_id: 'escala_reminder',
+            },
+          });
+
+          if (error || !data?.success) {
+            failedError++;
+          } else {
+            successCount++;
+          }
+        } catch {
+          failedError++;
+        }
+      }
+
+      // Show summary toast
+      if (successCount > 0 && failedNoPhone === 0 && failedError === 0) {
+        toast.success(`Lembretes enviados para ${successCount} voluntário(s)`);
+      } else if (successCount > 0) {
+        toast.success(
+          `Lembretes enviados: ${successCount} sucesso, ${failedNoPhone} sem telefone, ${failedError} com erro`
+        );
+      } else if (failedNoPhone > 0 && failedError === 0) {
+        toast.error(`Nenhum lembrete enviado: ${failedNoPhone} voluntário(s) sem telefone cadastrado`);
+      } else {
+        toast.error(`Erro ao enviar lembretes: ${failedError} falha(s)`);
+      }
+
+      setIsBatchWhatsAppDialogOpen(false);
+    } catch (error) {
+      console.error('Error sending batch WhatsApp reminders:', error);
+      toast.error('Erro ao enviar lembretes em lote');
+    } finally {
+      setSendingBatchWhatsApp(false);
     }
   };
 
@@ -990,19 +1078,30 @@ export default function AdminEscalas() {
             </div>
           )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
-              Fechar
-            </Button>
-            {viewingGroup && (
-              <Button onClick={() => {
-                setIsViewDialogOpen(false);
-                handleEdit(viewingGroup);
-              }}>
-                <Pencil className="w-4 h-4 mr-2" />
-                Editar
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            {viewingGroup && viewingGroup.voluntarios.filter(v => v.status === 'pendente').length > 0 && (
+              <Button
+                onClick={() => setIsBatchWhatsAppDialogOpen(true)}
+                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Lembrar Pendentes ({viewingGroup.voluntarios.filter(v => v.status === 'pendente').length})
               </Button>
             )}
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+                Fechar
+              </Button>
+              {viewingGroup && (
+                <Button onClick={() => {
+                  setIsViewDialogOpen(false);
+                  handleEdit(viewingGroup);
+                }}>
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Editar
+                </Button>
+              )}
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1078,6 +1177,87 @@ export default function AdminEscalas() {
                 <>
                   <Send className="w-4 h-4 mr-2" />
                   Enviar Lembrete
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch WhatsApp Reminder Dialog */}
+      <Dialog open={isBatchWhatsAppDialogOpen} onOpenChange={setIsBatchWhatsAppDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-green-600" />
+              Lembrar Pendentes via WhatsApp
+            </DialogTitle>
+            <DialogDescription>
+              Enviar lembretes para todos os voluntários pendentes desta escala
+            </DialogDescription>
+          </DialogHeader>
+
+          {viewingGroup && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Data:</span>
+                  <span className="font-medium">{format(new Date(viewingGroup.data), 'dd/MM/yyyy')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Função:</span>
+                  <span className="font-medium">{viewingGroup.funcao}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Ministério:</span>
+                  <span className="font-medium">{viewingGroup.ministerio_nome || '-'}</span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200">
+                <p className="text-sm font-medium text-yellow-800 mb-2">
+                  Voluntários pendentes: {viewingGroup.voluntarios.filter(v => v.status === 'pendente').length}
+                </p>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                  {viewingGroup.voluntarios.filter(v => v.status === 'pendente').map(vol => (
+                    <li key={vol.id} className="flex items-center gap-2">
+                      <Clock className="w-3 h-3" />
+                      {vol.nome}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="p-3 rounded-lg bg-muted/30 border">
+                <p className="text-sm text-muted-foreground">
+                  Será enviada uma mensagem de lembrete para cada voluntário pendente que tenha telefone cadastrado.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsBatchWhatsAppDialogOpen(false)}
+              disabled={sendingBatchWhatsApp}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSendBatchWhatsAppReminders}
+              disabled={sendingBatchWhatsApp}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {sendingBatchWhatsApp ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Enviar para Todos
                 </>
               )}
             </Button>
