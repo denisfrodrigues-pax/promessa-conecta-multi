@@ -32,6 +32,7 @@ import {
   History,
   Home,
   Briefcase,
+  MessageCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -123,6 +124,7 @@ const menuItems: MenuItem[] = [
       { icon: Users, label: 'Membros', path: '/admin/relatorios/membros' },
       { icon: Wallet, label: 'Financeiro', path: '/admin/relatorios/financeiro' },
       { icon: Baby, label: 'Kids', path: '/admin/relatorios/kids' },
+      { icon: MessageCircle, label: 'Comunicações', path: '/admin/relatorios/comunicacoes' },
     ]
   },
   { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },

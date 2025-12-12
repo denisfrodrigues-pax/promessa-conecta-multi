@@ -60,6 +60,7 @@ import RelatorioBases from "@/pages/admin/relatorios/RelatorioBases";
 import RelatorioMembros from "@/pages/admin/relatorios/RelatorioMembros";
 import RelatorioFinanceiro from "@/pages/admin/relatorios/RelatorioFinanceiro";
 import RelatorioKids from "@/pages/admin/relatorios/RelatorioKids";
+import RelatorioComunicacoes from "@/pages/admin/relatorios/RelatorioComunicacoes";
 
 // Member Pages
 import MemberHome from "@/pages/member/Home";
@@ -153,6 +154,7 @@ const App = () => (
               <Route path="relatorios/membros" element={<RelatorioMembros />} />
               <Route path="relatorios/financeiro" element={<RelatorioFinanceiro />} />
               <Route path="relatorios/kids" element={<RelatorioKids />} />
+              <Route path="relatorios/comunicacoes" element={<RelatorioComunicacoes />} />
               <Route path="auditoria" element={<AdminAuditoria />} />
               <Route path="configuracoes" element={<AdminConfiguracoes />} />
               <Route path="whatsapp-test" element={<WhatsAppTest />} />
