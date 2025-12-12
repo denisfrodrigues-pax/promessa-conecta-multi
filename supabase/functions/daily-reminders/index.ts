@@ -39,6 +39,13 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const whatsappApiKey = Deno.env.get('WHATSAPP_API_KEY');
+    
+    // Check if WhatsApp is enabled
+    const whatsappEnabled = !!whatsappApiKey;
+    if (!whatsappEnabled) {
+      console.log('[daily-reminders] ⚠️ WHATSAPP_API_KEY not configured - WhatsApp messages will be skipped');
+    }
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -135,8 +142,8 @@ Deno.serve(async (req) => {
         notificationsCreated++;
       }
 
-      // Send WhatsApp if phone is available
-      if (voluntario.telefone) {
+      // Send WhatsApp only if API is configured and phone is available
+      if (whatsappEnabled && voluntario.telefone) {
         try {
           const mensagem = `Olá ${voluntario.nome}, você está escalado(a) para ${escala.funcao} no ${ministerioNome} no dia ${dataFormatada} às ${horario}. Acesse o sistema para confirmar sua presença.`;
           const mensagemPreview = mensagem.substring(0, 255);
@@ -159,12 +166,12 @@ Deno.serve(async (req) => {
 
           if (whatsappData.success) {
             whatsappSent++;
-            // Log success
+            // Log success (with status indicating if it was simulated)
             await supabase.from('historico_comunicacoes').insert({
               escala_id: escala.id,
               voluntario_id: voluntario.id,
               tipo: 'whatsapp_auto',
-              status: 'sucesso',
+              status: whatsappData.status === 'simulacao_desativada' ? 'simulacao_desativada' : 'sucesso',
               mensagem_preview: mensagemPreview,
               detalhes_erro: null,
             });
@@ -193,6 +200,9 @@ Deno.serve(async (req) => {
             detalhes_erro: err instanceof Error ? err.message : 'Erro desconhecido',
           });
         }
+      } else if (!whatsappEnabled) {
+        // WhatsApp disabled - log skip
+        console.log(`[daily-reminders] Skipping WhatsApp for ${voluntario.nome} - API not configured`);
       } else {
         // Log sem_telefone
         await supabase.from('historico_comunicacoes').insert({

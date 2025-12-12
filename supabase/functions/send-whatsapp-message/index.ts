@@ -86,11 +86,39 @@ serve(async (req) => {
       );
     }
 
-    // Generate a simulated message ID
+    // Check if WhatsApp API is configured (use the apiKey from line 42)
     const messageId = `whatsapp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     const sentAt = new Date().toISOString();
 
-    // Simulate API call delay (200-500ms)
+    // If no API key, return success with simulation status (WhatsApp disabled)
+    if (!apiKey) {
+      console.log('[WhatsApp] ⚠️ WHATSAPP_API_KEY not configured - returning simulated success');
+      console.log('[WhatsApp] Details:', {
+        message_id: messageId,
+        phone_number: cleanPhone,
+        message_preview: message_body.substring(0, 100) + (message_body.length > 100 ? '...' : ''),
+        template_id: template_id || 'none',
+        sent_at: sentAt,
+        status: 'simulacao_desativada'
+      });
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message_id: messageId,
+          status: 'simulacao_desativada',
+          details: {
+            phone_number: cleanPhone,
+            message_body: message_body,
+            template_id: template_id,
+            sent_at: sentAt
+          }
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Simulate API call delay (200-500ms) - only if API key is present
     const delay = Math.floor(Math.random() * 300) + 200;
     await new Promise(resolve => setTimeout(resolve, delay));
 

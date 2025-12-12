@@ -1126,15 +1126,6 @@ export default function AdminEscalas() {
                         <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-100">
                           <p className="font-medium">{vol.nome}</p>
                           <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleOpenWhatsAppDialog(vol.voluntario_id, vol.nome)}
-                              className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100"
-                              title="Enviar lembrete via WhatsApp"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </Button>
                             {getStatusBadge(vol.status)}
                           </div>
                         </div>
@@ -1155,15 +1146,6 @@ export default function AdminEscalas() {
                         <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-100">
                           <p className="font-medium">{vol.nome}</p>
                           <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleOpenWhatsAppDialog(vol.voluntario_id, vol.nome)}
-                              className="h-8 w-8 p-0 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100"
-                              title="Enviar lembrete via WhatsApp"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </Button>
                             {getStatusBadge(vol.status)}
                           </div>
                         </div>
@@ -1191,15 +1173,6 @@ export default function AdminEscalas() {
                             )}
                           </div>
                           <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleOpenWhatsAppDialog(vol.voluntario_id, vol.nome)}
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-100"
-                              title="Enviar lembrete via WhatsApp"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </Button>
                             {getStatusBadge(vol.status)}
                           </div>
                         </div>
@@ -1223,15 +1196,7 @@ export default function AdminEscalas() {
                   Histórico
                 </Button>
               )}
-              {viewingGroup && viewingGroup.voluntarios.filter(v => v.status === 'pendente').length > 0 && (
-                <Button
-                  onClick={() => setIsBatchWhatsAppDialogOpen(true)}
-                  className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Lembrar ({viewingGroup.voluntarios.filter(v => v.status === 'pendente').length})
-                </Button>
-              )}
+              {/* WhatsApp buttons disabled - API not configured */}
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
