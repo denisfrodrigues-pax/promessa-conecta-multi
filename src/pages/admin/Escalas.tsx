@@ -380,7 +380,21 @@ export default function AdminEscalas() {
   const handleSendWhatsAppReminder = async () => {
     if (!selectedVoluntarioForWhatsApp || !viewingGroup) return;
     
+    // Find the escala_id for this volunteer
+    const escalaVoluntario = viewingGroup.voluntarios.find(
+      v => v.voluntario_id === selectedVoluntarioForWhatsApp.id
+    );
+    
     if (!selectedVoluntarioForWhatsApp.telefone) {
+      // Log the attempt with 'sem_telefone' status
+      await supabase.from('historico_comunicacoes').insert({
+        escala_id: escalaVoluntario?.id || null,
+        voluntario_id: selectedVoluntarioForWhatsApp.id,
+        tipo: 'whatsapp',
+        status: 'sem_telefone',
+        mensagem_preview: null,
+        detalhes_erro: 'Voluntário não possui telefone cadastrado',
+      });
       toast.error('Este voluntário não possui telefone cadastrado');
       return;
     }
@@ -395,6 +409,7 @@ export default function AdminEscalas() {
       const funcao = viewingGroup.funcao;
 
       const mensagem = `Olá ${selectedVoluntarioForWhatsApp.nome}, você está escalado(a) para ${funcao} no ${ministerio} no dia ${dataFormatada} às ${horario}. Acesse o sistema para confirmar sua presença.`;
+      const mensagemPreview = mensagem.substring(0, 255);
 
       // Call the Edge Function
       const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
@@ -408,6 +423,15 @@ export default function AdminEscalas() {
       if (error) throw error;
 
       if (data?.success) {
+        // Log success
+        await supabase.from('historico_comunicacoes').insert({
+          escala_id: escalaVoluntario?.id || null,
+          voluntario_id: selectedVoluntarioForWhatsApp.id,
+          tipo: 'whatsapp',
+          status: 'sucesso',
+          mensagem_preview: mensagemPreview,
+          detalhes_erro: null,
+        });
         toast.success(`Lembrete enviado para ${selectedVoluntarioForWhatsApp.nome}`);
         setIsWhatsAppDialogOpen(false);
         setSelectedVoluntarioForWhatsApp(null);
@@ -416,6 +440,15 @@ export default function AdminEscalas() {
       }
     } catch (error) {
       console.error('Error sending WhatsApp reminder:', error);
+      // Log error
+      await supabase.from('historico_comunicacoes').insert({
+        escala_id: escalaVoluntario?.id || null,
+        voluntario_id: selectedVoluntarioForWhatsApp.id,
+        tipo: 'whatsapp',
+        status: 'erro_api',
+        mensagem_preview: null,
+        detalhes_erro: error instanceof Error ? error.message : 'Erro desconhecido',
+      });
       toast.error('Erro ao enviar lembrete via WhatsApp');
     } finally {
       setSendingWhatsApp(false);
@@ -462,11 +495,21 @@ export default function AdminEscalas() {
         
         if (!telefone) {
           failedNoPhone++;
+          // Log sem_telefone status
+          await supabase.from('historico_comunicacoes').insert({
+            escala_id: vol.id,
+            voluntario_id: vol.voluntario_id,
+            tipo: 'whatsapp',
+            status: 'sem_telefone',
+            mensagem_preview: null,
+            detalhes_erro: 'Voluntário não possui telefone cadastrado',
+          });
           continue;
         }
 
         try {
           const mensagem = `Olá ${vol.nome}, você está escalado(a) para ${funcao} no ${ministerio} no dia ${dataFormatada} às ${horario}. Acesse o sistema para confirmar sua presença.`;
+          const mensagemPreview = mensagem.substring(0, 255);
 
           const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
             body: {
@@ -478,11 +521,38 @@ export default function AdminEscalas() {
 
           if (error || !data?.success) {
             failedError++;
+            // Log error
+            await supabase.from('historico_comunicacoes').insert({
+              escala_id: vol.id,
+              voluntario_id: vol.voluntario_id,
+              tipo: 'whatsapp',
+              status: 'erro_api',
+              mensagem_preview: mensagemPreview,
+              detalhes_erro: error?.message || data?.error || 'Erro na API de WhatsApp',
+            });
           } else {
             successCount++;
+            // Log success
+            await supabase.from('historico_comunicacoes').insert({
+              escala_id: vol.id,
+              voluntario_id: vol.voluntario_id,
+              tipo: 'whatsapp',
+              status: 'sucesso',
+              mensagem_preview: mensagemPreview,
+              detalhes_erro: null,
+            });
           }
-        } catch {
+        } catch (err) {
           failedError++;
+          // Log error
+          await supabase.from('historico_comunicacoes').insert({
+            escala_id: vol.id,
+            voluntario_id: vol.voluntario_id,
+            tipo: 'whatsapp',
+            status: 'erro_api',
+            mensagem_preview: null,
+            detalhes_erro: err instanceof Error ? err.message : 'Erro desconhecido',
+          });
         }
       }
 

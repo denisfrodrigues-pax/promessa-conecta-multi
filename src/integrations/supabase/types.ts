@@ -617,6 +617,7 @@ export type Database = {
           horario: string | null
           id: string
           justificativa: string | null
+          lembrete_automatico_dias_antes: number | null
           ministerio_id: string | null
           responsavel_id: string | null
           status: Database["public"]["Enums"]["scale_status"] | null
@@ -636,6 +637,7 @@ export type Database = {
           horario?: string | null
           id?: string
           justificativa?: string | null
+          lembrete_automatico_dias_antes?: number | null
           ministerio_id?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["scale_status"] | null
@@ -655,6 +657,7 @@ export type Database = {
           horario?: string | null
           id?: string
           justificativa?: string | null
+          lembrete_automatico_dias_antes?: number | null
           ministerio_id?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["scale_status"] | null
@@ -871,6 +874,54 @@ export type Database = {
           {
             foreignKeyName: "grupos_participantes_usuario_id_fkey"
             columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      historico_comunicacoes: {
+        Row: {
+          created_at: string
+          detalhes_erro: string | null
+          escala_id: string | null
+          id: string
+          mensagem_preview: string | null
+          status: string
+          tipo: string
+          voluntario_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          detalhes_erro?: string | null
+          escala_id?: string | null
+          id?: string
+          mensagem_preview?: string | null
+          status: string
+          tipo: string
+          voluntario_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          detalhes_erro?: string | null
+          escala_id?: string | null
+          id?: string
+          mensagem_preview?: string | null
+          status?: string
+          tipo?: string
+          voluntario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historico_comunicacoes_escala_id_fkey"
+            columns: ["escala_id"]
+            isOneToOne: false
+            referencedRelation: "escalas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historico_comunicacoes_voluntario_id_fkey"
+            columns: ["voluntario_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
