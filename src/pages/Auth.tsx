@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { supabase } from '@/integrations/supabase/client';
 import { Logo } from '@/components/Logo';
+import logoIgreja from '@/assets/logo-igreja-promessa.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -198,16 +199,23 @@ export default function Auth() {
               </Link>
             </Button>
             
-            <div className="flex items-center gap-4 mb-2">
-              {hasCustomLogo ? (
-                <img 
-                  src={config.logo_url!} 
-                  alt={churchName}
-                  className="h-16 w-auto object-contain"
-                />
-              ) : (
-                <Logo size={64} className="logo-shadow" />
-              )}
+            {/* Premium Logo Container with Glassmorphism */}
+            <div className="animate-scale-in">
+              <div className="inline-flex items-center justify-center p-5 rounded-2xl bg-white/15 backdrop-blur-md shadow-lg border border-white/20 mb-4">
+                {hasCustomLogo ? (
+                  <img 
+                    src={config.logo_url!} 
+                    alt={churchName}
+                    className="h-20 w-auto object-contain drop-shadow-lg"
+                  />
+                ) : (
+                  <img 
+                    src={logoIgreja} 
+                    alt={churchName}
+                    className="h-20 w-auto object-contain drop-shadow-lg"
+                  />
+                )}
+              </div>
             </div>
             <h1 className="text-4xl font-display font-bold mt-4">
               {churchName}
@@ -258,16 +266,22 @@ export default function Auth() {
               Voltar
             </Link>
           </Button>
-          <div className="flex items-center gap-3">
-            {hasCustomLogo ? (
-              <img 
-                src={config.logo_url!} 
-                alt={churchName}
-                className="h-10 w-auto object-contain"
-              />
-            ) : (
-              <Logo size={40} />
-            )}
+          <div className="flex items-center gap-3 animate-scale-in">
+            <div className="p-2 rounded-xl bg-white/15 backdrop-blur-md shadow-lg border border-white/20">
+              {hasCustomLogo ? (
+                <img 
+                  src={config.logo_url!} 
+                  alt={churchName}
+                  className="h-10 w-auto object-contain drop-shadow-md"
+                />
+              ) : (
+                <img 
+                  src={logoIgreja} 
+                  alt={churchName}
+                  className="h-10 w-auto object-contain drop-shadow-md"
+                />
+              )}
+            </div>
             <div>
               <h1 className="text-xl font-display font-bold">{churchName}</h1>
               <p className="text-white/70 text-sm">Sistema de Gestão</p>
