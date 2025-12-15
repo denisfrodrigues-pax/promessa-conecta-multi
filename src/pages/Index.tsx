@@ -36,15 +36,17 @@ export default function Index() {
             </a>
           </Button>
 
-          <Button 
-            size="xl" 
-            className="bg-promessa-700 text-white hover:bg-promessa-800 shadow-lg transition-all duration-300"
-          >
-            <a href="/sou-novo" className="flex items-center">
-              Sou Novo Aqui
-              <Sparkles className="w-5 h-5 ml-2" />
-            </a>
-          </Button>
+          <a href="/sou-novo">
+            <Button 
+              size="xl" 
+              className="bg-promessa-700 text-white hover:bg-promessa-800 shadow-lg transition-all duration-300"
+            >
+              <span className="flex items-center text-white">
+                Sou Novo Aqui
+                <Sparkles className="w-5 h-5 ml-2" />
+              </span>
+            </Button>
+          </a>
 
         </div>
       </section>
