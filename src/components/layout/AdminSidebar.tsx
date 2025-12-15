@@ -1,5 +1,6 @@
 import { NavLink } from '@/components/NavLink';
 import { Logo } from '@/components/Logo';
+import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
@@ -283,36 +284,18 @@ export default function AdminSidebar() {
           {!collapsed && <span className="text-sm font-medium">Área do Membro</span>}
         </NavLink>
 
-        {!collapsed && profile && (
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-neutral-100">
-            <div className="w-8 h-8 rounded-full bg-promessa-700 flex items-center justify-center">
-              <span className="text-xs font-bold text-white">
-                {profile.nome?.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-neutral-800 truncate">{profile.nome}</p>
-              <p className="text-xs text-neutral-500 truncate">{profile.email}</p>
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-2">
+        <div className={cn(
+          "flex items-center gap-2",
+          collapsed ? "justify-center" : "justify-between"
+        )}>
+          <UserAvatarMenu size="sm" showName={!collapsed} />
           <Button
             variant="ghost"
             size="icon"
-            className="text-neutral-500 hover:text-promessa-700 hover:bg-promessa-50 flex-1"
+            className="text-neutral-500 hover:text-promessa-700 hover:bg-promessa-50"
             onClick={() => setCollapsed(!collapsed)}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-neutral-500 hover:text-destructive hover:bg-red-50"
-            onClick={signOut}
-          >
-            <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </div>
