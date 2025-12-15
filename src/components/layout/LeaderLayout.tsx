@@ -2,7 +2,8 @@ import { Outlet, Navigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
 import { Logo } from '@/components/Logo';
-import { LayoutDashboard, Users, ClipboardList, BarChart3, Home, LogOut, Bell, Loader2 } from 'lucide-react';
+import { UserAvatarMenu } from '@/components/UserAvatarMenu';
+import { LayoutDashboard, Users, ClipboardList, BarChart3, Home, Bell, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -53,21 +54,14 @@ export default function LeaderLayout() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button asChild variant="ghost" size="sm" className="text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50">
               <RouterNavLink to="/home">
                 <Home className="w-4 h-4 mr-2" />
                 App
               </RouterNavLink>
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-neutral-500 hover:text-destructive hover:bg-red-50"
-              onClick={signOut}
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+            <UserAvatarMenu size="sm" />
           </div>
         </div>
 

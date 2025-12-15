@@ -2,6 +2,7 @@ import { Outlet, Navigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
 import { Logo } from '@/components/Logo';
+import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { Home, Users, Calendar, Bell, User, Menu, CalendarCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -80,6 +81,7 @@ export default function MemberLayout() {
                 </RouterNavLink>
               </Button>
             )}
+            <UserAvatarMenu size="sm" className="ml-2" />
           </nav>
 
           {/* Mobile Menu */}
