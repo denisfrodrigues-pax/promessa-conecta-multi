@@ -7,10 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import heroHome from '@/assets/hero-home.png';
 import { useAuth } from '@/contexts/AuthContext';
-import { Calendar, Bell, Users, ChevronRight, Heart, MapPin, Clock, Sparkles } from 'lucide-react';
+import { Calendar, Bell, Users, ChevronRight, Heart, MapPin, Clock, Sparkles, HandHeart } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ContribuicaoCard } from '@/components/contribuicao/ContribuicaoCard';
+import { ContribuicaoModal } from '@/components/contribuicao/ContribuicaoModal';
 
 interface Aviso {
   id: string;
@@ -32,6 +32,7 @@ export default function MemberHome() {
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [contribuicaoModalOpen, setContribuicaoModalOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -95,13 +96,8 @@ export default function MemberHome() {
       </section>
 
       <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Contribution Card - Featured */}
-        <section>
-          <ContribuicaoCard />
-        </section>
-
         {/* Quick Actions - Premium Cards */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <section className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Link to="/bases" className="group">
             <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
@@ -146,6 +142,17 @@ export default function MemberHome() {
               </CardContent>
             </Card>
           </Link>
+          <button onClick={() => setContribuicaoModalOpen(true)} className="group text-left">
+            <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
+              <CardContent className="p-4 flex flex-col items-center text-center">
+                <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
+                  <HandHeart className="w-6 h-6" />
+                </div>
+                <h3 className="font-medium text-foreground">Contribuição</h3>
+                <p className="text-xs text-muted-foreground">Registrar oferta ou dízimo</p>
+              </CardContent>
+            </Card>
+          </button>
         </section>
 
         {/* Avisos Section */}
@@ -238,6 +245,11 @@ export default function MemberHome() {
           </div>
         </section>
       </div>
+
+      <ContribuicaoModal 
+        open={contribuicaoModalOpen} 
+        onOpenChange={setContribuicaoModalOpen}
+      />
     </div>
   );
 }
