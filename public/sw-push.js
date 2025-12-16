@@ -1,6 +1,38 @@
 // Push notification handler for service worker
 // This file will be imported by the main service worker
 
+// Force immediate activation on install
+self.addEventListener('install', function(event) {
+  console.log('[Service Worker] Installing new version...');
+  // Skip waiting to activate immediately
+  self.skipWaiting();
+});
+
+// Claim all clients immediately on activation
+self.addEventListener('activate', function(event) {
+  console.log('[Service Worker] Activating new version...');
+  event.waitUntil(
+    Promise.all([
+      // Take control of all clients immediately
+      self.clients.claim(),
+      // Clean up old caches
+      caches.keys().then(function(cacheNames) {
+        return Promise.all(
+          cacheNames.map(function(cacheName) {
+            // Delete old versioned caches
+            if (cacheName.startsWith('workbox-') || 
+                cacheName.includes('-precache-') ||
+                cacheName.includes('runtime-')) {
+              console.log('[Service Worker] Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+    ])
+  );
+});
+
 self.addEventListener('push', function(event) {
   console.log('[Service Worker] Push received:', event);
   
@@ -93,4 +125,12 @@ self.addEventListener('pushsubscriptionchange', function(event) {
   console.log('[Service Worker] Push subscription changed');
   // The subscription has changed, the user needs to re-subscribe
   // This is handled by the frontend usePushNotifications hook
+});
+
+// Listen for messages from the main thread to force update
+self.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[Service Worker] Received skip waiting message');
+    self.skipWaiting();
+  }
 });

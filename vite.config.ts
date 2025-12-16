@@ -75,7 +75,27 @@ export default defineConfig(({ mode }) => ({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
         importScripts: ["/sw-push.js"],
+        // Force immediate activation of new service worker
+        skipWaiting: true,
+        clientsClaim: true,
+        // Clean up old caches
+        cleanupOutdatedCaches: true,
+        // Navigation preload for faster page loads
+        navigationPreload: true,
         runtimeCaching: [
+          {
+            // HTML navigation requests - always network first
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "pages-cache",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 // 1 hour
+              },
+              networkTimeoutSeconds: 3
+            }
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
@@ -115,11 +135,23 @@ export default defineConfig(({ mode }) => ({
               },
               networkTimeoutSeconds: 10
             }
+          },
+          {
+            // JS and CSS files - stale while revalidate for faster updates
+            urlPattern: /\.(?:js|css)$/i,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "static-resources",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              }
+            }
           }
         ]
       },
       devOptions: {
-        enabled: true
+        enabled: false // Disable in dev to avoid confusion
       }
     })
   ].filter(Boolean),
