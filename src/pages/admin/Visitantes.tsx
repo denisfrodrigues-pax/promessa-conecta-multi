@@ -45,6 +45,11 @@ const cleanPhone = (phone: string | null): string => {
   return phone.replace(/\D/g, '');
 };
 
+// Helper: Sanitize search input to prevent SQL pattern injection
+const sanitizeSearch = (input: string): string => {
+  return input.replace(/[%_\\]/g, '\\$&').trim();
+};
+
 // Helper: Check if phone is valid
 const hasValidPhone = (phone: string | null): boolean => {
   const cleaned = cleanPhone(phone);
@@ -137,8 +142,8 @@ export default function Visitantes() {
       setLoading(true);
 
       // Build search filter for name OR phone
-      const searchClean = debouncedSearch.trim();
-      const searchNumeric = cleanPhone(searchClean);
+      const searchClean = sanitizeSearch(debouncedSearch);
+      const searchNumeric = cleanPhone(debouncedSearch);
 
       // First: get total count for pagination
       let countQuery = supabase
@@ -169,7 +174,8 @@ export default function Visitantes() {
       }
       
       if (searchClean !== '') {
-        query = query.or(`nome.ilike.%${searchClean}%,telefone.ilike.%${searchNumeric}%,telefone.ilike.%${searchClean}%`);
+        const searchNumericForData = cleanPhone(debouncedSearch);
+        query = query.or(`nome.ilike.%${searchClean}%,telefone.ilike.%${searchNumericForData}%,telefone.ilike.%${searchClean}%`);
       }
 
       const { data, error } = await query;

@@ -69,6 +69,12 @@ const cleanPhone = (phone: string | null): string => {
   return phone.replace(/\D/g, '');
 };
 
+// Sanitize search input to prevent SQL pattern injection
+const sanitizeSearch = (input: string): string => {
+  // Escape special characters that could affect pattern matching
+  return input.replace(/[%_\\]/g, '\\$&').trim();
+};
+
 const hasValidPhone = (phone: string | null): boolean => {
   const cleaned = cleanPhone(phone);
   return cleaned.length >= 10;
@@ -224,11 +230,12 @@ export default function Membros() {
         countQuery = countQuery.eq('status', filtroStatus);
       }
       if (debouncedSearch.trim()) {
+        const sanitizedSearch = sanitizeSearch(debouncedSearch);
         const cleanedSearch = cleanPhone(debouncedSearch);
         if (cleanedSearch.length >= 3) {
-          countQuery = countQuery.or(`nome.ilike.%${debouncedSearch.trim()}%,telefone.ilike.%${cleanedSearch}%`);
+          countQuery = countQuery.or(`nome.ilike.%${sanitizedSearch}%,telefone.ilike.%${cleanedSearch}%`);
         } else {
-          countQuery = countQuery.ilike('nome', `%${debouncedSearch.trim()}%`);
+          countQuery = countQuery.ilike('nome', `%${sanitizedSearch}%`);
         }
       }
       if (memberIdsInBase !== null) {
@@ -258,11 +265,12 @@ export default function Membros() {
         query = query.eq('status', filtroStatus);
       }
       if (debouncedSearch.trim()) {
+        const sanitizedSearch = sanitizeSearch(debouncedSearch);
         const cleanedSearch = cleanPhone(debouncedSearch);
         if (cleanedSearch.length >= 3) {
-          query = query.or(`nome.ilike.%${debouncedSearch.trim()}%,telefone.ilike.%${cleanedSearch}%`);
+          query = query.or(`nome.ilike.%${sanitizedSearch}%,telefone.ilike.%${cleanedSearch}%`);
         } else {
-          query = query.ilike('nome', `%${debouncedSearch.trim()}%`);
+          query = query.ilike('nome', `%${sanitizedSearch}%`);
         }
       }
       if (memberIdsInBase !== null) {

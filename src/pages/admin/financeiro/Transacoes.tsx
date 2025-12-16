@@ -58,6 +58,11 @@ interface Categoria {
   natureza: string;
 }
 
+// Sanitize search input to prevent SQL pattern injection
+const sanitizeSearch = (input: string): string => {
+  return input.replace(/[%_\\]/g, '\\$&').trim();
+};
+
 export default function Transacoes() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -126,7 +131,8 @@ export default function Transacoes() {
         .range((page - 1) * limit, page * limit - 1);
 
       if (search) {
-        query = query.or(`descricao.ilike.%${search}%,referencia.ilike.%${search}%`);
+        const sanitizedSearch = sanitizeSearch(search);
+        query = query.or(`descricao.ilike.%${sanitizedSearch}%,referencia.ilike.%${sanitizedSearch}%`);
       }
       if (filtroTipo !== "todos") {
         query = query.eq("tipo", filtroTipo);
