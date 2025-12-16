@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
-import { Heart, Users, Calendar, MessageCircle, ChevronRight, Sparkles, Clock, CheckCircle } from 'lucide-react';
+import { Heart, Users, Calendar, MessageCircle, ChevronRight, Sparkles, Clock, CheckCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const RATE_LIMIT_KEY = 'visitor_form_submissions';
 const MAX_SUBMISSIONS_PER_HOUR = 3;
@@ -40,6 +41,7 @@ const recordSubmission = (): void => {
 };
 
 export default function SouNovo() {
+  const { isAdmin } = useAuth();
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -177,6 +179,18 @@ export default function SouNovo() {
 
   return (
     <div className="pb-24 md:pb-6">
+      {/* Admin Back Button */}
+      {isAdmin && (
+        <div className="container mx-auto px-4 pt-4">
+          <Button asChild variant="outline" size="sm" className="gap-2">
+            <Link to="/admin">
+              <ArrowLeft className="w-4 h-4" />
+              Voltar ao Painel
+            </Link>
+          </Button>
+        </div>
+      )}
+      
       {/* Hero Section - Premium */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/banner_sou_novo_placeholder.png')] bg-cover bg-center" />
