@@ -339,7 +339,7 @@ export default function SouNovo() {
                 <div className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
                   <div className="inline-flex items-center gap-2 mb-3 text-promessa">
                     <Clock className="w-5 h-5" />
-                    <span className="font-semibold">Domingo</span>
+                    <span className="font-semibold">Sábado</span>
                   </div>
                   <p className="text-4xl font-display font-bold text-promessa-dark mb-1">18:00</p>
                   <p className="text-muted-foreground">Escola Bíblica</p>
@@ -347,7 +347,7 @@ export default function SouNovo() {
                 <div className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
                   <div className="inline-flex items-center gap-2 mb-3 text-promessa">
                     <Clock className="w-5 h-5" />
-                    <span className="font-semibold">Domingo</span>
+                    <span className="font-semibold">Sábado</span>
                   </div>
                   <p className="text-4xl font-display font-bold text-promessa-dark mb-1">19:07</p>
                   <p className="text-muted-foreground">Culto de Celebração</p>
