@@ -5,6 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 
+// Route Guards
+import PublicRoute from "@/components/routes/PublicRoute";
+import PrivateRoute from "@/components/routes/PrivateRoute";
+
 // Layouts
 import AdminLayout from "@/components/layout/AdminLayout";
 import MemberLayout from "@/components/layout/MemberLayout";
@@ -102,93 +106,108 @@ const App = () => (
         <Toaster />
         <Sonner />
         <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/install" element={<InstallPWA />} />
-            <Route path="/sou-novo" element={<SouNovo />} />
+          {/* Public Routes - redirect authenticated users */}
+          <Route path="/" element={<PublicRoute><Index /></PublicRoute>} />
+          <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+          
+          {/* Semi-public Routes - accessible to all */}
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/install" element={<InstallPWA />} />
+          <Route path="/sou-novo" element={<SouNovo />} />
 
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="usuarios" element={<AdminUsuarios />} />
-              <Route path="eventos" element={<AdminEventos />} />
-              <Route path="avisos" element={<AdminAvisos />} />
-              <Route path="ministerios" element={<AdminMinisterios />} />
-              <Route path="voluntarios-ministerios" element={<AdminVoluntariosMinisterios />} />
-              <Route path="funcoes-ministerio" element={<AdminFuncoesMinisterio />} />
-              <Route path="escalas" element={<AdminEscalas />} />
-              <Route path="notificacoes" element={<AdminNotificacoes />} />
-              <Route path="visitantes" element={<AdminVisitantes />} />
-              <Route path="visitantes/:id" element={<AdminVisitanteDetalhes />} />
-              <Route path="membros" element={<AdminMembros />} />
-              <Route path="membros/novo" element={<AdminMembroNovo />} />
-              <Route path="membros/relatorio" element={<AdminMembroRelatorio />} />
-              <Route path="membros/:id" element={<AdminMembroDetalhes />} />
-              <Route path="bases" element={<AdminBases />} />
-              <Route path="bases/nova" element={<AdminBaseNova />} />
-              <Route path="bases/relatorio" element={<AdminBaseRelatorio />} />
-              <Route path="bases/:id" element={<AdminBaseDetalhes />} />
-              <Route path="acompanhamento" element={<AdminAcompanhamento />} />
-              <Route path="kids" element={<KidsCheckins />} />
-              <Route path="kids/checkin/:id" element={<KidsCheckinDetalhes />} />
-              <Route path="kids/criancas" element={<KidsCriancas />} />
-              <Route path="kids/responsaveis" element={<KidsResponsaveis />} />
-              <Route path="kids/salas" element={<KidsSalas />} />
-              <Route path="kids/relatorio" element={<KidsRelatorio />} />
-              {/* Financeiro Routes */}
-              <Route path="financeiro" element={<FinanceiroDashboard />} />
-              <Route path="financeiro/transacoes" element={<Transacoes />} />
-              <Route path="financeiro/transacoes/novo" element={<TransacaoForm />} />
-              <Route path="financeiro/transacoes/:id" element={<TransacaoForm />} />
-              <Route path="financeiro/contas" element={<Contas />} />
-              <Route path="financeiro/categorias" element={<Categorias />} />
-              <Route path="financeiro/relatorios" element={<FinanceiroRelatorio />} />
-              <Route path="financeiro/auditoria" element={<FinanceiroAuditoria />} />
-              {/* Relatorios Routes */}
-              <Route path="relatorios" element={<RelatorioGeral />} />
-              <Route path="relatorios/visitantes" element={<RelatorioVisitantes />} />
-              <Route path="relatorios/bases" element={<RelatorioBases />} />
-              <Route path="relatorios/membros" element={<RelatorioMembros />} />
-              <Route path="relatorios/financeiro" element={<RelatorioFinanceiro />} />
-              <Route path="relatorios/kids" element={<RelatorioKids />} />
-              <Route path="relatorios/comunicacoes" element={<RelatorioComunicacoes />} />
-              <Route path="auditoria" element={<AdminAuditoria />} />
-              <Route path="configuracoes" element={<AdminConfiguracoes />} />
-              <Route path="whatsapp-test" element={<WhatsAppTest />} />
-            </Route>
+          {/* Admin Routes - only admin and financeiro */}
+          <Route path="/admin" element={
+            <PrivateRoute allowedRoles={['admin', 'financeiro']}>
+              <AdminLayout />
+            </PrivateRoute>
+          }>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="usuarios" element={<AdminUsuarios />} />
+            <Route path="eventos" element={<AdminEventos />} />
+            <Route path="avisos" element={<AdminAvisos />} />
+            <Route path="ministerios" element={<AdminMinisterios />} />
+            <Route path="voluntarios-ministerios" element={<AdminVoluntariosMinisterios />} />
+            <Route path="funcoes-ministerio" element={<AdminFuncoesMinisterio />} />
+            <Route path="escalas" element={<AdminEscalas />} />
+            <Route path="notificacoes" element={<AdminNotificacoes />} />
+            <Route path="visitantes" element={<AdminVisitantes />} />
+            <Route path="visitantes/:id" element={<AdminVisitanteDetalhes />} />
+            <Route path="membros" element={<AdminMembros />} />
+            <Route path="membros/novo" element={<AdminMembroNovo />} />
+            <Route path="membros/relatorio" element={<AdminMembroRelatorio />} />
+            <Route path="membros/:id" element={<AdminMembroDetalhes />} />
+            <Route path="bases" element={<AdminBases />} />
+            <Route path="bases/nova" element={<AdminBaseNova />} />
+            <Route path="bases/relatorio" element={<AdminBaseRelatorio />} />
+            <Route path="bases/:id" element={<AdminBaseDetalhes />} />
+            <Route path="acompanhamento" element={<AdminAcompanhamento />} />
+            <Route path="kids" element={<KidsCheckins />} />
+            <Route path="kids/checkin/:id" element={<KidsCheckinDetalhes />} />
+            <Route path="kids/criancas" element={<KidsCriancas />} />
+            <Route path="kids/responsaveis" element={<KidsResponsaveis />} />
+            <Route path="kids/salas" element={<KidsSalas />} />
+            <Route path="kids/relatorio" element={<KidsRelatorio />} />
+            {/* Financeiro Routes */}
+            <Route path="financeiro" element={<FinanceiroDashboard />} />
+            <Route path="financeiro/transacoes" element={<Transacoes />} />
+            <Route path="financeiro/transacoes/novo" element={<TransacaoForm />} />
+            <Route path="financeiro/transacoes/:id" element={<TransacaoForm />} />
+            <Route path="financeiro/contas" element={<Contas />} />
+            <Route path="financeiro/categorias" element={<Categorias />} />
+            <Route path="financeiro/relatorios" element={<FinanceiroRelatorio />} />
+            <Route path="financeiro/auditoria" element={<FinanceiroAuditoria />} />
+            {/* Relatorios Routes */}
+            <Route path="relatorios" element={<RelatorioGeral />} />
+            <Route path="relatorios/visitantes" element={<RelatorioVisitantes />} />
+            <Route path="relatorios/bases" element={<RelatorioBases />} />
+            <Route path="relatorios/membros" element={<RelatorioMembros />} />
+            <Route path="relatorios/financeiro" element={<RelatorioFinanceiro />} />
+            <Route path="relatorios/kids" element={<RelatorioKids />} />
+            <Route path="relatorios/comunicacoes" element={<RelatorioComunicacoes />} />
+            <Route path="auditoria" element={<AdminAuditoria />} />
+            <Route path="configuracoes" element={<AdminConfiguracoes />} />
+            <Route path="whatsapp-test" element={<WhatsAppTest />} />
+          </Route>
 
-            {/* Leader Routes */}
-            <Route path="/lider" element={<LeaderLayout />}>
-              <Route index element={<LeaderDashboard />} />
-              <Route path="bases" element={<LeaderBases />} />
-              <Route path="bases/:id" element={<LeaderBaseDetalhes />} />
-              <Route path="escalas" element={<LeaderEscalas />} />
-              <Route path="equipe" element={<LeaderMinhaEquipe />} />
-              <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
-              <Route path="notificacoes" element={<LeaderNotificacoes />} />
-              <Route path="relatorios" element={<LeaderRelatorios />} />
-            </Route>
+          {/* Leader Routes - only lider */}
+          <Route path="/leader" element={
+            <PrivateRoute allowedRoles={['lider', 'admin']}>
+              <LeaderLayout />
+            </PrivateRoute>
+          }>
+            <Route index element={<LeaderDashboard />} />
+            <Route path="dashboard" element={<LeaderDashboard />} />
+            <Route path="bases" element={<LeaderBases />} />
+            <Route path="bases/:id" element={<LeaderBaseDetalhes />} />
+            <Route path="escalas" element={<LeaderEscalas />} />
+            <Route path="equipe" element={<LeaderMinhaEquipe />} />
+            <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
+            <Route path="notificacoes" element={<LeaderNotificacoes />} />
+            <Route path="relatorios" element={<LeaderRelatorios />} />
+          </Route>
 
-            {/* Member Routes */}
-            <Route element={<MemberLayout />}>
-              <Route path="/home" element={<MemberHome />} />
-              <Route path="/bases" element={<BasesPublic />} />
-              <Route path="/bases/:id" element={<BaseDetalhesPublic />} />
-              <Route path="/eventos" element={<MemberEventos />} />
-              <Route path="/eventos/:id" element={<MemberEventoDetalhes />} />
-              <Route path="/avisos" element={<MemberAvisos />} />
-              <Route path="/perfil" element={<MemberPerfil />} />
-              <Route path="/oracao" element={<Oracao />} />
-              <Route path="/minhas-escalas" element={<MinhasEscalas />} />
-              <Route path="/historico-escalas" element={<HistoricoEscalas />} />
-              <Route path="/notificacoes" element={<MemberNotificacoes />} />
-            </Route>
+          {/* Member Routes - any authenticated user */}
+          <Route element={
+            <PrivateRoute>
+              <MemberLayout />
+            </PrivateRoute>
+          }>
+            <Route path="/home" element={<MemberHome />} />
+            <Route path="/bases" element={<BasesPublic />} />
+            <Route path="/bases/:id" element={<BaseDetalhesPublic />} />
+            <Route path="/eventos" element={<MemberEventos />} />
+            <Route path="/eventos/:id" element={<MemberEventoDetalhes />} />
+            <Route path="/avisos" element={<MemberAvisos />} />
+            <Route path="/perfil" element={<MemberPerfil />} />
+            <Route path="/oracao" element={<Oracao />} />
+            <Route path="/minhas-escalas" element={<MinhasEscalas />} />
+            <Route path="/historico-escalas" element={<HistoricoEscalas />} />
+            <Route path="/notificacoes" element={<MemberNotificacoes />} />
+          </Route>
 
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
+          {/* 404 - Show not found page */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>
     </AuthProvider>

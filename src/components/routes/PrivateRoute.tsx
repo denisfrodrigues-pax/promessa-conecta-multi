@@ -1,0 +1,44 @@
+import { Navigate } from "react-router-dom";
+import { useAuth, UserRole } from "@/contexts/AuthContext";
+
+interface PrivateRouteProps {
+  children: React.ReactNode;
+  allowedRoles?: UserRole[];
+}
+
+const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
+  const { user, roles, loading } = useAuth();
+
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Not authenticated, redirect to auth
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Check if user has required role (if specified)
+  if (allowedRoles && allowedRoles.length > 0) {
+    const hasRequiredRole = allowedRoles.some(role => roles.includes(role));
+    if (!hasRequiredRole) {
+      // Redirect to appropriate dashboard based on their actual role
+      if (roles.includes('admin')) {
+        return <Navigate to="/admin/dashboard" replace />;
+      }
+      if (roles.includes('lider')) {
+        return <Navigate to="/leader/dashboard" replace />;
+      }
+      return <Navigate to="/home" replace />;
+    }
+  }
+
+  return <>{children}</>;
+};
+
+export default PrivateRoute;
