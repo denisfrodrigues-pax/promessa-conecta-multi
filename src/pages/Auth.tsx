@@ -55,9 +55,11 @@ export default function Auth() {
   };
 
   useEffect(() => {
-    if (user && !loading && roles.length > 0) {
+    // Only redirect when we have a user and loading is complete
+    // Don't require roles.length > 0 as user might not have roles yet
+    if (user && !loading) {
       const redirectPath = getRedirectPath(roles);
-      navigate(redirectPath);
+      navigate(redirectPath, { replace: true });
     }
   }, [user, roles, loading, navigate]);
 
