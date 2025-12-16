@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,24 +44,8 @@ export default function Auth() {
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   
-  const { signIn, signUp, user, roles, loading } = useAuth();
+  const { signIn, signUp } = useAuth();
   const { config } = useChurchConfig();
-  const navigate = useNavigate();
-
-  const getRedirectPath = (userRoles: string[]) => {
-    if (userRoles.includes('admin')) return '/admin/dashboard';
-    if (userRoles.includes('lider')) return '/leader/dashboard';
-    return '/home';
-  };
-
-  useEffect(() => {
-    // Only redirect when we have a user and loading is complete
-    // Don't require roles.length > 0 as user might not have roles yet
-    if (user && !loading) {
-      const redirectPath = getRedirectPath(roles);
-      navigate(redirectPath, { replace: true });
-    }
-  }, [user, roles, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
