@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { HandHeart, ChevronRight } from 'lucide-react';
+import { HandHeart, ChevronRight, History } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -53,33 +53,37 @@ export function ContribuicaoCard() {
 
   return (
     <>
-      <Card className="rounded-2xl shadow-md border border-neutral-200 bg-white overflow-hidden">
+      <Card className="rounded-2xl shadow-lg border-2 border-green-200 bg-gradient-to-br from-white to-green-50/30 overflow-hidden">
         <CardContent className="p-0">
-          <div className="flex items-center gap-4 p-5">
-            <div className="p-3 rounded-xl bg-green-100 flex-shrink-0">
-              <HandHeart className="w-7 h-7 text-green-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-display font-semibold text-lg text-foreground">
-                Contribuição Financeira
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Registre sua oferta ou contribuição
-              </p>
+          {/* Header with highlighted icon */}
+          <div className="bg-gradient-to-r from-green-500 to-green-600 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-white/20 backdrop-blur-sm">
+                <HandHeart className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-xl text-white">
+                  Contribuição Financeira
+                </h3>
+                <p className="text-sm text-white/90">
+                  Sua fidelidade também constrói o Reino
+                </p>
+              </div>
             </div>
           </div>
           
-          <div className="px-5 pb-5 space-y-3">
+          <div className="p-5 space-y-4">
             <Button 
               onClick={() => setModalOpen(true)} 
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold text-lg h-12"
               size="lg"
             >
-              Registrar Contribuição
+              <HandHeart className="w-5 h-5 mr-2" />
+              Contribuir
             </Button>
             
             {isAdmin && (
-              <Button asChild variant="outline" className="w-full" size="sm">
+              <Button asChild variant="outline" className="w-full border-green-200 hover:bg-green-50" size="sm">
                 <Link to="/admin/financeiro/transacoes">
                   Ver Relatórios Completos
                   <ChevronRight className="w-4 h-4 ml-1" />
@@ -88,8 +92,9 @@ export function ContribuicaoCard() {
             )}
           </div>
 
-          {ultimaContribuicao && (
-            <div className="px-5 py-3 bg-neutral-50 border-t border-neutral-100">
+          {/* Footer with last contribution and history link */}
+          <div className="px-5 py-4 bg-green-50/50 border-t border-green-100 space-y-2">
+            {ultimaContribuicao && (
               <p className="text-sm text-muted-foreground">
                 Última contribuição:{' '}
                 <span className="font-medium text-foreground">
@@ -98,8 +103,15 @@ export function ContribuicaoCard() {
                 {' – '}
                 {format(new Date(ultimaContribuicao.data_operacao), "dd 'de' MMMM", { locale: ptBR })}
               </p>
-            </div>
-          )}
+            )}
+            <Link 
+              to="/financeiro/minhas-contribuicoes" 
+              className="inline-flex items-center gap-1 text-sm text-green-700 hover:text-green-800 font-medium transition-colors"
+            >
+              <History className="w-4 h-4" />
+              Ver minhas contribuições
+            </Link>
+          </div>
         </CardContent>
       </Card>
 
