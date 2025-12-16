@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 import { supabase } from '@/integrations/supabase/client';
+import heroHome from '@/assets/hero-home.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Bell, Users, ChevronRight, Heart, MapPin, Clock, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
@@ -65,7 +66,7 @@ export default function MemberHome() {
     <div className="pb-24 md:pb-6">
       {/* Hero Banner - Premium with refined overlay */}
       <section className="relative rounded-xl overflow-hidden mb-10 h-[420px] md:h-[500px] flex items-center">
-        <div className="absolute inset-0 bg-[url('/banner_home_placeholder.png')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroHome})` }} />
         <div className="absolute inset-0 bg-gradient-to-r from-promessa-900/40 to-promessa-700/20" />
         
         <div className="container mx-auto px-4 relative z-10">
