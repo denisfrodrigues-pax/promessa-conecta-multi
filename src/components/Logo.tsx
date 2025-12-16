@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import logoImage from '@/assets/logo.png';
+import logoImage from '@/assets/logo-igreja.png';
 
 interface LogoProps {
   size?: number;
@@ -16,11 +16,19 @@ export function Logo({ size = 32, className, variant = 'default' }: LogoProps) {
       width={size}
       height={size}
       className={cn(
-        'logo-shadow object-contain',
-        variant === 'white' && 'brightness-[100]',
+        'object-contain',
+        variant === 'white' && 'brightness-0 invert',
         className
       )}
       style={{ width: size, height: size }}
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        target.style.display = 'none';
+        const fallback = document.createElement('span');
+        fallback.textContent = 'Igreja da Promessa';
+        fallback.className = 'font-display font-semibold text-sm';
+        target.parentNode?.appendChild(fallback);
+      }}
     />
   );
 }
