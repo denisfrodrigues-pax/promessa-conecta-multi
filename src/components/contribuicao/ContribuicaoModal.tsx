@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, HandHeart } from 'lucide-react';
+import { Loader2, HandHeart, CheckCircle2 } from 'lucide-react';
 
 interface ContribuicaoModalProps {
   open: boolean;
@@ -36,6 +36,7 @@ const FORMAS_PAGAMENTO = [
 export function ContribuicaoModal({ open, onOpenChange, onSuccess }: ContribuicaoModalProps) {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [contas, setContas] = useState<Conta[]>([]);
   
@@ -48,6 +49,7 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
   useEffect(() => {
     if (open) {
       fetchOptions();
+      setShowSuccess(false);
     }
   }, [open]);
 
@@ -120,14 +122,15 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
 
       if (error) throw error;
 
-      toast({
-        title: 'Contribuição registrada!',
-        description: 'Sua contribuição foi registrada com sucesso. Obrigado!',
-      });
-
+      setShowSuccess(true);
       resetForm();
-      onOpenChange(false);
       onSuccess?.();
+      
+      // Auto close after 3 seconds
+      setTimeout(() => {
+        setShowSuccess(false);
+        onOpenChange(false);
+      }, 3000);
     } catch (error: any) {
       console.error('Error saving contribution:', error);
       toast({
@@ -140,6 +143,37 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
     }
   };
 
+  const handleClose = () => {
+    setShowSuccess(false);
+    onOpenChange(false);
+  };
+
+  // Success view
+  if (showSuccess) {
+    return (
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col items-center text-center py-8 space-y-4">
+            <div className="p-4 rounded-full bg-green-100">
+              <CheckCircle2 className="w-12 h-12 text-green-600" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-display font-bold text-foreground">
+                Contribuição registrada com sucesso 🙏
+              </h3>
+              <p className="text-muted-foreground">
+                Que Deus continue abençoando sua vida.
+              </p>
+            </div>
+            <Button onClick={handleClose} className="mt-4 bg-green-600 hover:bg-green-700">
+              Voltar para Home
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -149,7 +183,7 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
               <HandHeart className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <DialogTitle>Registrar Contribuição</DialogTitle>
+              <DialogTitle>Contribuir</DialogTitle>
               <DialogDescription>
                 Registre sua oferta ou contribuição
               </DialogDescription>
@@ -157,7 +191,12 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        {/* Spiritual welcome message */}
+        <div className="bg-green-50 border border-green-100 rounded-lg p-3 text-sm text-green-800">
+          Obrigado por fazer parte do que Deus está fazendo através desta igreja.
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-2">
             <Label htmlFor="valor">Valor *</Label>
             <div className="relative">
@@ -239,14 +278,14 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
             >
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1" disabled={loading}>
+            <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Salvando...
                 </>
               ) : (
-                'Registrar'
+                'Contribuir'
               )}
             </Button>
           </div>

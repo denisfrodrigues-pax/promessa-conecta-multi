@@ -79,6 +79,7 @@ import Oracao from "@/pages/member/Oracao";
 import MinhasEscalas from "@/pages/member/MinhasEscalas";
 import HistoricoEscalas from "@/pages/member/HistoricoEscalas";
 import MemberNotificacoes from "@/pages/member/Notificacoes";
+import MinhasContribuicoes from "@/pages/member/MinhasContribuicoes";
 
 // Leader Pages
 import LeaderDashboard from "@/pages/leader/Dashboard";
@@ -204,6 +205,7 @@ const App = () => (
             <Route path="/minhas-escalas" element={<MinhasEscalas />} />
             <Route path="/historico-escalas" element={<HistoricoEscalas />} />
             <Route path="/notificacoes" element={<MemberNotificacoes />} />
+            <Route path="/financeiro/minhas-contribuicoes" element={<MinhasContribuicoes />} />
           </Route>
 
           {/* 404 - Show not found page */}
