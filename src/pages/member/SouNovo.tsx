@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,35 @@ import { Heart, Users, Calendar, MessageCircle, ChevronRight, Sparkles, Clock, C
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+const RATE_LIMIT_KEY = 'visitor_form_submissions';
+const MAX_SUBMISSIONS_PER_HOUR = 3;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+const checkRateLimit = (): boolean => {
+  try {
+    const stored = localStorage.getItem(RATE_LIMIT_KEY);
+    const submissions: number[] = stored ? JSON.parse(stored) : [];
+    const now = Date.now();
+    const recentSubmissions = submissions.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+    return recentSubmissions.length < MAX_SUBMISSIONS_PER_HOUR;
+  } catch {
+    return true;
+  }
+};
+
+const recordSubmission = (): void => {
+  try {
+    const stored = localStorage.getItem(RATE_LIMIT_KEY);
+    const submissions: number[] = stored ? JSON.parse(stored) : [];
+    const now = Date.now();
+    const recentSubmissions = submissions.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+    recentSubmissions.push(now);
+    localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(recentSubmissions));
+  } catch {
+    // Silently fail if localStorage is not available
+  }
+};
+
 export default function SouNovo() {
   const [formData, setFormData] = useState({
     nome: '',
@@ -17,8 +46,10 @@ export default function SouNovo() {
     melhorHorario: '',
     observacao: '',
   });
+  const [honeypot, setHoneypot] = useState(''); // Bot trap
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const formLoadTime = useRef(Date.now());
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -33,20 +64,59 @@ export default function SouNovo() {
     setFormData({ ...formData, telefone: formatted });
   };
 
+  const validatePhone = (phone: string): boolean => {
+    const numbers = phone.replace(/\D/g, '');
+    return numbers.length >= 10 && numbers.length <= 11;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome.trim()) {
-      toast.error('Por favor, informe seu nome');
+    // Bot detection: honeypot field should be empty
+    if (honeypot) {
+      toast.success('Cadastro realizado com sucesso!');
+      setSubmitted(true);
       return;
     }
 
-    if (!formData.telefone.trim()) {
+    // Bot detection: form filled too quickly (less than 3 seconds)
+    const timeSinceLoad = Date.now() - formLoadTime.current;
+    if (timeSinceLoad < 3000) {
+      toast.error('Por favor, preencha o formulário com calma.');
+      return;
+    }
+
+    // Rate limiting check
+    if (!checkRateLimit()) {
+      toast.error('Você já realizou muitos cadastros recentemente. Tente novamente mais tarde.');
+      return;
+    }
+
+    const trimmedName = formData.nome.trim();
+    const trimmedPhone = formData.telefone.trim();
+    const trimmedObs = formData.observacao.trim();
+
+    if (!trimmedName || trimmedName.length < 2) {
+      toast.error('Por favor, informe seu nome completo');
+      return;
+    }
+
+    if (trimmedName.length > 100) {
+      toast.error('O nome deve ter no máximo 100 caracteres');
+      return;
+    }
+
+    if (!trimmedPhone) {
       toast.error('Por favor, informe seu telefone');
       return;
     }
 
-    if (formData.observacao.length > 300) {
+    if (!validatePhone(trimmedPhone)) {
+      toast.error('Por favor, informe um telefone válido');
+      return;
+    }
+
+    if (trimmedObs.length > 300) {
       toast.error('A observação pode ter no máximo 300 caracteres');
       return;
     }
@@ -56,14 +126,15 @@ export default function SouNovo() {
       const { error } = await supabase
         .from('visitantes')
         .insert({
-          nome: formData.nome.trim(),
-          telefone: formData.telefone.trim(),
+          nome: trimmedName,
+          telefone: trimmedPhone,
           melhor_horario: formData.melhorHorario || null,
-          observacoes: formData.observacao.trim() || null,
+          observacoes: trimmedObs || null,
         });
 
       if (error) throw error;
       
+      recordSubmission();
       toast.success('Cadastro realizado com sucesso!');
       setSubmitted(true);
       
@@ -154,6 +225,19 @@ export default function SouNovo() {
                     </p>
                   </div>
                   <form onSubmit={handleSubmit} className="space-y-5">
+                    {/* Honeypot field - hidden from users, visible to bots */}
+                    <div className="absolute -left-[9999px]" aria-hidden="true">
+                      <Label htmlFor="website">Website</Label>
+                      <Input
+                        id="website"
+                        name="website"
+                        type="text"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
+                      />
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="nome">Nome *</Label>
                       <Input
@@ -161,6 +245,7 @@ export default function SouNovo() {
                         placeholder="Seu nome completo"
                         value={formData.nome}
                         onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                        maxLength={100}
                         required
                       />
                     </div>
