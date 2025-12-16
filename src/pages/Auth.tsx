@@ -194,7 +194,7 @@ export default function Auth() {
             
             {/* Premium Logo Container with Enhanced Glassmorphism */}
             <div className="animate-scale-in flex justify-center lg:justify-start">
-              <div className="inline-flex items-center justify-center p-8 rounded-3xl bg-white/95 backdrop-blur-xl shadow-2xl shadow-black/20 border border-white/50 mb-6">
+              <div className="inline-flex items-center justify-center p-10 rounded-3xl bg-white/95 backdrop-blur-xl shadow-[0_8px_40px_-8px_rgba(0,0,0,0.15)] border border-white/60 mb-8">
                 {hasCustomLogo ? (
                   <img 
                     src={config.logo_url!} 
