@@ -44,15 +44,22 @@ export default function Auth() {
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, roles, loading } = useAuth();
   const { config } = useChurchConfig();
   const navigate = useNavigate();
 
+  const getRedirectPath = (userRoles: string[]) => {
+    if (userRoles.includes('admin')) return '/admin/dashboard';
+    if (userRoles.includes('lider')) return '/leader/dashboard';
+    return '/home';
+  };
+
   useEffect(() => {
-    if (user) {
-      navigate('/');
+    if (user && !loading && roles.length > 0) {
+      const redirectPath = getRedirectPath(roles);
+      navigate(redirectPath);
     }
-  }, [user, navigate]);
+  }, [user, roles, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +92,7 @@ export default function Auth() {
       }
     } else {
       toast.success('Bem-vindo de volta!');
-      navigate('/');
+      // Redirect will be handled by useEffect when roles are loaded
     }
   };
 
@@ -120,7 +127,7 @@ export default function Auth() {
       }
     } else {
       toast.success('Conta criada com sucesso! Bem-vindo!');
-      navigate('/');
+      // Redirect will be handled by useEffect when roles are loaded
     }
   };
 
