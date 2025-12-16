@@ -192,20 +192,20 @@ export default function Auth() {
               </Link>
             </Button>
             
-            {/* Premium Logo Container with Glassmorphism */}
-            <div className="animate-scale-in">
-              <div className="inline-flex items-center justify-center p-5 rounded-2xl bg-white/15 backdrop-blur-md shadow-lg border border-white/20 mb-4">
+            {/* Premium Logo Container with Enhanced Glassmorphism */}
+            <div className="animate-scale-in flex justify-center lg:justify-start">
+              <div className="inline-flex items-center justify-center p-8 rounded-3xl bg-white/95 backdrop-blur-xl shadow-2xl shadow-black/20 border border-white/50 mb-6">
                 {hasCustomLogo ? (
                   <img 
                     src={config.logo_url!} 
                     alt={churchName}
-                    className="h-20 w-auto object-contain drop-shadow-lg"
+                    className="h-28 w-auto object-contain"
                   />
                 ) : (
                   <img 
                     src={logoIgreja} 
                     alt={churchName}
-                    className="h-20 w-auto object-contain drop-shadow-lg"
+                    className="h-28 w-auto object-contain"
                   />
                 )}
               </div>
