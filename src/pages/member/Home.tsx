@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Bell, Users, ChevronRight, Heart, MapPin, Clock, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { ContribuicaoCard } from '@/components/contribuicao/ContribuicaoCard';
 
 interface Aviso {
   id: string;
@@ -94,6 +95,11 @@ export default function MemberHome() {
       </section>
 
       <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Contribution Card - Featured */}
+        <section>
+          <ContribuicaoCard />
+        </section>
+
         {/* Quick Actions - Premium Cards */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link to="/bases" className="group">
