@@ -334,31 +334,23 @@ export default function SouNovo() {
         <section>
           <Card className="shadow-card border-0 bg-gradient-to-br from-promessa/5 to-promessa/10 overflow-hidden">
             <CardContent className="p-8">
-              <h2 className="text-2xl font-display font-bold mb-8 text-center">Nossos Cultos</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <h2 className="text-2xl font-display font-bold mb-8 text-center">Nossos Encontros</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                 <div className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
                   <div className="inline-flex items-center gap-2 mb-3 text-promessa">
                     <Clock className="w-5 h-5" />
                     <span className="font-semibold">Domingo</span>
                   </div>
-                  <p className="text-4xl font-display font-bold text-promessa-dark mb-1">10:00</p>
-                  <p className="text-muted-foreground">Culto da Família</p>
+                  <p className="text-4xl font-display font-bold text-promessa-dark mb-1">18:00</p>
+                  <p className="text-muted-foreground">Escola Bíblica</p>
                 </div>
                 <div className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
                   <div className="inline-flex items-center gap-2 mb-3 text-promessa">
                     <Clock className="w-5 h-5" />
                     <span className="font-semibold">Domingo</span>
                   </div>
-                  <p className="text-4xl font-display font-bold text-promessa-dark mb-1">19:00</p>
+                  <p className="text-4xl font-display font-bold text-promessa-dark mb-1">19:07</p>
                   <p className="text-muted-foreground">Culto de Celebração</p>
-                </div>
-                <div className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
-                  <div className="inline-flex items-center gap-2 mb-3 text-promessa">
-                    <Clock className="w-5 h-5" />
-                    <span className="font-semibold">Quarta</span>
-                  </div>
-                  <p className="text-4xl font-display font-bold text-promessa-dark mb-1">19:30</p>
-                  <p className="text-muted-foreground">Culto de Ensino</p>
                 </div>
               </div>
             </CardContent>
