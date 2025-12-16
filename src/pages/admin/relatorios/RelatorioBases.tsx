@@ -141,7 +141,8 @@ export default function RelatorioBases() {
   }
 
   return (
-    <div className="space-y-6" ref={reportRef}>
+    <div className="space-y-8" ref={reportRef}>
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-display font-bold">Relatório de Bases</h1>
@@ -156,110 +157,151 @@ export default function RelatorioBases() {
         </div>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Network className="w-8 h-8 text-purple-600" />
-              <div>
-                <p className="text-3xl font-bold">{kpis.total}</p>
-                <p className="text-muted-foreground">Bases Ativas</p>
+      {/* Indicadores Gerais Section */}
+      <section>
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+          Indicadores Gerais
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="bg-card/50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Network className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{kpis.total}</p>
+                  <p className="text-xs text-muted-foreground">Bases Ativas</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-blue-600" />
-              <div>
-                <p className="text-3xl font-bold">{kpis.ocupacaoMedia}%</p>
-                <p className="text-muted-foreground">Ocupação Média</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card/50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-blue-500/10">
+                  <Users className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{kpis.ocupacaoMedia}%</p>
+                  <p className="text-xs text-muted-foreground">Ocupação Média</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-8 h-8 text-red-600" />
-              <div>
-                <p className="text-3xl font-bold">{kpis.lotadas}</p>
-                <p className="text-muted-foreground">Bases Lotadas</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card/50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-amber-500/10">
+                  <Users className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{bases.reduce((acc, b) => acc + b.ocupacao, 0)}</p>
+                  <p className="text-xs text-muted-foreground">Membros em Bases</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-card/50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-destructive/10">
+                  <AlertCircle className="w-5 h-5 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{kpis.lotadas}</p>
+                  <p className="text-xs text-muted-foreground">Bases Lotadas</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader><CardTitle className="text-base font-bold">Ocupação por Base</CardTitle></CardHeader>
-          <CardContent className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData.ocupacao} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 100]} />
-                <YAxis dataKey="nome" type="category" width={100} />
-                <Tooltip formatter={(v: number) => `${v}%`} />
-                <Bar dataKey="ocupacao" fill="#5A9462" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-base font-bold">Crescimento Mensal</CardTitle></CardHeader>
-          <CardContent className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData.crescimento}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mes" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="novos" stroke="#396939" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Análise Visual Section */}
+      <section>
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+          Análise Visual
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Ocupação por Base</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={chartData.ocupacao} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis type="number" domain={[0, 100]} />
+                  <YAxis dataKey="nome" type="category" width={100} tick={{ fontSize: 12 }} />
+                  <Tooltip formatter={(v: number) => `${v}%`} />
+                  <Bar dataKey="ocupacao" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Crescimento Mensal</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={chartData.crescimento}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="mes" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="novos" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: 'hsl(var(--primary))' }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
-      {/* Table */}
-      <Card>
-        <CardHeader><CardTitle className="text-base font-bold">Lista de Bases</CardTitle></CardHeader>
-        <CardContent>
-          {total > limit && <div className="mb-4"><PaginationControls /></div>}
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Nome</th>
-                  <th className="text-left p-2">Dia/Horário</th>
-                  <th className="text-left p-2">Ocupação</th>
-                  <th className="text-left p-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bases.map(b => (
-                  <tr key={b.id} className="border-b hover:bg-muted/50">
-                    <td className="p-2 font-medium">{b.nome}</td>
-                    <td className="p-2">{b.dia_semana} {b.horario}</td>
-                    <td className="p-2">
-                      <div className="flex items-center gap-2">
-                        <Progress value={b.percentual} className="w-20 h-2" />
-                        <span className="text-xs">{b.ocupacao}/{b.capacidade}</span>
-                      </div>
-                    </td>
-                    <td className="p-2">{getStatusBadge(b.percentual)}</td>
+      {/* Resumo por Base - Main Content Section */}
+      <section>
+        <Card className="border-2">
+          <CardHeader className="border-b bg-muted/30">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Network className="w-5 h-5 text-primary" />
+              Resumo por Base
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">Detalhamento completo de todas as bases ativas</p>
+          </CardHeader>
+          <CardContent className="p-6">
+            {total > limit && <div className="mb-6"><PaginationControls /></div>}
+            <div className="overflow-x-auto rounded-lg border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/50">
+                    <th className="text-left p-3 font-semibold">Nome</th>
+                    <th className="text-left p-3 font-semibold">Dia/Horário</th>
+                    <th className="text-left p-3 font-semibold">Ocupação</th>
+                    <th className="text-left p-3 font-semibold">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {total > limit && <div className="mt-4"><PaginationControls /></div>}
-        </CardContent>
-      </Card>
+                </thead>
+                <tbody>
+                  {bases.map((b, idx) => (
+                    <tr key={b.id} className={`border-t hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? 'bg-background' : 'bg-muted/10'}`}>
+                      <td className="p-3 font-medium">{b.nome}</td>
+                      <td className="p-3 text-muted-foreground">{b.dia_semana} {b.horario}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-3">
+                          <Progress value={b.percentual} className="w-24 h-2" />
+                          <span className="text-xs font-medium tabular-nums">{b.ocupacao}/{b.capacidade}</span>
+                        </div>
+                      </td>
+                      <td className="p-3">{getStatusBadge(b.percentual)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {total > limit && <div className="mt-6"><PaginationControls /></div>}
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }
