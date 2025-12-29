@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, HandHeart, CheckCircle2 } from 'lucide-react';
+import { Loader2, HandHeart, CheckCircle2, QrCode, Copy, Check, Building2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import QRCode from 'react-qr-code';
 
 interface ContribuicaoModalProps {
   open: boolean;
@@ -18,36 +19,107 @@ interface ContribuicaoModalProps {
   onSuccess?: () => void;
 }
 
-interface Categoria {
-  id: string;
-  nome: string;
-}
-
 interface Conta {
   id: string;
   nome: string;
 }
 
-const FORMAS_PAGAMENTO = [
+const FORMAS_CONTRIBUICAO = [
   { value: 'pix', label: 'Pix' },
   { value: 'dinheiro', label: 'Dinheiro' },
   { value: 'cartao', label: 'Cartão' },
-  { value: 'transferencia', label: 'Transferência' },
 ];
+
+const TIPOS_CONTRIBUICAO = [
+  { value: 'recorrente', label: 'Contribuição recorrente' },
+  { value: 'especial', label: 'Contribuição especial' },
+];
+
+// PIX EMV Generator for Brazilian PIX standard
+const PIX_DATA = {
+  chave: 'promessa.hortolandia@gmail.com',
+  nome: 'Convenção Regional Paulista das Igreja Adventista da Promessa',
+  banco: 'Bradesco',
+};
+
+function generatePixPayload(): string {
+  const merchantName = PIX_DATA.nome.substring(0, 25); // EMV limit
+  const pixKey = PIX_DATA.chave;
+  
+  // Build EMV payload
+  let payload = '';
+  
+  // Payload Format Indicator
+  payload += '000201';
+  
+  // Merchant Account Information (PIX)
+  const gui = '0014br.gov.bcb.pix';
+  const key = `01${pixKey.length.toString().padStart(2, '0')}${pixKey}`;
+  const merchantAccountInfo = gui + key;
+  payload += `26${merchantAccountInfo.length.toString().padStart(2, '0')}${merchantAccountInfo}`;
+  
+  // Merchant Category Code
+  payload += '52040000';
+  
+  // Transaction Currency (BRL = 986)
+  payload += '5303986';
+  
+  // Country Code
+  payload += '5802BR';
+  
+  // Merchant Name
+  payload += `59${merchantName.length.toString().padStart(2, '0')}${merchantName}`;
+  
+  // Merchant City
+  const city = 'HORTOLANDIA';
+  payload += `60${city.length.toString().padStart(2, '0')}${city}`;
+  
+  // Additional Data Field Template (Reference Label)
+  const txid = '***';
+  const additionalData = `05${txid.length.toString().padStart(2, '0')}${txid}`;
+  payload += `62${additionalData.length.toString().padStart(2, '0')}${additionalData}`;
+  
+  // CRC16 placeholder
+  payload += '6304';
+  
+  // Calculate CRC16-CCITT-FALSE
+  const crc = calculateCRC16(payload);
+  payload += crc;
+  
+  return payload;
+}
+
+function calculateCRC16(str: string): string {
+  let crc = 0xFFFF;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      if (crc & 0x8000) {
+        crc = (crc << 1) ^ 0x1021;
+      } else {
+        crc <<= 1;
+      }
+    }
+    crc &= 0xFFFF;
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
 
 export function ContribuicaoModal({ open, onOpenChange, onSuccess }: ContribuicaoModalProps) {
   const { profile } = useAuth();
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [contas, setContas] = useState<Conta[]>([]);
+  const [copiedPix, setCopiedPix] = useState(false);
   
   const [valor, setValor] = useState('');
-  const [categoriaId, setCategoriaId] = useState('');
-  const [formaPagamento, setFormaPagamento] = useState('');
+  const [tipoContribuicao, setTipoContribuicao] = useState('');
+  const [formaContribuicao, setFormaContribuicao] = useState('');
   const [data, setData] = useState(new Date().toISOString().split('T')[0]);
   const [observacao, setObservacao] = useState('');
+  
+  const pixPayload = generatePixPayload();
 
   useEffect(() => {
     if (open) {
@@ -58,20 +130,12 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
 
   const fetchOptions = async () => {
     try {
-      const [categoriasRes, contasRes] = await Promise.all([
-        supabase
-          .from('categorias_financeiras')
-          .select('id, nome')
-          .eq('natureza', 'receita')
-          .in('nome', ['Dízimo', 'Oferta', 'Missões', 'Outro']),
-        supabase
-          .from('contas_financeiras')
-          .select('id, nome')
-          .eq('status', 'ativa')
-          .limit(1),
-      ]);
+      const contasRes = await supabase
+        .from('contas_financeiras')
+        .select('id, nome')
+        .eq('status', 'ativa')
+        .limit(1);
 
-      if (categoriasRes.data) setCategorias(categoriasRes.data);
       if (contasRes.data) setContas(contasRes.data);
     } catch (error) {
       console.error('Error fetching options:', error);
@@ -80,16 +144,34 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
 
   const resetForm = () => {
     setValor('');
-    setCategoriaId('');
-    setFormaPagamento('');
+    setTipoContribuicao('');
+    setFormaContribuicao('');
     setData(new Date().toISOString().split('T')[0]);
     setObservacao('');
+  };
+
+  const copyPixKey = async () => {
+    try {
+      await navigator.clipboard.writeText(PIX_DATA.chave);
+      setCopiedPix(true);
+      toast({
+        title: 'Chave PIX copiada!',
+        description: 'Cole no seu aplicativo bancário.',
+      });
+      setTimeout(() => setCopiedPix(false), 2000);
+    } catch (error) {
+      toast({
+        title: 'Erro ao copiar',
+        description: 'Copie manualmente a chave PIX.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!valor || !categoriaId || !formaPagamento) {
+    if (!valor || !tipoContribuicao || !formaContribuicao) {
       toast({
         title: 'Campos obrigatórios',
         description: 'Preencha todos os campos obrigatórios.',
@@ -114,11 +196,10 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
       const { error } = await supabase.from('transacoes_financeiras').insert({
         tipo: 'receita',
         valor: valorNumerico,
-        categoria_id: categoriaId,
         conta_id: contas[0]?.id || null,
         data_operacao: data,
-        descricao: `Contribuição via app${observacao ? ` - ${observacao}` : ''}`,
-        nota: formaPagamento,
+        descricao: `${tipoContribuicao === 'recorrente' ? 'Contribuição recorrente' : 'Contribuição especial'} via app${observacao ? ` - ${observacao}` : ''}`,
+        nota: formaContribuicao,
         criado_por: profile?.id,
         status: 'pendente',
       });
@@ -201,14 +282,14 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
 
         <div className="space-y-2">
           <Label htmlFor="tipo">Tipo *</Label>
-          <Select value={categoriaId} onValueChange={setCategoriaId} required>
+          <Select value={tipoContribuicao} onValueChange={setTipoContribuicao} required>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o tipo" />
             </SelectTrigger>
             <SelectContent>
-              {categorias.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  {cat.nome}
+              {TIPOS_CONTRIBUICAO.map((tipo) => (
+                <SelectItem key={tipo.value} value={tipo.value}>
+                  {tipo.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -216,13 +297,13 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="forma">Forma de Pagamento *</Label>
-          <Select value={formaPagamento} onValueChange={setFormaPagamento} required>
+          <Label htmlFor="forma">Forma de Contribuição *</Label>
+          <Select value={formaContribuicao} onValueChange={setFormaContribuicao} required>
             <SelectTrigger>
               <SelectValue placeholder="Selecione a forma" />
             </SelectTrigger>
             <SelectContent>
-              {FORMAS_PAGAMENTO.map((forma) => (
+              {FORMAS_CONTRIBUICAO.map((forma) => (
                 <SelectItem key={forma.value} value={forma.value}>
                   {forma.label}
                 </SelectItem>
@@ -274,6 +355,65 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
           </Button>
         </div>
       </form>
+
+      {/* PIX Information Card */}
+      <div className="mt-6 border border-green-200 rounded-xl bg-gradient-to-br from-green-50 to-white p-4 space-y-4">
+        <div className="flex items-center gap-2 text-green-700 font-semibold">
+          <QrCode className="w-5 h-5" />
+          <span>Pagar via Pix</span>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="p-1.5 rounded bg-green-100">
+              <QrCode className="w-4 h-4 text-green-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground">Chave PIX (E-mail)</p>
+              <p className="text-sm font-medium text-foreground break-all">{PIX_DATA.chave}</p>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={copyPixKey}
+              className="h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+            >
+              {copiedPix ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            </Button>
+          </div>
+          
+          <div className="flex items-start gap-3">
+            <div className="p-1.5 rounded bg-green-100">
+              <HandHeart className="w-4 h-4 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground">Recebedor</p>
+              <p className="text-sm font-medium text-foreground leading-tight">{PIX_DATA.nome}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3">
+            <div className="p-1.5 rounded bg-green-100">
+              <Building2 className="w-4 h-4 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground">Banco</p>
+              <p className="text-sm font-medium text-foreground">{PIX_DATA.banco}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* QR Code */}
+        <div className="flex flex-col items-center pt-3 border-t border-green-100">
+          <div className="bg-white p-3 rounded-lg shadow-sm border">
+            <QRCode value={pixPayload} size={140} level="M" />
+          </div>
+          <p className="text-xs text-muted-foreground text-center mt-3 max-w-[200px]">
+            Aponte a câmera do seu celular para contribuir via Pix.
+          </p>
+        </div>
+      </div>
     </div>
   );
 
@@ -286,16 +426,16 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
       <div>
         {isMobile ? (
           <>
-            <DrawerTitle>Contribuir</DrawerTitle>
+            <DrawerTitle>Contribuição Financeira</DrawerTitle>
             <DrawerDescription>
-              Registre sua oferta ou contribuição
+              Registre sua contribuição
             </DrawerDescription>
           </>
         ) : (
           <>
-            <DialogTitle>Contribuir</DialogTitle>
+            <DialogTitle>Contribuição Financeira</DialogTitle>
             <DialogDescription>
-              Registre sua oferta ou contribuição
+              Registre sua contribuição
             </DialogDescription>
           </>
         )}
