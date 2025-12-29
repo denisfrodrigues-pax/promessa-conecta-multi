@@ -325,10 +325,10 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
     );
   }
 
-  // Desktop: Dialog (centered modal)
+  // Desktop: Dialog (anchored top-left for better visibility)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto left-1/2 top-1/2">
+      <DialogContent className="sm:max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto left-4 top-4 translate-x-0 translate-y-0">
         {showSuccess ? (
           <SuccessContent />
         ) : (
