@@ -425,7 +425,7 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
             <QRCode value={pixPayload} size={140} level="M" />
           </div>
           <p className="text-xs text-muted-foreground text-center mt-3 max-w-[200px]">
-            Aponte a câmera do seu celular para contribuir via Pix.
+            Abra o app do seu banco e use a opção Pix para escanear este QR Code.
           </p>
         </div>
       </div>
