@@ -75,11 +75,14 @@ export function ContribuicaoCard() {
           <div className="p-5 space-y-4">
             <Button 
               onClick={() => setModalOpen(true)} 
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold text-lg h-12"
+              className="w-full bg-green-600 hover:bg-green-700 text-white h-auto py-3"
               size="lg"
             >
-              <HandHeart className="w-5 h-5 mr-2" />
-              Contribuir
+              <HandHeart className="w-5 h-5 mr-3 flex-shrink-0" />
+              <div className="flex flex-col items-start text-left">
+                <span className="font-semibold text-base">Contribuição</span>
+                <span className="text-xs font-normal opacity-90">Registrar minhas contribuições financeiras</span>
+              </div>
             </Button>
             
             {isAdmin && (
