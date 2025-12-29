@@ -149,7 +149,7 @@ export default function MemberHome() {
                   <HandHeart className="w-6 h-6" />
                 </div>
                 <h3 className="font-medium text-foreground">Contribuição</h3>
-                <p className="text-xs text-muted-foreground">Registrar oferta ou dízimo</p>
+                <p className="text-xs text-muted-foreground">Registrar contribuições financeiras</p>
               </CardContent>
             </Card>
           </button>

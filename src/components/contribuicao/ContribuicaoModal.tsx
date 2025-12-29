@@ -35,74 +35,89 @@ const TIPOS_CONTRIBUICAO = [
   { value: 'especial', label: 'Contribuição especial' },
 ];
 
-// PIX EMV Generator for Brazilian PIX standard
+// PIX EMV Generator for Brazilian PIX standard (BACEN compliant)
 const PIX_DATA = {
   chave: 'promessa.hortolandia@gmail.com',
-  nome: 'Convenção Regional Paulista das Igreja Adventista da Promessa',
+  nome: 'Conv Reg Paulista Adventist',
+  cidade: 'Hortolandia',
   banco: 'Bradesco',
+  nomeCompleto: 'Convenção Regional Paulista das Igreja Adventista da Promessa',
 };
 
-function generatePixPayload(): string {
-  const merchantName = PIX_DATA.nome.substring(0, 25); // EMV limit
-  const pixKey = PIX_DATA.chave;
-  
-  // Build EMV payload
-  let payload = '';
-  
-  // Payload Format Indicator
-  payload += '000201';
-  
-  // Merchant Account Information (PIX)
-  const gui = '0014br.gov.bcb.pix';
-  const key = `01${pixKey.length.toString().padStart(2, '0')}${pixKey}`;
-  const merchantAccountInfo = gui + key;
-  payload += `26${merchantAccountInfo.length.toString().padStart(2, '0')}${merchantAccountInfo}`;
-  
-  // Merchant Category Code
-  payload += '52040000';
-  
-  // Transaction Currency (BRL = 986)
-  payload += '5303986';
-  
-  // Country Code
-  payload += '5802BR';
-  
-  // Merchant Name
-  payload += `59${merchantName.length.toString().padStart(2, '0')}${merchantName}`;
-  
-  // Merchant City
-  const city = 'HORTOLANDIA';
-  payload += `60${city.length.toString().padStart(2, '0')}${city}`;
-  
-  // Additional Data Field Template (Reference Label)
-  const txid = '***';
-  const additionalData = `05${txid.length.toString().padStart(2, '0')}${txid}`;
-  payload += `62${additionalData.length.toString().padStart(2, '0')}${additionalData}`;
-  
-  // CRC16 placeholder
-  payload += '6304';
-  
-  // Calculate CRC16-CCITT-FALSE
-  const crc = calculateCRC16(payload);
-  payload += crc;
-  
-  return payload;
+// EMV TLV helper function
+function emvTLV(id: string, value: string): string {
+  const length = value.length.toString().padStart(2, '0');
+  return `${id}${length}${value}`;
 }
 
-function calculateCRC16(str: string): string {
+// CRC16-CCITT-FALSE calculation (polynomial 0x1021)
+function calculateCRC16(payload: string): string {
+  const polynomial = 0x1021;
   let crc = 0xFFFF;
-  for (let i = 0; i < str.length; i++) {
-    crc ^= str.charCodeAt(i) << 8;
+  
+  const bytes = new TextEncoder().encode(payload);
+  
+  for (let i = 0; i < bytes.length; i++) {
+    crc ^= bytes[i] << 8;
     for (let j = 0; j < 8; j++) {
-      if (crc & 0x8000) {
-        crc = (crc << 1) ^ 0x1021;
+      if ((crc & 0x8000) !== 0) {
+        crc = ((crc << 1) ^ polynomial) & 0xFFFF;
       } else {
-        crc <<= 1;
+        crc = (crc << 1) & 0xFFFF;
       }
     }
-    crc &= 0xFFFF;
   }
+  
   return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
+function generatePixPayload(): string {
+  // ID 00 - Payload Format Indicator (required, value "01")
+  const payloadFormatIndicator = emvTLV('00', '01');
+  
+  // ID 26 - Merchant Account Information - PIX
+  // Sub-ID 00: GUI (globally unique identifier) - must be "br.gov.bcb.pix"
+  const gui = emvTLV('00', 'br.gov.bcb.pix');
+  // Sub-ID 01: Chave PIX (email)
+  const chavePix = emvTLV('01', PIX_DATA.chave);
+  const merchantAccountInfo = emvTLV('26', gui + chavePix);
+  
+  // ID 52 - Merchant Category Code (0000 for general)
+  const merchantCategoryCode = emvTLV('52', '0000');
+  
+  // ID 53 - Transaction Currency (986 = BRL)
+  const transactionCurrency = emvTLV('53', '986');
+  
+  // ID 58 - Country Code (BR)
+  const countryCode = emvTLV('58', 'BR');
+  
+  // ID 59 - Merchant Name (max 25 chars, uppercase, no accents)
+  const merchantName = emvTLV('59', PIX_DATA.nome.toUpperCase().substring(0, 25));
+  
+  // ID 60 - Merchant City (max 15 chars, uppercase, no accents)
+  const merchantCity = emvTLV('60', PIX_DATA.cidade.toUpperCase().substring(0, 15));
+  
+  // ID 62 - Additional Data Field Template
+  // Sub-ID 05: Reference Label (txid) - using *** for dynamic
+  const referenceLabel = emvTLV('05', '***');
+  const additionalDataField = emvTLV('62', referenceLabel);
+  
+  // Build payload without CRC
+  const payloadWithoutCRC = 
+    payloadFormatIndicator +
+    merchantAccountInfo +
+    merchantCategoryCode +
+    transactionCurrency +
+    countryCode +
+    merchantName +
+    merchantCity +
+    additionalDataField +
+    '6304'; // CRC placeholder (ID 63, length 04)
+  
+  // Calculate and append CRC16
+  const crc = calculateCRC16(payloadWithoutCRC);
+  
+  return payloadWithoutCRC + crc;
 }
 
 export function ContribuicaoModal({ open, onOpenChange, onSuccess }: ContribuicaoModalProps) {
@@ -389,7 +404,7 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
             </div>
             <div className="flex-1">
               <p className="text-xs text-muted-foreground">Recebedor</p>
-              <p className="text-sm font-medium text-foreground leading-tight">{PIX_DATA.nome}</p>
+              <p className="text-sm font-medium text-foreground leading-tight">{PIX_DATA.nomeCompleto}</p>
             </div>
           </div>
           
