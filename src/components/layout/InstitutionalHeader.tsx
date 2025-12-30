@@ -112,8 +112,8 @@ export function InstitutionalHeader() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Top Bar - Social & Login */}
-      <div className="bg-promessa-700 text-primary-foreground">
+      {/* Top Bar - Desktop only */}
+      <div className="hidden lg:block bg-promessa-700 text-primary-foreground">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-8">
             {/* Social Icons */}
@@ -157,38 +157,38 @@ export function InstitutionalHeader() {
               to="/" 
               className="flex items-center gap-2.5 group flex-shrink-0"
             >
-              <Logo size={42} />
+              <Logo size={40} />
               <div className="hidden sm:block">
-                <p className="font-display font-semibold text-foreground text-base leading-tight group-hover:text-promessa-600 transition-colors duration-200">
+                <p className="font-display font-semibold text-foreground text-sm leading-tight group-hover:text-promessa-600 transition-colors duration-200">
                   Igreja da Promessa
                 </p>
-                <p className="text-muted-foreground text-[11px]">
+                <p className="text-muted-foreground text-[10px]">
                   Hortolândia
                 </p>
               </div>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:block">
+            {/* Desktop Navigation - Horizontal layout */}
+            <nav className="hidden lg:flex items-center">
               <NavigationMenu>
-                <NavigationMenuList className="gap-0">
+                <NavigationMenuList className="flex flex-row items-center gap-x-1">
                   {menuItems.map((item) => (
-                    <NavigationMenuItem key={item.label}>
+                    <NavigationMenuItem key={item.label} className="relative">
                       {item.subItems ? (
                         <>
                           <NavigationMenuTrigger 
-                            className="text-sm font-medium text-foreground bg-transparent px-3 py-2 hover:bg-muted hover:text-promessa-600 data-[state=open]:bg-muted data-[state=open]:text-promessa-600 transition-colors duration-200"
+                            className="h-auto text-[13px] font-medium text-foreground bg-transparent px-2.5 py-1.5 hover:bg-muted hover:text-promessa-600 data-[state=open]:bg-muted data-[state=open]:text-promessa-600 transition-colors duration-200 whitespace-nowrap"
                           >
                             {item.label}
                           </NavigationMenuTrigger>
                           <NavigationMenuContent>
-                            <ul className="grid w-[240px] gap-1 p-2 bg-white border border-border rounded-lg shadow-lg">
+                            <ul className="min-w-[220px] p-2 bg-white border border-border rounded-lg shadow-lg">
                               {item.subItems.map((subItem) => (
                                 <li key={subItem.label}>
                                   <NavigationMenuLink asChild>
                                     <Link
                                       to={subItem.href}
-                                      className="block select-none rounded-md p-3 text-sm text-foreground hover:bg-muted hover:text-promessa-600 transition-colors duration-200"
+                                      className="block select-none rounded-md px-3 py-2.5 text-sm text-foreground hover:bg-muted hover:text-promessa-600 transition-colors duration-200 whitespace-nowrap"
                                     >
                                       {subItem.label}
                                     </Link>
@@ -202,7 +202,7 @@ export function InstitutionalHeader() {
                         <NavigationMenuLink asChild>
                           <Link
                             to={item.href}
-                            className="text-sm font-medium text-foreground px-3 py-2 rounded-md hover:bg-muted hover:text-promessa-600 transition-colors duration-200 inline-block"
+                            className="text-[13px] font-medium text-foreground px-2.5 py-1.5 rounded-md hover:bg-muted hover:text-promessa-600 transition-colors duration-200 whitespace-nowrap inline-flex items-center"
                           >
                             {item.label}
                           </Link>
@@ -230,37 +230,43 @@ export function InstitutionalHeader() {
         </div>
       </div>
 
-      {/* Mobile Navigation with Accordion */}
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 top-14 bg-black/50 z-40"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Navigation Drawer */}
       <div 
         className={cn(
-          "lg:hidden bg-white border-b border-border overflow-hidden transition-all duration-300",
-          mobileMenuOpen 
-            ? "max-h-[calc(100vh-104px)]" 
-            : "max-h-0"
+          "lg:hidden fixed top-14 right-0 bottom-0 w-full max-w-sm bg-white shadow-xl z-50 transform transition-transform duration-300 ease-out overflow-hidden",
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
-        <nav className="container mx-auto px-4 py-4 overflow-y-auto max-h-[calc(100vh-140px)]">
-          <Accordion type="single" collapsible className="w-full space-y-1">
-            {menuItems.map((item, index) => (
+        <nav className="h-full overflow-y-auto py-4 px-4">
+          <Accordion type="single" collapsible className="w-full">
+            {menuItems.map((item) => (
               item.subItems ? (
                 <AccordionItem 
                   key={item.label} 
                   value={item.label}
-                  className="border-none"
+                  className="border-b border-border/50"
                 >
                   <AccordionTrigger 
-                    className="px-4 py-3 text-base font-medium text-foreground hover:bg-muted/80 rounded-lg hover:no-underline transition-all duration-200 [&[data-state=open]]:bg-muted/50"
+                    className="py-4 text-base font-medium text-foreground hover:text-promessa-600 hover:no-underline"
                   >
                     {item.label}
                   </AccordionTrigger>
-                  <AccordionContent className="pt-1 pb-2">
-                    <ul className="ml-4 space-y-1 border-l-2 border-promessa-200 pl-4">
+                  <AccordionContent className="pb-4">
+                    <ul className="space-y-1 pl-4 border-l-2 border-promessa-200">
                       {item.subItems.map((subItem) => (
                         <li key={subItem.label}>
                           <Link
                             to={subItem.href}
                             onClick={() => setMobileMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-lg transition-all duration-200"
+                            className="block py-2.5 px-3 text-sm text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md transition-colors duration-200"
                           >
                             {subItem.label}
                           </Link>
@@ -270,11 +276,11 @@ export function InstitutionalHeader() {
                   </AccordionContent>
                 </AccordionItem>
               ) : (
-                <div key={item.label} className="px-4 py-3">
+                <div key={item.label} className="border-b border-border/50">
                   <Link
                     to={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block text-base font-medium text-foreground hover:text-promessa-600 transition-colors duration-200"
+                    className="block py-4 text-base font-medium text-foreground hover:text-promessa-600 transition-colors duration-200"
                   >
                     {item.label}
                   </Link>
@@ -284,16 +290,35 @@ export function InstitutionalHeader() {
           </Accordion>
 
           {/* Mobile Login Button */}
-          <div className="mt-4 pt-4 border-t border-border/50">
+          <div className="mt-6 pt-4 border-t border-border">
             <Button
-              className="w-full bg-promessa-700 hover:bg-promessa-800 text-primary-foreground transition-all duration-300"
+              className="w-full bg-promessa-700 hover:bg-promessa-800 text-primary-foreground"
               asChild
             >
               <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
                 <User className="w-4 h-4 mr-2" />
-                Fazer Login ou Cadastrar
+                Entrar ou Cadastrar
               </Link>
             </Button>
+          </div>
+
+          {/* Mobile Social Links */}
+          <div className="mt-6 pt-4 border-t border-border">
+            <p className="text-xs text-muted-foreground mb-3">Siga-nos</p>
+            <div className="flex items-center gap-4">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-promessa-600 transition-colors duration-200"
+                  aria-label={social.label}
+                >
+                  <social.icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
           </div>
         </nav>
       </div>
