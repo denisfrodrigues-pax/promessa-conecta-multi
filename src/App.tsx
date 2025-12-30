@@ -75,6 +75,7 @@ import MemberEventoDetalhes from "@/pages/member/EventoDetalhes";
 import MemberAvisos from "@/pages/member/Avisos";
 import MemberPerfil from "@/pages/member/Perfil";
 import SouNovo from "@/pages/member/SouNovo";
+import Contribuicoes from "@/pages/Contribuicoes";
 import Oracao from "@/pages/member/Oracao";
 import MinhasEscalas from "@/pages/member/MinhasEscalas";
 import HistoricoEscalas from "@/pages/member/HistoricoEscalas";
@@ -115,6 +116,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/install" element={<InstallPWA />} />
           <Route path="/sou-novo" element={<SouNovo />} />
+          <Route path="/contribuicoes" element={<Contribuicoes />} />
 
           {/* Admin Routes - only admin and financeiro */}
           <Route path="/admin" element={
