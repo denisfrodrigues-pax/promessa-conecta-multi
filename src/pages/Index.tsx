@@ -99,12 +99,13 @@ export default function Index() {
       <section 
         className="relative flex flex-col items-center justify-center text-center min-h-screen pt-28 px-4 overflow-hidden"
       >
-        {/* Background with overlay */}
+        {/* Background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${heroImage})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        {/* Dark overlay - uniform, no fade to white */}
+        <div className="absolute inset-0 bg-black/55" />
         
         {/* Animated content */}
         <div className="relative z-10 max-w-4xl mx-auto">
@@ -146,18 +147,15 @@ export default function Index() {
           </div>
         </div>
 
-        {/* Scroll indicator */}
+        {/* Scroll indicator - discreet */}
         <div 
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          style={{ animation: "fadeIn 1s ease-out 1.2s forwards, float 3s ease-in-out 2.2s infinite", opacity: 0 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0"
+          style={{ animation: "fadeIn 1s ease-out 1.2s forwards, float 3s ease-in-out 2.2s infinite" }}
         >
-          <div className="w-6 h-10 border-2 border-white/40 rounded-full flex justify-center backdrop-blur-sm">
-            <div className="w-1.5 h-3 bg-white/60 rounded-full mt-2 animate-pulse-soft" />
+          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
+            <div className="w-1.5 h-3 bg-white/50 rounded-full mt-2 animate-pulse" />
           </div>
         </div>
-
-        {/* Decorative gradient overlay at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* ============================================
