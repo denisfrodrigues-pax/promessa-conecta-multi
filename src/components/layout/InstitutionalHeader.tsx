@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
-// Menu structure - Title Case
 const menuItems = [
   {
     label: "Quem Somos",
@@ -100,9 +99,13 @@ const socialLinks = [
 ];
 
 export function InstitutionalHeader() {
+  // Estado para controle do menu mobile
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Estado para controle de dropdown desktop - qual está aberto
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
+  // Função para fechar menu mobile
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
@@ -160,69 +163,206 @@ export function InstitutionalHeader() {
               </div>
             </Link>
 
-            {/* Desktop Navigation - EXPLICIT horizontal layout */}
-            <nav className="hidden lg:flex flex-row items-center gap-x-1">
-              {menuItems.map((item) => (
-                item.subItems ? (
-                  // Dropdown item - EXPLICIT relative positioning
-                  <div 
-                    key={item.label}
-                    className="relative"
-                    onMouseEnter={() => setOpenDropdown(item.label)}
-                    onMouseLeave={() => setOpenDropdown(null)}
-                  >
-                    <button
-                      className={cn(
-                        "flex flex-row items-center gap-1 h-10 px-3 text-[13px] font-medium rounded-md transition-colors duration-200 whitespace-nowrap",
-                        openDropdown === item.label 
-                          ? "text-promessa-600 bg-muted" 
-                          : "text-foreground hover:text-promessa-600 hover:bg-muted"
-                      )}
-                    >
-                      {item.label}
-                      <ChevronDown 
-                        className={cn(
-                          "w-3.5 h-3.5 transition-transform duration-200",
-                          openDropdown === item.label && "rotate-180"
-                        )} 
-                      />
-                    </button>
+            {/* ========== DESKTOP NAVIGATION ========== */}
+            {/* Container explícito: hidden lg:flex flex-row items-center gap-x-6 */}
+            <nav className="hidden lg:flex flex-row items-center gap-x-6">
+              
+              {/* Item 1: Quem Somos - Com dropdown */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setOpenDropdown("Quem Somos")}
+                onMouseLeave={() => setOpenDropdown(null)}
+              >
+                <button
+                  className={cn(
+                    "flex flex-row items-center gap-1 h-10 px-2 text-[13px] font-medium rounded-md transition-colors duration-200 whitespace-nowrap",
+                    openDropdown === "Quem Somos" 
+                      ? "text-promessa-600 bg-muted" 
+                      : "text-foreground hover:text-promessa-600 hover:bg-muted"
+                  )}
+                >
+                  Quem Somos
+                  <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", openDropdown === "Quem Somos" && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute left-0 top-full pt-1 z-50 transition-all duration-200 ease-out",
+                  openDropdown === "Quem Somos" ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 pointer-events-none"
+                )}>
+                  <ul className="min-w-[280px] bg-white border border-border rounded-lg shadow-lg shadow-black/10 py-2">
+                    <li><Link to="#teologia" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Nossa Teologia</Link></li>
+                    <li><Link to="#missao-visao" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Missão e Visão</Link></li>
+                    <li><Link to="#historia" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Nossa História</Link></li>
+                    <li><Link to="#pastores" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Pastores</Link></li>
+                    <li><Link to="#lideranca" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Liderança</Link></li>
+                    <li><Link to="#porque-participar" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Por que Participar da Igreja da Promessa?</Link></li>
+                  </ul>
+                </div>
+              </div>
 
-                    {/* Dropdown - EXPLICIT absolute, top-full, left-0, min-w, z-50 */}
-                    <div
-                      className={cn(
-                        "absolute left-0 top-full pt-1 z-50 transition-all duration-200 ease-out",
-                        openDropdown === item.label 
-                          ? "opacity-100 visible translate-y-0" 
-                          : "opacity-0 invisible -translate-y-2 pointer-events-none"
-                      )}
-                    >
-                      <ul className="min-w-[240px] bg-white border border-border rounded-lg shadow-lg shadow-black/10 py-2">
-                        {item.subItems.map((subItem) => (
-                          <li key={subItem.label}>
-                            <Link
-                              to={subItem.href}
-                              className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 transition-colors duration-150 whitespace-nowrap"
-                            >
-                              {subItem.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                ) : (
-                  // Direct link item
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    className="flex flex-row items-center h-10 px-3 text-[13px] font-medium text-foreground hover:text-promessa-600 hover:bg-muted rounded-md transition-colors duration-200 whitespace-nowrap"
-                  >
-                    {item.label}
-                  </Link>
-                )
-              ))}
+              {/* Item 2: Ministérios - Com dropdown */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setOpenDropdown("Ministérios")}
+                onMouseLeave={() => setOpenDropdown(null)}
+              >
+                <button
+                  className={cn(
+                    "flex flex-row items-center gap-1 h-10 px-2 text-[13px] font-medium rounded-md transition-colors duration-200 whitespace-nowrap",
+                    openDropdown === "Ministérios" 
+                      ? "text-promessa-600 bg-muted" 
+                      : "text-foreground hover:text-promessa-600 hover:bg-muted"
+                  )}
+                >
+                  Ministérios
+                  <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", openDropdown === "Ministérios" && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute left-0 top-full pt-1 z-50 transition-all duration-200 ease-out",
+                  openDropdown === "Ministérios" ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 pointer-events-none"
+                )}>
+                  <ul className="min-w-[240px] bg-white border border-border rounded-lg shadow-lg shadow-black/10 py-2">
+                    <li><Link to="#kids" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Kids</Link></li>
+                    <li><Link to="#conectores" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Conectores</Link></li>
+                    <li><Link to="#midia" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Mídia e Comunicação</Link></li>
+                    <li><Link to="#musica" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Música</Link></li>
+                    <li><Link to="#educacao" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Educação</Link></li>
+                    <li><Link to="/bases" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Bases</Link></li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Item 3: Cadastro - Com dropdown */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setOpenDropdown("Cadastro")}
+                onMouseLeave={() => setOpenDropdown(null)}
+              >
+                <button
+                  className={cn(
+                    "flex flex-row items-center gap-1 h-10 px-2 text-[13px] font-medium rounded-md transition-colors duration-200 whitespace-nowrap",
+                    openDropdown === "Cadastro" 
+                      ? "text-promessa-600 bg-muted" 
+                      : "text-foreground hover:text-promessa-600 hover:bg-muted"
+                  )}
+                >
+                  Cadastro
+                  <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", openDropdown === "Cadastro" && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute left-0 top-full pt-1 z-50 transition-all duration-200 ease-out",
+                  openDropdown === "Cadastro" ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 pointer-events-none"
+                )}>
+                  <ul className="min-w-[240px] bg-white border border-border rounded-lg shadow-lg shadow-black/10 py-2">
+                    <li><Link to="/sou-novo" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Seja um Voluntário!</Link></li>
+                    <li><Link to="/sou-novo" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Membros</Link></li>
+                    <li><Link to="/sou-novo" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Visitantes</Link></li>
+                    <li><Link to="/sou-novo" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Cadastro Infantil</Link></li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Item 4: Participe de uma Base - Link direto */}
+              <Link
+                to="/bases"
+                className="flex flex-row items-center h-10 px-2 text-[13px] font-medium text-foreground hover:text-promessa-600 hover:bg-muted rounded-md transition-colors duration-200 whitespace-nowrap"
+              >
+                Participe de uma Base
+              </Link>
+
+              {/* Item 5: Conteúdo - Com dropdown */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setOpenDropdown("Conteúdo")}
+                onMouseLeave={() => setOpenDropdown(null)}
+              >
+                <button
+                  className={cn(
+                    "flex flex-row items-center gap-1 h-10 px-2 text-[13px] font-medium rounded-md transition-colors duration-200 whitespace-nowrap",
+                    openDropdown === "Conteúdo" 
+                      ? "text-promessa-600 bg-muted" 
+                      : "text-foreground hover:text-promessa-600 hover:bg-muted"
+                  )}
+                >
+                  Conteúdo
+                  <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", openDropdown === "Conteúdo" && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute left-0 top-full pt-1 z-50 transition-all duration-200 ease-out",
+                  openDropdown === "Conteúdo" ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 pointer-events-none"
+                )}>
+                  <ul className="min-w-[240px] bg-white border border-border rounded-lg shadow-lg shadow-black/10 py-2">
+                    <li><Link to="#series" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Séries de Mensagens</Link></li>
+                    <li><Link to="#leituras" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Leituras</Link></li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Item 6: Participe - Com dropdown */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setOpenDropdown("Participe")}
+                onMouseLeave={() => setOpenDropdown(null)}
+              >
+                <button
+                  className={cn(
+                    "flex flex-row items-center gap-1 h-10 px-2 text-[13px] font-medium rounded-md transition-colors duration-200 whitespace-nowrap",
+                    openDropdown === "Participe" 
+                      ? "text-promessa-600 bg-muted" 
+                      : "text-foreground hover:text-promessa-600 hover:bg-muted"
+                  )}
+                >
+                  Participe
+                  <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", openDropdown === "Participe" && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute left-0 top-full pt-1 z-50 transition-all duration-200 ease-out",
+                  openDropdown === "Participe" ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 pointer-events-none"
+                )}>
+                  <ul className="min-w-[240px] bg-white border border-border rounded-lg shadow-lg shadow-black/10 py-2">
+                    <li><Link to="/eventos" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Eventos</Link></li>
+                    <li><Link to="/oracao" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Pedidos de Oração</Link></li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Item 7: Contribua - Link direto, sem destaque especial */}
+              <Link
+                to="/contribuicoes"
+                className="flex flex-row items-center h-10 px-2 text-[13px] font-medium text-foreground hover:text-promessa-600 hover:bg-muted rounded-md transition-colors duration-200 whitespace-nowrap"
+              >
+                Contribua
+              </Link>
+
+              {/* Item 8: Contato - Com dropdown */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setOpenDropdown("Contato")}
+                onMouseLeave={() => setOpenDropdown(null)}
+              >
+                <button
+                  className={cn(
+                    "flex flex-row items-center gap-1 h-10 px-2 text-[13px] font-medium rounded-md transition-colors duration-200 whitespace-nowrap",
+                    openDropdown === "Contato" 
+                      ? "text-promessa-600 bg-muted" 
+                      : "text-foreground hover:text-promessa-600 hover:bg-muted"
+                  )}
+                >
+                  Contato
+                  <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", openDropdown === "Contato" && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute left-0 top-full pt-1 z-50 transition-all duration-200 ease-out",
+                  openDropdown === "Contato" ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 pointer-events-none"
+                )}>
+                  <ul className="min-w-[240px] bg-white border border-border rounded-lg shadow-lg shadow-black/10 py-2">
+                    <li><Link to="#fale-conosco" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Fale Conosco</Link></li>
+                    <li><Link to="#localizacao" className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 whitespace-nowrap">Onde Nos Encontrar</Link></li>
+                  </ul>
+                </div>
+              </div>
+
             </nav>
+            {/* ========== FIM DESKTOP NAVIGATION ========== */}
 
             {/* Mobile Menu Button */}
             <button
@@ -244,14 +384,12 @@ export function InstitutionalHeader() {
       <div 
         className={cn(
           "lg:hidden fixed inset-0 top-14 bg-black/40 z-40 transition-opacity duration-300",
-          mobileMenuOpen 
-            ? "opacity-100 visible" 
-            : "opacity-0 invisible pointer-events-none"
+          mobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
         )}
         onClick={closeMobileMenu}
       />
 
-      {/* Mobile Navigation Drawer - 100% width */}
+      {/* ========== MOBILE NAVIGATION DRAWER ========== */}
       <div 
         className={cn(
           "lg:hidden fixed top-14 left-0 right-0 bottom-0 w-full bg-white z-50 transform transition-transform duration-300 ease-out",
@@ -260,54 +398,114 @@ export function InstitutionalHeader() {
       >
         <nav className="h-full w-full overflow-y-auto py-2">
           <Accordion type="single" collapsible className="w-full">
-            {menuItems.map((item) => (
-              item.subItems ? (
-                <AccordionItem 
-                  key={item.label} 
-                  value={item.label}
-                  className="border-b border-border/40"
-                >
-                  <AccordionTrigger 
-                    className="px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600 hover:no-underline [&[data-state=open]]:text-promessa-600"
-                  >
-                    {item.label}
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-3">
-                    <ul className="ml-5 pl-4 border-l-2 border-promessa-200 space-y-1">
-                      {item.subItems.map((subItem) => (
-                        <li key={subItem.label}>
-                          <Link
-                            to={subItem.href}
-                            onClick={closeMobileMenu}
-                            className="block py-3 px-4 text-[15px] font-normal text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md transition-colors duration-200"
-                          >
-                            {subItem.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
-              ) : (
-                <div key={item.label} className="border-b border-border/40">
-                  <Link
-                    to={item.href}
-                    onClick={closeMobileMenu}
-                    className="block px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600 transition-colors duration-200"
-                  >
-                    {item.label}
-                  </Link>
-                </div>
-              )
-            ))}
+            
+            {/* Mobile: Quem Somos */}
+            <AccordionItem value="Quem Somos" className="border-b border-border/40">
+              <AccordionTrigger className="px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600 hover:no-underline">
+                Quem Somos
+              </AccordionTrigger>
+              <AccordionContent className="pb-3">
+                <ul className="ml-5 pl-4 border-l-2 border-promessa-200 space-y-1">
+                  <li><Link to="#teologia" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Nossa Teologia</Link></li>
+                  <li><Link to="#missao-visao" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Missão e Visão</Link></li>
+                  <li><Link to="#historia" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Nossa História</Link></li>
+                  <li><Link to="#pastores" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Pastores</Link></li>
+                  <li><Link to="#lideranca" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Liderança</Link></li>
+                  <li><Link to="#porque-participar" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Por que Participar da Igreja da Promessa?</Link></li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Mobile: Ministérios */}
+            <AccordionItem value="Ministérios" className="border-b border-border/40">
+              <AccordionTrigger className="px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600 hover:no-underline">
+                Ministérios
+              </AccordionTrigger>
+              <AccordionContent className="pb-3">
+                <ul className="ml-5 pl-4 border-l-2 border-promessa-200 space-y-1">
+                  <li><Link to="#kids" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Kids</Link></li>
+                  <li><Link to="#conectores" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Conectores</Link></li>
+                  <li><Link to="#midia" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Mídia e Comunicação</Link></li>
+                  <li><Link to="#musica" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Música</Link></li>
+                  <li><Link to="#educacao" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Educação</Link></li>
+                  <li><Link to="/bases" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Bases</Link></li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Mobile: Cadastro */}
+            <AccordionItem value="Cadastro" className="border-b border-border/40">
+              <AccordionTrigger className="px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600 hover:no-underline">
+                Cadastro
+              </AccordionTrigger>
+              <AccordionContent className="pb-3">
+                <ul className="ml-5 pl-4 border-l-2 border-promessa-200 space-y-1">
+                  <li><Link to="/sou-novo" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Seja um Voluntário!</Link></li>
+                  <li><Link to="/sou-novo" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Membros</Link></li>
+                  <li><Link to="/sou-novo" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Visitantes</Link></li>
+                  <li><Link to="/sou-novo" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Cadastro Infantil</Link></li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Mobile: Participe de uma Base - Link direto */}
+            <div className="border-b border-border/40">
+              <Link to="/bases" onClick={closeMobileMenu} className="block px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600">
+                Participe de uma Base
+              </Link>
+            </div>
+
+            {/* Mobile: Conteúdo */}
+            <AccordionItem value="Conteúdo" className="border-b border-border/40">
+              <AccordionTrigger className="px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600 hover:no-underline">
+                Conteúdo
+              </AccordionTrigger>
+              <AccordionContent className="pb-3">
+                <ul className="ml-5 pl-4 border-l-2 border-promessa-200 space-y-1">
+                  <li><Link to="#series" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Séries de Mensagens</Link></li>
+                  <li><Link to="#leituras" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Leituras</Link></li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Mobile: Participe */}
+            <AccordionItem value="Participe" className="border-b border-border/40">
+              <AccordionTrigger className="px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600 hover:no-underline">
+                Participe
+              </AccordionTrigger>
+              <AccordionContent className="pb-3">
+                <ul className="ml-5 pl-4 border-l-2 border-promessa-200 space-y-1">
+                  <li><Link to="/eventos" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Eventos</Link></li>
+                  <li><Link to="/oracao" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Pedidos de Oração</Link></li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Mobile: Contribua - Link direto */}
+            <div className="border-b border-border/40">
+              <Link to="/contribuicoes" onClick={closeMobileMenu} className="block px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600">
+                Contribua
+              </Link>
+            </div>
+
+            {/* Mobile: Contato */}
+            <AccordionItem value="Contato" className="border-b border-border/40">
+              <AccordionTrigger className="px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600 hover:no-underline">
+                Contato
+              </AccordionTrigger>
+              <AccordionContent className="pb-3">
+                <ul className="ml-5 pl-4 border-l-2 border-promessa-200 space-y-1">
+                  <li><Link to="#fale-conosco" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Fale Conosco</Link></li>
+                  <li><Link to="#localizacao" onClick={closeMobileMenu} className="block py-3 px-4 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md">Onde Nos Encontrar</Link></li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+
           </Accordion>
 
           {/* Mobile Login Button */}
           <div className="px-5 mt-6">
-            <Button
-              className="w-full bg-promessa-700 hover:bg-promessa-800 text-primary-foreground h-12 text-base font-medium"
-              asChild
-            >
+            <Button className="w-full bg-promessa-700 hover:bg-promessa-800 text-primary-foreground h-12 text-base font-medium" asChild>
               <Link to="/auth" onClick={closeMobileMenu}>
                 <User className="w-4 h-4 mr-2" />
                 Entrar ou Cadastrar
@@ -320,14 +518,7 @@ export function InstitutionalHeader() {
             <p className="text-xs text-muted-foreground mb-4 uppercase tracking-wider font-medium">Siga-nos</p>
             <div className="flex flex-row items-center gap-5">
               {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-promessa-600 transition-colors duration-200"
-                  aria-label={social.label}
-                >
+                <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-promessa-600 transition-colors duration-200" aria-label={social.label}>
                   <social.icon className="w-5 h-5" />
                 </a>
               ))}
@@ -335,6 +526,7 @@ export function InstitutionalHeader() {
           </div>
         </nav>
       </div>
+      {/* ========== FIM MOBILE NAVIGATION DRAWER ========== */}
     </header>
   );
 }
