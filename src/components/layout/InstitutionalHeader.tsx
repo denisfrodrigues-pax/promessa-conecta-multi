@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import logoPromessaHortolandia from "@/assets/logo-promessa-hortolandia.png";
 import {
   Instagram,
   Youtube,
@@ -150,17 +150,13 @@ export function InstitutionalHeader() {
             {/* Logo */}
             <Link 
               to="/" 
-              className="flex flex-row items-center gap-2.5 group flex-shrink-0"
+              className="flex items-center flex-shrink-0"
             >
-              <Logo size={38} />
-              <div className="hidden sm:block">
-                <p className="font-display font-semibold text-foreground text-sm leading-tight group-hover:text-promessa-600 transition-colors duration-200">
-                  Igreja da Promessa
-                </p>
-                <p className="text-muted-foreground text-[10px]">
-                  Hortolândia
-                </p>
-              </div>
+              <img
+                src={logoPromessaHortolandia}
+                alt="Promessa Hortolândia"
+                className="h-10 lg:h-12 w-auto object-contain shrink-0"
+              />
             </Link>
 
             {/* ========== DESKTOP NAVIGATION ========== */}
