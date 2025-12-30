@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -20,19 +20,26 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
-// Menu structure with submenus - Title Case standardization
+// Menu structure following Igreja Plena model - Title Case
 const menuItems = [
   {
     label: "Quem Somos",
     href: "#quem-somos",
     subItems: [
-      { label: "Teologia", href: "#teologia" },
-      { label: "Valores", href: "#valores" },
-      { label: "História", href: "#historia" },
+      { label: "Nossa Teologia", href: "#teologia" },
+      { label: "Missão e Visão", href: "#missao-visao" },
+      { label: "Nossa História", href: "#historia" },
       { label: "Pastores", href: "#pastores" },
       { label: "Liderança", href: "#lideranca" },
+      { label: "Por que Participar da Igreja da Promessa?", href: "#porque-participar" },
     ],
   },
   {
@@ -40,26 +47,56 @@ const menuItems = [
     href: "#ministerios",
     subItems: [
       { label: "Kids", href: "#kids" },
-      { label: "Conecta", href: "#conecta" },
+      { label: "Conectores", href: "#conectores" },
       { label: "Mídia e Comunicação", href: "#midia" },
       { label: "Música", href: "#musica" },
+      { label: "Educação", href: "#educacao" },
       { label: "Bases", href: "/bases" },
     ],
   },
   {
-    label: "Eventos",
-    href: "/eventos",
+    label: "Cadastro",
+    href: "#cadastro",
+    subItems: [
+      { label: "Seja um Voluntário!", href: "/sou-novo" },
+      { label: "Membros", href: "/sou-novo" },
+      { label: "Visitantes", href: "/sou-novo" },
+      { label: "Cadastro Infantil", href: "/sou-novo" },
+    ],
+  },
+  {
+    label: "Participe de uma Base",
+    href: "/bases",
     subItems: null,
   },
   {
-    label: "Contribuições",
+    label: "Conteúdo",
+    href: "#conteudo",
+    subItems: [
+      { label: "Séries de Mensagens", href: "#series" },
+      { label: "Leituras", href: "#leituras" },
+    ],
+  },
+  {
+    label: "Participe",
+    href: "#participe",
+    subItems: [
+      { label: "Eventos", href: "/eventos" },
+      { label: "Pedidos de Oração", href: "/oracao" },
+    ],
+  },
+  {
+    label: "Contribua",
     href: "/contribuicoes",
     subItems: null,
   },
   {
     label: "Contato",
     href: "#contato",
-    subItems: null,
+    subItems: [
+      { label: "Fale Conosco", href: "#fale-conosco" },
+      { label: "Onde Nos Encontrar", href: "#localizacao" },
+    ],
   },
 ];
 
@@ -72,24 +109,10 @@ const socialLinks = [
 
 export function InstitutionalHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const toggleMobileSubmenu = (label: string) => {
-    setExpandedMobileItem(expandedMobileItem === label ? null : label);
-  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Top Bar - Compact social bar */}
+      {/* Top Bar - Social & Login */}
       <div className="bg-promessa-700 text-primary-foreground">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-8">
@@ -118,22 +141,21 @@ export function InstitutionalHeader() {
             >
               <Link to="/auth">
                 <User className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Entrar</span>
-                <span className="sm:hidden">Entrar</span>
+                <span>Entrar</span>
               </Link>
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Main Header - Solid background, subtle shadow always active */}
+      {/* Main Header */}
       <div className="bg-white border-b border-border/50 shadow-sm shadow-black/5">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-14 lg:h-16">
-            {/* Logo and Church Name */}
+            {/* Logo */}
             <Link 
               to="/" 
-              className="flex items-center gap-2.5 group"
+              className="flex items-center gap-2.5 group flex-shrink-0"
             >
               <Logo size={42} />
               <div className="hidden sm:block">
@@ -146,10 +168,10 @@ export function InstitutionalHeader() {
               </div>
             </Link>
 
-            {/* Desktop Navigation - All items same weight */}
+            {/* Desktop Navigation */}
             <nav className="hidden lg:block">
               <NavigationMenu>
-                <NavigationMenuList className="gap-1">
+                <NavigationMenuList className="gap-0">
                   {menuItems.map((item) => (
                     <NavigationMenuItem key={item.label}>
                       {item.subItems ? (
@@ -160,7 +182,7 @@ export function InstitutionalHeader() {
                             {item.label}
                           </NavigationMenuTrigger>
                           <NavigationMenuContent>
-                            <ul className="grid w-[220px] gap-1 p-2 bg-white border border-border rounded-lg shadow-lg">
+                            <ul className="grid w-[240px] gap-1 p-2 bg-white border border-border rounded-lg shadow-lg">
                               {item.subItems.map((subItem) => (
                                 <li key={subItem.label}>
                                   <NavigationMenuLink asChild>
@@ -180,7 +202,7 @@ export function InstitutionalHeader() {
                         <NavigationMenuLink asChild>
                           <Link
                             to={item.href}
-                            className="text-sm font-medium text-foreground px-3 py-2 rounded-md hover:bg-muted hover:text-promessa-600 transition-colors duration-200"
+                            className="text-sm font-medium text-foreground px-3 py-2 rounded-md hover:bg-muted hover:text-promessa-600 transition-colors duration-200 inline-block"
                           >
                             {item.label}
                           </Link>
@@ -208,7 +230,7 @@ export function InstitutionalHeader() {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation with Accordion */}
       <div 
         className={cn(
           "lg:hidden bg-white border-b border-border overflow-hidden transition-all duration-300",
@@ -217,93 +239,59 @@ export function InstitutionalHeader() {
             : "max-h-0"
         )}
       >
-        <nav className="container mx-auto px-4 py-5 overflow-y-auto max-h-[calc(100vh-140px)]">
-          <ul className="space-y-2">
+        <nav className="container mx-auto px-4 py-4 overflow-y-auto max-h-[calc(100vh-140px)]">
+          <Accordion type="single" collapsible className="w-full space-y-1">
             {menuItems.map((item, index) => (
-              <li 
-                key={item.label}
-                className={cn(
-                  "transition-all duration-300",
-                  mobileMenuOpen 
-                    ? "opacity-100 translate-y-0" 
-                    : "opacity-0 translate-y-2"
-                )}
-                style={{ transitionDelay: mobileMenuOpen ? `${index * 50}ms` : "0ms" }}
-              >
-                {item.subItems ? (
-                  <div>
-                    <button
-                      onClick={() => toggleMobileSubmenu(item.label)}
-                      className="flex items-center justify-between w-full px-4 py-3.5 text-base font-medium text-foreground hover:bg-muted/80 rounded-lg transition-all duration-200"
-                    >
-                      {item.label}
-                      <ChevronDown
-                        className={cn(
-                          "w-4 h-4 transition-transform duration-200",
-                          expandedMobileItem === item.label && "rotate-180"
-                        )}
-                      />
-                    </button>
-                    <div 
-                      className={cn(
-                        "overflow-hidden transition-all duration-300 ease-out",
-                        expandedMobileItem === item.label 
-                          ? "max-h-96 opacity-100" 
-                          : "max-h-0 opacity-0"
-                      )}
-                    >
-                      <ul className="ml-4 mt-1 space-y-1 border-l-2 border-promessa-200 pl-4">
-                        {item.subItems.map((subItem, subIndex) => (
-                          <li 
-                            key={subItem.label}
-                            className={cn(
-                              "transition-all duration-200",
-                              expandedMobileItem === item.label 
-                                ? "opacity-100 translate-x-0" 
-                                : "opacity-0 -translate-x-2"
-                            )}
-                            style={{ transitionDelay: expandedMobileItem === item.label ? `${subIndex * 30}ms` : "0ms" }}
+              item.subItems ? (
+                <AccordionItem 
+                  key={item.label} 
+                  value={item.label}
+                  className="border-none"
+                >
+                  <AccordionTrigger 
+                    className="px-4 py-3 text-base font-medium text-foreground hover:bg-muted/80 rounded-lg hover:no-underline transition-all duration-200 [&[data-state=open]]:bg-muted/50"
+                  >
+                    {item.label}
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-1 pb-2">
+                    <ul className="ml-4 space-y-1 border-l-2 border-promessa-200 pl-4">
+                      {item.subItems.map((subItem) => (
+                        <li key={subItem.label}>
+                          <Link
+                            to={subItem.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-lg transition-all duration-200"
                           >
-                            <Link
-                              to={subItem.href}
-                              onClick={() => setMobileMenuOpen(false)}
-                              className="block px-4 py-3 text-sm text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-lg transition-all duration-200"
-                            >
-                              {subItem.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                ) : (
+                            {subItem.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+              ) : (
+                <div key={item.label} className="px-4 py-3">
                   <Link
                     to={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-3.5 text-base font-medium rounded-lg text-foreground hover:bg-muted transition-colors duration-200"
+                    className="block text-base font-medium text-foreground hover:text-promessa-600 transition-colors duration-200"
                   >
                     {item.label}
                   </Link>
-                )}
-              </li>
+                </div>
+              )
             ))}
-          </ul>
+          </Accordion>
 
           {/* Mobile Login Button */}
-          <div 
-            className={cn(
-              "mt-4 pt-4 border-t border-border/50 transition-all duration-300",
-              mobileMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            )}
-            style={{ transitionDelay: mobileMenuOpen ? "400ms" : "0ms" }}
-          >
+          <div className="mt-4 pt-4 border-t border-border/50">
             <Button
-              className="w-full bg-promessa-700 hover:bg-promessa-800 text-primary-foreground transition-all duration-300 hover:shadow-lg"
+              className="w-full bg-promessa-700 hover:bg-promessa-800 text-primary-foreground transition-all duration-300"
               asChild
             >
               <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
                 <User className="w-4 h-4 mr-2" />
-                Fazer login ou se inscrever
+                Fazer Login ou Cadastrar
               </Link>
             </Button>
           </div>
