@@ -108,24 +108,24 @@ export default function Index() {
         <div className="absolute inset-0 bg-black/55" />
         
         {/* Animated content */}
-        <div className="relative z-10 max-w-4xl mx-auto">
+        <div className="relative z-10 max-w-4xl mx-auto px-2">
           {/* Subtitle - location */}
           <p 
-            className="text-sm sm:text-base uppercase tracking-[0.3em] text-white/70 font-medium mb-4 opacity-0 animate-[fadeIn_0.8s_ease-out_0.2s_forwards]"
+            className="text-xs sm:text-sm uppercase tracking-[0.25em] text-white/80 font-medium mb-4 opacity-0 animate-[fadeIn_0.8s_ease-out_0.2s_forwards]"
           >
             Hortolândia - SP
           </p>
           
           {/* Main title */}
           <h1 
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight text-white mb-6 drop-shadow-2xl opacity-0 animate-[slideUp_0.8s_ease-out_0.4s_forwards]"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight text-white mb-6 drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] opacity-0 animate-[slideUp_0.8s_ease-out_0.4s_forwards]"
           >
             Igreja da Promessa
           </h1>
           
           {/* Tagline */}
           <p 
-            className="text-base sm:text-lg md:text-xl text-white/90 font-light max-w-2xl mx-auto mb-10 leading-relaxed opacity-0 animate-[fadeIn_0.8s_ease-out_0.6s_forwards]"
+            className="text-sm sm:text-base md:text-lg lg:text-xl text-white font-normal max-w-xl sm:max-w-2xl mx-auto mb-10 leading-relaxed drop-shadow-md opacity-0 animate-[fadeIn_0.8s_ease-out_0.6s_forwards]"
           >
             Uma igreja para quem busca viver o evangelho de forma real, simples e transformadora.
           </p>
