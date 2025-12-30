@@ -126,36 +126,21 @@ export function InstitutionalHeader() {
         </div>
       </div>
 
-      {/* Main Header - Solid background, high contrast */}
-      <div 
-        className={cn(
-          "bg-white border-b border-border transition-all duration-300",
-          isScrolled && "shadow-md"
-        )}
-      >
+      {/* Main Header - Solid background, subtle shadow always active */}
+      <div className="bg-white border-b border-border/50 shadow-sm shadow-black/5">
         <div className="container mx-auto px-4">
-          <div 
-            className={cn(
-              "flex items-center justify-between transition-all duration-500",
-              isScrolled ? "h-14" : "h-16 lg:h-20"
-            )}
-          >
+          <div className="flex items-center justify-between h-14 lg:h-16">
             {/* Logo and Church Name */}
             <Link 
               to="/" 
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-2.5 group"
             >
-              <div className={cn(
-                "transition-all duration-500",
-                isScrolled ? "scale-90" : "scale-100"
-              )}>
-                <Logo size={isScrolled ? 40 : 48} />
-              </div>
+              <Logo size={42} />
               <div className="hidden sm:block">
-                <p className="font-display font-semibold text-foreground text-lg leading-tight group-hover:text-promessa-600 transition-colors duration-300">
+                <p className="font-display font-semibold text-foreground text-base leading-tight group-hover:text-promessa-600 transition-colors duration-200">
                   Igreja da Promessa
                 </p>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-muted-foreground text-[11px]">
                   Hortolândia
                 </p>
               </div>
@@ -232,8 +217,8 @@ export function InstitutionalHeader() {
             : "max-h-0"
         )}
       >
-        <nav className="container mx-auto px-4 py-4 overflow-y-auto max-h-[calc(100vh-140px)]">
-          <ul className="space-y-1">
+        <nav className="container mx-auto px-4 py-5 overflow-y-auto max-h-[calc(100vh-140px)]">
+          <ul className="space-y-2">
             {menuItems.map((item, index) => (
               <li 
                 key={item.label}
@@ -249,12 +234,12 @@ export function InstitutionalHeader() {
                   <div>
                     <button
                       onClick={() => toggleMobileSubmenu(item.label)}
-                      className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/80 rounded-lg transition-all duration-300"
+                      className="flex items-center justify-between w-full px-4 py-3.5 text-base font-medium text-foreground hover:bg-muted/80 rounded-lg transition-all duration-200"
                     >
                       {item.label}
                       <ChevronDown
                         className={cn(
-                          "w-4 h-4 transition-transform duration-300",
+                          "w-4 h-4 transition-transform duration-200",
                           expandedMobileItem === item.label && "rotate-180"
                         )}
                       />
@@ -282,7 +267,7 @@ export function InstitutionalHeader() {
                             <Link
                               to={subItem.href}
                               onClick={() => setMobileMenuOpen(false)}
-                              className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-lg transition-all duration-300"
+                              className="block px-4 py-3 text-sm text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-lg transition-all duration-200"
                             >
                               {subItem.label}
                             </Link>
@@ -295,7 +280,7 @@ export function InstitutionalHeader() {
                   <Link
                     to={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-3 text-sm font-medium rounded-lg text-foreground hover:bg-muted transition-colors duration-200"
+                    className="block px-4 py-3.5 text-base font-medium rounded-lg text-foreground hover:bg-muted transition-colors duration-200"
                   >
                     {item.label}
                   </Link>
