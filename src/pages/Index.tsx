@@ -62,7 +62,10 @@ export default function Index() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-float opacity-0 animate-[fadeIn_1s_ease-out_1.2s_forwards]">
+        <div 
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          style={{ animation: "fadeIn 1s ease-out 1.2s forwards, float 3s ease-in-out 2.2s infinite", opacity: 0 }}
+        >
           <div className="w-6 h-10 border-2 border-white/40 rounded-full flex justify-center backdrop-blur-sm">
             <div className="w-1.5 h-3 bg-white/60 rounded-full mt-2 animate-pulse-soft" />
           </div>
