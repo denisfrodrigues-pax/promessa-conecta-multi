@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
-// Menu structure following Igreja Plena model - Title Case
+// Menu structure - Title Case
 const menuItems = [
   {
     label: "Quem Somos",
@@ -99,72 +99,9 @@ const socialLinks = [
   { icon: Facebook, href: "https://facebook.com/igrejadapromessa", label: "Facebook" },
 ];
 
-// Desktop Dropdown Item Component
-function DesktopNavItem({ item }: { item: typeof menuItems[0] }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  if (!item.subItems) {
-    return (
-      <Link
-        to={item.href}
-        className="inline-flex items-center px-3 py-2 text-[13px] font-medium text-foreground hover:text-promessa-600 hover:bg-muted rounded-md transition-colors duration-200 whitespace-nowrap"
-      >
-        {item.label}
-      </Link>
-    );
-  }
-
-  return (
-    <div 
-      className="relative"
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
-    >
-      <button
-        className={cn(
-          "inline-flex items-center gap-1 px-3 py-2 text-[13px] font-medium rounded-md transition-colors duration-200 whitespace-nowrap",
-          isOpen 
-            ? "text-promessa-600 bg-muted" 
-            : "text-foreground hover:text-promessa-600 hover:bg-muted"
-        )}
-      >
-        {item.label}
-        <ChevronDown 
-          className={cn(
-            "w-3.5 h-3.5 transition-transform duration-200",
-            isOpen && "rotate-180"
-          )} 
-        />
-      </button>
-
-      {/* Dropdown */}
-      <div
-        className={cn(
-          "absolute left-0 top-full pt-1 z-50 transition-all duration-200",
-          isOpen 
-            ? "opacity-100 visible translate-y-0" 
-            : "opacity-0 invisible -translate-y-1"
-        )}
-      >
-        <ul className="min-w-[220px] bg-white border border-border/80 rounded-lg shadow-lg shadow-black/10 py-2">
-          {item.subItems.map((subItem) => (
-            <li key={subItem.label}>
-              <Link
-                to={subItem.href}
-                className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 transition-colors duration-150 whitespace-nowrap"
-              >
-                {subItem.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
-
 export function InstitutionalHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
@@ -173,8 +110,7 @@ export function InstitutionalHeader() {
       {/* Top Bar - Desktop only */}
       <div className="hidden lg:block bg-promessa-700 text-primary-foreground">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-8">
-            {/* Social Icons */}
+          <div className="flex flex-row items-center justify-between h-8">
             <div className="flex flex-row items-center gap-3">
               {socialLinks.map((social) => (
                 <a
@@ -189,8 +125,6 @@ export function InstitutionalHeader() {
                 </a>
               ))}
             </div>
-
-            {/* Login Button */}
             <Button
               variant="ghost"
               size="sm"
@@ -226,10 +160,67 @@ export function InstitutionalHeader() {
               </div>
             </Link>
 
-            {/* Desktop Navigation - Explicit horizontal layout */}
+            {/* Desktop Navigation - EXPLICIT horizontal layout */}
             <nav className="hidden lg:flex flex-row items-center gap-x-1">
               {menuItems.map((item) => (
-                <DesktopNavItem key={item.label} item={item} />
+                item.subItems ? (
+                  // Dropdown item - EXPLICIT relative positioning
+                  <div 
+                    key={item.label}
+                    className="relative"
+                    onMouseEnter={() => setOpenDropdown(item.label)}
+                    onMouseLeave={() => setOpenDropdown(null)}
+                  >
+                    <button
+                      className={cn(
+                        "flex flex-row items-center gap-1 h-10 px-3 text-[13px] font-medium rounded-md transition-colors duration-200 whitespace-nowrap",
+                        openDropdown === item.label 
+                          ? "text-promessa-600 bg-muted" 
+                          : "text-foreground hover:text-promessa-600 hover:bg-muted"
+                      )}
+                    >
+                      {item.label}
+                      <ChevronDown 
+                        className={cn(
+                          "w-3.5 h-3.5 transition-transform duration-200",
+                          openDropdown === item.label && "rotate-180"
+                        )} 
+                      />
+                    </button>
+
+                    {/* Dropdown - EXPLICIT absolute, top-full, left-0, min-w, z-50 */}
+                    <div
+                      className={cn(
+                        "absolute left-0 top-full pt-1 z-50 transition-all duration-200 ease-out",
+                        openDropdown === item.label 
+                          ? "opacity-100 visible translate-y-0" 
+                          : "opacity-0 invisible -translate-y-2 pointer-events-none"
+                      )}
+                    >
+                      <ul className="min-w-[240px] bg-white border border-border rounded-lg shadow-lg shadow-black/10 py-2">
+                        {item.subItems.map((subItem) => (
+                          <li key={subItem.label}>
+                            <Link
+                              to={subItem.href}
+                              className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 transition-colors duration-150 whitespace-nowrap"
+                            >
+                              {subItem.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  // Direct link item
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    className="flex flex-row items-center h-10 px-3 text-[13px] font-medium text-foreground hover:text-promessa-600 hover:bg-muted rounded-md transition-colors duration-200 whitespace-nowrap"
+                  >
+                    {item.label}
+                  </Link>
+                )
               ))}
             </nav>
 
@@ -260,35 +251,35 @@ export function InstitutionalHeader() {
         onClick={closeMobileMenu}
       />
 
-      {/* Mobile Navigation Drawer - Full width */}
+      {/* Mobile Navigation Drawer - 100% width */}
       <div 
         className={cn(
-          "lg:hidden fixed top-14 left-0 right-0 bottom-0 w-full bg-white z-50 transform transition-transform duration-300 ease-out overflow-hidden",
+          "lg:hidden fixed top-14 left-0 right-0 bottom-0 w-full bg-white z-50 transform transition-transform duration-300 ease-out",
           mobileMenuOpen ? "translate-y-0" : "-translate-y-full"
         )}
       >
-        <nav className="h-full overflow-y-auto py-2">
+        <nav className="h-full w-full overflow-y-auto py-2">
           <Accordion type="single" collapsible className="w-full">
             {menuItems.map((item) => (
               item.subItems ? (
                 <AccordionItem 
                   key={item.label} 
                   value={item.label}
-                  className="border-b border-border/40 px-4"
+                  className="border-b border-border/40"
                 >
                   <AccordionTrigger 
-                    className="py-4 text-base font-medium text-foreground hover:text-promessa-600 hover:no-underline [&[data-state=open]]:text-promessa-600"
+                    className="px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600 hover:no-underline [&[data-state=open]]:text-promessa-600"
                   >
                     {item.label}
                   </AccordionTrigger>
-                  <AccordionContent className="pb-4">
-                    <ul className="space-y-0.5 ml-3 pl-4 border-l-2 border-promessa-200">
+                  <AccordionContent className="pb-3">
+                    <ul className="ml-5 pl-4 border-l-2 border-promessa-200 space-y-1">
                       {item.subItems.map((subItem) => (
                         <li key={subItem.label}>
                           <Link
                             to={subItem.href}
                             onClick={closeMobileMenu}
-                            className="block py-3 px-3 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md transition-colors duration-200"
+                            className="block py-3 px-4 text-[15px] font-normal text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md transition-colors duration-200"
                           >
                             {subItem.label}
                           </Link>
@@ -298,11 +289,11 @@ export function InstitutionalHeader() {
                   </AccordionContent>
                 </AccordionItem>
               ) : (
-                <div key={item.label} className="border-b border-border/40 px-4">
+                <div key={item.label} className="border-b border-border/40">
                   <Link
                     to={item.href}
                     onClick={closeMobileMenu}
-                    className="block py-4 text-base font-medium text-foreground hover:text-promessa-600 transition-colors duration-200"
+                    className="block px-5 py-4 text-base font-semibold text-foreground hover:text-promessa-600 transition-colors duration-200"
                   >
                     {item.label}
                   </Link>
@@ -312,9 +303,9 @@ export function InstitutionalHeader() {
           </Accordion>
 
           {/* Mobile Login Button */}
-          <div className="px-4 mt-6">
+          <div className="px-5 mt-6">
             <Button
-              className="w-full bg-promessa-700 hover:bg-promessa-800 text-primary-foreground h-12 text-base"
+              className="w-full bg-promessa-700 hover:bg-promessa-800 text-primary-foreground h-12 text-base font-medium"
               asChild
             >
               <Link to="/auth" onClick={closeMobileMenu}>
@@ -325,8 +316,8 @@ export function InstitutionalHeader() {
           </div>
 
           {/* Mobile Social Links */}
-          <div className="px-4 mt-8 pt-6 border-t border-border/40">
-            <p className="text-xs text-muted-foreground mb-4 uppercase tracking-wide">Siga-nos</p>
+          <div className="px-5 mt-8 pt-6 border-t border-border/40">
+            <p className="text-xs text-muted-foreground mb-4 uppercase tracking-wider font-medium">Siga-nos</p>
             <div className="flex flex-row items-center gap-5">
               {socialLinks.map((social) => (
                 <a
