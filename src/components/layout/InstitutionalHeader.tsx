@@ -13,14 +13,6 @@ import {
   Music2,
 } from "lucide-react";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -107,8 +99,74 @@ const socialLinks = [
   { icon: Facebook, href: "https://facebook.com/igrejadapromessa", label: "Facebook" },
 ];
 
+// Desktop Dropdown Item Component
+function DesktopNavItem({ item }: { item: typeof menuItems[0] }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!item.subItems) {
+    return (
+      <Link
+        to={item.href}
+        className="inline-flex items-center px-3 py-2 text-[13px] font-medium text-foreground hover:text-promessa-600 hover:bg-muted rounded-md transition-colors duration-200 whitespace-nowrap"
+      >
+        {item.label}
+      </Link>
+    );
+  }
+
+  return (
+    <div 
+      className="relative"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <button
+        className={cn(
+          "inline-flex items-center gap-1 px-3 py-2 text-[13px] font-medium rounded-md transition-colors duration-200 whitespace-nowrap",
+          isOpen 
+            ? "text-promessa-600 bg-muted" 
+            : "text-foreground hover:text-promessa-600 hover:bg-muted"
+        )}
+      >
+        {item.label}
+        <ChevronDown 
+          className={cn(
+            "w-3.5 h-3.5 transition-transform duration-200",
+            isOpen && "rotate-180"
+          )} 
+        />
+      </button>
+
+      {/* Dropdown */}
+      <div
+        className={cn(
+          "absolute left-0 top-full pt-1 z-50 transition-all duration-200",
+          isOpen 
+            ? "opacity-100 visible translate-y-0" 
+            : "opacity-0 invisible -translate-y-1"
+        )}
+      >
+        <ul className="min-w-[220px] bg-white border border-border/80 rounded-lg shadow-lg shadow-black/10 py-2">
+          {item.subItems.map((subItem) => (
+            <li key={subItem.label}>
+              <Link
+                to={subItem.href}
+                className="block px-4 py-2.5 text-sm text-foreground hover:text-promessa-600 hover:bg-muted/60 transition-colors duration-150 whitespace-nowrap"
+              >
+                {subItem.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 export function InstitutionalHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -117,7 +175,7 @@ export function InstitutionalHeader() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-8">
             {/* Social Icons */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-row items-center gap-3">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
@@ -151,13 +209,13 @@ export function InstitutionalHeader() {
       {/* Main Header */}
       <div className="bg-white border-b border-border/50 shadow-sm shadow-black/5">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-14 lg:h-16">
+          <div className="flex flex-row items-center justify-between h-14 lg:h-16">
             {/* Logo */}
             <Link 
               to="/" 
-              className="flex items-center gap-2.5 group flex-shrink-0"
+              className="flex flex-row items-center gap-2.5 group flex-shrink-0"
             >
-              <Logo size={40} />
+              <Logo size={38} />
               <div className="hidden sm:block">
                 <p className="font-display font-semibold text-foreground text-sm leading-tight group-hover:text-promessa-600 transition-colors duration-200">
                   Igreja da Promessa
@@ -168,50 +226,11 @@ export function InstitutionalHeader() {
               </div>
             </Link>
 
-            {/* Desktop Navigation - Horizontal layout */}
-            <nav className="hidden lg:flex items-center">
-              <NavigationMenu>
-                <NavigationMenuList className="flex flex-row items-center gap-x-1">
-                  {menuItems.map((item) => (
-                    <NavigationMenuItem key={item.label} className="relative">
-                      {item.subItems ? (
-                        <>
-                          <NavigationMenuTrigger 
-                            className="h-auto text-[13px] font-medium text-foreground bg-transparent px-2.5 py-1.5 hover:bg-muted hover:text-promessa-600 data-[state=open]:bg-muted data-[state=open]:text-promessa-600 transition-colors duration-200 whitespace-nowrap"
-                          >
-                            {item.label}
-                          </NavigationMenuTrigger>
-                          <NavigationMenuContent>
-                            <ul className="min-w-[220px] p-2 bg-white border border-border rounded-lg shadow-lg">
-                              {item.subItems.map((subItem) => (
-                                <li key={subItem.label}>
-                                  <NavigationMenuLink asChild>
-                                    <Link
-                                      to={subItem.href}
-                                      className="block select-none rounded-md px-3 py-2.5 text-sm text-foreground hover:bg-muted hover:text-promessa-600 transition-colors duration-200 whitespace-nowrap"
-                                    >
-                                      {subItem.label}
-                                    </Link>
-                                  </NavigationMenuLink>
-                                </li>
-                              ))}
-                            </ul>
-                          </NavigationMenuContent>
-                        </>
-                      ) : (
-                        <NavigationMenuLink asChild>
-                          <Link
-                            to={item.href}
-                            className="text-[13px] font-medium text-foreground px-2.5 py-1.5 rounded-md hover:bg-muted hover:text-promessa-600 transition-colors duration-200 whitespace-nowrap inline-flex items-center"
-                          >
-                            {item.label}
-                          </Link>
-                        </NavigationMenuLink>
-                      )}
-                    </NavigationMenuItem>
-                  ))}
-                </NavigationMenuList>
-              </NavigationMenu>
+            {/* Desktop Navigation - Explicit horizontal layout */}
+            <nav className="hidden lg:flex flex-row items-center gap-x-1">
+              {menuItems.map((item) => (
+                <DesktopNavItem key={item.label} item={item} />
+              ))}
             </nav>
 
             {/* Mobile Menu Button */}
@@ -231,42 +250,45 @@ export function InstitutionalHeader() {
       </div>
 
       {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 top-14 bg-black/50 z-40"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Mobile Navigation Drawer */}
       <div 
         className={cn(
-          "lg:hidden fixed top-14 right-0 bottom-0 w-full max-w-sm bg-white shadow-xl z-50 transform transition-transform duration-300 ease-out overflow-hidden",
-          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          "lg:hidden fixed inset-0 top-14 bg-black/40 z-40 transition-opacity duration-300",
+          mobileMenuOpen 
+            ? "opacity-100 visible" 
+            : "opacity-0 invisible pointer-events-none"
+        )}
+        onClick={closeMobileMenu}
+      />
+
+      {/* Mobile Navigation Drawer - Full width */}
+      <div 
+        className={cn(
+          "lg:hidden fixed top-14 left-0 right-0 bottom-0 w-full bg-white z-50 transform transition-transform duration-300 ease-out overflow-hidden",
+          mobileMenuOpen ? "translate-y-0" : "-translate-y-full"
         )}
       >
-        <nav className="h-full overflow-y-auto py-4 px-4">
+        <nav className="h-full overflow-y-auto py-2">
           <Accordion type="single" collapsible className="w-full">
             {menuItems.map((item) => (
               item.subItems ? (
                 <AccordionItem 
                   key={item.label} 
                   value={item.label}
-                  className="border-b border-border/50"
+                  className="border-b border-border/40 px-4"
                 >
                   <AccordionTrigger 
-                    className="py-4 text-base font-medium text-foreground hover:text-promessa-600 hover:no-underline"
+                    className="py-4 text-base font-medium text-foreground hover:text-promessa-600 hover:no-underline [&[data-state=open]]:text-promessa-600"
                   >
                     {item.label}
                   </AccordionTrigger>
                   <AccordionContent className="pb-4">
-                    <ul className="space-y-1 pl-4 border-l-2 border-promessa-200">
+                    <ul className="space-y-0.5 ml-3 pl-4 border-l-2 border-promessa-200">
                       {item.subItems.map((subItem) => (
                         <li key={subItem.label}>
                           <Link
                             to={subItem.href}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block py-2.5 px-3 text-sm text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md transition-colors duration-200"
+                            onClick={closeMobileMenu}
+                            className="block py-3 px-3 text-[15px] text-muted-foreground hover:text-promessa-600 hover:bg-promessa-50 rounded-md transition-colors duration-200"
                           >
                             {subItem.label}
                           </Link>
@@ -276,10 +298,10 @@ export function InstitutionalHeader() {
                   </AccordionContent>
                 </AccordionItem>
               ) : (
-                <div key={item.label} className="border-b border-border/50">
+                <div key={item.label} className="border-b border-border/40 px-4">
                   <Link
                     to={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={closeMobileMenu}
                     className="block py-4 text-base font-medium text-foreground hover:text-promessa-600 transition-colors duration-200"
                   >
                     {item.label}
@@ -290,12 +312,12 @@ export function InstitutionalHeader() {
           </Accordion>
 
           {/* Mobile Login Button */}
-          <div className="mt-6 pt-4 border-t border-border">
+          <div className="px-4 mt-6">
             <Button
-              className="w-full bg-promessa-700 hover:bg-promessa-800 text-primary-foreground"
+              className="w-full bg-promessa-700 hover:bg-promessa-800 text-primary-foreground h-12 text-base"
               asChild
             >
-              <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/auth" onClick={closeMobileMenu}>
                 <User className="w-4 h-4 mr-2" />
                 Entrar ou Cadastrar
               </Link>
@@ -303,9 +325,9 @@ export function InstitutionalHeader() {
           </div>
 
           {/* Mobile Social Links */}
-          <div className="mt-6 pt-4 border-t border-border">
-            <p className="text-xs text-muted-foreground mb-3">Siga-nos</p>
-            <div className="flex items-center gap-4">
+          <div className="px-4 mt-8 pt-6 border-t border-border/40">
+            <p className="text-xs text-muted-foreground mb-4 uppercase tracking-wide">Siga-nos</p>
+            <div className="flex flex-row items-center gap-5">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
