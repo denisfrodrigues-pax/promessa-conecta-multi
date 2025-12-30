@@ -12,45 +12,64 @@ export default function Index() {
 
       {/* Hero Section - with padding for fixed header */}
       <section 
-        className="relative flex flex-col items-center justify-center text-center min-h-screen pt-28 px-4"
-        style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
+        className="relative flex flex-col items-center justify-center text-center min-h-screen pt-28 px-4 overflow-hidden"
       >
-        <div className="animate-fade-in">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight text-white mb-6 drop-shadow-lg">
+        {/* Background with overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        
+        {/* Animated content */}
+        <div className="relative z-10 max-w-4xl mx-auto">
+          {/* Subtitle - location */}
+          <p 
+            className="text-sm sm:text-base uppercase tracking-[0.3em] text-white/70 font-medium mb-4 opacity-0 animate-[fadeIn_0.8s_ease-out_0.2s_forwards]"
+          >
+            Hortolândia - SP
+          </p>
+          
+          {/* Main title */}
+          <h1 
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight text-white mb-6 drop-shadow-2xl opacity-0 animate-[slideUp_0.8s_ease-out_0.4s_forwards]"
+          >
             Igreja da Promessa
           </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-white/90 font-light max-w-3xl mx-auto mb-4">
-            Hortolândia
-          </p>
-          <p className="text-base sm:text-lg text-white/80 font-light max-w-2xl mx-auto mb-10">
-            Uma comunidade de fé, amor e esperança. Venha crescer conosco!
+          
+          {/* Tagline */}
+          <p 
+            className="text-base sm:text-lg md:text-xl text-white/90 font-light max-w-2xl mx-auto mb-10 leading-relaxed opacity-0 animate-[fadeIn_0.8s_ease-out_0.6s_forwards]"
+          >
+            Uma igreja para quem busca viver o evangelho de forma real, simples e transformadora.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {/* Single CTA */}
+          <div 
+            className="opacity-0 animate-[slideUp_0.8s_ease-out_0.8s_forwards]"
+          >
             <Button 
               size="xl" 
-              className="bg-promessa-600 hover:bg-promessa-700 text-white shadow-lg transition-all duration-300"
+              className="group relative bg-white text-promessa-700 hover:bg-white/95 shadow-2xl transition-all duration-500 hover:shadow-white/20 hover:scale-105 active:scale-100 px-8 py-6 text-base font-semibold"
               asChild
             >
-              <Link to="/sou-novo" className="flex items-center">
-                Sou Novo Aqui
-                <Sparkles className="w-5 h-5 ml-2" />
+              <Link to="/sou-novo" className="flex items-center gap-2">
+                Conheça a Igreja
+                <Sparkles className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
               </Link>
             </Button>
           </div>
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-float">
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-            <div className="w-1.5 h-3 bg-white/70 rounded-full mt-2 animate-pulse-soft" />
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-float opacity-0 animate-[fadeIn_1s_ease-out_1.2s_forwards]">
+          <div className="w-6 h-10 border-2 border-white/40 rounded-full flex justify-center backdrop-blur-sm">
+            <div className="w-1.5 h-3 bg-white/60 rounded-full mt-2 animate-pulse-soft" />
           </div>
         </div>
+
+        {/* Decorative gradient overlay at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Service Times Section */}
