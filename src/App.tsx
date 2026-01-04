@@ -99,6 +99,10 @@ import WhatsAppTest from "@/pages/admin/WhatsAppTest";
 
 import NotFound from "./pages/NotFound";
 
+// Institutional Pages
+import QuemSomos from "@/pages/institutional/QuemSomos";
+import Contato from "@/pages/institutional/Contato";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -117,6 +121,12 @@ const App = () => (
           <Route path="/install" element={<InstallPWA />} />
           <Route path="/sou-novo" element={<SouNovo />} />
           <Route path="/contribuicoes" element={<Contribuicoes />} />
+          
+          {/* Institutional Pages */}
+          <Route path="/quem-somos" element={<QuemSomos />} />
+          <Route path="/quem-somos/:section" element={<QuemSomos />} />
+          <Route path="/contato" element={<Contato />} />
+          <Route path="/contato/:section" element={<Contato />} />
 
           {/* Admin Routes - only admin and financeiro */}
           <Route path="/admin" element={
