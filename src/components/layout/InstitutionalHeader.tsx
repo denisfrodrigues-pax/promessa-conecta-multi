@@ -156,20 +156,23 @@ export function InstitutionalHeader() {
         {/* Menu Desktop */}
         <nav className="flex items-center gap-6 font-medium">
           {/* 1. Quem Somos - COM dropdown */}
-          <div className="relative group">
-            <button className="flex items-center gap-1 hover:text-primary transition-colors">
+          <div className="relative group/dropdown">
+            <button className="flex items-center gap-1 py-2 hover:text-primary transition-colors">
               Quem Somos
-              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
+              <ChevronDown className="h-4 w-4 transition-transform duration-200 delay-150 group-hover/dropdown:rotate-180" />
             </button>
-            <div className="absolute top-full left-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out z-50">
-              <div className="w-64 rounded-lg border bg-white shadow-lg py-2 animate-fade-in">
-                <Link to="/quem-somos/teologia" className="block px-4 py-2 text-sm hover:bg-muted">Nossa Teologia</Link>
-                <Link to="/quem-somos/missao-visao" className="block px-4 py-2 text-sm hover:bg-muted">Missão e Visão</Link>
-                <Link to="/quem-somos/historia" className="block px-4 py-2 text-sm hover:bg-muted">Nossa História</Link>
-                <Link to="/quem-somos/pastores" className="block px-4 py-2 text-sm hover:bg-muted">Pastores</Link>
-                <Link to="/quem-somos/lideranca" className="block px-4 py-2 text-sm hover:bg-muted">Liderança</Link>
-                <Link to="/quem-somos/ministerios" className="block px-4 py-2 text-sm hover:bg-muted">Ministérios</Link>
-                <Link to="/quem-somos/por-que-participar" className="block px-4 py-2 text-sm hover:bg-muted">Por que participar</Link>
+            {/* Ponte invisível anti-flicker */}
+            <div className="absolute top-full left-0 h-2 w-full" />
+            {/* Dropdown com delay e transição suave */}
+            <div className="absolute top-[calc(100%+0.5rem)] left-0 opacity-0 invisible translate-y-1 group-hover/dropdown:opacity-100 group-hover/dropdown:visible group-hover/dropdown:translate-y-0 transition-all duration-200 delay-150 ease-out z-50">
+              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
+                <Link to="/quem-somos/teologia" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa Teologia</Link>
+                <Link to="/quem-somos/missao-visao" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Missão e Visão</Link>
+                <Link to="/quem-somos/historia" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa História</Link>
+                <Link to="/quem-somos/pastores" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Pastores</Link>
+                <Link to="/quem-somos/lideranca" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Liderança</Link>
+                <Link to="/quem-somos/ministerios" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Ministérios</Link>
+                <Link to="/quem-somos/por-que-participar" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Por que participar</Link>
               </div>
             </div>
           </div>
