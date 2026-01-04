@@ -72,43 +72,82 @@ export function InstitutionalHeader() {
 
         {/* Menu Desktop */}
         <nav className="flex items-center gap-6 font-medium">
-          {/* Dropdown Quem Somos */}
+          {/* 1. Quem Somos - COM dropdown */}
           <div className="relative group">
             <button className="flex items-center gap-1 hover:text-primary transition-colors">
               Quem Somos
             </button>
             <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
               <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
-                <Link to="/quem-somos/teologia" className="block px-4 py-2 text-sm hover:bg-muted">
-                  Nossa Teologia
-                </Link>
-                <Link to="/quem-somos/missao-visao" className="block px-4 py-2 text-sm hover:bg-muted">
-                  Missão e Visão
-                </Link>
-                <Link to="/quem-somos/historia" className="block px-4 py-2 text-sm hover:bg-muted">
-                  Nossa História
-                </Link>
-                <Link to="/quem-somos/pastores" className="block px-4 py-2 text-sm hover:bg-muted">
-                  Pastores
-                </Link>
-                <Link to="/quem-somos/lideranca" className="block px-4 py-2 text-sm hover:bg-muted">
-                  Liderança
-                </Link>
-                <Link to="/quem-somos/ministerios" className="block px-4 py-2 text-sm hover:bg-muted">
-                  Ministérios
-                </Link>
-                <Link to="/quem-somos/por-que-participar" className="block px-4 py-2 text-sm hover:bg-muted">
-                  Por que participar
-                </Link>
+                <Link to="/quem-somos/teologia" className="block px-4 py-2 text-sm hover:bg-muted">Nossa Teologia</Link>
+                <Link to="/quem-somos/missao-visao" className="block px-4 py-2 text-sm hover:bg-muted">Missão e Visão</Link>
+                <Link to="/quem-somos/historia" className="block px-4 py-2 text-sm hover:bg-muted">Nossa História</Link>
+                <Link to="/quem-somos/pastores" className="block px-4 py-2 text-sm hover:bg-muted">Pastores</Link>
+                <Link to="/quem-somos/lideranca" className="block px-4 py-2 text-sm hover:bg-muted">Liderança</Link>
+                <Link to="/quem-somos/ministerios" className="block px-4 py-2 text-sm hover:bg-muted">Ministérios</Link>
+                <Link to="/quem-somos/por-que-participar" className="block px-4 py-2 text-sm hover:bg-muted">Por que participar</Link>
               </div>
             </div>
           </div>
-          <Link to="/bases">Base</Link>
-          <Link to="/conteudo">Conteúdo</Link>
-          <Link to="/eventos">Eventos</Link>
-          <Link to="/contribuicoes">Contribua</Link>
-          <Link to="/contato">Contato</Link>
-          <Link to="/sou-novo">Cadastro</Link>
+
+          {/* 2. Participe de uma Base - SIMPLES */}
+          <Link to="/bases" className="hover:text-primary transition-colors">Participe de uma Base</Link>
+
+          {/* 3. Conteúdo - COM dropdown */}
+          <div className="relative group">
+            <button className="flex items-center gap-1 hover:text-primary transition-colors">
+              Conteúdo
+            </button>
+            <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
+              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
+                <Link to="/conteudo/pregacoes" className="block px-4 py-2 text-sm hover:bg-muted">Pregações</Link>
+                <Link to="/conteudo/estudos" className="block px-4 py-2 text-sm hover:bg-muted">Estudos</Link>
+                <Link to="/conteudo/devocionais" className="block px-4 py-2 text-sm hover:bg-muted">Devocionais</Link>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Participe - COM dropdown */}
+          <div className="relative group">
+            <button className="flex items-center gap-1 hover:text-primary transition-colors">
+              Participe
+            </button>
+            <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
+              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
+                <Link to="/eventos" className="block px-4 py-2 text-sm hover:bg-muted">Eventos</Link>
+                <Link to="/oracao" className="block px-4 py-2 text-sm hover:bg-muted">Pedidos de Oração</Link>
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Contribua - SIMPLES */}
+          <Link to="/contribuicoes" className="hover:text-primary transition-colors">Contribua</Link>
+
+          {/* 6. Contato - COM dropdown */}
+          <div className="relative group">
+            <button className="flex items-center gap-1 hover:text-primary transition-colors">
+              Contato
+            </button>
+            <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
+              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
+                <Link to="/contato" className="block px-4 py-2 text-sm hover:bg-muted">Fale Conosco</Link>
+                <Link to="/contato#localizacao" className="block px-4 py-2 text-sm hover:bg-muted">Onde Estamos</Link>
+              </div>
+            </div>
+          </div>
+
+          {/* 7. Cadastro - COM dropdown */}
+          <div className="relative group">
+            <button className="flex items-center gap-1 hover:text-primary transition-colors">
+              Cadastro
+            </button>
+            <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
+              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
+                <Link to="/sou-novo" className="block px-4 py-2 text-sm hover:bg-muted">Sou Novo</Link>
+                <Link to="/auth" className="block px-4 py-2 text-sm hover:bg-muted">Entrar</Link>
+              </div>
+            </div>
+          </div>
         </nav>
       </div>
     </header>
