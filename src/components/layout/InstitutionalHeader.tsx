@@ -36,7 +36,7 @@ export function InstitutionalHeader() {
   return (
     <header className="sticky top-0 left-0 right-0 z-50">
       {/* Top Bar - Desktop only */}
-      <div className="hidden lg:block bg-promessa-700 text-primary-foreground">
+      <div className="hidden xl:block bg-promessa-700 text-primary-foreground">
         <div className="container mx-auto px-4">
           <div className="flex flex-row items-center justify-between h-8">
             <div className="flex flex-row items-center gap-3">
@@ -71,7 +71,7 @@ export function InstitutionalHeader() {
       {/* Main Header */}
       <div className="bg-white border-b border-border/50 shadow-sm shadow-black/5">
         <div className="container mx-auto px-4">
-          <div className="flex flex-row items-center justify-between h-14 lg:h-16">
+          <div className="flex flex-row items-center justify-between h-14 xl:h-16">
             {/* Logo */}
             <Link 
               to="/" 
@@ -80,12 +80,12 @@ export function InstitutionalHeader() {
               <img
                 src={logoPromessaHortolandia}
                 alt="Promessa Hortolândia"
-                className="h-10 lg:h-12 w-auto object-contain shrink-0"
+                className="h-10 xl:h-12 w-auto object-contain shrink-0"
               />
             </Link>
 
             {/* ========== DESKTOP NAVIGATION ========== */}
-            <nav className="hidden lg:flex flex-row items-center gap-x-6">
+            <nav className="hidden xl:flex flex-row items-center gap-x-6">
               
               {/* Item 1: Quem somos - Com dropdown */}
               <div 
@@ -255,7 +255,7 @@ export function InstitutionalHeader() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors duration-200"
+              className="xl:hidden p-2 rounded-lg hover:bg-muted transition-colors duration-200"
               aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
             >
               {mobileMenuOpen ? (
@@ -271,7 +271,7 @@ export function InstitutionalHeader() {
       {/* Mobile Menu Overlay */}
       <div 
         className={cn(
-          "lg:hidden fixed inset-0 top-14 bg-black/40 z-40 transition-opacity duration-300",
+          "xl:hidden fixed inset-0 top-14 bg-black/40 z-40 transition-opacity duration-300",
           mobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
         )}
         onClick={closeMobileMenu}
@@ -280,7 +280,7 @@ export function InstitutionalHeader() {
       {/* ========== MOBILE NAVIGATION DRAWER ========== */}
       <div 
         className={cn(
-          "lg:hidden fixed top-14 left-0 right-0 bottom-0 w-full bg-white z-50 transform transition-transform duration-300 ease-out",
+          "xl:hidden fixed top-14 left-0 right-0 bottom-0 w-full bg-white z-50 transform transition-transform duration-300 ease-out",
           mobileMenuOpen ? "translate-y-0" : "-translate-y-full"
         )}
       >
