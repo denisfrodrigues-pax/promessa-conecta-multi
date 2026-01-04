@@ -161,8 +161,8 @@ export function InstitutionalHeader() {
               Quem Somos
               <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
             </button>
-            <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
-              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
+            <div className="absolute top-full left-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out z-50">
+              <div className="w-64 rounded-lg border bg-white shadow-lg py-2 animate-fade-in">
                 <Link to="/quem-somos/teologia" className="block px-4 py-2 text-sm hover:bg-muted">Nossa Teologia</Link>
                 <Link to="/quem-somos/missao-visao" className="block px-4 py-2 text-sm hover:bg-muted">Missão e Visão</Link>
                 <Link to="/quem-somos/historia" className="block px-4 py-2 text-sm hover:bg-muted">Nossa História</Link>
