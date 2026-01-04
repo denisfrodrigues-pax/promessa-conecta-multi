@@ -174,68 +174,23 @@ export function InstitutionalHeader() {
             </div>
           </div>
 
-          {/* 2. Participe de uma Base - SIMPLES */}
-          <Link to="/bases" className="hover:text-primary transition-colors">Participe de uma Base</Link>
+          {/* 2. Base - SIMPLES */}
+          <Link to="/bases" className="hover:text-primary transition-colors">Base</Link>
 
-          {/* 3. Conteúdo - COM dropdown */}
-          <div className="relative group">
-            <button className="flex items-center gap-1 hover:text-primary transition-colors">
-              Conteúdo
-              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
-            </button>
-            <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
-              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
-                <Link to="/conteudo/pregacoes" className="block px-4 py-2 text-sm hover:bg-muted">Pregações</Link>
-                <Link to="/conteudo/estudos" className="block px-4 py-2 text-sm hover:bg-muted">Estudos</Link>
-                <Link to="/conteudo/devocionais" className="block px-4 py-2 text-sm hover:bg-muted">Devocionais</Link>
-              </div>
-            </div>
-          </div>
+          {/* 3. Conteúdo - SIMPLES */}
+          <Link to="/conteudo" className="hover:text-primary transition-colors">Conteúdo</Link>
 
-          {/* 4. Participe - COM dropdown */}
-          <div className="relative group">
-            <button className="flex items-center gap-1 hover:text-primary transition-colors">
-              Participe
-              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
-            </button>
-            <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
-              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
-                <Link to="/eventos" className="block px-4 py-2 text-sm hover:bg-muted">Eventos</Link>
-                <Link to="/oracao" className="block px-4 py-2 text-sm hover:bg-muted">Pedidos de Oração</Link>
-              </div>
-            </div>
-          </div>
+          {/* 4. Eventos - SIMPLES */}
+          <Link to="/eventos" className="hover:text-primary transition-colors">Eventos</Link>
 
           {/* 5. Contribua - SIMPLES */}
           <Link to="/contribuicoes" className="hover:text-primary transition-colors">Contribua</Link>
 
-          {/* 6. Contato - COM dropdown */}
-          <div className="relative group">
-            <button className="flex items-center gap-1 hover:text-primary transition-colors">
-              Contato
-              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
-            </button>
-            <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
-              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
-                <Link to="/contato" className="block px-4 py-2 text-sm hover:bg-muted">Fale Conosco</Link>
-                <Link to="/contato#localizacao" className="block px-4 py-2 text-sm hover:bg-muted">Onde Estamos</Link>
-              </div>
-            </div>
-          </div>
+          {/* 6. Contato - SIMPLES */}
+          <Link to="/contato" className="hover:text-primary transition-colors">Contato</Link>
 
-          {/* 7. Cadastro - COM dropdown */}
-          <div className="relative group">
-            <button className="flex items-center gap-1 hover:text-primary transition-colors">
-              Cadastro
-              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
-            </button>
-            <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
-              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
-                <Link to="/sou-novo" className="block px-4 py-2 text-sm hover:bg-muted">Sou Novo</Link>
-                <Link to="/auth" className="block px-4 py-2 text-sm hover:bg-muted">Entrar</Link>
-              </div>
-            </div>
-          </div>
+          {/* 7. Cadastro - SIMPLES */}
+          <Link to="/sou-novo" className="hover:text-primary transition-colors">Cadastro</Link>
         </nav>
       </div>
     </header>
