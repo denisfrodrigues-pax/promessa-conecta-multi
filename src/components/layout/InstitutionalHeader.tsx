@@ -159,6 +159,7 @@ export function InstitutionalHeader() {
           <div className="relative group">
             <button className="flex items-center gap-1 hover:text-primary transition-colors">
               Quem Somos
+              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
             </button>
             <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
               <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
@@ -180,6 +181,7 @@ export function InstitutionalHeader() {
           <div className="relative group">
             <button className="flex items-center gap-1 hover:text-primary transition-colors">
               Conteúdo
+              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
             </button>
             <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
               <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
@@ -194,6 +196,7 @@ export function InstitutionalHeader() {
           <div className="relative group">
             <button className="flex items-center gap-1 hover:text-primary transition-colors">
               Participe
+              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
             </button>
             <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
               <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
@@ -210,6 +213,7 @@ export function InstitutionalHeader() {
           <div className="relative group">
             <button className="flex items-center gap-1 hover:text-primary transition-colors">
               Contato
+              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
             </button>
             <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
               <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
@@ -223,6 +227,7 @@ export function InstitutionalHeader() {
           <div className="relative group">
             <button className="flex items-center gap-1 hover:text-primary transition-colors">
               Cadastro
+              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
             </button>
             <div className="absolute top-full left-0 mt-2 hidden group-hover:block z-50">
               <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
