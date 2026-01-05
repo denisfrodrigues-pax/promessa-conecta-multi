@@ -5,7 +5,11 @@ import {
   HandHeart,
   Target,
   Eye,
-  ChevronRight
+  ChevronRight,
+  Sparkles,
+  TrendingUp,
+  HeartHandshake,
+  Share2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -346,7 +350,100 @@ export default function QuemSomos() {
         </div>
       </section>
 
-      {/* 7. Por que Participar */}
+      {/* 7. Primeiros Passos — Discipulado */}
+      <section className="py-16 lg:py-24 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+                Primeiros Passos
+              </h2>
+              <p className="text-xl text-promessa-600 font-medium mb-4">
+                O caminho para caminhar com Jesus e com a igreja
+              </p>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                Nosso processo de discipulado é simples, intencional e centrado em Jesus. Cada etapa foi pensada para ajudar você a crescer na fé e encontrar o seu lugar.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {/* Conhecer */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg transition-shadow duration-300 group">
+                <div className="w-14 h-14 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
+                  <Sparkles className="w-7 h-7 text-promessa-600 group-hover:text-white transition-colors duration-300" />
+                </div>
+                <div className="mb-2">
+                  <span className="text-sm font-bold text-promessa-600">01</span>
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-3">Conhecer</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Primeiro contato com a fé e com a igreja, apresentando Jesus e a cultura da igreja de forma acolhedora.
+                </p>
+              </div>
+
+              {/* Crescer */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg transition-shadow duration-300 group">
+                <div className="w-14 h-14 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
+                  <TrendingUp className="w-7 h-7 text-promessa-600 group-hover:text-white transition-colors duration-300" />
+                </div>
+                <div className="mb-2">
+                  <span className="text-sm font-bold text-promessa-600">02</span>
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-3">Crescer</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Curso "Primeiros Passos" com 4 encontros que ensinam os fundamentos da fé cristã e ajudam a desenvolver hábitos espirituais em comunidade.
+                </p>
+              </div>
+
+              {/* Servir */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg transition-shadow duration-300 group">
+                <div className="w-14 h-14 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
+                  <HeartHandshake className="w-7 h-7 text-promessa-600 group-hover:text-white transition-colors duration-300" />
+                </div>
+                <div className="mb-2">
+                  <span className="text-sm font-bold text-promessa-600">03</span>
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-3">Servir</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Descoberta de dons e engajamento em ministérios da igreja com propósito e acompanhamento.
+                </p>
+              </div>
+
+              {/* Multiplicar */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg transition-shadow duration-300 group">
+                <div className="w-14 h-14 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
+                  <Share2 className="w-7 h-7 text-promessa-600 group-hover:text-white transition-colors duration-300" />
+                </div>
+                <div className="mb-2">
+                  <span className="text-sm font-bold text-promessa-600">04</span>
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-3">Multiplicar</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Capacitação para discipular outras pessoas, liderar e viver em missão.
+                </p>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <Button 
+                asChild
+                size="lg"
+                className="bg-promessa-600 hover:bg-promessa-700 text-white"
+              >
+                <Link to="/sou-novo">
+                  Quero dar meus Primeiros Passos
+                  <ChevronRight className="w-5 h-5 ml-2" />
+                </Link>
+              </Button>
+              <p className="text-muted-foreground text-sm mt-4">
+                Sem pressão. No seu ritmo. Com propósito.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. Por que Participar */}
       <section className="py-16 lg:py-24 bg-promessa-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
