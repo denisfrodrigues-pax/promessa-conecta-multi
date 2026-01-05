@@ -60,13 +60,13 @@ export function InstitutionalHeader() {
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
                   <div className="flex flex-col gap-3 pl-4">
+                    <Link onClick={closeMenu} to="/quem-somos" className="text-muted-foreground hover:text-foreground font-medium">Visão Geral</Link>
                     <Link onClick={closeMenu} to="/quem-somos/teologia" className="text-muted-foreground hover:text-foreground">Nossa Teologia</Link>
                     <Link onClick={closeMenu} to="/quem-somos/missao-visao" className="text-muted-foreground hover:text-foreground">Missão e Visão</Link>
                     <Link onClick={closeMenu} to="/quem-somos/historia" className="text-muted-foreground hover:text-foreground">Nossa História</Link>
                     <Link onClick={closeMenu} to="/quem-somos/pastores" className="text-muted-foreground hover:text-foreground">Pastores</Link>
-                    <Link onClick={closeMenu} to="/quem-somos/lideranca" className="text-muted-foreground hover:text-foreground">Liderança</Link>
                     <Link onClick={closeMenu} to="/quem-somos/ministerios" className="text-muted-foreground hover:text-foreground">Ministérios</Link>
-                    <Link onClick={closeMenu} to="/quem-somos/por-que-participar" className="text-muted-foreground hover:text-foreground">Por que participar</Link>
+                    <Link onClick={closeMenu} to="/primeiros-passos" className="text-promessa-600 hover:text-promessa-700 font-medium">Primeiros Passos</Link>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -166,13 +166,14 @@ export function InstitutionalHeader() {
             {/* Dropdown com delay e transição suave */}
             <div className="absolute top-[calc(100%+0.5rem)] left-0 opacity-0 invisible translate-y-1 group-hover/dropdown:opacity-100 group-hover/dropdown:visible group-hover/dropdown:translate-y-0 transition-all duration-200 delay-150 ease-out z-50">
               <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
+                <Link to="/quem-somos" className="block px-4 py-2 text-sm font-medium hover:bg-muted transition-colors">Visão Geral</Link>
                 <Link to="/quem-somos/teologia" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa Teologia</Link>
                 <Link to="/quem-somos/missao-visao" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Missão e Visão</Link>
                 <Link to="/quem-somos/historia" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa História</Link>
                 <Link to="/quem-somos/pastores" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Pastores</Link>
-                <Link to="/quem-somos/lideranca" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Liderança</Link>
                 <Link to="/quem-somos/ministerios" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Ministérios</Link>
-                <Link to="/quem-somos/por-que-participar" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Por que participar</Link>
+                <div className="border-t my-1" />
+                <Link to="/primeiros-passos" className="block px-4 py-2 text-sm text-promessa-600 font-medium hover:bg-promessa-50 transition-colors">Primeiros Passos</Link>
               </div>
             </div>
           </div>
