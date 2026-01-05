@@ -15,6 +15,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import familiaPastoral from "@/assets/familia-pastoral.png";
 
 const identityCards = [
   {
@@ -311,9 +312,13 @@ export default function QuemSomos() {
             </h2>
 
             <div className="bg-muted/30 rounded-2xl p-6 lg:p-10 border border-border/50">
-              {/* Foto placeholder */}
-              <div className="w-48 h-48 lg:w-56 lg:h-56 bg-promessa-100 rounded-full mx-auto mb-8 flex items-center justify-center">
-                <Users className="w-20 h-20 text-promessa-300" />
+              {/* Foto da Família Pastoral */}
+              <div className="w-64 h-64 lg:w-80 lg:h-80 mx-auto mb-8 overflow-hidden rounded-2xl shadow-lg">
+                <img 
+                  src={familiaPastoral} 
+                  alt="Família Pastoral - Denis, Fran, Arthur e Heitor"
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               <div className="text-center mb-8">
@@ -414,8 +419,7 @@ export default function QuemSomos() {
               <Button 
                 asChild
                 size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white/10"
+                className="bg-white/20 backdrop-blur-sm text-white border-2 border-white hover:bg-white hover:text-promessa-700"
               >
                 <Link to="/contato/fale-conosco">
                   Fale conosco
@@ -424,8 +428,7 @@ export default function QuemSomos() {
               <Button 
                 asChild
                 size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white/10"
+                className="bg-white/20 backdrop-blur-sm text-white border-2 border-white hover:bg-white hover:text-promessa-700"
               >
                 <Link to="/sou-novo">
                   Sou novo por aqui
