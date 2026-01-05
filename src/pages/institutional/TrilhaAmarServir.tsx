@@ -36,10 +36,10 @@ const blocos = [
 ];
 
 const modulos = [
-  { numero: 1, titulo: "Salvação e Nova Vida", descricao: "O que significa ser salvo e como viver essa nova vida em Cristo." },
-  { numero: 2, titulo: "Bíblia e Oração", descricao: "Como estudar a Palavra de Deus e desenvolver uma vida de oração." },
-  { numero: 3, titulo: "Igreja e Comunidade", descricao: "A importância de viver em comunidade e fazer parte de uma Base." },
-  { numero: 4, titulo: "Dons e Serviço", descricao: "Descobrir seus dons e como usá-los para servir a Deus e às pessoas." }
+  { numero: 1, titulo: "Quem somos", descricao: "Apresentação da identidade, missão, visão e cultura da igreja." },
+  { numero: 2, titulo: "Quem é Jesus", descricao: "Apresentação da pessoa de Jesus e sua centralidade na fé cristã e na igreja." },
+  { numero: 3, titulo: "No que cremos", descricao: "Apresentação das principais doutrinas e fundamentos bíblicos da nossa fé." },
+  { numero: 4, titulo: "Amar e Servir", descricao: "Apresentação da cultura de serviço, voluntariado e engajamento na igreja." }
 ];
 
 export default function TrilhaAmarServir() {
@@ -119,7 +119,7 @@ export default function TrilhaAmarServir() {
               O caminho para caminhar com Jesus e com a igreja
             </p>
             <p className="text-lg text-white/70 max-w-2xl mx-auto">
-              Nosso processo de discipulado é simples, intencional e centrado em Jesus.
+              A Trilha Amar e Servir é o caminho de discipulado da igreja, criada para ajudar pessoas a conhecerem Jesus, a igreja e viverem a fé de forma prática e relacional.
             </p>
           </div>
         </div>

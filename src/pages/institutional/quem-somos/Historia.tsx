@@ -44,7 +44,7 @@ export default function HistoriaPage() {
                 <h2 className="text-xl font-bold text-promessa-700">O chamado</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                Essa igreja nasceu do desejo de ver pessoas vivendo uma fé simples, bíblica e relevante.
+                Essa igreja nasceu do desejo de ver pessoas vivendo uma fé simples, bíblica e relevante, encontrando propósito por meio do relacionamento com Jesus e com outras pessoas.
               </p>
             </div>
 
@@ -55,18 +55,18 @@ export default function HistoriaPage() {
                 <h2 className="text-xl font-bold text-promessa-700">O tempo de preparo</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                Em 2023, Denis e Fran, junto com seus filhos Arthur e Heitor, foram chamados para liderar um projeto de plantação de igreja em Hortolândia.
+                Em 2023, a família pastoral Denis e Fran, juntamente com seus filhos Arthur e Heitor, foram chamados para liderar um projeto de plantação de uma nova igreja no centro da cidade de Hortolândia. Entre janeiro e março, outras pessoas foram chamadas para compor o grupo base, iniciando reuniões com foco em alinhamento, missão e direção de Deus.
               </p>
             </div>
 
-            {/* O início */}
+            {/* O início dos cultos públicos */}
             <div className="bg-muted/30 rounded-2xl p-6 lg:p-8 border border-border/50">
               <div className="flex items-center gap-3 mb-4">
                 <span className="w-10 h-10 bg-promessa-600 rounded-full flex items-center justify-center text-white font-bold">3</span>
-                <h2 className="text-xl font-bold text-promessa-700">O início</h2>
+                <h2 className="text-xl font-bold text-promessa-700">O início dos cultos públicos</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                Após um período de reuniões em casas e alinhamento ministerial, o primeiro culto público aconteceu em 02 de março de 2024.
+                Em janeiro de 2024, após a definição do local, iniciamos as adequações do espaço e, em 02 de março de 2024, realizamos nosso primeiro culto público. Desde então, seguimos em processo de consolidação, confiantes de que em cada etapa Deus tem nos direcionado, corrigido e cuidado de nós.
               </p>
             </div>
 
