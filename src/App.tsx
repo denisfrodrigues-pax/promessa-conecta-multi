@@ -102,6 +102,12 @@ import NotFound from "./pages/NotFound";
 // Institutional Pages
 import QuemSomos from "@/pages/institutional/QuemSomos";
 import Contato from "@/pages/institutional/Contato";
+import Teologia from "@/pages/institutional/quem-somos/Teologia";
+import MissaoVisao from "@/pages/institutional/quem-somos/MissaoVisao";
+import HistoriaPage from "@/pages/institutional/quem-somos/Historia";
+import Pastores from "@/pages/institutional/quem-somos/Pastores";
+import Ministerios from "@/pages/institutional/quem-somos/Ministerios";
+import PrimeirosPassos from "@/pages/institutional/PrimeirosPassos";
 
 const queryClient = new QueryClient();
 
@@ -124,7 +130,12 @@ const App = () => (
           
           {/* Institutional Pages */}
           <Route path="/quem-somos" element={<QuemSomos />} />
-          <Route path="/quem-somos/:section" element={<QuemSomos />} />
+          <Route path="/quem-somos/teologia" element={<Teologia />} />
+          <Route path="/quem-somos/missao-visao" element={<MissaoVisao />} />
+          <Route path="/quem-somos/historia" element={<HistoriaPage />} />
+          <Route path="/quem-somos/pastores" element={<Pastores />} />
+          <Route path="/quem-somos/ministerios" element={<Ministerios />} />
+          <Route path="/primeiros-passos" element={<PrimeirosPassos />} />
           <Route path="/contato" element={<Contato />} />
           <Route path="/contato/:section" element={<Contato />} />
 

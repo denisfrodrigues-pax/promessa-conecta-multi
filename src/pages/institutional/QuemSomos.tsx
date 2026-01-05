@@ -3,23 +3,16 @@ import {
   Heart, 
   Users, 
   HandHeart,
-  Target,
-  Eye,
   ChevronRight,
-  Sparkles,
-  TrendingUp,
-  HeartHandshake,
-  Share2
+  BookOpen,
+  Target,
+  History,
+  UserCircle,
+  Layers,
+  Sparkles
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import familiaPastoral from "@/assets/familia-pastoral.png";
 
 const identityCards = [
   {
@@ -39,85 +32,42 @@ const identityCards = [
   }
 ];
 
-const theologyGroups = [
+const hubCards = [
   {
-    id: "deus-criacao",
-    title: "Sobre Deus e a Criação",
-    beliefs: [
-      "Cremos na Trindade Divina",
-      "Cremos que Deus criou o mundo"
-    ]
+    icon: BookOpen,
+    title: "Nossa Teologia",
+    description: "Cremos nas verdades bíblicas históricas, vividas com fé, responsabilidade e compromisso cristão.",
+    link: "/quem-somos/teologia",
+    cta: "Conhecer nossa teologia"
   },
   {
-    id: "biblia",
-    title: "Sobre a Bíblia",
-    beliefs: [
-      "Cremos na Bíblia Sagrada como Palavra inspirada de Deus"
-    ]
+    icon: Target,
+    title: "Missão e Visão",
+    description: "Existimos para amar e servir a Deus e às pessoas, vivendo uma fé relacional e relevante.",
+    link: "/quem-somos/missao-visao",
+    cta: "Ver missão e visão"
   },
   {
-    id: "ser-humano-salvacao",
-    title: "Sobre o Ser Humano e a Salvação",
-    beliefs: [
-      "Cremos na queda e na restauração do ser humano",
-      "Cremos em Jesus Cristo como Salvador e Mediador",
-      "Cremos na eleição e no chamado",
-      "Cremos na conversão, regeneração, justificação e adoção",
-      "Cremos na santificação e perseverança"
-    ]
+    icon: History,
+    title: "Nossa História",
+    description: "Uma igreja que nasceu de um chamado, construída com oração, relacionamento e propósito.",
+    link: "/quem-somos/historia",
+    cta: "Nossa história"
   },
   {
-    id: "espirito-santo",
-    title: "Sobre o Espírito Santo",
-    beliefs: [
-      "Cremos no batismo no Espírito Santo",
-      "Cremos nos dons espirituais"
-    ]
+    icon: UserCircle,
+    title: "Liderança Pastoral",
+    description: "Conheça quem pastoreia e cuida da igreja com foco em pessoas e discipulado.",
+    link: "/quem-somos/pastores",
+    cta: "Conhecer os pastores"
   },
   {
-    id: "vida-crista",
-    title: "Sobre a Vida Cristã",
-    beliefs: [
-      "Cremos na oração e sua eficácia",
-      "Cremos na cura divina",
-      "Cremos na evangelização e no discipulado",
-      "Cremos na sã doutrina",
-      "Cremos na abstinência e na temperança",
-      "Cremos na submissão às autoridades e na liberdade de consciência"
-    ]
-  },
-  {
-    id: "igreja-ordenancas",
-    title: "Sobre a Igreja e as Ordenanças",
-    beliefs: [
-      "Cremos no batismo por imersão",
-      "Cremos no lava-pés",
-      "Cremos na Ceia do Senhor",
-      "Cremos na manutenção da obra por meio de dízimos e ofertas",
-      "Cremos na igreja de Cristo",
-      "Cremos no casamento, no lar e na família"
-    ]
-  },
-  {
-    id: "fim-tempos",
-    title: "Sobre o Fim dos Tempos",
-    beliefs: [
-      "Cremos na mortalidade da alma",
-      "Cremos na segunda vinda de Cristo",
-      "Cremos nas duas ressurreições",
-      "Cremos no milênio",
-      "Cremos no juízo final",
-      "Cremos na extinção da maldade",
-      "Cremos na nova terra, lar dos remidos"
-    ]
+    icon: Layers,
+    title: "Ministérios",
+    description: "Cada ministério existe para servir pessoas e glorificar a Deus.",
+    link: "/quem-somos/ministerios",
+    cta: "Ver ministérios"
   }
-];
-
-const whyParticipate = [
-  "Uma igreja que tem Jesus como centro de tudo",
-  "Ensino fiel e relevante da Palavra de Deus",
-  "Relacionamentos saudáveis e intencionais",
-  "Uma fé prática para a vida real"
 ];
 
 export default function QuemSomos() {
@@ -130,22 +80,28 @@ export default function QuemSomos() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
+            <span className="inline-block text-white/70 text-sm font-medium uppercase tracking-wider mb-4">
+              Igreja da Promessa Hortolândia
+            </span>
             <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 leading-tight">
-              Somos uma igreja para pessoas reais
+              Quem Somos
             </h1>
-            <p className="text-xl lg:text-2xl text-white/90 mb-4 font-medium">
+            <p className="text-2xl lg:text-3xl text-white/95 mb-4 font-medium">
+              Somos uma igreja para pessoas reais
+            </p>
+            <p className="text-lg text-white/80 mb-4">
               Que estão em busca de conhecer e se relacionar com um Deus real.
             </p>
-            <p className="text-lg text-white/80 leading-relaxed mb-8 max-w-2xl mx-auto">
+            <p className="text-base text-white/70 leading-relaxed mb-8 max-w-2xl mx-auto">
               Somos uma igreja cristã em Hortolândia, comprometida com uma fé bíblica, simples e vivida na prática, onde pessoas caminham juntas no relacionamento com Deus e com outras pessoas.
             </p>
-            <a 
-              href="#historia" 
+            <Link 
+              to="/quem-somos/historia"
               className="inline-flex items-center gap-2 bg-white text-promessa-700 font-semibold px-6 py-3 rounded-lg hover:bg-white/90 transition-colors duration-200"
             >
               Conheça nossa história
               <ChevronRight className="w-5 h-5" />
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -185,365 +141,90 @@ export default function QuemSomos() {
         </div>
       </section>
 
-      {/* 3. Missão e Visão */}
-      <section className="py-16 lg:py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground text-center mb-12">
-              Missão e Visão
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Missão */}
-              <div className="bg-white rounded-2xl p-8 shadow-sm border border-border/50">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-promessa-600 rounded-xl flex items-center justify-center">
-                    <Target className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-foreground">Nossa Missão</h3>
-                </div>
-                <p className="text-muted-foreground text-lg leading-relaxed">
-                  Existimos para amar e servir a Deus e às pessoas, por meio de um relacionamento crescente com Jesus.
-                </p>
-              </div>
-
-              {/* Visão */}
-              <div className="bg-white rounded-2xl p-8 shadow-sm border border-border/50">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-promessa-600 rounded-xl flex items-center justify-center">
-                    <Eye className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-foreground">Nossa Visão</h3>
-                </div>
-                <p className="text-muted-foreground text-lg leading-relaxed">
-                  Ser uma igreja consolidada, saudável, vibrante, relacional e relevante na cidade de Hortolândia.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Nossa Teologia */}
-      <section className="py-16 lg:py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                Nossa Teologia
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Cremos nas verdades bíblicas históricas, vividas com fé, responsabilidade e compromisso cristão, buscando sempre uma fé alinhada à Palavra de Deus.
-              </p>
-            </div>
-
-            <Accordion type="single" collapsible className="space-y-3">
-              {theologyGroups.map((group) => (
-                <AccordionItem 
-                  key={group.id} 
-                  value={group.id}
-                  className="bg-muted/30 border border-border/50 rounded-xl px-6 data-[state=open]:bg-muted/50"
-                >
-                  <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
-                    {group.title}
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-5">
-                    <ul className="space-y-2">
-                      {group.beliefs.map((belief, index) => (
-                        <li 
-                          key={index}
-                          className="flex items-start gap-3 text-muted-foreground"
-                        >
-                          <span className="w-1.5 h-1.5 bg-promessa-600 rounded-full mt-2 flex-shrink-0" />
-                          <span>{belief}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Nossa História */}
-      <section id="historia" className="py-16 lg:py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground text-center mb-12">
-              Nossa História
-            </h2>
-            <p className="text-center text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Raízes e Propósito
-            </p>
-
-            <div className="space-y-8">
-              {/* O chamado */}
-              <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-sm border border-border/50">
-                <h3 className="text-xl font-bold text-promessa-700 mb-4">O chamado</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Essa igreja nasceu do desejo de ver pessoas vivendo uma fé simples, bíblica e relevante, encontrando propósito por meio do relacionamento com Jesus e com outras pessoas.
-                </p>
-              </div>
-
-              {/* O tempo de preparo */}
-              <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-sm border border-border/50">
-                <h3 className="text-xl font-bold text-promessa-700 mb-4">O tempo de preparo</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Em 2023, a família pastoral Denis e Fran, juntamente com seus filhos Arthur e Heitor, foram chamados para liderar um projeto de plantação de uma nova igreja no centro da cidade de Hortolândia. Entre janeiro e março, outras pessoas foram chamadas para compor o grupo base, iniciando reuniões com foco em alinhamento, missão e direção de Deus.
-                </p>
-              </div>
-
-              {/* O início dos cultos públicos */}
-              <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-sm border border-border/50">
-                <h3 className="text-xl font-bold text-promessa-700 mb-4">O início dos cultos públicos</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Em janeiro de 2024, após a definição do local, iniciamos as adequações do espaço e, em 02 de março de 2024, realizamos nosso primeiro culto público. Desde então, seguimos em processo de consolidação, confiantes de que em cada etapa Deus tem nos direcionado, corrigido e cuidado de nós.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Liderança Pastoral */}
-      <section className="py-16 lg:py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground text-center mb-12">
-              Liderança Pastoral
-            </h2>
-
-            <div className="bg-muted/30 rounded-2xl p-6 lg:p-10 border border-border/50">
-              {/* Foto da Família Pastoral */}
-              <div className="w-64 h-64 lg:w-80 lg:h-80 mx-auto mb-8 overflow-hidden rounded-2xl shadow-lg">
-                <img 
-                  src={familiaPastoral} 
-                  alt="Família Pastoral - Denis, Fran, Arthur e Heitor"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-foreground mb-2">Denis e Fran</h3>
-                <p className="text-promessa-600 font-medium">Pastores</p>
-              </div>
-
-              <p className="text-muted-foreground text-lg leading-relaxed text-center mb-8 max-w-2xl mx-auto">
-                Denis e Fran pastoreiam a igreja com foco em pessoas, discipulado e uma fé vivida no cotidiano, buscando formar discípulos que reflitam o caráter de Cristo em todas as áreas da vida.
-              </p>
-
-              <div className="bg-white rounded-xl p-6 border border-border/50">
-                <h4 className="font-bold text-foreground mb-4 text-center">Formação</h4>
-                <div className="space-y-4 text-muted-foreground">
-                  <p>
-                    <strong className="text-foreground">Denis</strong> é bacharel em Teologia, formado em Administração de Empresas e pós-graduado em Plantação e Revitalização de Igrejas.
-                  </p>
-                  <p>
-                    <strong className="text-foreground">Fran</strong> é bacharel em Teologia, licenciada em Matemática, possui MBA em Finanças e Controladoria e pós-graduação em Plantação e Revitalização de Igrejas.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 7. Primeiros Passos — Discipulado */}
+      {/* 3. Cards Hub - Links para páginas filhas */}
       <section className="py-16 lg:py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                Primeiros Passos
+                Conheça Mais Sobre Nós
               </h2>
-              <p className="text-xl text-promessa-600 font-medium mb-4">
-                O caminho para caminhar com Jesus e com a igreja
-              </p>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Nosso processo de discipulado é simples, intencional e centrado em Jesus. Cada etapa foi pensada para ajudar você a crescer na fé e encontrar o seu lugar.
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Explore cada aspecto da nossa igreja e descubra como vivemos nossa fé.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              {/* Conhecer */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg transition-shadow duration-300 group">
-                <div className="w-14 h-14 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
-                  <Sparkles className="w-7 h-7 text-promessa-600 group-hover:text-white transition-colors duration-300" />
-                </div>
-                <div className="mb-2">
-                  <span className="text-sm font-bold text-promessa-600">01</span>
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-3">Conhecer</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Primeiro contato com a fé e com a igreja, apresentando Jesus e a cultura da igreja de forma acolhedora.
-                </p>
-              </div>
-
-              {/* Crescer */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg transition-shadow duration-300 group">
-                <div className="w-14 h-14 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
-                  <TrendingUp className="w-7 h-7 text-promessa-600 group-hover:text-white transition-colors duration-300" />
-                </div>
-                <div className="mb-2">
-                  <span className="text-sm font-bold text-promessa-600">02</span>
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-3">Crescer</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Curso "Primeiros Passos" com 4 encontros que ensinam os fundamentos da fé cristã e ajudam a desenvolver hábitos espirituais em comunidade.
-                </p>
-              </div>
-
-              {/* Servir */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg transition-shadow duration-300 group">
-                <div className="w-14 h-14 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
-                  <HeartHandshake className="w-7 h-7 text-promessa-600 group-hover:text-white transition-colors duration-300" />
-                </div>
-                <div className="mb-2">
-                  <span className="text-sm font-bold text-promessa-600">03</span>
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-3">Servir</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Descoberta de dons e engajamento em ministérios da igreja com propósito e acompanhamento.
-                </p>
-              </div>
-
-              {/* Multiplicar */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg transition-shadow duration-300 group">
-                <div className="w-14 h-14 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
-                  <Share2 className="w-7 h-7 text-promessa-600 group-hover:text-white transition-colors duration-300" />
-                </div>
-                <div className="mb-2">
-                  <span className="text-sm font-bold text-promessa-600">04</span>
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-3">Multiplicar</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Capacitação para discipular outras pessoas, liderar e viver em missão.
-                </p>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <Button 
-                asChild
-                size="lg"
-                className="bg-promessa-600 hover:bg-promessa-700 text-white"
-              >
-                <Link to="/sou-novo">
-                  Quero dar meus Primeiros Passos
-                  <ChevronRight className="w-5 h-5 ml-2" />
-                </Link>
-              </Button>
-              <p className="text-muted-foreground text-sm mt-4">
-                Sem pressão. No seu ritmo. Com propósito.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 8. Por que Participar */}
-      <section className="py-16 lg:py-24 bg-promessa-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-8">
-              Por que Participar da Igreja da Promessa?
-            </h2>
-
-            <p className="text-lg text-muted-foreground mb-8">Aqui você encontrará:</p>
-
-            <ul className="space-y-4 mb-10 max-w-xl mx-auto">
-              {whyParticipate.map((item, index) => (
-                <li 
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {hubCards.map((card, index) => (
+                <Link
                   key={index}
-                  className="flex items-center gap-4 text-left bg-white rounded-xl p-4 shadow-sm border border-border/50"
+                  to={card.link}
+                  className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg hover:border-promessa-200 transition-all duration-300 group"
                 >
-                  <span className="w-8 h-8 bg-promessa-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <ChevronRight className="w-5 h-5 text-white" />
+                  <div className="w-12 h-12 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
+                    <card.icon className="w-6 h-6 text-promessa-600 group-hover:text-white transition-colors duration-300" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-promessa-700 transition-colors">
+                    {card.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                    {card.description}
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-promessa-600 font-medium text-sm group-hover:gap-2 transition-all">
+                    {card.cta}
+                    <ChevronRight className="w-4 h-4" />
                   </span>
-                  <span className="text-foreground font-medium">{item}</span>
-                </li>
+                </Link>
               ))}
-            </ul>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                asChild
-                size="lg"
-                className="bg-promessa-600 hover:bg-promessa-700 text-white"
+              {/* Primeiros Passos - Destaque Visual */}
+              <Link
+                to="/primeiros-passos"
+                className="bg-gradient-to-br from-promessa-600 to-promessa-700 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 group md:col-span-2 lg:col-span-1"
               >
-                <Link to="/contato/onde-estamos">
-                  Quero conhecer a igreja
-                </Link>
-              </Button>
-              <Button 
-                asChild
-                size="lg"
-                variant="outline"
-                className="border-promessa-600 text-promessa-600 hover:bg-promessa-50"
-              >
-                <Link to="/bases">
-                  Participar de uma Base
-                </Link>
-              </Button>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-5">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">
+                  Primeiros Passos
+                </h3>
+                <p className="text-white/80 text-sm leading-relaxed mb-4">
+                  O ponto de partida para quem deseja conhecer a igreja e crescer na fé.
+                </p>
+                <span className="inline-flex items-center gap-1 text-white font-medium text-sm group-hover:gap-2 transition-all">
+                  Quero dar meus Primeiros Passos
+                  <ChevronRight className="w-4 h-4" />
+                </span>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 8. CTA Final */}
-      <section className="py-16 lg:py-24 bg-gradient-to-br from-promessa-700 via-promessa-600 to-promessa-800 text-white">
+      {/* 4. CTA Final */}
+      <section className="py-16 lg:py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
               Pronto para dar o próximo passo?
             </h2>
-            <p className="text-xl text-white/90 mb-10">
+            <p className="text-lg text-muted-foreground mb-8">
               Você não precisa caminhar sozinho.
             </p>
-
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                asChild
-                size="lg"
-                className="bg-white text-promessa-700 hover:bg-white/90"
-              >
-                <Link to="/contato/onde-estamos">
-                  Visite-nos
-                </Link>
+              <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700 text-white">
+                <Link to="/contato">Visite-nos</Link>
               </Button>
-              <Button 
-                asChild
-                size="lg"
-                className="bg-white/20 backdrop-blur-sm text-white border-2 border-white hover:bg-white hover:text-promessa-700"
-              >
-                <Link to="/contato/fale-conosco">
-                  Fale conosco
-                </Link>
+              <Button asChild size="lg" variant="outline" className="border-promessa-600 text-promessa-600 hover:bg-promessa-50">
+                <Link to="/contato">Fale Conosco</Link>
               </Button>
-              <Button 
-                asChild
-                size="lg"
-                className="bg-white/20 backdrop-blur-sm text-white border-2 border-white hover:bg-white hover:text-promessa-700"
-              >
-                <Link to="/sou-novo">
-                  Sou novo por aqui
-                </Link>
+              <Button asChild size="lg" variant="outline" className="border-promessa-600 text-promessa-600 hover:bg-promessa-50">
+                <Link to="/sou-novo">Sou Novo por Aqui</Link>
               </Button>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-promessa-800 text-white py-12">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-white/70 text-sm">
-            © {new Date().getFullYear()} Igreja da Promessa Hortolândia. Todos os direitos reservados.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
