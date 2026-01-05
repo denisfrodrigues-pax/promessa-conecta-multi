@@ -54,17 +54,17 @@ export default function Pastores() {
               </div>
 
               <p className="text-muted-foreground text-lg leading-relaxed text-center mb-8 max-w-2xl mx-auto">
-                Denis e Fran são os pastores da Igreja da Promessa Hortolândia. Pastoreiam a igreja com foco em pessoas, discipulado e uma fé vivida no cotidiano.
+                Denis e Fran pastoreiam a igreja com foco em pessoas, discipulado e uma fé vivida no cotidiano, buscando formar discípulos que reflitam o caráter de Cristo em todas as áreas da vida.
               </p>
 
               <div className="bg-white rounded-xl p-6 border border-border/50">
                 <h3 className="font-bold text-foreground mb-4 text-center text-lg">Formação</h3>
                 <div className="space-y-4 text-muted-foreground">
                   <p>
-                    <strong className="text-foreground">Denis:</strong> Bacharel em Teologia, Administração de Empresas, Pós em Plantação e Revitalização de Igrejas
+                    <strong className="text-foreground">Denis</strong> é bacharel em Teologia, formado em Administração de Empresas e pós-graduado em Plantação e Revitalização de Igrejas.
                   </p>
                   <p>
-                    <strong className="text-foreground">Fran:</strong> Bacharel em Teologia, Licenciatura em Matemática, MBA em Finanças e Controladoria, Pós em Plantação e Revitalização de Igrejas
+                    <strong className="text-foreground">Fran</strong> é bacharel em Teologia, licenciada em Matemática, possui MBA em Finanças e Controladoria e pós-graduação em Plantação e Revitalização de Igrejas.
                   </p>
                 </div>
               </div>
