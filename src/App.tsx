@@ -106,8 +106,11 @@ import Teologia from "@/pages/institutional/quem-somos/Teologia";
 import MissaoVisao from "@/pages/institutional/quem-somos/MissaoVisao";
 import HistoriaPage from "@/pages/institutional/quem-somos/Historia";
 import Pastores from "@/pages/institutional/quem-somos/Pastores";
-import Ministerios from "@/pages/institutional/quem-somos/Ministerios";
-import PrimeirosPassos from "@/pages/institutional/PrimeirosPassos";
+import LideresMinisterios from "@/pages/institutional/quem-somos/LideresMinisterios";
+import TrilhaAmarServir from "@/pages/institutional/TrilhaAmarServir";
+import BasesPublicas from "@/pages/institutional/BasesPublicas";
+import SejaVoluntario from "@/pages/institutional/SejaVoluntario";
+import CadastroInfantil from "@/pages/institutional/CadastroInfantil";
 
 const queryClient = new QueryClient();
 
@@ -134,8 +137,11 @@ const App = () => (
           <Route path="/quem-somos/missao-visao" element={<MissaoVisao />} />
           <Route path="/quem-somos/historia" element={<HistoriaPage />} />
           <Route path="/quem-somos/pastores" element={<Pastores />} />
-          <Route path="/quem-somos/ministerios" element={<Ministerios />} />
-          <Route path="/primeiros-passos" element={<PrimeirosPassos />} />
+          <Route path="/quem-somos/lideres-ministerios" element={<LideresMinisterios />} />
+          <Route path="/trilha-amar-servir" element={<TrilhaAmarServir />} />
+          <Route path="/bases-publicas" element={<BasesPublicas />} />
+          <Route path="/seja-voluntario" element={<SejaVoluntario />} />
+          <Route path="/cadastro-infantil" element={<CadastroInfantil />} />
           <Route path="/contato" element={<Contato />} />
           <Route path="/contato/:section" element={<Contato />} />
 

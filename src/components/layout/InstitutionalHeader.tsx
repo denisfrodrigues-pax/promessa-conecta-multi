@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, LogIn } from "lucide-react";
 import logoPromessaHortolandia from "@/assets/logo-promessa-hortolandia.png";
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
@@ -60,72 +61,45 @@ export function InstitutionalHeader() {
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
                   <div className="flex flex-col gap-3 pl-4">
-                    <Link onClick={closeMenu} to="/quem-somos" className="text-muted-foreground hover:text-foreground font-medium">Visão Geral</Link>
-                    <Link onClick={closeMenu} to="/quem-somos/teologia" className="text-muted-foreground hover:text-foreground">Nossa Teologia</Link>
-                    <Link onClick={closeMenu} to="/quem-somos/missao-visao" className="text-muted-foreground hover:text-foreground">Missão e Visão</Link>
                     <Link onClick={closeMenu} to="/quem-somos/historia" className="text-muted-foreground hover:text-foreground">Nossa História</Link>
+                    <Link onClick={closeMenu} to="/quem-somos/missao-visao" className="text-muted-foreground hover:text-foreground">Missão e Visão</Link>
+                    <Link onClick={closeMenu} to="/quem-somos/teologia" className="text-muted-foreground hover:text-foreground">Nossa Teologia</Link>
                     <Link onClick={closeMenu} to="/quem-somos/pastores" className="text-muted-foreground hover:text-foreground">Pastores</Link>
-                    <Link onClick={closeMenu} to="/quem-somos/ministerios" className="text-muted-foreground hover:text-foreground">Ministérios</Link>
-                    <Link onClick={closeMenu} to="/primeiros-passos" className="text-promessa-600 hover:text-promessa-700 font-medium">Primeiros Passos</Link>
+                    <Link onClick={closeMenu} to="/quem-somos/lideres-ministerios" className="text-muted-foreground hover:text-foreground">Líderes e Ministérios</Link>
+                    <Link onClick={closeMenu} to="/trilha-amar-servir" className="text-promessa-600 hover:text-promessa-700 font-medium">Trilha Amar e Servir</Link>
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
-              {/* 2. Participe de uma Base - SIMPLES */}
+              {/* 2. Bases - SIMPLES */}
               <div className="border-b py-4">
-                <Link onClick={closeMenu} to="/bases" className="text-lg font-medium">
-                  Participe de uma Base
+                <Link onClick={closeMenu} to="/bases-publicas" className="text-lg font-medium">
+                  Bases
                 </Link>
               </div>
 
-              {/* 3. Conteúdo - COM accordion */}
-              <AccordionItem value="conteudo" className="border-b">
-                <AccordionTrigger className="text-lg font-medium py-4 hover:no-underline">
-                  Conteúdo
-                </AccordionTrigger>
-                <AccordionContent className="pb-4">
-                  <div className="flex flex-col gap-3 pl-4">
-                    <Link onClick={closeMenu} to="/conteudo/pregacoes" className="text-muted-foreground hover:text-foreground">Pregações</Link>
-                    <Link onClick={closeMenu} to="/conteudo/estudos" className="text-muted-foreground hover:text-foreground">Estudos</Link>
-                    <Link onClick={closeMenu} to="/conteudo/devocionais" className="text-muted-foreground hover:text-foreground">Devocionais</Link>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+              {/* 3. Trilha Amar e Servir - SIMPLES */}
+              <div className="border-b py-4">
+                <Link onClick={closeMenu} to="/trilha-amar-servir" className="text-lg font-medium text-promessa-600">
+                  Trilha Amar e Servir
+                </Link>
+              </div>
 
-              {/* 4. Participe - COM accordion */}
-              <AccordionItem value="participe" className="border-b">
-                <AccordionTrigger className="text-lg font-medium py-4 hover:no-underline">
-                  Participe
-                </AccordionTrigger>
-                <AccordionContent className="pb-4">
-                  <div className="flex flex-col gap-3 pl-4">
-                    <Link onClick={closeMenu} to="/eventos" className="text-muted-foreground hover:text-foreground">Eventos</Link>
-                    <Link onClick={closeMenu} to="/oracao" className="text-muted-foreground hover:text-foreground">Pedidos de Oração</Link>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* 5. Contribua - SIMPLES */}
+              {/* 4. Contribua - SIMPLES */}
               <div className="border-b py-4">
                 <Link onClick={closeMenu} to="/contribuicoes" className="text-lg font-medium">
                   Contribua
                 </Link>
               </div>
 
-              {/* 6. Contato - COM accordion */}
-              <AccordionItem value="contato" className="border-b">
-                <AccordionTrigger className="text-lg font-medium py-4 hover:no-underline">
+              {/* 5. Contato - SIMPLES */}
+              <div className="border-b py-4">
+                <Link onClick={closeMenu} to="/contato" className="text-lg font-medium">
                   Contato
-                </AccordionTrigger>
-                <AccordionContent className="pb-4">
-                  <div className="flex flex-col gap-3 pl-4">
-                    <Link onClick={closeMenu} to="/contato" className="text-muted-foreground hover:text-foreground">Fale Conosco</Link>
-                    <Link onClick={closeMenu} to="/contato#localizacao" className="text-muted-foreground hover:text-foreground">Onde Estamos</Link>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+                </Link>
+              </div>
 
-              {/* 7. Cadastro - COM accordion */}
+              {/* 6. Cadastro - COM accordion */}
               <AccordionItem value="cadastro" className="border-b">
                 <AccordionTrigger className="text-lg font-medium py-4 hover:no-underline">
                   Cadastro
@@ -133,7 +107,12 @@ export function InstitutionalHeader() {
                 <AccordionContent className="pb-4">
                   <div className="flex flex-col gap-3 pl-4">
                     <Link onClick={closeMenu} to="/sou-novo" className="text-muted-foreground hover:text-foreground">Sou Novo</Link>
-                    <Link onClick={closeMenu} to="/auth" className="text-muted-foreground hover:text-foreground">Entrar</Link>
+                    <Link onClick={closeMenu} to="/seja-voluntario" className="text-muted-foreground hover:text-foreground">Seja um Voluntário</Link>
+                    <Link onClick={closeMenu} to="/cadastro-infantil" className="text-muted-foreground hover:text-foreground">Cadastro Infantil</Link>
+                    <Link onClick={closeMenu} to="/auth" className="text-promessa-600 hover:text-promessa-700 font-medium flex items-center gap-2">
+                      <LogIn className="w-4 h-4" />
+                      Login
+                    </Link>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -166,35 +145,39 @@ export function InstitutionalHeader() {
             {/* Dropdown com delay e transição suave */}
             <div className="absolute top-[calc(100%+0.5rem)] left-0 opacity-0 invisible translate-y-1 group-hover/dropdown:opacity-100 group-hover/dropdown:visible group-hover/dropdown:translate-y-0 transition-all duration-200 delay-150 ease-out z-50">
               <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
-                <Link to="/quem-somos" className="block px-4 py-2 text-sm font-medium hover:bg-muted transition-colors">Visão Geral</Link>
-                <Link to="/quem-somos/teologia" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa Teologia</Link>
-                <Link to="/quem-somos/missao-visao" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Missão e Visão</Link>
                 <Link to="/quem-somos/historia" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa História</Link>
+                <Link to="/quem-somos/missao-visao" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Missão e Visão</Link>
+                <Link to="/quem-somos/teologia" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa Teologia</Link>
                 <Link to="/quem-somos/pastores" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Pastores</Link>
-                <Link to="/quem-somos/ministerios" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Ministérios</Link>
+                <Link to="/quem-somos/lideres-ministerios" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Líderes e Ministérios</Link>
                 <div className="border-t my-1" />
-                <Link to="/primeiros-passos" className="block px-4 py-2 text-sm text-promessa-600 font-medium hover:bg-promessa-50 transition-colors">Primeiros Passos</Link>
+                <Link to="/trilha-amar-servir" className="block px-4 py-2 text-sm text-promessa-600 font-medium hover:bg-promessa-50 transition-colors">Trilha Amar e Servir</Link>
               </div>
             </div>
           </div>
 
-          {/* 2. Base - SIMPLES */}
-          <Link to="/bases" className="hover:text-primary transition-colors">Base</Link>
+          {/* 2. Bases - SIMPLES */}
+          <Link to="/bases-publicas" className="hover:text-primary transition-colors">Bases</Link>
 
-          {/* 3. Conteúdo - SIMPLES */}
-          <Link to="/conteudo" className="hover:text-primary transition-colors">Conteúdo</Link>
+          {/* 3. Trilha Amar e Servir - SIMPLES */}
+          <Link to="/trilha-amar-servir" className="text-promessa-600 hover:text-promessa-700 transition-colors font-medium">Trilha Amar e Servir</Link>
 
-          {/* 4. Eventos - SIMPLES */}
-          <Link to="/eventos" className="hover:text-primary transition-colors">Eventos</Link>
-
-          {/* 5. Contribua - SIMPLES */}
+          {/* 4. Contribua - SIMPLES */}
           <Link to="/contribuicoes" className="hover:text-primary transition-colors">Contribua</Link>
 
-          {/* 6. Contato - SIMPLES */}
+          {/* 5. Contato - SIMPLES */}
           <Link to="/contato" className="hover:text-primary transition-colors">Contato</Link>
 
-          {/* 7. Cadastro - SIMPLES */}
+          {/* 6. Cadastro - SIMPLES */}
           <Link to="/sou-novo" className="hover:text-primary transition-colors">Cadastro</Link>
+
+          {/* 7. Login - Botão */}
+          <Button asChild variant="outline" size="sm" className="ml-2">
+            <Link to="/auth" className="flex items-center gap-2">
+              <LogIn className="w-4 h-4" />
+              Login
+            </Link>
+          </Button>
         </nav>
       </div>
     </header>
