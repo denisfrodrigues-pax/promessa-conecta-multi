@@ -24,14 +24,28 @@ const blocos = [
     icon: Coffee,
     title: "Conhecer",
     subtitle: "Café de Boas-vindas",
-    description: "Primeiro contato com a fé e com a igreja, apresentando Jesus e a cultura da igreja de forma acolhedora. Um momento especial para você conhecer quem somos e o que cremos."
+    description: "Primeiro contato com a fé e com a igreja, apresentando Jesus e a cultura da igreja de forma acolhedora."
   },
   {
     number: "02",
     icon: BookOpen,
     title: "Crescer",
     subtitle: "Curso Primeiros Passos + Base",
-    description: "Curso \"Primeiros Passos\" com 4 módulos que ensinam os fundamentos da fé cristã e ajudam a desenvolver hábitos espirituais em comunidade. Ao final, você é encaminhado para uma Base."
+    description: "Curso com 4 módulos que apresentam os fundamentos da fé cristã e hábitos espirituais, com integração a uma Base."
+  },
+  {
+    number: "03",
+    icon: TrendingUp,
+    title: "Servir",
+    subtitle: "Descoberta e engajamento",
+    description: "Identificação de dons e envolvimento nos ministérios da igreja, servindo com propósito e acompanhamento."
+  },
+  {
+    number: "04",
+    icon: Sparkles,
+    title: "Multiplicar",
+    subtitle: "Discipulado e missão",
+    description: "Formação para discipular outras pessoas, liderar e viver o evangelho de forma intencional."
   }
 ];
 
@@ -115,11 +129,8 @@ export default function TrilhaAmarServir() {
             <h1 className="text-4xl lg:text-5xl font-bold mb-4">
               Trilha Amar e Servir
             </h1>
-            <p className="text-xl text-white/90 font-medium mb-2">
-              O caminho para caminhar com Jesus e com a igreja
-            </p>
-            <p className="text-lg text-white/70 max-w-2xl mx-auto">
-              A Trilha Amar e Servir é o caminho de discipulado da igreja, criada para ajudar pessoas a conhecerem Jesus, a igreja e viverem a fé de forma prática e relacional.
+            <p className="text-xl text-white/90 max-w-2xl mx-auto">
+              Um caminho intencional para conhecer Jesus, viver em comunidade e servir com propósito.
             </p>
           </div>
         </div>

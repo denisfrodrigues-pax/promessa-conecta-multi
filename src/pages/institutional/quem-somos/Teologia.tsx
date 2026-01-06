@@ -13,65 +13,65 @@ const beliefGroups = [
   {
     title: "Sobre Deus e a Criação",
     beliefs: [
-      "Cremos na Trindade Divina",
-      "Cremos que Deus criou o mundo",
+      { title: "Cremos na Trindade Divina", description: "Um só Deus eterno, subsistente em três pessoas: Pai, Filho e Espírito Santo." },
+      { title: "Cremos que Deus criou o mundo", description: "Deus é o Criador de todas as coisas, e tudo existe por Sua vontade e propósito." },
     ],
   },
   {
     title: "Sobre a Bíblia",
     beliefs: [
-      "Cremos na Bíblia Sagrada como Palavra inspirada de Deus",
+      { title: "Cremos na Bíblia Sagrada como Palavra inspirada de Deus", description: "A Bíblia é a revelação escrita de Deus, autoridade máxima para fé e prática cristã." },
     ],
   },
   {
     title: "Sobre o Ser Humano e a Salvação",
     beliefs: [
-      "Cremos na queda e na restauração do ser humano",
-      "Cremos em Jesus Cristo como Salvador e Mediador",
-      "Cremos na eleição e no chamado",
-      "Cremos na conversão, regeneração, justificação e adoção",
-      "Cremos na santificação e perseverança",
+      { title: "Cremos na queda e na restauração do ser humano", description: "O ser humano caiu pelo pecado, mas pode ser restaurado pela graça de Deus." },
+      { title: "Cremos em Jesus Cristo como Salvador e Mediador", description: "Jesus é o único caminho para a salvação e o mediador entre Deus e os homens." },
+      { title: "Cremos na eleição e no chamado", description: "Deus chama pessoas para viverem segundo Seu propósito e vontade." },
+      { title: "Cremos na conversão, regeneração, justificação e adoção", description: "Pela fé em Cristo, o pecador é transformado, perdoado e feito filho de Deus." },
+      { title: "Cremos na santificação e perseverança", description: "A vida cristã é um processo contínuo de transformação e fidelidade a Deus." },
     ],
   },
   {
     title: "Sobre o Espírito Santo",
     beliefs: [
-      "Cremos no batismo no Espírito Santo",
-      "Cremos nos dons espirituais",
+      { title: "Cremos no batismo no Espírito Santo", description: "Uma experiência concedida por Deus para capacitação espiritual e testemunho." },
+      { title: "Cremos nos dons espirituais", description: "O Espírito Santo distribui dons para edificação da igreja e serviço cristão." },
     ],
   },
   {
     title: "Sobre a Vida Cristã",
     beliefs: [
-      "Cremos na oração e sua eficácia",
-      "Cremos na cura divina",
-      "Cremos na evangelização e no discipulado",
-      "Cremos na sã doutrina",
-      "Cremos na abstinência e na temperança",
-      "Cremos na submissão às autoridades e na liberdade de consciência",
+      { title: "Cremos na oração e sua eficácia", description: "A oração é um meio poderoso de comunhão com Deus." },
+      { title: "Cremos na cura divina", description: "Deus continua agindo com poder para curar conforme Sua vontade." },
+      { title: "Cremos na evangelização e no discipulado", description: "Todo cristão é chamado para anunciar o evangelho e formar discípulos." },
+      { title: "Cremos na sã doutrina", description: "A fé cristã deve ser vivida em fidelidade ao ensino bíblico." },
+      { title: "Cremos na abstinência e na temperança", description: "A vida cristã envolve escolhas responsáveis e equilíbrio." },
+      { title: "Cremos na submissão às autoridades e na liberdade de consciência", description: "Respeitamos as autoridades constituídas, preservando a consciência cristã diante de Deus." },
     ],
   },
   {
     title: "Sobre a Igreja e as Ordenanças",
     beliefs: [
-      "Cremos no batismo por imersão",
-      "Cremos no lava-pés",
-      "Cremos na Ceia do Senhor",
-      "Cremos na manutenção da obra por meio de dízimos e ofertas",
-      "Cremos na igreja de Cristo",
-      "Cremos no casamento, no lar e na família",
+      { title: "Cremos no batismo por imersão", description: "Um testemunho público de fé em Jesus Cristo." },
+      { title: "Cremos no lava-pés", description: "Um ato de humildade, serviço e comunhão cristã." },
+      { title: "Cremos na Ceia do Senhor", description: "Memorial da morte e ressurreição de Cristo." },
+      { title: "Cremos na manutenção da obra por meio de dízimos e ofertas", description: "Um princípio bíblico de fidelidade e gratidão." },
+      { title: "Cremos na igreja de Cristo", description: "A igreja é o corpo vivo de Cristo na terra." },
+      { title: "Cremos no casamento, no lar e na família", description: "Instituições criadas por Deus para o bem da sociedade." },
     ],
   },
   {
     title: "Sobre o Fim dos Tempos",
     beliefs: [
-      "Cremos na mortalidade da alma",
-      "Cremos na segunda vinda de Cristo",
-      "Cremos nas duas ressurreições",
-      "Cremos no milênio",
-      "Cremos no juízo final",
-      "Cremos na extinção da maldade",
-      "Cremos na nova terra, lar dos remidos",
+      { title: "Cremos na mortalidade da alma", description: "A vida eterna é um dom concedido por Deus." },
+      { title: "Cremos na segunda vinda de Cristo", description: "Jesus voltará para buscar o Seu povo." },
+      { title: "Cremos nas duas ressurreições", description: "Ressurreição dos justos e dos injustos." },
+      { title: "Cremos no milênio", description: "Um período estabelecido por Deus em Seu plano redentor." },
+      { title: "Cremos no juízo final", description: "Deus julgará toda a humanidade com justiça." },
+      { title: "Cremos na extinção da maldade", description: "O pecado e o mal terão um fim definitivo." },
+      { title: "Cremos na nova terra, lar dos remidos", description: "Um novo céu e uma nova terra preparados por Deus." },
     ],
   },
 ];
@@ -121,13 +121,16 @@ export default function Teologia() {
                     {group.title}
                   </AccordionTrigger>
                   <AccordionContent className="pb-6">
-                    <ul className="space-y-3">
+                    <ul className="space-y-4">
                       {group.beliefs.map((belief, beliefIndex) => (
                         <li key={beliefIndex} className="flex items-start gap-3">
                           <span className="w-6 h-6 bg-promessa-100 rounded-full flex items-center justify-center flex-shrink-0 text-promessa-700 font-bold text-xs mt-0.5">
                             {beliefIndex + 1}
                           </span>
-                          <span className="text-foreground">{belief}</span>
+                          <div>
+                            <span className="font-semibold text-foreground block">{belief.title}</span>
+                            <span className="text-muted-foreground text-sm">{belief.description}</span>
+                          </div>
                         </li>
                       ))}
                     </ul>
