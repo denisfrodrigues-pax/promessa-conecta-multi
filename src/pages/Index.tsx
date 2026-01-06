@@ -13,8 +13,7 @@ import {
   Baby,
   Heart,
   HandHeart,
-  ArrowRight,
-  LogIn
+  ArrowRight
 } from "lucide-react";
 import { InstitutionalHeader } from "@/components/layout/InstitutionalHeader";
 import heroImage from "@/assets/hero-home.png";
@@ -74,17 +73,6 @@ export default function Index() {
               <Link to="/sou-novo" className="flex items-center gap-2">
                 Conheça a Igreja
                 <Sparkles className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
-              </Link>
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 backdrop-blur-sm"
-              asChild
-            >
-              <Link to="/auth" className="flex items-center gap-2">
-                <LogIn className="w-4 h-4" />
-                Login
               </Link>
             </Button>
           </div>
