@@ -53,6 +53,16 @@ export function InstitutionalHeader() {
 
           {/* Navegação */}
           <nav className="flex flex-col px-4 py-6">
+            {/* Login - Item independente com destaque no topo */}
+            <div className="pb-4 mb-2">
+              <Button asChild className="w-full" size="lg">
+                <Link onClick={closeMenu} to="/auth" className="flex items-center justify-center gap-2">
+                  <LogIn className="w-5 h-5" />
+                  Login
+                </Link>
+              </Button>
+            </div>
+
             <Accordion type="multiple" className="w-full">
               {/* 1. Quem Somos - COM accordion */}
               <AccordionItem value="quem-somos" className="border-b">
@@ -99,23 +109,26 @@ export function InstitutionalHeader() {
                 </Link>
               </div>
 
-              {/* 6. Cadastro - COM accordion */}
-              <AccordionItem value="cadastro" className="border-b">
-                <AccordionTrigger className="text-lg font-medium py-4 hover:no-underline">
-                  Cadastro
-                </AccordionTrigger>
-                <AccordionContent className="pb-4">
-                  <div className="flex flex-col gap-3 pl-4">
-                    <Link onClick={closeMenu} to="/sou-novo" className="text-muted-foreground hover:text-foreground">Sou Novo</Link>
-                    <Link onClick={closeMenu} to="/seja-voluntario" className="text-muted-foreground hover:text-foreground">Seja um Voluntário</Link>
-                    <Link onClick={closeMenu} to="/cadastro-infantil" className="text-muted-foreground hover:text-foreground">Cadastro Infantil</Link>
-                    <Link onClick={closeMenu} to="/auth" className="text-promessa-600 hover:text-promessa-700 font-medium flex items-center gap-2">
-                      <LogIn className="w-4 h-4" />
-                      Login
-                    </Link>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+              {/* 6. Sou Novo - SIMPLES */}
+              <div className="border-b py-4">
+                <Link onClick={closeMenu} to="/sou-novo" className="text-lg font-medium">
+                  Sou Novo
+                </Link>
+              </div>
+
+              {/* 7. Seja Voluntário - SIMPLES */}
+              <div className="border-b py-4">
+                <Link onClick={closeMenu} to="/seja-voluntario" className="text-lg font-medium">
+                  Seja Voluntário
+                </Link>
+              </div>
+
+              {/* 8. Check-in Kids - SIMPLES */}
+              <div className="border-b py-4">
+                <Link onClick={closeMenu} to="/admin/kids/checkins" className="text-lg font-medium">
+                  Check-in Kids
+                </Link>
+              </div>
             </Accordion>
           </nav>
         </div>
