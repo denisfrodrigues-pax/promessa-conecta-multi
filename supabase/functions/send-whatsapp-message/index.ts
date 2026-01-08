@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,7 +39,64 @@ serve(async (req) => {
   }
 
   try {
-    // Get the API key from environment (simulated)
+    // Check for authorization header
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('[WhatsApp] Missing or invalid authorization header');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Validate the JWT and get user claims
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+
+    if (claimsError || !claimsData?.claims) {
+      console.error('[WhatsApp] Invalid token:', claimsError?.message);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+    console.log(`[WhatsApp] User authenticated: ${userId}`);
+
+    // Check user roles - only admin or lider can send WhatsApp messages
+    const { data: userRoles, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId);
+
+    if (rolesError) {
+      console.error('[WhatsApp] Error fetching user roles:', rolesError.message);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to verify permissions' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const hasPermission = userRoles?.some(r => r.role === 'admin' || r.role === 'lider');
+    if (!hasPermission) {
+      console.error(`[WhatsApp] User ${userId} lacks required role (admin/lider)`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Insufficient permissions. Only admins and leaders can send WhatsApp messages.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[WhatsApp] User ${userId} authorized with roles:`, userRoles?.map(r => r.role));
+
+    // Get the API key from environment
     const apiKey = Deno.env.get('WHATSAPP_API_KEY');
     
     // Log API key status (don't log actual key!)
@@ -86,7 +144,7 @@ serve(async (req) => {
       );
     }
 
-    // Check if WhatsApp API is configured (use the apiKey from line 42)
+    // Generate message ID and timestamp
     const messageId = `whatsapp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     const sentAt = new Date().toISOString();
 
@@ -99,7 +157,8 @@ serve(async (req) => {
         message_preview: message_body.substring(0, 100) + (message_body.length > 100 ? '...' : ''),
         template_id: template_id || 'none',
         sent_at: sentAt,
-        status: 'simulacao_desativada'
+        status: 'simulacao_desativada',
+        user_id: userId
       });
 
       return new Response(
@@ -130,7 +189,8 @@ serve(async (req) => {
       message_preview: message_body.substring(0, 100) + (message_body.length > 100 ? '...' : ''),
       template_id: template_id || 'none',
       sent_at: sentAt,
-      api_latency_ms: delay
+      api_latency_ms: delay,
+      user_id: userId
     });
 
     // If we had real credentials, we would call the actual API here:
