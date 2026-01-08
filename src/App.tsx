@@ -111,6 +111,7 @@ import TrilhaAmarServir from "@/pages/institutional/TrilhaAmarServir";
 import BasesPublicas from "@/pages/institutional/BasesPublicas";
 import SejaVoluntario from "@/pages/institutional/SejaVoluntario";
 import CadastroInfantil from "@/pages/institutional/CadastroInfantil";
+import CheckinKids from "@/pages/institutional/CheckinKids";
 
 const queryClient = new QueryClient();
 
@@ -142,6 +143,7 @@ const App = () => (
           <Route path="/bases-publicas" element={<BasesPublicas />} />
           <Route path="/seja-voluntario" element={<SejaVoluntario />} />
           <Route path="/cadastro-infantil" element={<CadastroInfantil />} />
+          <Route path="/check-in-kids" element={<CheckinKids />} />
           <Route path="/contato" element={<Contato />} />
           <Route path="/contato/:section" element={<Contato />} />
 

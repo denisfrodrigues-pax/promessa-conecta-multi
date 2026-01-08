@@ -125,7 +125,7 @@ export function InstitutionalHeader() {
 
               {/* 8. Check-in Kids - SIMPLES */}
               <div className="border-b py-4">
-                <Link onClick={closeMenu} to="/admin/kids/checkins" className="text-lg font-medium">
+                <Link onClick={closeMenu} to="/check-in-kids" className="text-lg font-medium">
                   Check-in Kids
                 </Link>
               </div>
