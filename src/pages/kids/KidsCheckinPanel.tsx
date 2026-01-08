@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import {
   Search,
@@ -17,10 +17,9 @@ import {
   Baby,
   Clock,
   LogOut as LogOutIcon,
-  User,
-  MapPin,
   CheckCircle2,
   UserPlus,
+  Phone,
 } from "lucide-react";
 import { format, differenceInYears, isToday, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -92,7 +91,6 @@ const calculateAge = (birthDate: string | null): string => {
 };
 
 export default function KidsCheckinPanel() {
-  const navigate = useNavigate();
   const [checkins, setCheckins] = useState<Checkin[]>([]);
   const [criancas, setCriancas] = useState<Crianca[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
@@ -103,6 +101,7 @@ export default function KidsCheckinPanel() {
   // Modal states
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showCadastroRapidoModal, setShowCadastroRapidoModal] = useState(false);
   const [selectedCheckin, setSelectedCheckin] = useState<Checkin | null>(null);
   const [newCheckin, setNewCheckin] = useState({
     crianca_id: "",
@@ -112,6 +111,22 @@ export default function KidsCheckinPanel() {
   });
   const [checkoutResponsavelId, setCheckoutResponsavelId] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Cadastro rápido state
+  const [cadastroRapido, setCadastroRapido] = useState({
+    // Responsável
+    responsavel_nome: "",
+    responsavel_telefone: "",
+    // Criança
+    crianca_nome: "",
+    crianca_data_nascimento: "",
+    crianca_alergias: "",
+    crianca_observacoes: "",
+    autorizacao_foto: false,
+    // Check-in
+    sala_id: "",
+    checkin_observacao: "",
+  });
 
   useEffect(() => {
     fetchData();
@@ -251,6 +266,118 @@ export default function KidsCheckinPanel() {
     setShowCheckoutModal(true);
   };
 
+  const handleCadastroRapido = async () => {
+    // Validações
+    if (!cadastroRapido.responsavel_nome.trim()) {
+      toast({ title: "Informe o nome do responsável", variant: "destructive" });
+      return;
+    }
+    if (!cadastroRapido.crianca_nome.trim()) {
+      toast({ title: "Informe o nome da criança", variant: "destructive" });
+      return;
+    }
+    if (!cadastroRapido.sala_id) {
+      toast({ title: "Selecione uma sala", variant: "destructive" });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // Buscar o profile_id do usuário logado (necessário para criancas.responsavel_id)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (profileError || !profileData) throw new Error("Profile não encontrado");
+
+      // 1. Criar responsável na tabela responsaveis (para o check-in)
+      const { data: responsavelData, error: responsavelError } = await supabase
+        .from("responsaveis")
+        .insert({
+          nome: cadastroRapido.responsavel_nome.trim(),
+          telefone: cadastroRapido.responsavel_telefone.trim() || null,
+        })
+        .select()
+        .single();
+
+      if (responsavelError) throw responsavelError;
+
+      // 2. Criar criança (responsavel_id refere-se ao profile do usuário logado)
+      const { data: criancaData, error: criancaError } = await supabase
+        .from("criancas")
+        .insert({
+          nome: cadastroRapido.crianca_nome.trim(),
+          data_nascimento: cadastroRapido.crianca_data_nascimento || null,
+          alergias: cadastroRapido.crianca_alergias.trim() || null,
+          observacoes: cadastroRapido.crianca_observacoes.trim() || null,
+          autorizacao_foto: cadastroRapido.autorizacao_foto,
+          responsavel_id: profileData.id, // Referência ao profile do usuário logado
+        })
+        .select()
+        .single();
+
+      if (criancaError) throw criancaError;
+
+      // 3. Criar relacionamento na tabela criancas_responsaveis
+      const { error: relError } = await supabase
+        .from("criancas_responsaveis")
+        .insert({
+          crianca_id: criancaData.id,
+          responsavel_id: responsavelData.id,
+          tipo_relacao: "responsável",
+        });
+
+      if (relError) {
+        console.warn("Erro ao criar relacionamento:", relError);
+      }
+
+      // 4. Fazer check-in
+      const { error: checkinError } = await supabase.from("checkins_kids").insert({
+        crianca_id: criancaData.id,
+        responsavel_id: responsavelData.id,
+        sala_id: cadastroRapido.sala_id,
+        observacao: cadastroRapido.checkin_observacao.trim() || null,
+        status: "presente",
+      });
+
+      if (checkinError) throw checkinError;
+
+      toast({
+        title: "Cadastro e check-in realizados!",
+        description: `${criancaData.nome} foi cadastrado(a) e está presente.`,
+      });
+
+      // Reset e atualizar
+      setShowCadastroRapidoModal(false);
+      setCadastroRapido({
+        responsavel_nome: "",
+        responsavel_telefone: "",
+        crianca_nome: "",
+        crianca_data_nascimento: "",
+        crianca_alergias: "",
+        crianca_observacoes: "",
+        autorizacao_foto: false,
+        sala_id: "",
+        checkin_observacao: "",
+      });
+      fetchData();
+    } catch (error) {
+      console.error("Erro no cadastro rápido:", error);
+      toast({
+        title: "Erro ao cadastrar",
+        description: "Tente novamente",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Filter criancas by search
   const filteredCriancas = criancas.filter(
     (c) => search === "" || c.nome.toLowerCase().includes(search.toLowerCase())
@@ -353,8 +480,7 @@ export default function KidsCheckinPanel() {
             </p>
             <Button
               className="w-full"
-              variant="outline"
-              onClick={() => navigate("/admin/kids/criancas")}
+              onClick={() => setShowCadastroRapidoModal(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
               Novo cadastro + Check-in
@@ -536,6 +662,159 @@ export default function KidsCheckinPanel() {
             </Button>
             <Button onClick={handleCheckout} disabled={saving}>
               {saving ? "Salvando..." : "Confirmar Checkout"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cadastro Rápido Modal */}
+      <Dialog open={showCadastroRapidoModal} onOpenChange={setShowCadastroRapidoModal}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="w-5 h-5" />
+              Cadastro Rápido + Check-in
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* Dados do Responsável */}
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                <Phone className="w-4 h-4" />
+                Dados do Responsável
+              </h4>
+              <div className="grid gap-3">
+                <div className="space-y-2">
+                  <Label>Nome do responsável *</Label>
+                  <Input
+                    placeholder="Nome completo"
+                    value={cadastroRapido.responsavel_nome}
+                    onChange={(e) =>
+                      setCadastroRapido({ ...cadastroRapido, responsavel_nome: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Telefone</Label>
+                  <Input
+                    placeholder="(00) 00000-0000"
+                    value={cadastroRapido.responsavel_telefone}
+                    onChange={(e) =>
+                      setCadastroRapido({ ...cadastroRapido, responsavel_telefone: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Dados da Criança */}
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                <Baby className="w-4 h-4" />
+                Dados da Criança
+              </h4>
+              <div className="grid gap-3">
+                <div className="space-y-2">
+                  <Label>Nome da criança *</Label>
+                  <Input
+                    placeholder="Nome completo"
+                    value={cadastroRapido.crianca_nome}
+                    onChange={(e) =>
+                      setCadastroRapido({ ...cadastroRapido, crianca_nome: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Data de nascimento</Label>
+                  <Input
+                    type="date"
+                    value={cadastroRapido.crianca_data_nascimento}
+                    onChange={(e) =>
+                      setCadastroRapido({ ...cadastroRapido, crianca_data_nascimento: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Alergias</Label>
+                  <Input
+                    placeholder="Ex: amendoim, lactose..."
+                    value={cadastroRapido.crianca_alergias}
+                    onChange={(e) =>
+                      setCadastroRapido({ ...cadastroRapido, crianca_alergias: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Observações sobre a criança</Label>
+                  <Textarea
+                    placeholder="Informações relevantes..."
+                    value={cadastroRapido.crianca_observacoes}
+                    onChange={(e) =>
+                      setCadastroRapido({ ...cadastroRapido, crianca_observacoes: e.target.value })
+                    }
+                    rows={2}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="autorizacao_foto"
+                    checked={cadastroRapido.autorizacao_foto}
+                    onCheckedChange={(checked) =>
+                      setCadastroRapido({ ...cadastroRapido, autorizacao_foto: !!checked })
+                    }
+                  />
+                  <Label htmlFor="autorizacao_foto" className="text-sm font-normal cursor-pointer">
+                    Autorizo uso de fotos para divulgação
+                  </Label>
+                </div>
+              </div>
+            </div>
+
+            {/* Dados do Check-in */}
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                Check-in
+              </h4>
+              <div className="grid gap-3">
+                <div className="space-y-2">
+                  <Label>Sala *</Label>
+                  <Select
+                    value={cadastroRapido.sala_id}
+                    onValueChange={(v) => setCadastroRapido({ ...cadastroRapido, sala_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a sala" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {salas.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Observação do check-in</Label>
+                  <Textarea
+                    placeholder="Alguma informação para hoje?"
+                    value={cadastroRapido.checkin_observacao}
+                    onChange={(e) =>
+                      setCadastroRapido({ ...cadastroRapido, checkin_observacao: e.target.value })
+                    }
+                    rows={2}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCadastroRapidoModal(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCadastroRapido} disabled={saving}>
+              {saving ? "Salvando..." : "Cadastrar e Fazer Check-in"}
             </Button>
           </DialogFooter>
         </DialogContent>
