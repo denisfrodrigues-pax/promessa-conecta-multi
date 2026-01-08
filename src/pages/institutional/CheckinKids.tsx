@@ -27,7 +27,7 @@ const CheckinKids = () => {
               podem aprender sobre o amor de Deus enquanto os pais participam do culto com tranquilidade.
             </p>
             <Button asChild size="lg" className="gap-2">
-              <Link to="/admin/kids/checkins">
+              <Link to="/auth?redirect=/admin/kids/checkins">
                 <CheckCircle2 className="w-5 h-5" />
                 Fazer Check-in Kids
               </Link>
@@ -239,7 +239,7 @@ const CheckinKids = () => {
               Faça o check-in da sua criança de forma rápida e segura
             </p>
             <Button asChild size="lg" className="gap-2">
-              <Link to="/admin/kids/checkins">
+              <Link to="/auth?redirect=/admin/kids/checkins">
                 <CheckCircle2 className="w-5 h-5" />
                 Iniciar Check-in Kids
               </Link>
