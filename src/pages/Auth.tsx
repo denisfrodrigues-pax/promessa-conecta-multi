@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,8 +44,34 @@ export default function Auth() {
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user, roles, loading } = useAuth();
   const { config } = useChurchConfig();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Get redirect URL from query params
+  const redirectUrl = searchParams.get('redirect');
+
+  // Redirect after login when user and roles are loaded
+  useEffect(() => {
+    if (!loading && user && roles.length > 0) {
+      // If there's a redirect URL, use it
+      if (redirectUrl) {
+        const decodedUrl = decodeURIComponent(redirectUrl);
+        navigate(decodedUrl, { replace: true });
+        return;
+      }
+      
+      // Otherwise, redirect based on role
+      if (roles.includes('admin')) {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (roles.includes('lider')) {
+        navigate('/leader/dashboard', { replace: true });
+      } else {
+        navigate('/home', { replace: true });
+      }
+    }
+  }, [user, roles, loading, redirectUrl, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

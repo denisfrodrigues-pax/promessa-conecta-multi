@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
 
 interface PrivateRouteProps {
@@ -8,6 +8,7 @@ interface PrivateRouteProps {
 
 const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
   const { user, roles, loading } = useAuth();
+  const location = useLocation();
 
   // Show loading spinner while checking auth
   if (loading) {
@@ -18,9 +19,10 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
     );
   }
 
-  // Not authenticated, redirect to auth
+  // Not authenticated, redirect to auth with current path as redirect
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    const redirectPath = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/auth?redirect=${redirectPath}`} replace />;
   }
 
   // Check if user has required role (if specified)
