@@ -22,20 +22,23 @@ import { useAuth } from "@/contexts/AuthContext";
 import heroImage from "@/assets/hero-home.png";
 
 export default function Index() {
-  const { user, roles, loading } = useAuth();
+  const { user, profile, roles, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleAccessPanel = () => {
     if (roles.includes('admin')) {
-      navigate('/admin/dashboard');
+      navigate('/painel-admin');
     } else if (roles.includes('lider')) {
-      navigate('/leader/dashboard');
+      navigate('/painel-lider');
     } else if (roles.includes('voluntario')) {
-      navigate('/home');
+      navigate('/painel-voluntario');
     } else {
-      navigate('/home');
+      navigate('/painel-membro');
     }
   };
+
+  // Get user's first name for greeting
+  const firstName = profile?.nome?.split(' ')[0] || 'usuário';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -84,9 +87,9 @@ export default function Index() {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center opacity-0 animate-[slideUp_0.8s_ease-out_0.8s_forwards]"
           >
             {!loading && user ? (
-              <>
-                <p className="text-white/90 text-sm mb-2">
-                  Olá, você está conectado!
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-white/90 text-lg">
+                  Olá, <span className="font-semibold">{firstName}</span>
                 </p>
                 <Button 
                   size="xl" 
@@ -96,7 +99,7 @@ export default function Index() {
                   <LayoutDashboard className="w-5 h-5 mr-2" />
                   Acessar meu painel
                 </Button>
-              </>
+              </div>
             ) : (
               <>
                 <Button 
