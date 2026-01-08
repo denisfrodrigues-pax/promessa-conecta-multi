@@ -76,7 +76,6 @@ export function InstitutionalHeader() {
                     <Link onClick={closeMenu} to="/quem-somos/teologia" className="text-muted-foreground hover:text-foreground">Nossa Teologia</Link>
                     <Link onClick={closeMenu} to="/quem-somos/pastores" className="text-muted-foreground hover:text-foreground">Pastores</Link>
                     <Link onClick={closeMenu} to="/quem-somos/lideres-ministerios" className="text-muted-foreground hover:text-foreground">Líderes e Ministérios</Link>
-                    <Link onClick={closeMenu} to="/trilha-amar-servir" className="text-promessa-600 hover:text-promessa-700 font-medium">Trilha Amar e Servir</Link>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -88,9 +87,9 @@ export function InstitutionalHeader() {
                 </Link>
               </div>
 
-              {/* 3. Trilha Amar e Servir - SIMPLES */}
+              {/* 3. Trilha Amar e Servir - SIMPLES (sem destaque) */}
               <div className="border-b py-4">
-                <Link onClick={closeMenu} to="/trilha-amar-servir" className="text-lg font-medium text-promessa-600">
+                <Link onClick={closeMenu} to="/trilha-amar-servir" className="text-lg font-medium">
                   Trilha Amar e Servir
                 </Link>
               </div>
@@ -109,21 +108,20 @@ export function InstitutionalHeader() {
                 </Link>
               </div>
 
-              {/* 6. Sou Novo - SIMPLES */}
-              <div className="border-b py-4">
-                <Link onClick={closeMenu} to="/sou-novo" className="text-lg font-medium">
-                  Sou Novo
-                </Link>
-              </div>
+              {/* 6. Cadastro - COM accordion (Sou Novo + Seja Voluntário) */}
+              <AccordionItem value="cadastro" className="border-b">
+                <AccordionTrigger className="text-lg font-medium py-4 hover:no-underline">
+                  Cadastro
+                </AccordionTrigger>
+                <AccordionContent className="pb-4">
+                  <div className="flex flex-col gap-3 pl-4">
+                    <Link onClick={closeMenu} to="/sou-novo" className="text-muted-foreground hover:text-foreground">Sou Novo</Link>
+                    <Link onClick={closeMenu} to="/seja-voluntario" className="text-muted-foreground hover:text-foreground">Seja Voluntário</Link>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
 
-              {/* 7. Seja Voluntário - SIMPLES */}
-              <div className="border-b py-4">
-                <Link onClick={closeMenu} to="/seja-voluntario" className="text-lg font-medium">
-                  Seja Voluntário
-                </Link>
-              </div>
-
-              {/* 8. Check-in Kids - SIMPLES */}
+              {/* 7. Check-in Kids - SIMPLES (independente) */}
               <div className="border-b py-4">
                 <Link onClick={closeMenu} to="/check-in-kids" className="text-lg font-medium">
                   Check-in Kids
@@ -163,8 +161,6 @@ export function InstitutionalHeader() {
                 <Link to="/quem-somos/teologia" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa Teologia</Link>
                 <Link to="/quem-somos/pastores" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Pastores</Link>
                 <Link to="/quem-somos/lideres-ministerios" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Líderes e Ministérios</Link>
-                <div className="border-t my-1" />
-                <Link to="/trilha-amar-servir" className="block px-4 py-2 text-sm text-promessa-600 font-medium hover:bg-promessa-50 transition-colors">Trilha Amar e Servir</Link>
               </div>
             </div>
           </div>
@@ -172,8 +168,8 @@ export function InstitutionalHeader() {
           {/* 2. Bases - SIMPLES */}
           <Link to="/bases-publicas" className="hover:text-primary transition-colors">Bases</Link>
 
-          {/* 3. Trilha Amar e Servir - SIMPLES */}
-          <Link to="/trilha-amar-servir" className="text-promessa-600 hover:text-promessa-700 transition-colors font-medium">Trilha Amar e Servir</Link>
+          {/* 3. Trilha Amar e Servir - SIMPLES (sem destaque) */}
+          <Link to="/trilha-amar-servir" className="hover:text-primary transition-colors">Trilha Amar e Servir</Link>
 
           {/* 4. Contribua - SIMPLES */}
           <Link to="/contribuicoes" className="hover:text-primary transition-colors">Contribua</Link>
@@ -181,10 +177,27 @@ export function InstitutionalHeader() {
           {/* 5. Contato - SIMPLES */}
           <Link to="/contato" className="hover:text-primary transition-colors">Contato</Link>
 
-          {/* 6. Cadastro - SIMPLES */}
-          <Link to="/sou-novo" className="hover:text-primary transition-colors">Cadastro</Link>
+          {/* 6. Cadastro - COM dropdown (Sou Novo + Seja Voluntário) */}
+          <div className="relative group/cadastro">
+            <button className="flex items-center gap-1 py-2 hover:text-primary transition-colors">
+              Cadastro
+              <ChevronDown className="h-4 w-4 transition-transform duration-200 delay-150 group-hover/cadastro:rotate-180" />
+            </button>
+            {/* Ponte invisível anti-flicker */}
+            <div className="absolute top-full left-0 h-2 w-full" />
+            {/* Dropdown com delay e transição suave */}
+            <div className="absolute top-[calc(100%+0.5rem)] left-0 opacity-0 invisible translate-y-1 group-hover/cadastro:opacity-100 group-hover/cadastro:visible group-hover/cadastro:translate-y-0 transition-all duration-200 delay-150 ease-out z-50">
+              <div className="w-48 rounded-lg border bg-white shadow-lg py-2">
+                <Link to="/sou-novo" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Sou Novo</Link>
+                <Link to="/seja-voluntario" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Seja Voluntário</Link>
+              </div>
+            </div>
+          </div>
 
-          {/* 7. Login - Botão */}
+          {/* 7. Check-in Kids - SIMPLES (independente) */}
+          <Link to="/check-in-kids" className="hover:text-primary transition-colors">Check-in Kids</Link>
+
+          {/* 8. Login - Botão independente */}
           <Button asChild variant="outline" size="sm" className="ml-2">
             <Link to="/auth" className="flex items-center gap-2">
               <LogIn className="w-4 h-4" />
