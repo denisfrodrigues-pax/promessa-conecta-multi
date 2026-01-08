@@ -52,17 +52,12 @@ export default function Auth() {
   // Get redirect URL from query params
   const redirectUrl = searchParams.get('redirect');
 
-  // Redirect logic after authentication
-  // - If there's an explicit redirect URL (e.g., from Check-in Kids), use it
-  // - Otherwise, redirect to Home (/)
+  // Redirect ONLY when there's an explicit redirect URL (e.g., from Check-in Kids)
+  // Otherwise, do NOT navigate - user stays on the auth page or the auth state updates the UI
   useEffect(() => {
-    if (!loading && user) {
-      if (redirectUrl) {
-        const decodedUrl = decodeURIComponent(redirectUrl);
-        navigate(decodedUrl, { replace: true });
-      } else {
-        navigate('/', { replace: true });
-      }
+    if (!loading && user && redirectUrl) {
+      const decodedUrl = decodeURIComponent(redirectUrl);
+      navigate(decodedUrl, { replace: true });
     }
   }, [user, loading, redirectUrl, navigate]);
 
