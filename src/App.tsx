@@ -13,6 +13,7 @@ import PrivateRoute from "@/components/routes/PrivateRoute";
 import AdminLayout from "@/components/layout/AdminLayout";
 import MemberLayout from "@/components/layout/MemberLayout";
 import LeaderLayout from "@/components/layout/LeaderLayout";
+import KidsLayout from "@/components/layout/KidsLayout";
 
 // Auth
 import Auth from "@/pages/Auth";
@@ -81,6 +82,9 @@ import MinhasEscalas from "@/pages/member/MinhasEscalas";
 import HistoricoEscalas from "@/pages/member/HistoricoEscalas";
 import MemberNotificacoes from "@/pages/member/Notificacoes";
 import MinhasContribuicoes from "@/pages/member/MinhasContribuicoes";
+
+// Kids Panel Pages
+import KidsCheckinPanel from "@/pages/kids/KidsCheckinPanel";
 
 // Leader Pages
 import LeaderDashboard from "@/pages/leader/Dashboard";
@@ -217,6 +221,16 @@ const App = () => (
             <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
             <Route path="notificacoes" element={<LeaderNotificacoes />} />
             <Route path="relatorios" element={<LeaderRelatorios />} />
+          </Route>
+
+          {/* Kids Panel Routes - admin, lider, voluntario */}
+          <Route path="/kids" element={
+            <PrivateRoute allowedRoles={['admin', 'lider', 'voluntario']}>
+              <KidsLayout />
+            </PrivateRoute>
+          }>
+            <Route index element={<Navigate to="/kids/check-in" replace />} />
+            <Route path="check-in" element={<KidsCheckinPanel />} />
           </Route>
 
           {/* Member Routes - any authenticated user */}
