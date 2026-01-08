@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -13,12 +13,30 @@ import {
   Baby,
   Heart,
   HandHeart,
-  ArrowRight
+  ArrowRight,
+  LogIn,
+  LayoutDashboard
 } from "lucide-react";
 import { InstitutionalHeader } from "@/components/layout/InstitutionalHeader";
+import { useAuth } from "@/contexts/AuthContext";
 import heroImage from "@/assets/hero-home.png";
 
 export default function Index() {
+  const { user, roles, loading } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAccessPanel = () => {
+    if (roles.includes('admin')) {
+      navigate('/admin/dashboard');
+    } else if (roles.includes('lider')) {
+      navigate('/leader/dashboard');
+    } else if (roles.includes('voluntario')) {
+      navigate('/home');
+    } else {
+      navigate('/home');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Institutional Header */}
@@ -61,20 +79,49 @@ export default function Index() {
             Uma igreja para quem busca viver o evangelho de forma real, simples e transformadora.
           </p>
 
-          {/* CTAs */}
+          {/* CTAs - Different based on auth state */}
           <div 
             className="flex flex-col sm:flex-row gap-4 justify-center items-center opacity-0 animate-[slideUp_0.8s_ease-out_0.8s_forwards]"
           >
-            <Button 
-              size="xl" 
-              className="group relative bg-white text-promessa-700 hover:bg-white/95 shadow-2xl transition-all duration-500 hover:shadow-white/20 hover:scale-105 active:scale-100 px-8 py-6 text-base font-semibold"
-              asChild
-            >
-              <Link to="/sou-novo" className="flex items-center gap-2">
-                Conheça a Igreja
-                <Sparkles className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
-              </Link>
-            </Button>
+            {!loading && user ? (
+              <>
+                <p className="text-white/90 text-sm mb-2">
+                  Olá, você está conectado!
+                </p>
+                <Button 
+                  size="xl" 
+                  className="group relative bg-white text-promessa-700 hover:bg-white/95 shadow-2xl transition-all duration-500 hover:shadow-white/20 hover:scale-105 active:scale-100 px-8 py-6 text-base font-semibold"
+                  onClick={handleAccessPanel}
+                >
+                  <LayoutDashboard className="w-5 h-5 mr-2" />
+                  Acessar meu painel
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  size="xl" 
+                  className="group relative bg-white text-promessa-700 hover:bg-white/95 shadow-2xl transition-all duration-500 hover:shadow-white/20 hover:scale-105 active:scale-100 px-8 py-6 text-base font-semibold"
+                  asChild
+                >
+                  <Link to="/sou-novo" className="flex items-center gap-2">
+                    Conheça a Igreja
+                    <Sparkles className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
+                  </Link>
+                </Button>
+                <Button 
+                  size="xl" 
+                  variant="outline"
+                  className="group relative bg-transparent border-2 border-white text-white hover:bg-white/10 shadow-lg transition-all duration-300 px-8 py-6 text-base font-semibold"
+                  asChild
+                >
+                  <Link to="/auth" className="flex items-center gap-2">
+                    <LogIn className="w-5 h-5" />
+                    Entrar
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
