@@ -52,26 +52,14 @@ export default function Auth() {
   // Get redirect URL from query params
   const redirectUrl = searchParams.get('redirect');
 
-  // Redirect after login when user and roles are loaded
+  // Only redirect if there's an explicit redirect URL (e.g., from Check-in Kids)
+  // Otherwise, user stays on the page they came from or navigates manually
   useEffect(() => {
-    if (!loading && user && roles.length > 0) {
-      // If there's a redirect URL, use it
-      if (redirectUrl) {
-        const decodedUrl = decodeURIComponent(redirectUrl);
-        navigate(decodedUrl, { replace: true });
-        return;
-      }
-      
-      // Otherwise, redirect based on role
-      if (roles.includes('admin')) {
-        navigate('/admin/dashboard', { replace: true });
-      } else if (roles.includes('lider')) {
-        navigate('/leader/dashboard', { replace: true });
-      } else {
-        navigate('/home', { replace: true });
-      }
+    if (!loading && user && redirectUrl) {
+      const decodedUrl = decodeURIComponent(redirectUrl);
+      navigate(decodedUrl, { replace: true });
     }
-  }, [user, roles, loading, redirectUrl, navigate]);
+  }, [user, loading, redirectUrl, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
