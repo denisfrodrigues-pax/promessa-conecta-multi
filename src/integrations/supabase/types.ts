@@ -1347,56 +1347,101 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bairro: string | null
+          batizado_aguas: boolean | null
+          cep: string | null
+          cidade: string | null
+          complemento: string | null
+          cpf: string | null
           created_at: string | null
+          data_batismo: string | null
           data_cadastro: string | null
           data_nascimento: string | null
           email: string
           endereco: string | null
           estado_civil: string | null
+          formacao: string | null
           foto_url: string | null
+          grau_instrucao: string | null
           id: string
+          logradouro: string | null
+          naturalidade: string | null
           nome: string
+          numero: string | null
           observacoes_privadas: string | null
+          pcd: string | null
           preferencias_notificacao: Json | null
+          profissao: string | null
           sexo: string | null
           status: Database["public"]["Enums"]["user_status"] | null
           telefone: string | null
+          uf: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          bairro?: string | null
+          batizado_aguas?: boolean | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          cpf?: string | null
           created_at?: string | null
+          data_batismo?: string | null
           data_cadastro?: string | null
           data_nascimento?: string | null
           email: string
           endereco?: string | null
           estado_civil?: string | null
+          formacao?: string | null
           foto_url?: string | null
+          grau_instrucao?: string | null
           id?: string
+          logradouro?: string | null
+          naturalidade?: string | null
           nome: string
+          numero?: string | null
           observacoes_privadas?: string | null
+          pcd?: string | null
           preferencias_notificacao?: Json | null
+          profissao?: string | null
           sexo?: string | null
           status?: Database["public"]["Enums"]["user_status"] | null
           telefone?: string | null
+          uf?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          bairro?: string | null
+          batizado_aguas?: boolean | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          cpf?: string | null
           created_at?: string | null
+          data_batismo?: string | null
           data_cadastro?: string | null
           data_nascimento?: string | null
           email?: string
           endereco?: string | null
           estado_civil?: string | null
+          formacao?: string | null
           foto_url?: string | null
+          grau_instrucao?: string | null
           id?: string
+          logradouro?: string | null
+          naturalidade?: string | null
           nome?: string
+          numero?: string | null
           observacoes_privadas?: string | null
+          pcd?: string | null
           preferencias_notificacao?: Json | null
+          profissao?: string | null
           sexo?: string | null
           status?: Database["public"]["Enums"]["user_status"] | null
           telefone?: string | null
+          uf?: string | null
           updated_at?: string | null
           user_id?: string
         }
