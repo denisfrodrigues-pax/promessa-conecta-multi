@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -24,7 +25,8 @@ import {
   Briefcase,
   Church,
   Loader2,
-  Search
+  Search,
+  Camera
 } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
@@ -88,9 +90,13 @@ const UFS = [
 ];
 
 export default function MemberPerfil() {
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [loadingCep, setLoadingCep] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<ProfileFormData>({
     nome: '',
     cpf: '',
@@ -121,6 +127,87 @@ export default function MemberPerfil() {
     permission: pushPermission,
     toggleSubscription 
   } = usePushNotifications();
+
+  // Load avatar URL
+  useEffect(() => {
+    if (profile?.foto_url) {
+      setAvatarUrl(profile.foto_url);
+    }
+  }, [profile?.foto_url]);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      toast.error('Formato inválido. Use apenas JPG ou PNG.');
+      return;
+    }
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Imagem muito grande. Máximo 2MB.');
+      return;
+    }
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to Supabase Storage
+    setUploadingAvatar(true);
+    try {
+      const fileExt = file.type === 'image/png' ? 'png' : 'jpg';
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      // Upload with upsert to overwrite existing
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { 
+          upsert: true,
+          contentType: file.type 
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ foto_url: publicUrl })
+        .eq('id', profile?.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      setAvatarPreview(null);
+      toast.success('Foto atualizada com sucesso!');
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Erro ao atualizar foto');
+      setAvatarPreview(null);
+    } finally {
+      setUploadingAvatar(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   // Load profile data
   useEffect(() => {
@@ -294,14 +381,48 @@ export default function MemberPerfil() {
         <div className="h-24 bg-gradient-to-r from-promessa to-promessa-dark" />
         <CardContent className="p-6 pt-0">
           <div className="flex items-end gap-4 -mt-12">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-promessa-light to-promessa flex items-center justify-center shadow-lg border-4 border-background">
-              <span className="text-4xl font-bold text-white">
-                {profile?.nome?.charAt(0).toUpperCase()}
-              </span>
+            <div className="relative group">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <button
+                onClick={handleAvatarClick}
+                disabled={uploadingAvatar}
+                className="relative w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-4 border-background bg-gradient-to-br from-promessa-light to-promessa focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              >
+                {(avatarPreview || avatarUrl) ? (
+                  <img
+                    src={avatarPreview || avatarUrl || ''}
+                    alt={profile?.nome || 'Avatar'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="flex items-center justify-center w-full h-full text-4xl font-bold text-white">
+                    {profile?.nome?.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  {uploadingAvatar ? (
+                    <Loader2 className="w-6 h-6 text-white animate-spin" />
+                  ) : (
+                    <Camera className="w-6 h-6 text-white" />
+                  )}
+                </div>
+              </button>
+              <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1.5 shadow-md">
+                <Camera className="w-3 h-3 text-primary-foreground" />
+              </div>
             </div>
-            <div className="pb-2">
+            <div className="pb-2 flex-1">
               <h2 className="text-xl font-display font-bold">{profile?.nome}</h2>
               <p className="text-muted-foreground">{profile?.email}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Clique na foto para alterar (JPG/PNG, máx 2MB)
+              </p>
             </div>
           </div>
         </CardContent>
