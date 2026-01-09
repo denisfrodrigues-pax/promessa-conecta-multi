@@ -10,13 +10,13 @@ import { cn } from '@/lib/utils';
 import { useLeaderNotifications } from '@/hooks/useLeaderNotifications';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Visão Geral', path: '/lider' },
-  { icon: Users, label: 'Minha Equipe', path: '/lider/equipe' },
-  { icon: ClipboardList, label: 'Funções', path: '/lider/funcoes' },
-  { icon: Users, label: 'Minhas Bases', path: '/lider/bases' },
-  { icon: ClipboardList, label: 'Minhas Escalas', path: '/lider/escalas' },
-  { icon: Bell, label: 'Notificações', path: '/lider/notificacoes', showBadge: true },
-  { icon: BarChart3, label: 'Relatórios', path: '/lider/relatorios' },
+  { icon: LayoutDashboard, label: 'Visão Geral', path: '/leader' },
+  { icon: Users, label: 'Minha Equipe', path: '/leader/equipe' },
+  { icon: ClipboardList, label: 'Funções', path: '/leader/funcoes' },
+  { icon: Users, label: 'Minhas Bases', path: '/leader/bases' },
+  { icon: ClipboardList, label: 'Minhas Escalas', path: '/leader/escalas' },
+  { icon: Bell, label: 'Notificações', path: '/leader/notificacoes', showBadge: true },
+  { icon: BarChart3, label: 'Relatórios', path: '/leader/relatorios' },
 ];
 
 export default function LeaderLayout() {
@@ -72,7 +72,7 @@ export default function LeaderLayout() {
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === '/lider'}
+                end={item.path === '/leader'}
                 className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50 transition-colors whitespace-nowrap"
                 activeClassName="bg-promessa-100 text-promessa-700 font-medium"
               >
