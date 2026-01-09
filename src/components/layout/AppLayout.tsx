@@ -52,7 +52,7 @@ export default function AppLayout() {
 
   const navItems = [
     { icon: CalendarDays, label: 'Escalas', path: '/minhas-escalas' },
-    { icon: Users, label: 'Minha Base', path: '/bases' },
+    { icon: Users, label: 'Minha Base', path: '/minha-base' },
     { icon: Calendar, label: 'Eventos', path: '/eventos' },
     { icon: Bell, label: 'Notificações', path: '/notificacoes', badge: unreadCount > 0 ? unreadCount : undefined },
     { icon: Heart, label: 'Minhas Contribuições', path: '/financeiro/minhas-contribuicoes' },
