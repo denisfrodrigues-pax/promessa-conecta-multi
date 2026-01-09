@@ -14,6 +14,7 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import MemberLayout from "@/components/layout/MemberLayout";
 import LeaderLayout from "@/components/layout/LeaderLayout";
 import KidsLayout from "@/components/layout/KidsLayout";
+import AppLayout from "@/components/layout/AppLayout";
 
 // Auth
 import Auth from "@/pages/Auth";
@@ -83,6 +84,9 @@ import HistoricoEscalas from "@/pages/member/HistoricoEscalas";
 import MemberNotificacoes from "@/pages/member/Notificacoes";
 import MinhasContribuicoes from "@/pages/member/MinhasContribuicoes";
 
+// App Home
+import AppHome from "@/pages/app/AppHome";
+
 // Kids Panel Pages
 import KidsCheckinPanel from "@/pages/kids/KidsCheckinPanel";
 
@@ -126,8 +130,10 @@ const App = () => (
         <Toaster />
         <Sonner />
         <Routes>
-          {/* Public Routes - redirect authenticated users */}
-          <Route path="/" element={<PublicRoute><Index /></PublicRoute>} />
+          {/* Home - accessible to all (shows different content based on auth state) */}
+          <Route path="/" element={<Index />} />
+          
+          {/* Auth - redirect authenticated users */}
           <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
           
           {/* Semi-public Routes - accessible to all */}
@@ -231,6 +237,15 @@ const App = () => (
           }>
             <Route index element={<Navigate to="/kids/check-in" replace />} />
             <Route path="check-in" element={<KidsCheckinPanel />} />
+          </Route>
+
+          {/* App Home Route - authenticated users */}
+          <Route path="/app" element={
+            <PrivateRoute>
+              <AppLayout />
+            </PrivateRoute>
+          }>
+            <Route index element={<AppHome />} />
           </Route>
 
           {/* Member Routes - any authenticated user */}

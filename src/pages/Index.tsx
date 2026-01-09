@@ -26,15 +26,7 @@ export default function Index() {
   const navigate = useNavigate();
 
   const handleAccessPanel = () => {
-    if (roles.includes('admin')) {
-      navigate('/painel-admin');
-    } else if (roles.includes('lider')) {
-      navigate('/painel-lider');
-    } else if (roles.includes('voluntario')) {
-      navigate('/painel-voluntario');
-    } else {
-      navigate('/painel-membro');
-    }
+    navigate('/app');
   };
 
   // Get user's first name for greeting
