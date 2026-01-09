@@ -88,7 +88,7 @@ export default function MemberHome() {
                 <Link to="/sou-novo">Sou Novo Aqui</Link>
               </Button>
               <Button asChild size="lg" className="bg-white/10 text-white border border-white/30 hover:bg-white/20 font-semibold">
-                <Link to="/bases">Encontrar uma Base</Link>
+                <Link to="/app/bases">Encontrar uma Base</Link>
               </Button>
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function MemberHome() {
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Quick Actions - Premium Cards */}
         <section className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Link to="/bases" className="group">
+          <Link to="/app/bases" className="group">
             <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
                 <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
@@ -109,7 +109,7 @@ export default function MemberHome() {
               </CardContent>
             </Card>
           </Link>
-          <Link to="/eventos" className="group">
+          <Link to="/app/eventos" className="group">
             <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
                 <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
@@ -120,7 +120,7 @@ export default function MemberHome() {
               </CardContent>
             </Card>
           </Link>
-          <Link to="/oracao" className="group">
+          <Link to="/app/oracao" className="group">
             <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
                 <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
@@ -131,7 +131,7 @@ export default function MemberHome() {
               </CardContent>
             </Card>
           </Link>
-          <Link to="/avisos" className="group">
+          <Link to="/app/avisos" className="group">
             <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
                 <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
@@ -160,7 +160,7 @@ export default function MemberHome() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-display font-bold">Últimos Avisos</h2>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/avisos">
+              <Link to="/app/avisos">
                 Ver todos <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
@@ -199,14 +199,14 @@ export default function MemberHome() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-display font-bold">Próximos Eventos</h2>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/eventos">
+              <Link to="/app/eventos">
                 Ver todos <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {eventos.map((evento) => (
-              <Link key={evento.id} to={`/eventos/${evento.id}`}>
+              <Link key={evento.id} to={`/app/eventos/${evento.id}`}>
                 <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full overflow-hidden group">
                   <div className="aspect-video bg-gradient-to-br from-promessa-500 to-promessa-700 relative">
                     <div className="absolute inset-0 flex items-center justify-center">

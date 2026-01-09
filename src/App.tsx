@@ -11,7 +11,6 @@ import PrivateRoute from "@/components/routes/PrivateRoute";
 
 // Layouts
 import AdminLayout from "@/components/layout/AdminLayout";
-import MemberLayout from "@/components/layout/MemberLayout";
 import LeaderLayout from "@/components/layout/LeaderLayout";
 import KidsLayout from "@/components/layout/KidsLayout";
 import AppLayout from "@/components/layout/AppLayout";
@@ -131,10 +130,11 @@ const App = () => (
         <Toaster />
         <Sonner />
         <Routes>
+          {/* ==================== PUBLIC ROUTES ==================== */}
           {/* Home - accessible to all (shows different content based on auth state) */}
           <Route path="/" element={<Index />} />
           
-          {/* Auth - redirect authenticated users */}
+          {/* Auth - for unauthenticated users */}
           <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
           
           {/* Semi-public Routes - accessible to all */}
@@ -143,7 +143,7 @@ const App = () => (
           <Route path="/sou-novo" element={<SouNovo />} />
           <Route path="/contribuicoes" element={<Contribuicoes />} />
           
-          {/* Institutional Pages */}
+          {/* Institutional Pages - public */}
           <Route path="/quem-somos" element={<QuemSomos />} />
           <Route path="/quem-somos/teologia" element={<Teologia />} />
           <Route path="/quem-somos/missao-visao" element={<MissaoVisao />} />
@@ -157,6 +157,45 @@ const App = () => (
           <Route path="/check-in-kids" element={<CheckinKids />} />
           <Route path="/contato" element={<Contato />} />
           <Route path="/contato/:section" element={<Contato />} />
+
+          {/* ==================== AUTHENTICATED ROUTES ==================== */}
+          
+          {/* App Routes - All authenticated member pages under /app */}
+          <Route path="/app" element={
+            <PrivateRoute>
+              <AppLayout />
+            </PrivateRoute>
+          }>
+            <Route index element={<AppHome />} />
+            <Route path="home" element={<MemberHome />} />
+            <Route path="minha-base" element={<MinhaBase />} />
+            <Route path="bases" element={<BasesPublic />} />
+            <Route path="bases/:id" element={<BaseDetalhesPublic />} />
+            <Route path="eventos" element={<MemberEventos />} />
+            <Route path="eventos/:id" element={<MemberEventoDetalhes />} />
+            <Route path="avisos" element={<MemberAvisos />} />
+            <Route path="perfil" element={<MemberPerfil />} />
+            <Route path="oracao" element={<Oracao />} />
+            <Route path="escalas" element={<MinhasEscalas />} />
+            <Route path="historico-escalas" element={<HistoricoEscalas />} />
+            <Route path="notificacoes" element={<MemberNotificacoes />} />
+            <Route path="contribuicoes" element={<MinhasContribuicoes />} />
+          </Route>
+
+          {/* Legacy redirects - redirect old paths to new /app/* paths */}
+          <Route path="/home" element={<Navigate to="/app" replace />} />
+          <Route path="/minha-base" element={<Navigate to="/app/minha-base" replace />} />
+          <Route path="/bases" element={<Navigate to="/app/bases" replace />} />
+          <Route path="/bases/:id" element={<Navigate to="/app/bases/:id" replace />} />
+          <Route path="/eventos" element={<Navigate to="/app/eventos" replace />} />
+          <Route path="/eventos/:id" element={<Navigate to="/app/eventos/:id" replace />} />
+          <Route path="/avisos" element={<Navigate to="/app/avisos" replace />} />
+          <Route path="/perfil" element={<Navigate to="/app/perfil" replace />} />
+          <Route path="/oracao" element={<Navigate to="/app/oracao" replace />} />
+          <Route path="/minhas-escalas" element={<Navigate to="/app/escalas" replace />} />
+          <Route path="/historico-escalas" element={<Navigate to="/app/historico-escalas" replace />} />
+          <Route path="/notificacoes" element={<Navigate to="/app/notificacoes" replace />} />
+          <Route path="/financeiro/minhas-contribuicoes" element={<Navigate to="/app/contribuicoes" replace />} />
 
           {/* Admin Routes - only admin and financeiro */}
           <Route path="/admin" element={
@@ -238,36 +277,6 @@ const App = () => (
           }>
             <Route index element={<Navigate to="/kids/check-in" replace />} />
             <Route path="check-in" element={<KidsCheckinPanel />} />
-          </Route>
-
-          {/* App Home Route - authenticated users */}
-          <Route path="/app" element={
-            <PrivateRoute>
-              <AppLayout />
-            </PrivateRoute>
-          }>
-            <Route index element={<AppHome />} />
-          </Route>
-
-          {/* Member Routes - any authenticated user */}
-          <Route element={
-            <PrivateRoute>
-              <MemberLayout />
-            </PrivateRoute>
-          }>
-            <Route path="/home" element={<MemberHome />} />
-            <Route path="/minha-base" element={<MinhaBase />} />
-            <Route path="/bases" element={<BasesPublic />} />
-            <Route path="/bases/:id" element={<BaseDetalhesPublic />} />
-            <Route path="/eventos" element={<MemberEventos />} />
-            <Route path="/eventos/:id" element={<MemberEventoDetalhes />} />
-            <Route path="/avisos" element={<MemberAvisos />} />
-            <Route path="/perfil" element={<MemberPerfil />} />
-            <Route path="/oracao" element={<Oracao />} />
-            <Route path="/minhas-escalas" element={<MinhasEscalas />} />
-            <Route path="/historico-escalas" element={<HistoricoEscalas />} />
-            <Route path="/notificacoes" element={<MemberNotificacoes />} />
-            <Route path="/financeiro/minhas-contribuicoes" element={<MinhasContribuicoes />} />
           </Route>
 
           {/* 404 - Show not found page */}
