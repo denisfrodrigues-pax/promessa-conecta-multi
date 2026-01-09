@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,10 +6,16 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, HandHeart, Calendar, Tag, DollarSign } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowLeft, HandHeart, Calendar, Tag, DollarSign, TrendingUp } from 'lucide-react';
+import { format, startOfMonth, subMonths, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ContribuicaoModal } from '@/components/contribuicao/ContribuicaoModal';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 interface Contribuicao {
   id: string;
@@ -20,6 +26,13 @@ interface Contribuicao {
     nome: string;
   } | null;
 }
+
+const chartConfig = {
+  valor: {
+    label: 'Valor',
+    color: 'hsl(var(--primary))',
+  },
+};
 
 export default function MinhasContribuicoes() {
   const { profile } = useAuth();
@@ -82,6 +95,36 @@ export default function MinhasContribuicoes() {
     .filter((c) => c.status === 'confirmado')
     .reduce((acc, c) => acc + c.valor, 0);
 
+  // Generate chart data for the last 6 months
+  const chartData = useMemo(() => {
+    const months: { month: string; valor: number; label: string }[] = [];
+    const today = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+      const monthStart = startOfMonth(subMonths(today, i));
+      const monthKey = format(monthStart, 'yyyy-MM');
+      const monthLabel = format(monthStart, 'MMM', { locale: ptBR });
+
+      const monthTotal = contribuicoes
+        .filter((c) => {
+          if (c.status !== 'confirmado') return false;
+          const contributionDate = parseISO(c.data_operacao);
+          return format(contributionDate, 'yyyy-MM') === monthKey;
+        })
+        .reduce((acc, c) => acc + c.valor, 0);
+
+      months.push({
+        month: monthKey,
+        valor: monthTotal,
+        label: monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1),
+      });
+    }
+
+    return months;
+  }, [contribuicoes]);
+
+  const hasChartData = chartData.some((d) => d.valor > 0);
+
   return (
     <div className="container mx-auto px-4 py-6 pb-24 md:pb-6 space-y-6">
       {/* Header */}
@@ -109,15 +152,15 @@ export default function MinhasContribuicoes() {
       </div>
 
       {/* Summary Card */}
-      <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
+      <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white dark:from-green-950/20 dark:to-background">
         <CardContent className="p-5">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-full bg-green-100">
-              <DollarSign className="w-6 h-6 text-green-600" />
+            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30">
+              <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total contribuído</p>
-              <p className="text-2xl font-bold text-green-700">
+              <p className="text-2xl font-bold text-green-700 dark:text-green-400">
                 {formatCurrency(totalContribuido)}
               </p>
             </div>
@@ -125,8 +168,56 @@ export default function MinhasContribuicoes() {
         </CardContent>
       </Card>
 
+      {/* Chart Section */}
+      {!loading && hasChartData && (
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              <CardTitle className="text-lg">Contribuições por mês</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[200px] w-full">
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                <XAxis 
+                  dataKey="label" 
+                  tickLine={false} 
+                  axisLine={false}
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  tickLine={false} 
+                  axisLine={false}
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => `R$${value}`}
+                  width={60}
+                />
+                <ChartTooltip 
+                  content={
+                    <ChartTooltipContent 
+                      formatter={(value) => formatCurrency(Number(value))}
+                    />
+                  } 
+                />
+                <Bar 
+                  dataKey="valor" 
+                  fill="hsl(var(--primary))" 
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Contributions List */}
       <div className="space-y-3">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-muted-foreground" />
+          Histórico de contribuições
+        </h2>
+        
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
             <Card key={i}>
@@ -181,7 +272,7 @@ export default function MinhasContribuicoes() {
                     </div>
                   </div>
                   <div className="text-right space-y-1">
-                    <p className="font-bold text-lg text-green-700">
+                    <p className="font-bold text-lg text-green-700 dark:text-green-400">
                       {formatCurrency(contribuicao.valor)}
                     </p>
                     {getStatusBadge(contribuicao.status)}
