@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -121,7 +121,16 @@ const FREQUENCIAS = [
 
 export default function Contribuicoes() {
   const { user } = useAuth();
-  const backUrl = user ? '/app' : '/';
+  const [searchParams] = useSearchParams();
+  const origem = searchParams.get('origem');
+  
+  // Determine back URL based on auth state and origin
+  const getBackUrl = () => {
+    if (!user) return '/';
+    if (origem === 'contribuicoes') return '/app/minhas-contribuicoes';
+    return '/app';
+  };
+  const backUrl = getBackUrl();
   
   const [tipoContribuicao, setTipoContribuicao] = useState<'recorrente' | 'especial'>('recorrente');
   const [formaPagamento, setFormaPagamento] = useState<'pix' | 'cartao' | 'boleto'>('pix');
