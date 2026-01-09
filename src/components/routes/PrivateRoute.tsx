@@ -30,13 +30,16 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
     const hasRequiredRole = allowedRoles.some(role => roles.includes(role));
     if (!hasRequiredRole) {
       // Redirect to appropriate dashboard based on their actual role
-      if (roles.includes('admin')) {
+      if (roles.includes('admin') || roles.includes('financeiro')) {
         return <Navigate to="/admin/dashboard" replace />;
       }
       if (roles.includes('lider')) {
-      return <Navigate to="/leader/dashboard" replace />;
-    }
-    return <Navigate to="/app" replace />;
+        return <Navigate to="/leader/dashboard" replace />;
+      }
+      if (roles.includes('voluntario')) {
+        return <Navigate to="/kids/check-in" replace />;
+      }
+      return <Navigate to="/app" replace />;
     }
   }
 

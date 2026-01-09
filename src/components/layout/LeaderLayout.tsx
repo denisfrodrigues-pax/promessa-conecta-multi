@@ -20,7 +20,7 @@ const navItems = [
 ];
 
 export default function LeaderLayout() {
-  const { user, loading, profile, signOut, isLider } = useAuth();
+  const { user, loading, profile, isLider } = useAuth();
   const { unreadCount } = useLeaderNotifications();
 
   if (loading) {
@@ -35,6 +35,8 @@ export default function LeaderLayout() {
     return <Navigate to="/auth" replace />;
   }
 
+  // Leader panel accessible by 'lider' and 'admin' roles
+  // isLider already includes both roles
   if (!isLider) {
     return <Navigate to="/app" replace />;
   }
