@@ -11,7 +11,7 @@ export default function Contribuicoes() {
   // Determine back URL based on auth state and origin
   const getBackUrl = () => {
     if (!user) return '/';
-    if (origem === 'contribuicoes') return '/app/minhas-contribuicoes';
+    if (origem === 'contribuicoes') return '/app/contribuicoes';
     return '/app';
   };
   

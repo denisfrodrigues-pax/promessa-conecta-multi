@@ -180,7 +180,7 @@ const App = () => (
             <Route path="escalas" element={<MinhasEscalas />} />
             <Route path="historico-escalas" element={<HistoricoEscalas />} />
             <Route path="notificacoes" element={<MemberNotificacoes />} />
-            <Route path="minhas-contribuicoes" element={<MinhasContribuicoes />} />
+            <Route path="contribuicoes" element={<MinhasContribuicoes />} />
             <Route path="contribuir" element={<Contribuir />} />
           </Route>
 
@@ -197,7 +197,8 @@ const App = () => (
           <Route path="/minhas-escalas" element={<Navigate to="/app/escalas" replace />} />
           <Route path="/historico-escalas" element={<Navigate to="/app/historico-escalas" replace />} />
           <Route path="/notificacoes" element={<Navigate to="/app/notificacoes" replace />} />
-          <Route path="/financeiro/minhas-contribuicoes" element={<Navigate to="/app/minhas-contribuicoes" replace />} />
+          <Route path="/financeiro/minhas-contribuicoes" element={<Navigate to="/app/contribuicoes" replace />} />
+          <Route path="/app/minhas-contribuicoes" element={<Navigate to="/app/contribuicoes" replace />} />
 
           {/* Admin Routes - only admin and financeiro */}
           <Route path="/admin" element={
