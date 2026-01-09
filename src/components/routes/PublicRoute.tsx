@@ -1,20 +1,20 @@
-import { Navigate } from "react-router-dom";
-import { useAuth, UserRole } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PublicRouteProps {
   children: React.ReactNode;
 }
 
-const getRedirectByRole = (roles: UserRole[]): string => {
-  if (roles.includes('admin')) return '/admin/dashboard';
-  if (roles.includes('lider')) return '/leader/dashboard';
-  return '/home';
-};
-
+/**
+ * PublicRoute - Used for pages like /auth
+ * 
+ * This guard does NOT redirect authenticated users automatically.
+ * The page itself (e.g., Auth.tsx) handles navigation after login.
+ * This prevents guard interception of programmatic navigation.
+ */
 const PublicRoute = ({ children }: PublicRouteProps) => {
-  const { user, roles, loading } = useAuth();
+  const { loading } = useAuth();
 
-  // Show nothing while loading to prevent flash
+  // Show loading spinner while auth state is being determined
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -23,13 +23,7 @@ const PublicRoute = ({ children }: PublicRouteProps) => {
     );
   }
 
-  // If user is authenticated, redirect based on role
-  if (user) {
-    const redirectPath = getRedirectByRole(roles);
-    return <Navigate to={redirectPath} replace />;
-  }
-
-  // Not authenticated, show the public page
+  // Render children without redirect - page handles its own navigation
   return <>{children}</>;
 };
 
