@@ -148,7 +148,7 @@ export default function AppHome() {
               className="bg-white text-promessa-700 hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               asChild
             >
-              <Link to="/contribuicoes" className="flex items-center gap-2">
+              <Link to="/app/contribuicoes" className="flex items-center gap-2">
                 <Heart className="w-5 h-5" />
                 Contribuir
               </Link>
