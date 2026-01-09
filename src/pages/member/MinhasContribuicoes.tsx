@@ -144,7 +144,7 @@ export default function MinhasContribuicoes() {
           asChild
           className="bg-green-600 hover:bg-green-700"
         >
-          <Link to="/contribuicoes?origem=contribuicoes">
+          <Link to="/app/contribuir">
             <HandHeart className="w-4 h-4 mr-2" />
             Contribuir
           </Link>
@@ -249,7 +249,7 @@ export default function MinhasContribuicoes() {
                   asChild
                   className="mt-2 bg-green-600 hover:bg-green-700"
                 >
-                  <Link to="/contribuicoes?origem=contribuicoes">
+                  <Link to="/app/contribuir">
                     Fazer primeira contribuição
                   </Link>
                 </Button>

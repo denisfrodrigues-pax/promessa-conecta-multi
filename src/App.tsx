@@ -83,6 +83,7 @@ import MinhasEscalas from "@/pages/member/MinhasEscalas";
 import HistoricoEscalas from "@/pages/member/HistoricoEscalas";
 import MemberNotificacoes from "@/pages/member/Notificacoes";
 import MinhasContribuicoes from "@/pages/member/MinhasContribuicoes";
+import Contribuir from "@/pages/member/Contribuir";
 
 // App Home
 import AppHome from "@/pages/app/AppHome";
@@ -179,7 +180,8 @@ const App = () => (
             <Route path="escalas" element={<MinhasEscalas />} />
             <Route path="historico-escalas" element={<HistoricoEscalas />} />
             <Route path="notificacoes" element={<MemberNotificacoes />} />
-            <Route path="contribuicoes" element={<MinhasContribuicoes />} />
+            <Route path="minhas-contribuicoes" element={<MinhasContribuicoes />} />
+            <Route path="contribuir" element={<Contribuir />} />
           </Route>
 
           {/* Legacy redirects - redirect old paths to new /app/* paths */}
@@ -195,7 +197,7 @@ const App = () => (
           <Route path="/minhas-escalas" element={<Navigate to="/app/escalas" replace />} />
           <Route path="/historico-escalas" element={<Navigate to="/app/historico-escalas" replace />} />
           <Route path="/notificacoes" element={<Navigate to="/app/notificacoes" replace />} />
-          <Route path="/financeiro/minhas-contribuicoes" element={<Navigate to="/app/contribuicoes" replace />} />
+          <Route path="/financeiro/minhas-contribuicoes" element={<Navigate to="/app/minhas-contribuicoes" replace />} />
 
           {/* Admin Routes - only admin and financeiro */}
           <Route path="/admin" element={
