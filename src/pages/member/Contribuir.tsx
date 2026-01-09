@@ -14,7 +14,7 @@ export default function Contribuir() {
         <div className="container max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             <Button asChild variant="ghost" size="icon">
-              <Link to="/app/minhas-contribuicoes">
+              <Link to="/app/contribuicoes">
                 <ArrowLeft className="w-5 h-5" />
               </Link>
             </Button>
@@ -37,8 +37,8 @@ export default function Contribuir() {
       <main className="py-8">
         <ContribuicaoForm
           origem="app"
-          backUrl="/app/minhas-contribuicoes"
-          backLabel="Voltar para Minhas Contribuições"
+          backUrl="/app/contribuicoes"
+          backLabel="Voltar para Contribuições"
           showHeader={false}
           profileId={profile?.id}
           profileNome={profile?.nome}
