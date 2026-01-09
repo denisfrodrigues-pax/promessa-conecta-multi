@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -119,6 +120,9 @@ const FREQUENCIAS = [
 ];
 
 export default function Contribuicoes() {
+  const { user } = useAuth();
+  const backUrl = user ? '/app' : '/';
+  
   const [tipoContribuicao, setTipoContribuicao] = useState<'recorrente' | 'especial'>('recorrente');
   const [formaPagamento, setFormaPagamento] = useState<'pix' | 'cartao' | 'boleto'>('pix');
   const [valor, setValor] = useState('');
@@ -218,7 +222,7 @@ export default function Contribuicoes() {
                 </div>
                 <div className="pt-4 space-y-3">
                   <Button asChild className="w-full">
-                    <Link to="/">Voltar para a Home</Link>
+                    <Link to={backUrl}>Voltar para a Home</Link>
                   </Button>
                   <Button 
                     variant="outline" 
@@ -244,7 +248,7 @@ export default function Contribuicoes() {
       <section className="relative pt-32 pb-16 bg-gradient-to-b from-primary/5 to-background">
         <div className="container max-w-4xl mx-auto px-4 text-center">
           <Link 
-            to="/" 
+            to={backUrl} 
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
