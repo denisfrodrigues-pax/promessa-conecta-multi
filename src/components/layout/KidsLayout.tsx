@@ -1,11 +1,11 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Baby, LogOut, Home } from "lucide-react";
+import { Baby, LogOut, Home, Loader2 } from "lucide-react";
 import { useChurchConfig } from "@/hooks/useChurchConfig";
 
 const KidsLayout = () => {
-  const { signOut, profile } = useAuth();
+  const { signOut, profile, user, loading, isVoluntario } = useAuth();
   const { config } = useChurchConfig();
   const navigate = useNavigate();
 
@@ -13,6 +13,22 @@ const KidsLayout = () => {
     await signOut();
     navigate("/auth");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (!isVoluntario) {
+    return <Navigate to="/app" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-muted/30">

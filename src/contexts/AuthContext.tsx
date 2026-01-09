@@ -26,6 +26,7 @@ interface AuthContextType {
   hasRole: (role: UserRole) => boolean;
   isAdmin: boolean;
   isLider: boolean;
+  isVoluntario: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -118,8 +119,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const hasRole = (role: UserRole) => roles.includes(role);
-  const isAdmin = roles.includes('admin');
-  const isLider = roles.includes('lider') || isAdmin;
+  const isAdmin = roles.includes('admin') || roles.includes('financeiro');
+  const isLider = roles.includes('lider') || roles.includes('admin');
+  const isVoluntario = roles.includes('voluntario') || roles.includes('lider') || roles.includes('admin');
 
   return (
     <AuthContext.Provider value={{
@@ -134,6 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       hasRole,
       isAdmin,
       isLider,
+      isVoluntario,
     }}>
       {children}
     </AuthContext.Provider>

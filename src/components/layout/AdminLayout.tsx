@@ -4,7 +4,7 @@ import AdminSidebar from './AdminSidebar';
 import { Loader2 } from 'lucide-react';
 
 export default function AdminLayout() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, roles } = useAuth();
 
   if (loading) {
     return (
@@ -18,6 +18,8 @@ export default function AdminLayout() {
     return <Navigate to="/auth" replace />;
   }
 
+  // Admin panel accessible by 'admin' and 'financeiro' roles
+  // isAdmin already includes both roles
   if (!isAdmin) {
     return <Navigate to="/app" replace />;
   }
