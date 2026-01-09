@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, HandHeart, Calendar, Tag, DollarSign, TrendingUp } from 'lucide-react';
 import { format, startOfMonth, subMonths, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ContribuicaoModal } from '@/components/contribuicao/ContribuicaoModal';
 import {
   ChartContainer,
   ChartTooltip,
@@ -38,7 +37,6 @@ export default function MinhasContribuicoes() {
   const { profile } = useAuth();
   const [contribuicoes, setContribuicoes] = useState<Contribuicao[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     if (profile?.id) {
@@ -143,11 +141,13 @@ export default function MinhasContribuicoes() {
           </div>
         </div>
         <Button 
-          onClick={() => setModalOpen(true)}
+          asChild
           className="bg-green-600 hover:bg-green-700"
         >
-          <HandHeart className="w-4 h-4 mr-2" />
-          Contribuir
+          <Link to="/contribuicoes?origem=contribuicoes">
+            <HandHeart className="w-4 h-4 mr-2" />
+            Contribuir
+          </Link>
         </Button>
       </div>
 
@@ -246,10 +246,12 @@ export default function MinhasContribuicoes() {
                   </p>
                 </div>
                 <Button 
-                  onClick={() => setModalOpen(true)}
+                  asChild
                   className="mt-2 bg-green-600 hover:bg-green-700"
                 >
-                  Fazer primeira contribuição
+                  <Link to="/contribuicoes?origem=contribuicoes">
+                    Fazer primeira contribuição
+                  </Link>
                 </Button>
               </div>
             </CardContent>
@@ -284,11 +286,6 @@ export default function MinhasContribuicoes() {
         )}
       </div>
 
-      <ContribuicaoModal 
-        open={modalOpen} 
-        onOpenChange={setModalOpen}
-        onSuccess={fetchContribuicoes}
-      />
     </div>
   );
 }
