@@ -82,11 +82,11 @@ export default function Index() {
             Uma igreja para quem busca viver o evangelho de forma real, simples e transformadora.
           </p>
 
-          {/* CTAs - Different based on auth state */}
-          <div 
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center opacity-0 animate-[slideUp_0.8s_ease-out_0.8s_forwards]"
-          >
-            {!loading && user ? (
+          {/* CTAs - Only shown for authenticated users */}
+          {!loading && user && (
+            <div 
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center opacity-0 animate-[slideUp_0.8s_ease-out_0.8s_forwards]"
+            >
               <div className="flex flex-col items-center gap-4">
                 <p className="text-white/90 text-lg">
                   Olá, <span className="font-semibold">{firstName}</span>
@@ -100,32 +100,8 @@ export default function Index() {
                   Acessar meu painel
                 </Button>
               </div>
-            ) : (
-              <>
-                <Button 
-                  size="xl" 
-                  className="group relative bg-white text-promessa-700 hover:bg-white/95 shadow-2xl transition-all duration-500 hover:shadow-white/20 hover:scale-105 active:scale-100 px-8 py-6 text-base font-semibold"
-                  asChild
-                >
-                  <Link to="/sou-novo" className="flex items-center gap-2">
-                    Conheça a Igreja
-                    <Sparkles className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
-                  </Link>
-                </Button>
-                <Button 
-                  size="xl" 
-                  variant="outline"
-                  className="group relative bg-transparent border-2 border-white text-white hover:bg-white/10 shadow-lg transition-all duration-300 px-8 py-6 text-base font-semibold"
-                  asChild
-                >
-                  <Link to="/auth" className="flex items-center gap-2">
-                    <LogIn className="w-5 h-5" />
-                    Entrar
-                  </Link>
-                </Button>
-              </>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Scroll indicator - discreet */}
