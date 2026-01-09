@@ -166,7 +166,7 @@ export default function MemberEventoDetalhes() {
             <h2 className="text-xl font-display font-semibold mb-2">Evento não encontrado</h2>
             <p className="text-muted-foreground mb-6">Este evento pode ter sido removido ou o link está incorreto.</p>
             <Button asChild>
-              <Link to="/eventos">
+              <Link to="/app/eventos">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar para Eventos
               </Link>
@@ -184,7 +184,7 @@ export default function MemberEventoDetalhes() {
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
       {/* Back button */}
       <Button asChild variant="ghost" className="mb-6 -ml-2">
-        <Link to="/eventos">
+        <Link to="/app/eventos">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
         </Link>

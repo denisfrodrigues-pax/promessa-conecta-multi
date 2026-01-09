@@ -91,7 +91,7 @@ export default function HistoricoEscalas() {
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
       <div className="mb-6">
-        <Link to="/minhas-escalas">
+        <Link to="/app/escalas">
           <Button variant="ghost" size="sm" className="mb-2">
             <ArrowLeft className="w-4 h-4 mr-1" />
             Voltar

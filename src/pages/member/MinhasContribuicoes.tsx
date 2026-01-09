@@ -131,7 +131,7 @@ export default function MinhasContribuicoes() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="icon">
-            <Link to="/home">
+            <Link to="/app">
               <ArrowLeft className="w-5 h-5" />
             </Link>
           </Button>

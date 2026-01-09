@@ -10,7 +10,9 @@ import {
   Heart, 
   LayoutDashboard,
   Menu,
-  X
+  X,
+  Home,
+  User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -51,15 +53,25 @@ export default function AppLayout() {
   const panelLabel = getPanelLabel();
 
   const navItems = [
-    { icon: CalendarDays, label: 'Escalas', path: '/minhas-escalas' },
-    { icon: Users, label: 'Minha Base', path: '/minha-base' },
-    { icon: Calendar, label: 'Eventos', path: '/eventos' },
-    { icon: Bell, label: 'Notificações', path: '/notificacoes', badge: unreadCount > 0 ? unreadCount : undefined },
-    { icon: Heart, label: 'Minhas Contribuições', path: '/financeiro/minhas-contribuicoes' },
+    { icon: Home, label: 'Início', path: '/app' },
+    { icon: CalendarDays, label: 'Escalas', path: '/app/escalas' },
+    { icon: Users, label: 'Minha Base', path: '/app/minha-base' },
+    { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
+    { icon: Bell, label: 'Notificações', path: '/app/notificacoes', badge: unreadCount > 0 ? unreadCount : undefined },
+    { icon: Heart, label: 'Contribuições', path: '/app/contribuicoes' },
+    { icon: User, label: 'Perfil', path: '/app/perfil' },
+  ];
+
+  // Items for bottom mobile nav (limited)
+  const mobileBottomNavItems = [
+    { icon: Home, label: 'Início', path: '/app' },
+    { icon: CalendarDays, label: 'Escalas', path: '/app/escalas' },
+    { icon: Users, label: 'Base', path: '/app/minha-base' },
+    { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col pb-16 md:pb-0">
       {/* Topbar */}
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container mx-auto px-4">
@@ -75,6 +87,7 @@ export default function AppLayout() {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  end={item.path === '/app'}
                   className={({ isActive }) =>
                     cn(
                       'relative flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors',
@@ -129,7 +142,7 @@ export default function AppLayout() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation Dropdown */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-border bg-card">
             <nav className="container mx-auto px-4 py-4 space-y-1">
@@ -137,6 +150,7 @@ export default function AppLayout() {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  end={item.path === '/app'}
                   onClick={() => setMobileMenuOpen(false)}
                   className={({ isActive }) =>
                     cn(
@@ -185,6 +199,50 @@ export default function AppLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-50">
+        <div className="flex justify-around py-2">
+          {mobileBottomNavItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === '/app'}
+              className={({ isActive }) =>
+                cn(
+                  'flex flex-col items-center gap-1 px-3 py-2 text-xs',
+                  isActive
+                    ? 'text-promessa-700'
+                    : 'text-muted-foreground'
+                )
+              }
+            >
+              <item.icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+          {/* Notification with badge */}
+          <NavLink
+            to="/app/notificacoes"
+            className={({ isActive }) =>
+              cn(
+                'relative flex flex-col items-center gap-1 px-3 py-2 text-xs',
+                isActive
+                  ? 'text-promessa-700'
+                  : 'text-muted-foreground'
+              )
+            }
+          >
+            <Bell className="w-5 h-5" />
+            <span>Avisos</span>
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </NavLink>
+        </div>
+      </nav>
     </div>
   );
 }

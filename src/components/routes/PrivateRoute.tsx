@@ -34,9 +34,9 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
         return <Navigate to="/admin/dashboard" replace />;
       }
       if (roles.includes('lider')) {
-        return <Navigate to="/leader/dashboard" replace />;
-      }
-      return <Navigate to="/home" replace />;
+      return <Navigate to="/leader/dashboard" replace />;
+    }
+    return <Navigate to="/app" replace />;
     }
   }
 

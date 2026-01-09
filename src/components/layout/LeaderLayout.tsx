@@ -36,7 +36,7 @@ export default function LeaderLayout() {
   }
 
   if (!isLider) {
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/app" replace />;
   }
 
   return (
@@ -45,7 +45,7 @@ export default function LeaderLayout() {
       <header className="sticky top-0 z-50 bg-white border-b border-neutral-200 shadow-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <RouterNavLink to="/home" className="flex items-center gap-3">
+            <RouterNavLink to="/app" className="flex items-center gap-3">
               <Logo size={40} />
             </RouterNavLink>
             <div>
@@ -56,7 +56,7 @@ export default function LeaderLayout() {
 
           <div className="flex items-center gap-3">
             <Button asChild variant="ghost" size="sm" className="text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50">
-              <RouterNavLink to="/home">
+              <RouterNavLink to="/app">
                 <Home className="w-4 h-4 mr-2" />
                 App
               </RouterNavLink>

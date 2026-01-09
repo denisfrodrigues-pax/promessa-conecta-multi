@@ -274,7 +274,7 @@ export default function AdminSidebar() {
       <div className="p-3 border-t border-neutral-200 space-y-2">
         {/* Back to Member Area Button */}
         <NavLink
-          to="/home"
+          to="/app"
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg bg-promessa-50 text-promessa-700 hover:bg-promessa-100 hover:text-promessa-900 transition-all duration-200 border border-promessa-200',
             collapsed && 'justify-center px-2'
