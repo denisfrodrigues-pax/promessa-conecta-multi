@@ -247,6 +247,7 @@ export type Database = {
           id: string
           membro_id: string | null
           observacao: string | null
+          profile_id: string | null
           status: string | null
           updated_at: string | null
           visitante_id: string | null
@@ -259,6 +260,7 @@ export type Database = {
           id?: string
           membro_id?: string | null
           observacao?: string | null
+          profile_id?: string | null
           status?: string | null
           updated_at?: string | null
           visitante_id?: string | null
@@ -271,6 +273,7 @@ export type Database = {
           id?: string
           membro_id?: string | null
           observacao?: string | null
+          profile_id?: string | null
           status?: string | null
           updated_at?: string | null
           visitante_id?: string | null
@@ -288,6 +291,13 @@ export type Database = {
             columns: ["membro_id"]
             isOneToOne: false
             referencedRelation: "membros"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bases_membros_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1131,6 +1141,51 @@ export type Database = {
           {
             foreignKeyName: "ministerios_lider_id_fkey"
             columns: ["lider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notas_base: {
+        Row: {
+          base_id: string
+          conteudo: string | null
+          created_at: string | null
+          data: string
+          id: string
+          profile_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          base_id: string
+          conteudo?: string | null
+          created_at?: string | null
+          data?: string
+          id?: string
+          profile_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          base_id?: string
+          conteudo?: string | null
+          created_at?: string | null
+          data?: string
+          id?: string
+          profile_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notas_base_base_id_fkey"
+            columns: ["base_id"]
+            isOneToOne: false
+            referencedRelation: "bases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notas_base_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

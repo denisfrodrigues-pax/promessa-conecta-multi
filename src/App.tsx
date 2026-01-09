@@ -72,6 +72,7 @@ import RelatorioComunicacoes from "@/pages/admin/relatorios/RelatorioComunicacoe
 import MemberHome from "@/pages/member/Home";
 import BasesPublic from "@/pages/member/BasesPublic";
 import BaseDetalhesPublic from "@/pages/member/BaseDetalhesPublic";
+import MinhaBase from "@/pages/member/MinhaBase";
 import MemberEventos from "@/pages/member/Eventos";
 import MemberEventoDetalhes from "@/pages/member/EventoDetalhes";
 import MemberAvisos from "@/pages/member/Avisos";
@@ -255,6 +256,7 @@ const App = () => (
             </PrivateRoute>
           }>
             <Route path="/home" element={<MemberHome />} />
+            <Route path="/minha-base" element={<MinhaBase />} />
             <Route path="/bases" element={<BasesPublic />} />
             <Route path="/bases/:id" element={<BaseDetalhesPublic />} />
             <Route path="/eventos" element={<MemberEventos />} />
