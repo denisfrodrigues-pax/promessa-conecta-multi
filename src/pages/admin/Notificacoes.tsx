@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Bell, Calendar, AlertCircle, Clock, Search, Plus, Send, Users, Megaphone, Trash2, CheckCheck, Loader2 } from 'lucide-react';
@@ -54,11 +55,14 @@ export default function AdminNotificacoes() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deletingSelected, setDeletingSelected] = useState(false);
   const [clearingAll, setClearingAll] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMinisterio, setFilterMinisterio] = useState<string>('all');
   const [filterTipo, setFilterTipo] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isDeleteSelectedOpen, setIsDeleteSelectedOpen] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -100,6 +104,8 @@ export default function AdminNotificacoes() {
       }));
       
       setNotifications(typedData);
+      // Limpar seleções quando recarrega
+      setSelectedIds(new Set());
     } catch (error) {
       console.error('Error fetching notifications:', error);
       toast.error('Erro ao carregar notificações');
@@ -198,15 +204,32 @@ export default function AdminNotificacoes() {
 
   const handleDeleteNotification = async (id: string) => {
     setDeleting(id);
+    
+    // Optimistic update - remove da UI imediatamente
+    const notificationToDelete = notifications.find(n => n.id === id);
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    
     try {
       const { error } = await supabase
         .from('notificacoes')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        // Reverter em caso de erro
+        if (notificationToDelete) {
+          setNotifications(prev => [notificationToDelete, ...prev].sort((a, b) => 
+            new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+          ));
+        }
+        throw error;
+      }
       
-      setNotifications(prev => prev.filter(n => n.id !== id));
       toast.success('Notificação excluída');
     } catch (error) {
       console.error('Error deleting notification:', error);
@@ -216,17 +239,61 @@ export default function AdminNotificacoes() {
     }
   };
 
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    
+    setDeletingSelected(true);
+    const idsToDelete = Array.from(selectedIds);
+    
+    // Optimistic update - remove da UI imediatamente
+    const notificationsToDelete = notifications.filter(n => selectedIds.has(n.id));
+    setNotifications(prev => prev.filter(n => !selectedIds.has(n.id)));
+    setSelectedIds(new Set());
+    setIsDeleteSelectedOpen(false);
+    
+    try {
+      const { error } = await supabase
+        .from('notificacoes')
+        .delete()
+        .in('id', idsToDelete);
+
+      if (error) {
+        // Reverter em caso de erro
+        setNotifications(prev => [...notificationsToDelete, ...prev].sort((a, b) => 
+          new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+        ));
+        throw error;
+      }
+      
+      toast.success(`${idsToDelete.length} notificação(ões) excluída(s)`);
+    } catch (error) {
+      console.error('Error deleting selected notifications:', error);
+      toast.error('Erro ao excluir notificações selecionadas');
+    } finally {
+      setDeletingSelected(false);
+    }
+  };
+
   const handleClearAll = async () => {
     setClearingAll(true);
+    
+    // Optimistic update - limpa UI imediatamente
+    const previousNotifications = [...notifications];
+    setNotifications([]);
+    setSelectedIds(new Set());
+    
     try {
       const { error } = await supabase
         .from('notificacoes')
         .delete()
         .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
 
-      if (error) throw error;
+      if (error) {
+        // Reverter em caso de erro
+        setNotifications(previousNotifications);
+        throw error;
+      }
       
-      setNotifications([]);
       toast.success('Todas as notificações foram excluídas');
     } catch (error) {
       console.error('Error clearing notifications:', error);
@@ -237,17 +304,25 @@ export default function AdminNotificacoes() {
   };
 
   const handleMarkAsRead = async (id: string) => {
+    // Optimistic update - atualiza UI imediatamente
+    setNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, lido: true } : n)
+    );
+    
     try {
       const { error } = await supabase
         .from('notificacoes')
         .update({ lido: true })
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        // Reverter em caso de erro
+        setNotifications(prev => 
+          prev.map(n => n.id === id ? { ...n, lido: false } : n)
+        );
+        throw error;
+      }
       
-      setNotifications(prev => 
-        prev.map(n => n.id === id ? { ...n, lido: true } : n)
-      );
       toast.success('Marcada como lida');
     } catch (error) {
       console.error('Error marking as read:', error);
@@ -256,22 +331,49 @@ export default function AdminNotificacoes() {
   };
 
   const handleMarkAllAsRead = async () => {
+    // Optimistic update - marca todas como lidas na UI
+    const previousNotifications = [...notifications];
+    setNotifications(prev => 
+      prev.map(n => ({ ...n, lido: true }))
+    );
+    
     try {
       const { error } = await supabase
         .from('notificacoes')
         .update({ lido: true })
         .eq('lido', false);
 
-      if (error) throw error;
+      if (error) {
+        // Reverter em caso de erro
+        setNotifications(previousNotifications);
+        throw error;
+      }
       
-      setNotifications(prev => 
-        prev.map(n => ({ ...n, lido: true }))
-      );
       toast.success('Todas marcadas como lidas');
     } catch (error) {
       console.error('Error marking all as read:', error);
       toast.error('Erro ao marcar todas como lidas');
     }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(filteredNotifications.map(n => n.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
   };
 
   const getNotificationIcon = (tipo: NotificationType) => {
@@ -311,30 +413,36 @@ export default function AdminNotificacoes() {
     }
   };
 
-  const filteredNotifications = notifications.filter((n) => {
-    const matchesSearch =
-      !searchTerm ||
-      n.mensagem.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      n.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      n.voluntario?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((n) => {
+      const matchesSearch =
+        !searchTerm ||
+        n.mensagem.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        n.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        n.voluntario?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesMinisterio =
-      filterMinisterio === 'all' || 
-      n.ministerio_id === filterMinisterio ||
-      n.escala?.ministerio_id === filterMinisterio;
+      const matchesMinisterio =
+        filterMinisterio === 'all' || 
+        n.ministerio_id === filterMinisterio ||
+        n.escala?.ministerio_id === filterMinisterio;
 
-    const matchesTipo = filterTipo === 'all' || n.tipo === filterTipo;
+      const matchesTipo = filterTipo === 'all' || n.tipo === filterTipo;
 
-    return matchesSearch && matchesMinisterio && matchesTipo;
-  });
+      return matchesSearch && matchesMinisterio && matchesTipo;
+    });
+  }, [notifications, searchTerm, filterMinisterio, filterTipo]);
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: notifications.length,
     escalas: notifications.filter((n) => ['nova_escala', 'lembrete'].includes(n.tipo)).length,
     atualizacoes: notifications.filter((n) => n.tipo === 'status_alterado').length,
     avisos: notifications.filter((n) => ['sistema', 'aviso_admin', 'ministerio'].includes(n.tipo)).length,
     naoLidas: notifications.filter((n) => !n.lido).length,
-  };
+  }), [notifications]);
+
+  const allFilteredSelected = filteredNotifications.length > 0 && 
+    filteredNotifications.every(n => selectedIds.has(n.id));
+  const someFilteredSelected = filteredNotifications.some(n => selectedIds.has(n.id));
 
   if (loading) {
     return (
@@ -352,6 +460,34 @@ export default function AdminNotificacoes() {
           <p className="text-muted-foreground">Gerencie e envie notificações</p>
         </div>
         <div className="flex gap-2">
+          {selectedIds.size > 0 && (
+            <AlertDialog open={isDeleteSelectedOpen} onOpenChange={setIsDeleteSelectedOpen}>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="text-destructive hover:text-destructive">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Excluir selecionadas ({selectedIds.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir notificações selecionadas?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {selectedIds.size} notificação(ões) serão excluídas permanentemente. Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteSelected}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={deletingSelected}
+                  >
+                    {deletingSelected ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Excluir selecionadas'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           {stats.naoLidas > 0 && (
             <Button variant="outline" onClick={handleMarkAllAsRead}>
               <CheckCheck className="w-4 h-4 mr-2" />
@@ -475,6 +611,14 @@ export default function AdminNotificacoes() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox 
+                    checked={allFilteredSelected}
+                    onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                    aria-label="Selecionar todas"
+                    className={someFilteredSelected && !allFilteredSelected ? 'data-[state=checked]:bg-primary/50' : ''}
+                  />
+                </TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Título</TableHead>
                 <TableHead>Destinatário</TableHead>
@@ -487,13 +631,20 @@ export default function AdminNotificacoes() {
             <TableBody>
               {filteredNotifications.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     Nenhuma notificação encontrada
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredNotifications.map((notification) => (
-                  <TableRow key={notification.id}>
+                  <TableRow key={notification.id} className={selectedIds.has(notification.id) ? 'bg-muted/50' : ''}>
+                    <TableCell>
+                      <Checkbox 
+                        checked={selectedIds.has(notification.id)}
+                        onCheckedChange={(checked) => handleSelectOne(notification.id, !!checked)}
+                        aria-label={`Selecionar notificação ${notification.titulo || notification.id}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {getNotificationIcon(notification.tipo)}

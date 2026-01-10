@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -24,7 +24,7 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!profile?.id) {
       setNotifications([]);
       setUnreadCount(0);
@@ -53,49 +53,66 @@ export function useNotifications() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile?.id]);
 
-  const markAsRead = async (notificationId: string) => {
+  const markAsRead = useCallback(async (notificationId: string) => {
+    // Optimistic update - atualiza UI imediatamente
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, lido: true } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+
     try {
       const { error } = await supabase
         .from('notificacoes')
         .update({ lido: true })
         .eq('id', notificationId);
 
-      if (error) throw error;
-
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notificationId ? { ...n, lido: true } : n))
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      if (error) {
+        // Reverter em caso de erro
+        await fetchNotifications();
+        throw error;
+      }
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
-  };
+  }, [fetchNotifications]);
 
-  const deleteNotification = async (notificationId: string) => {
+  const deleteNotification = useCallback(async (notificationId: string) => {
+    // Encontrar a notificação antes de remover para saber se era não lida
+    const notification = notifications.find(n => n.id === notificationId);
+    const wasUnread = notification?.lido === false;
+
+    // Optimistic update - remove da UI imediatamente
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    if (wasUnread) {
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+
     try {
       const { error } = await supabase
         .from('notificacoes')
         .delete()
         .eq('id', notificationId);
 
-      if (error) throw error;
-
-      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-      setUnreadCount((prev) => {
-        const wasUnread = notifications.find(n => n.id === notificationId)?.lido === false;
-        return wasUnread ? Math.max(0, prev - 1) : prev;
-      });
+      if (error) {
+        // Reverter em caso de erro
+        await fetchNotifications();
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error('Error deleting notification:', error);
       return false;
     }
-  };
+  }, [notifications, fetchNotifications]);
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = useCallback(async () => {
     if (!profile?.id) return;
+
+    // Optimistic update - marca todas como lidas na UI
+    setNotifications((prev) => prev.map((n) => ({ ...n, lido: true })));
+    setUnreadCount(0);
 
     try {
       const { error } = await supabase
@@ -104,18 +121,19 @@ export function useNotifications() {
         .eq('voluntario_id', profile.id)
         .eq('lido', false);
 
-      if (error) throw error;
-
-      setNotifications((prev) => prev.map((n) => ({ ...n, lido: true })));
-      setUnreadCount(0);
+      if (error) {
+        // Reverter em caso de erro
+        await fetchNotifications();
+        throw error;
+      }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
-  };
+  }, [profile?.id, fetchNotifications]);
 
   useEffect(() => {
     fetchNotifications();
-  }, [profile?.id]);
+  }, [fetchNotifications]);
 
   // Set up realtime subscription
   useEffect(() => {
