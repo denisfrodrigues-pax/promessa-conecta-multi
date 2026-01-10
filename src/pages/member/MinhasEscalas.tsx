@@ -12,6 +12,7 @@ import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, History } from 'luc
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { parseLocalDate, isDatePast } from '@/lib/dateUtils';
 
 interface Escala {
   id: string;
@@ -144,12 +145,7 @@ export default function MinhasEscalas() {
     }
   };
 
-  const isPast = (date: string) => {
-    const escalaDate = new Date(date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return escalaDate < today;
-  };
+  const isPast = (date: string) => isDatePast(date);
 
   const groupedEscalas = {
     proximas: escalas.filter((e) => !isPast(e.data)),
@@ -220,10 +216,10 @@ export default function MinhasEscalas() {
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center flex-shrink-0">
                           <span className="text-lg font-bold text-primary">
-                            {format(new Date(escala.data), 'dd')}
+                            {format(parseLocalDate(escala.data), 'dd')}
                           </span>
                           <span className="text-xs text-primary uppercase">
-                            {format(new Date(escala.data), 'MMM', { locale: ptBR })}
+                            {format(parseLocalDate(escala.data), 'MMM', { locale: ptBR })}
                           </span>
                         </div>
                         <div>
@@ -286,10 +282,10 @@ export default function MinhasEscalas() {
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center">
                           <span className="text-sm font-bold">
-                            {format(new Date(escala.data), 'dd')}
+                            {format(parseLocalDate(escala.data), 'dd')}
                           </span>
                           <span className="text-xs uppercase">
-                            {format(new Date(escala.data), 'MMM', { locale: ptBR })}
+                            {format(parseLocalDate(escala.data), 'MMM', { locale: ptBR })}
                           </span>
                         </div>
                         <div>
@@ -333,7 +329,7 @@ export default function MinhasEscalas() {
               <div className="bg-muted/50 rounded-lg p-4 mb-4">
                 <p className="font-medium">{selectedEscala.funcao}</p>
                 <p className="text-sm text-muted-foreground">
-                  {selectedEscala.ministerios?.nome} • {format(new Date(selectedEscala.data), "dd 'de' MMMM", { locale: ptBR })}
+                  {selectedEscala.ministerios?.nome} • {format(parseLocalDate(selectedEscala.data), "dd 'de' MMMM", { locale: ptBR })}
                 </p>
               </div>
 

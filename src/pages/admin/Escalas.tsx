@@ -17,6 +17,7 @@ import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, CheckCircle, Clo
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { parseLocalDate, formatDateForDB, isDatePast } from '@/lib/dateUtils';
 
 interface Ministerio {
   id: string;
@@ -349,7 +350,7 @@ export default function AdminEscalas() {
     const firstEscala = escalas.find(e => group.voluntarios.some(v => v.id === e.id));
     setFormData({
       ministerio_id: group.ministerio_id || '',
-      data: new Date(group.data),
+      data: parseLocalDate(group.data),
       horario: group.horario || '',
       funcao: group.funcao,
       turno: group.turno || '',
@@ -464,7 +465,7 @@ export default function AdminEscalas() {
 
     try {
       // Format the reminder message
-      const dataFormatada = format(new Date(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR });
+      const dataFormatada = format(parseLocalDate(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR });
       const horario = viewingGroup.horario || 'horário a confirmar';
       const ministerio = viewingGroup.ministerio_nome || 'ministério';
       const funcao = viewingGroup.funcao;
@@ -545,7 +546,7 @@ export default function AdminEscalas() {
       const phoneMap = new Map(phonesData?.map(p => [p.id, p.telefone]) || []);
 
       // Format common message parts
-      const dataFormatada = format(new Date(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR });
+      const dataFormatada = format(parseLocalDate(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR });
       const horario = viewingGroup.horario || 'horário a confirmar';
       const ministerio = viewingGroup.ministerio_nome || 'ministério';
       const funcao = viewingGroup.funcao;
@@ -695,7 +696,7 @@ export default function AdminEscalas() {
         // Create new entries for selected volunteers
         const escalasToInsert = formData.voluntarios_ids.map((voluntarioId) => ({
           ministerio_id: formData.ministerio_id,
-          data: format(formData.data, 'yyyy-MM-dd'),
+          data: formatDateForDB(formData.data),
           horario: formData.horario || null,
           funcao: formData.funcao,
           turno: formData.turno || null,
@@ -716,7 +717,7 @@ export default function AdminEscalas() {
         // Create new escalas for each volunteer
         const escalasToInsert = formData.voluntarios_ids.map((voluntarioId) => ({
           ministerio_id: formData.ministerio_id,
-          data: format(formData.data, 'yyyy-MM-dd'),
+          data: formatDateForDB(formData.data),
           horario: formData.horario || null,
           funcao: formData.funcao,
           turno: formData.turno || null,
@@ -803,7 +804,7 @@ export default function AdminEscalas() {
   const filteredGroups = escalaGroups.filter((group) => {
     if (filterMinisterio !== 'all' && group.ministerio_id !== filterMinisterio) return false;
     if (filterVoluntario !== 'all' && !group.voluntarios.some((v) => v.voluntario_id === filterVoluntario)) return false;
-    if (filterData && format(new Date(group.data), 'yyyy-MM-dd') !== format(filterData, 'yyyy-MM-dd')) return false;
+    if (filterData && formatDateForDB(parseLocalDate(group.data)) !== formatDateForDB(filterData)) return false;
     if (searchTerm && !group.funcao.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     return true;
   });
@@ -928,7 +929,7 @@ export default function AdminEscalas() {
                         <TableRow key={group.key}>
                           <TableCell>
                             <div className="font-medium">
-                              {format(new Date(group.data), 'dd/MM/yyyy')}
+                              {format(parseLocalDate(group.data), 'dd/MM/yyyy')}
                             </div>
                             {group.horario && (
                               <div className="text-sm text-muted-foreground">{group.horario}</div>
@@ -1007,7 +1008,7 @@ export default function AdminEscalas() {
                   locale={ptBR}
                   className="rounded-md border"
                   modifiers={{
-                    hasEscala: Object.keys(groupsByDate).map((d) => new Date(d)),
+                    hasEscala: Object.keys(groupsByDate).map((d) => parseLocalDate(d)),
                   }}
                   modifiersStyles={{
                     hasEscala: { backgroundColor: 'hsl(var(--primary) / 0.1)', fontWeight: 'bold' },
@@ -1067,7 +1068,7 @@ export default function AdminEscalas() {
               <div className="p-4 rounded-lg bg-muted/50 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Data:</span>
-                  <span className="font-medium">{format(new Date(viewingGroup.data), 'dd/MM/yyyy')}</span>
+                  <span className="font-medium">{format(parseLocalDate(viewingGroup.data), 'dd/MM/yyyy')}</span>
                 </div>
                 {viewingGroup.horario && (
                   <div className="flex justify-between">
@@ -1249,7 +1250,7 @@ export default function AdminEscalas() {
               <div className="p-4 rounded-lg bg-green-50 border border-green-200">
                 <p className="text-sm font-medium text-green-800 mb-2">Prévia da mensagem:</p>
                 <p className="text-sm text-green-700">
-                  Olá {selectedVoluntarioForWhatsApp.nome}, você está escalado(a) para {viewingGroup.funcao} no {viewingGroup.ministerio_nome || 'ministério'} no dia {format(new Date(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR })} às {viewingGroup.horario || 'horário a confirmar'}. Acesse o sistema para confirmar sua presença.
+                  Olá {selectedVoluntarioForWhatsApp.nome}, você está escalado(a) para {viewingGroup.funcao} no {viewingGroup.ministerio_nome || 'ministério'} no dia {format(parseLocalDate(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR })} às {viewingGroup.horario || 'horário a confirmar'}. Acesse o sistema para confirmar sua presença.
                 </p>
               </div>
 
@@ -1312,7 +1313,7 @@ export default function AdminEscalas() {
               <div className="p-4 rounded-lg bg-muted/50 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Data:</span>
-                  <span className="font-medium">{format(new Date(viewingGroup.data), 'dd/MM/yyyy')}</span>
+                  <span className="font-medium">{format(parseLocalDate(viewingGroup.data), 'dd/MM/yyyy')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Função:</span>
