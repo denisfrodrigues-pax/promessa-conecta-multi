@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, Users, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { parseLocalDate, isDatePast } from '@/lib/dateUtils';
 
 interface Escala {
   id: string;
@@ -237,7 +238,7 @@ export default function LeaderEscalas() {
     return { confirmados, pendentes, ausentes, total: voluntarios.length };
   };
 
-  const isPast = (date: string) => new Date(date) < new Date();
+  const isPast = (date: string) => isDatePast(date);
 
   const groupedMinhasEscalas = {
     proximas: minhasEscalas.filter((e) => !isPast(e.data)),
@@ -269,10 +270,10 @@ export default function LeaderEscalas() {
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
                         <span className="text-lg font-bold text-primary">
-                          {format(new Date(escala.data), 'dd')}
+                          {format(parseLocalDate(escala.data), 'dd')}
                         </span>
                         <span className="text-xs text-primary uppercase">
-                          {format(new Date(escala.data), 'MMM', { locale: ptBR })}
+                          {format(parseLocalDate(escala.data), 'MMM', { locale: ptBR })}
                         </span>
                       </div>
                       <div>
@@ -331,10 +332,10 @@ export default function LeaderEscalas() {
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center">
                         <span className="text-sm font-bold">
-                          {format(new Date(escala.data), 'dd')}
+                          {format(parseLocalDate(escala.data), 'dd')}
                         </span>
                         <span className="text-xs uppercase">
-                          {format(new Date(escala.data), 'MMM', { locale: ptBR })}
+                          {format(parseLocalDate(escala.data), 'MMM', { locale: ptBR })}
                         </span>
                       </div>
                       <div>
@@ -377,10 +378,10 @@ export default function LeaderEscalas() {
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
                           <span className="text-lg font-bold text-primary">
-                            {format(new Date(group.data), 'dd')}
+                            {format(parseLocalDate(group.data), 'dd')}
                           </span>
                           <span className="text-xs text-primary uppercase">
-                            {format(new Date(group.data), 'MMM', { locale: ptBR })}
+                            {format(parseLocalDate(group.data), 'MMM', { locale: ptBR })}
                           </span>
                         </div>
                         <div>
@@ -453,10 +454,10 @@ export default function LeaderEscalas() {
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center">
                           <span className="text-sm font-bold">
-                            {format(new Date(group.data), 'dd')}
+                            {format(parseLocalDate(group.data), 'dd')}
                           </span>
                           <span className="text-xs uppercase">
-                            {format(new Date(group.data), 'MMM', { locale: ptBR })}
+                            {format(parseLocalDate(group.data), 'MMM', { locale: ptBR })}
                           </span>
                         </div>
                         <div>
@@ -518,7 +519,7 @@ export default function LeaderEscalas() {
                 <div>
                   <p className="font-medium text-yellow-800">{selectedEscala?.funcao}</p>
                   <p className="text-sm text-yellow-700">
-                    {selectedEscala?.data && format(new Date(selectedEscala.data), "dd 'de' MMMM", { locale: ptBR })}
+                    {selectedEscala?.data && format(parseLocalDate(selectedEscala.data), "dd 'de' MMMM", { locale: ptBR })}
                   </p>
                 </div>
               </div>
@@ -559,7 +560,7 @@ export default function LeaderEscalas() {
               <div className="p-4 rounded-lg bg-muted/50 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Data:</span>
-                  <span className="font-medium">{format(new Date(viewingGroup.data), 'dd/MM/yyyy')}</span>
+                  <span className="font-medium">{format(parseLocalDate(viewingGroup.data), 'dd/MM/yyyy')}</span>
                 </div>
                 {viewingGroup.horario && (
                   <div className="flex justify-between">

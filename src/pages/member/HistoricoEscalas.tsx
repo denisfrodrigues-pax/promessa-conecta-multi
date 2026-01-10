@@ -9,6 +9,7 @@ import { History, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
+import { parseLocalDate, getTodayString } from '@/lib/dateUtils';
 
 interface Escala {
   id: string;
@@ -32,7 +33,7 @@ export default function HistoricoEscalas() {
   const fetchEscalas = async () => {
     setLoading(true);
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getTodayString();
       const { data, error } = await supabase
         .from('escalas')
         .select('id, data, funcao, status, ministerios(nome)')
@@ -122,10 +123,10 @@ export default function HistoricoEscalas() {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center">
                       <span className="text-sm font-bold">
-                        {format(new Date(escala.data), 'dd')}
+                        {format(parseLocalDate(escala.data), 'dd')}
                       </span>
                       <span className="text-xs uppercase">
-                        {format(new Date(escala.data), 'MMM', { locale: ptBR })}
+                        {format(parseLocalDate(escala.data), 'MMM', { locale: ptBR })}
                       </span>
                     </div>
                     <div>

@@ -17,6 +17,27 @@ interface Escala {
   voluntario: { id: string; nome: string; telefone: string | null }[] | null;
 }
 
+/**
+ * Parse a date string (YYYY-MM-DD) as local date without timezone conversion.
+ */
+const parseLocalDate = (dateString: string): Date => {
+  if (!dateString) return new Date();
+  const datePart = dateString.split('T')[0];
+  const [year, month, day] = datePart.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+/**
+ * Format date as DD/MM/YYYY for pt-BR display.
+ */
+const formatDateBR = (dateString: string): string => {
+  const date = parseLocalDate(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -87,9 +108,10 @@ Deno.serve(async (req) => {
     if (!escala.lembrete_automatico_dias_antes || !voluntarioData) continue;
 
       // Calculate if today is the right day to send the reminder
-      const escalaDate = new Date(escala.data);
-      const diffTime = escalaDate.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const escalaDate = parseLocalDate(escala.data);
+      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const diffTime = escalaDate.getTime() - todayStart.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
       if (diffDays !== escala.lembrete_automatico_dias_antes) {
         continue; // Not the right day to send this reminder
@@ -122,7 +144,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      const dataFormatada = new Date(escala.data).toLocaleDateString('pt-BR');
+      const dataFormatada = formatDateBR(escala.data);
       const horario = escala.horario || 'horário a confirmar';
       const voluntario = voluntarioData;
 

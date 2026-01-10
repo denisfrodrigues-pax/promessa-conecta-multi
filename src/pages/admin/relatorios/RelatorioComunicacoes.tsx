@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { MessageCircle, Filter, RefreshCw, CheckCircle, XCircle, AlertTriangle, Phone } from 'lucide-react';
 import { format, subDays, startOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { parseLocalDate } from '@/lib/dateUtils';
 
 interface CommunicationRecord {
   id: string;
@@ -319,7 +320,7 @@ export default function RelatorioComunicacoes() {
                       <TableCell>
                         {record.escala_data ? (
                           <div className="text-sm">
-                            <div>{format(new Date(record.escala_data), 'dd/MM/yyyy', { locale: ptBR })}</div>
+                            <div>{format(parseLocalDate(record.escala_data), 'dd/MM/yyyy', { locale: ptBR })}</div>
                             <div className="text-muted-foreground">{record.escala_funcao}</div>
                             <div className="text-muted-foreground text-xs">{record.ministerio_nome}</div>
                           </div>

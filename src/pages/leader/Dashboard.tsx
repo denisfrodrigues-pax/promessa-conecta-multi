@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Users, ClipboardList, Calendar, ChevronRight, CheckCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { parseLocalDate } from '@/lib/dateUtils';
 
 interface Base {
   id: string;
@@ -196,10 +197,10 @@ export default function LeaderDashboard() {
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex flex-col items-center justify-center shadow-sm">
                         <span className="text-sm font-bold text-primary">
-                          {format(new Date(escala.data), 'dd')}
+                          {format(parseLocalDate(escala.data), 'dd')}
                         </span>
                         <span className="text-[10px] text-primary uppercase font-medium">
-                          {format(new Date(escala.data), 'MMM', { locale: ptBR })}
+                          {format(parseLocalDate(escala.data), 'MMM', { locale: ptBR })}
                         </span>
                       </div>
                       <div>
