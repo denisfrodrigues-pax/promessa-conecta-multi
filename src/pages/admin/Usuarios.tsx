@@ -5,13 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield, UserX } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface User {
   id: string;
@@ -29,11 +31,13 @@ interface UserRole {
 }
 
 export default function Usuarios() {
+  const { isAdmin } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [editData, setEditData] = useState({ nome: '', telefone: '', status: '', role: '' });
 
   useEffect(() => {
@@ -136,6 +140,26 @@ export default function Usuarios() {
     } catch (error) {
       console.error('Error updating user:', error);
       toast.error('Erro ao atualizar usuário');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingUser) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: 'inativo' as const })
+        .eq('id', deletingUser.id);
+
+      if (error) throw error;
+
+      toast.success('Usuário desativado com sucesso');
+      setDeletingUser(null);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deactivating user:', error);
+      toast.error('Erro ao desativar usuário');
     }
   };
 
@@ -314,6 +338,18 @@ export default function Usuarios() {
                               <Edit className="w-4 h-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
+                            {isAdmin && user.status !== 'inativo' && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => setDeletingUser(user)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <UserX className="w-4 h-4 mr-2" />
+                                  Desativar usuário
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -396,6 +432,30 @@ export default function Usuarios() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingUser} onOpenChange={() => setDeletingUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Desativar usuário?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O usuário <strong>{deletingUser?.nome}</strong> será desativado e não poderá mais acessar o sistema. 
+              Os dados históricos (escalas, contribuições, registros) serão mantidos.
+              <br /><br />
+              Esta ação pode ser revertida alterando o status do usuário para "Ativo".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Desativar usuário
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
