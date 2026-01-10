@@ -669,7 +669,7 @@ export default function KidsCheckinPanel() {
 
       {/* Cadastro Rápido Modal */}
       <Dialog open={showCadastroRapidoModal} onOpenChange={setShowCadastroRapidoModal}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto fixed top-4 left-4 translate-x-0 translate-y-0 data-[state=open]:slide-in-from-top-2 data-[state=open]:slide-in-from-left-2">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserPlus className="w-5 h-5" />
