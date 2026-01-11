@@ -77,23 +77,22 @@ export default function Usuarios() {
     return membrosVinculados.some(m => m.user_id === profileId);
   };
 
-  // Converte usuário em membro
+  // Converte usuário em membro (apenas vincula, não duplica dados pessoais)
   const handleConvertToMembro = async () => {
     if (!convertingUser) return;
     
     setConverting(true);
     try {
+      // Apenas cria o vínculo - dados pessoais ficam em profiles
       const { error } = await supabase.from('membros').insert({
-        nome: convertingUser.nome,
-        email: convertingUser.email,
-        telefone: convertingUser.telefone,
+        nome: convertingUser.nome, // Nome é obrigatório na tabela, mas será buscado de profiles quando exibido
         user_id: convertingUser.id,
         status: 'ativo',
       });
 
       if (error) throw error;
 
-      toast.success(`${convertingUser.nome} foi adicionado à lista de membros!`);
+      toast.success(`${convertingUser.nome} foi vinculado como membro!`);
       setConvertingUser(null);
       fetchUsers();
     } catch (error: any) {
