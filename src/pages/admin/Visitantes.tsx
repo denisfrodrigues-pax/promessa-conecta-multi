@@ -5,12 +5,22 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Eye, Download, Search, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
+import { Users, Eye, Download, Search, ChevronLeft, ChevronRight, MessageCircle, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Visitante {
   id: string;
@@ -112,6 +122,11 @@ export default function Visitantes() {
   const limit = 20;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+  
+  // Estado para confirmação de exclusão
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [visitanteToDelete, setVisitanteToDelete] = useState<Visitante | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Debounce search term
   useEffect(() => {
@@ -211,6 +226,40 @@ export default function Visitantes() {
     window.open(getWhatsAppUrl(phone), '_blank');
   };
 
+  // Abrir modal de confirmação de exclusão
+  const handleDeleteClick = (visitante: Visitante) => {
+    setVisitanteToDelete(visitante);
+    setDeleteDialogOpen(true);
+  };
+
+  // Confirmar exclusão
+  const handleConfirmDelete = async () => {
+    if (!visitanteToDelete) return;
+    
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('visitantes')
+        .delete()
+        .eq('id', visitanteToDelete.id);
+
+      if (error) throw error;
+
+      // Atualizar estado local imediatamente
+      setVisitantes(prev => prev.filter(v => v.id !== visitanteToDelete.id));
+      setTotal(prev => prev - 1);
+      
+      toast.success('Visitante excluído com sucesso');
+    } catch (error) {
+      console.error('Erro ao excluir visitante:', error);
+      toast.error('Erro ao excluir visitante');
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+      setVisitanteToDelete(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -301,14 +350,25 @@ export default function Visitantes() {
                         <span>Cadastro: {formatDate(visitante.created_at)}</span>
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => navigate(`/admin/visitantes/${visitante.id}`)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Ver Detalhes
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => navigate(`/admin/visitantes/${visitante.id}`)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Ver Detalhes
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDeleteClick(visitante)}
+                        title="Excluir visitante"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -348,6 +408,30 @@ export default function Visitantes() {
           )}
         </CardContent>
       </Card>
+
+      {/* Modal de confirmação de exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o visitante <strong>{visitanteToDelete?.nome}</strong>?
+              <br />
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
