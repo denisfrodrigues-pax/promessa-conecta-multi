@@ -36,6 +36,7 @@ interface Membro {
   data_batismo: string | null;
   data_nascimento: string | null;
   created_at: string | null;
+  user_id: string | null;
   bases_membros?: BaseMembro[];
 }
 
@@ -255,7 +256,7 @@ export default function Membros() {
       let query = supabase
         .from('membros')
         .select(`
-          id, nome, telefone, foto_perfil, status, estado_civil, data_batismo, data_nascimento, created_at,
+          id, nome, telefone, foto_perfil, status, estado_civil, data_batismo, data_nascimento, created_at, user_id,
           bases_membros!left(base_id, bases(id, nome))
         `)
         .order('nome', { ascending: true })
@@ -540,6 +541,14 @@ export default function Membros() {
                           className="font-medium truncate"
                           dangerouslySetInnerHTML={{ __html: highlightText(membro.nome, debouncedSearch) }}
                         />
+                        {membro.user_id && (
+                          <span 
+                            className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/15 text-primary flex-shrink-0" 
+                            title="Possui acesso ao sistema"
+                          >
+                            <UserCheck className="w-3 h-3" />
+                          </span>
+                        )}
                         {hasValidPhone(membro.telefone) && (
                           <button
                             onClick={(e) => handleWhatsAppClick(e, membro.telefone)}
