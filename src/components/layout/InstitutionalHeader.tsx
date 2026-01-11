@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, LogIn } from "lucide-react";
 import logoPromessaHortolandia from "@/assets/logo-promessa-hortolandia.png";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import {
 
 export function InstitutionalHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
 
   const closeMenu = () => setMobileMenuOpen(false);
 
@@ -121,12 +123,14 @@ export function InstitutionalHeader() {
                 </AccordionContent>
               </AccordionItem>
 
-              {/* 7. Check-in Kids - SIMPLES (independente) */}
-              <div className="border-b py-4">
-                <Link onClick={closeMenu} to="/check-in-kids" className="text-lg font-medium">
-                  Check-in Kids
-                </Link>
-              </div>
+              {/* 7. Check-in Kids - SIMPLES (independente) - oculto na home pública */}
+              {!isHomePage && (
+                <div className="border-b py-4">
+                  <Link onClick={closeMenu} to="/check-in-kids" className="text-lg font-medium">
+                    Check-in Kids
+                  </Link>
+                </div>
+              )}
             </Accordion>
           </nav>
         </div>
@@ -194,8 +198,10 @@ export function InstitutionalHeader() {
             </div>
           </div>
 
-          {/* 7. Check-in Kids - SIMPLES (independente) */}
-          <Link to="/check-in-kids" className="hover:text-primary transition-colors">Check-in Kids</Link>
+          {/* 7. Check-in Kids - SIMPLES (independente) - oculto na home pública */}
+          {!isHomePage && (
+            <Link to="/check-in-kids" className="hover:text-primary transition-colors">Check-in Kids</Link>
+          )}
 
           {/* 8. Login - Botão independente */}
           <Button asChild variant="outline" size="sm" className="ml-2">
