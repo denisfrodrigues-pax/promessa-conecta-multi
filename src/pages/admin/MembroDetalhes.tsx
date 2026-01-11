@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { 
   ArrowLeft, Save, Upload, MessageCircle, User, Phone, Mail, MapPin, 
-  Calendar, Heart, Clock, Home, Users, AlertCircle, Plus, History
+  Calendar, Heart, Clock, Home, Users, AlertCircle, Plus, History, Link2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -35,6 +35,18 @@ interface Membro {
   observacoes: string | null;
   status: string | null;
   created_at: string | null;
+  user_id: string | null;
+}
+
+interface ProfileData {
+  nome: string;
+  email: string;
+  telefone: string | null;
+  data_nascimento: string | null;
+  foto_url: string | null;
+  endereco: string | null;
+  estado_civil: string | null;
+  data_batismo: string | null;
 }
 
 interface Base {
@@ -150,12 +162,16 @@ export default function MembroDetalhes() {
   const navigate = useNavigate();
   
   const [membro, setMembro] = useState<Membro | null>(null);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [fotoFile, setFotoFile] = useState<File | null>(null);
+  
+  // Determina se membro está vinculado a um perfil de usuário
+  const isLinkedToProfile = membro?.user_id !== null && profileData !== null;
   
   // Base atual
   const [baseAtual, setBaseAtual] = useState<BaseMembroAtivo | null>(null);
@@ -208,18 +224,44 @@ export default function MembroDetalhes() {
       }
 
       setMembro(data);
+
+      // Se houver vínculo com perfil, buscar dados do profiles
+      let profile: ProfileData | null = null;
+      if (data.user_id) {
+        const { data: profileResult } = await supabase
+          .from('profiles')
+          .select('nome, email, telefone, data_nascimento, foto_url, endereco, estado_civil, data_batismo')
+          .eq('id', data.user_id)
+          .maybeSingle();
+        
+        if (profileResult) {
+          profile = profileResult;
+          setProfileData(profile);
+        }
+      }
+
+      // Dados combinados: profiles é fonte primária para dados pessoais quando vinculado
+      const combinedNome = profile?.nome || data.nome || '';
+      const combinedEmail = profile?.email || data.email || '';
+      const combinedTelefone = profile?.telefone || data.telefone || '';
+      const combinedNascimento = profile?.data_nascimento || data.data_nascimento || '';
+      const combinedEndereco = profile?.endereco || data.endereco || '';
+      const combinedEstadoCivil = profile?.estado_civil || data.estado_civil || '';
+      const combinedBatismo = profile?.data_batismo || data.data_batismo || '';
+      const combinedFoto = profile?.foto_url || data.foto_perfil;
+
       setFormData({
-        nome: data.nome || '',
-        telefone: data.telefone || '',
-        email: data.email || '',
-        data_nascimento: data.data_nascimento || '',
-        endereco: data.endereco || '',
-        estado_civil: data.estado_civil || '',
-        data_batismo: data.data_batismo || '',
+        nome: combinedNome,
+        telefone: combinedTelefone,
+        email: combinedEmail,
+        data_nascimento: combinedNascimento,
+        endereco: combinedEndereco,
+        estado_civil: combinedEstadoCivil,
+        data_batismo: combinedBatismo,
         status: data.status || 'ativo',
         observacoes: data.observacoes || '',
       });
-      setFotoPreview(data.foto_perfil);
+      setFotoPreview(combinedFoto);
     } catch (error) {
       console.error('Erro ao buscar membro:', error);
       toast.error('Erro ao carregar dados do membro');
@@ -413,22 +455,30 @@ export default function MembroDetalhes() {
   };
 
   const handleSave = async () => {
-    if (!formData.nome.trim()) {
+    // Para membros vinculados a perfil, nome não é editável aqui
+    if (!isLinkedToProfile && !formData.nome.trim()) {
       toast.error('Nome é obrigatório');
       return;
     }
 
     setSaving(true);
     try {
-      let fotoUrl = membro?.foto_perfil;
-      if (fotoFile) {
-        const newUrl = await uploadFoto();
-        if (newUrl) fotoUrl = newUrl;
-      }
+      // Para membros vinculados, apenas salvar dados administrativos
+      // Dados pessoais são gerenciados pelo próprio usuário em seu perfil
+      const updateData: Record<string, unknown> = {
+        status: formData.status,
+        observacoes: formData.observacoes.trim() || null,
+      };
 
-      const { error } = await supabase
-        .from('membros')
-        .update({
+      // Se NÃO vinculado a perfil, salvar dados pessoais em membros
+      if (!isLinkedToProfile) {
+        let fotoUrl = membro?.foto_perfil;
+        if (fotoFile) {
+          const newUrl = await uploadFoto();
+          if (newUrl) fotoUrl = newUrl;
+        }
+
+        Object.assign(updateData, {
           nome: formData.nome.trim(),
           telefone: cleanPhone(formData.telefone) || null,
           email: formData.email.trim() || null,
@@ -436,10 +486,13 @@ export default function MembroDetalhes() {
           endereco: formData.endereco.trim() || null,
           estado_civil: formData.estado_civil || null,
           data_batismo: formData.data_batismo || null,
-          status: formData.status,
-          observacoes: formData.observacoes.trim() || null,
           foto_perfil: fotoUrl,
-        })
+        });
+      }
+
+      const { error } = await supabase
+        .from('membros')
+        .update(updateData)
         .eq('id', id);
 
       if (error) throw error;
@@ -681,16 +734,21 @@ export default function MembroDetalhes() {
         {/* Photo Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Foto</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Foto
+              {isLinkedToProfile && (
+                <span className="text-xs text-muted-foreground font-normal">(perfil)</span>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
             <Avatar className="w-32 h-32">
-              <AvatarImage src={fotoPreview || undefined} alt={membro.nome} />
+              <AvatarImage src={fotoPreview || undefined} alt={formData.nome} />
               <AvatarFallback className="bg-primary/10 text-primary text-2xl">
-                {getInitials(membro.nome)}
+                {getInitials(formData.nome)}
               </AvatarFallback>
             </Avatar>
-            {isEditing && (
+            {isEditing && !isLinkedToProfile && (
               <>
                 <Label htmlFor="foto" className="cursor-pointer">
                   <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-muted transition-colors">
@@ -708,95 +766,130 @@ export default function MembroDetalhes() {
                 <p className="text-xs text-muted-foreground">Máximo 5MB</p>
               </>
             )}
+            {isLinkedToProfile && (
+              <p className="text-xs text-muted-foreground text-center">
+                A foto é gerenciada pelo usuário em seu perfil
+              </p>
+            )}
           </CardContent>
         </Card>
 
         {/* Form Card */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Dados do Membro</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Dados do Membro
+              {isLinkedToProfile && (
+                <Badge variant="secondary" className="flex items-center gap-1 text-xs font-normal">
+                  <Link2 className="w-3 h-3" />
+                  Vinculado a conta
+                </Badge>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Aviso de campos somente-leitura para membros vinculados */}
+            {isLinkedToProfile && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-blue-800">
+                  Os dados pessoais deste membro são gerenciados pelo próprio usuário em seu perfil. 
+                  Aqui você pode editar apenas os dados administrativos (status e observações).
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="nome">
+                <Label htmlFor="nome" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
                   <User className="w-4 h-4 inline mr-1" />
-                  Nome *
+                  Nome {!isLinkedToProfile && '*'}
+                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
                 </Label>
                 <Input
                   id="nome"
                   value={formData.nome}
                   onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isLinkedToProfile}
+                  className={isLinkedToProfile ? 'bg-muted' : ''}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="telefone">
+                <Label htmlFor="telefone" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
                   <Phone className="w-4 h-4 inline mr-1" />
                   Telefone
+                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
                 </Label>
                 <Input
                   id="telefone"
                   value={formatPhoneBR(formData.telefone)}
                   onChange={(e) => setFormData({ ...formData, telefone: formatPhoneBR(e.target.value) })}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isLinkedToProfile}
                   placeholder="(00) 00000-0000"
+                  className={isLinkedToProfile ? 'bg-muted' : ''}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">
+                <Label htmlFor="email" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
                   <Mail className="w-4 h-4 inline mr-1" />
                   E-mail
+                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isLinkedToProfile}
+                  className={isLinkedToProfile ? 'bg-muted' : ''}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="data_nascimento">
+                <Label htmlFor="data_nascimento" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
                   <Calendar className="w-4 h-4 inline mr-1" />
                   Data de Nascimento
+                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
                 </Label>
                 <Input
                   id="data_nascimento"
                   type="date"
                   value={formData.data_nascimento}
                   onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isLinkedToProfile}
+                  className={isLinkedToProfile ? 'bg-muted' : ''}
                 />
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="endereco">
+                <Label htmlFor="endereco" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
                   <MapPin className="w-4 h-4 inline mr-1" />
                   Endereço
+                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
                 </Label>
                 <Input
                   id="endereco"
                   value={formData.endereco}
                   onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isLinkedToProfile}
+                  className={isLinkedToProfile ? 'bg-muted' : ''}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="estado_civil">
+                <Label htmlFor="estado_civil" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
                   <Heart className="w-4 h-4 inline mr-1" />
                   Estado Civil
+                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
                 </Label>
                 <Select
                   value={formData.estado_civil}
                   onValueChange={(value) => setFormData({ ...formData, estado_civil: value })}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isLinkedToProfile}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={isLinkedToProfile ? 'bg-muted' : ''}>
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
@@ -810,16 +903,18 @@ export default function MembroDetalhes() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="data_batismo">
+                <Label htmlFor="data_batismo" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
                   <Calendar className="w-4 h-4 inline mr-1" />
                   Data do Batismo
+                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
                 </Label>
                 <Input
                   id="data_batismo"
                   type="date"
                   value={formData.data_batismo}
                   onChange={(e) => setFormData({ ...formData, data_batismo: e.target.value })}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isLinkedToProfile}
+                  className={isLinkedToProfile ? 'bg-muted' : ''}
                 />
               </div>
 
