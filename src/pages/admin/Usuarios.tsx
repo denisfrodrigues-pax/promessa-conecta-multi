@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield, UserX } from 'lucide-react';
+import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield, UserX, UserPlus } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -30,14 +30,22 @@ interface UserRole {
   role: string;
 }
 
+interface MembroVinculado {
+  id: string;
+  user_id: string | null;
+}
+
 export default function Usuarios() {
   const { isAdmin } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<UserRole[]>([]);
+  const [membrosVinculados, setMembrosVinculados] = useState<MembroVinculado[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [convertingUser, setConvertingUser] = useState<User | null>(null);
+  const [converting, setConverting] = useState(false);
   const [editData, setEditData] = useState({ nome: '', telefone: '', status: '', role: '' });
 
   useEffect(() => {
@@ -46,19 +54,57 @@ export default function Usuarios() {
 
   const fetchUsers = async () => {
     try {
-      const [usersRes, rolesRes] = await Promise.all([
+      const [usersRes, rolesRes, membrosRes] = await Promise.all([
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
         supabase.from('user_roles').select('user_id, role'),
+        supabase.from('membros').select('id, user_id').not('user_id', 'is', null),
       ]);
 
       if (usersRes.error) throw usersRes.error;
       setUsers(usersRes.data || []);
       setRoles(rolesRes.data || []);
+      setMembrosVinculados(membrosRes.data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Erro ao carregar usuários');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Verifica se o usuário já está vinculado a um membro
+  const isUserLinkedToMembro = (profileId: string) => {
+    return membrosVinculados.some(m => m.user_id === profileId);
+  };
+
+  // Converte usuário em membro
+  const handleConvertToMembro = async () => {
+    if (!convertingUser) return;
+    
+    setConverting(true);
+    try {
+      const { error } = await supabase.from('membros').insert({
+        nome: convertingUser.nome,
+        email: convertingUser.email,
+        telefone: convertingUser.telefone,
+        user_id: convertingUser.id,
+        status: 'ativo',
+      });
+
+      if (error) throw error;
+
+      toast.success(`${convertingUser.nome} foi adicionado à lista de membros!`);
+      setConvertingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error converting user to membro:', error);
+      if (error.code === '23505') {
+        toast.error('Este usuário já está vinculado a um membro');
+      } else {
+        toast.error('Erro ao converter usuário em membro');
+      }
+    } finally {
+      setConverting(false);
     }
   };
 
@@ -338,6 +384,21 @@ export default function Usuarios() {
                               <Edit className="w-4 h-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
+                            {isAdmin && !isUserLinkedToMembro(user.id) && (
+                              <DropdownMenuItem 
+                                onClick={() => setConvertingUser(user)}
+                                className="text-primary focus:text-primary"
+                              >
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Converter em Membro
+                              </DropdownMenuItem>
+                            )}
+                            {isAdmin && isUserLinkedToMembro(user.id) && (
+                              <DropdownMenuItem disabled className="text-muted-foreground">
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Já é membro
+                              </DropdownMenuItem>
+                            )}
                             {isAdmin && user.status !== 'inativo' && (
                               <>
                                 <DropdownMenuSeparator />
@@ -452,6 +513,31 @@ export default function Usuarios() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Desativar usuário
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Convert to Member Confirmation Dialog */}
+      <AlertDialog open={!!convertingUser} onOpenChange={() => setConvertingUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Converter em Membro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O usuário <strong>{convertingUser?.nome}</strong> será adicionado à lista de membros da igreja.
+              <br /><br />
+              Os dados de nome, email e telefone serão copiados para o cadastro de membro.
+              O vínculo entre as contas será mantido automaticamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={converting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConvertToMembro}
+              disabled={converting}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {converting ? 'Convertendo...' : 'Converter em Membro'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
