@@ -26,8 +26,21 @@ interface BaseMembro {
   bases: Base | null;
 }
 
+/**
+ * ATENÇÃO: O campo 'nome' nesta interface NÃO é fonte de verdade quando user_id existe.
+ * 
+ * Para membros vinculados a um perfil (user_id != null):
+ * - Dados pessoais vêm da tabela 'profiles' (fonte primária)
+ * - O 'nome' aqui é apenas fallback para membros sem conta
+ * 
+ * Na listagem atual, usamos membro.nome direto por performance,
+ * mas na página de detalhes fazemos a busca combinada correta.
+ * 
+ * @see src/pages/admin/MembroDetalhes.tsx para lógica completa de exibição
+ */
 interface Membro {
   id: string;
+  // Fallback - quando user_id existe, exibir nome de profiles
   nome: string;
   telefone: string | null;
   foto_perfil: string | null;
@@ -36,6 +49,7 @@ interface Membro {
   data_batismo: string | null;
   data_nascimento: string | null;
   created_at: string | null;
+  // Quando não-nulo, profiles é a fonte primária de dados pessoais
   user_id: string | null;
   bases_membros?: BaseMembro[];
 }
