@@ -59,16 +59,22 @@ interface Membro {
 }
 
 /**
- * Dados pessoais vindos da tabela profiles.
- * Esta é a FONTE PRIMÁRIA de dados pessoais quando membro está vinculado a uma conta.
+ * Dados pessoais COMPLETOS vindos da tabela profiles.
+ * Esta é a FONTE ABSOLUTA DA VERDADE quando membro está vinculado a uma conta.
+ * Todos os campos disponíveis na tabela profiles são mapeados aqui.
  */
 interface ProfileData {
+  // Identificação
   nome: string;
   email: string;
   telefone: string | null;
+  cpf: string | null;
+  sexo: string | null;
   data_nascimento: string | null;
+  naturalidade: string | null;
   foto_url: string | null;
-  // Campos de endereço separados (estrutura da tabela profiles)
+  
+  // Endereço (campos normalizados)
   logradouro: string | null;
   numero: string | null;
   complemento: string | null;
@@ -76,10 +82,22 @@ interface ProfileData {
   cidade: string | null;
   uf: string | null;
   cep: string | null;
-  // Outros campos pessoais
+  
+  // Dados pessoais adicionais
   estado_civil: string | null;
-  data_batismo: string | null;
+  grau_instrucao: string | null;
+  formacao: string | null;
+  profissao: string | null;
+  pcd: string | null;
+  
+  // Dados eclesiásticos
   batizado_aguas: boolean | null;
+  data_batismo: string | null;
+  data_cadastro: string | null;
+  
+  // Metadata
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 /**
@@ -106,6 +124,33 @@ const formatEnderecoFromProfile = (profile: ProfileData): string => {
   if (profile.cep) parts.push(`CEP: ${profile.cep}`);
   
   return parts.join(' - ') || '';
+};
+
+// Labels para exibição de campos
+const sexoLabels: Record<string, string> = {
+  masculino: 'Masculino',
+  feminino: 'Feminino',
+  outro: 'Outro',
+};
+
+const estadoCivilLabels: Record<string, string> = {
+  solteiro: 'Solteiro(a)',
+  casado: 'Casado(a)',
+  divorciado: 'Divorciado(a)',
+  viuvo: 'Viúvo(a)',
+  uniao_estavel: 'União Estável',
+};
+
+const grauInstrucaoLabels: Record<string, string> = {
+  fundamental_incompleto: 'Fundamental Incompleto',
+  fundamental_completo: 'Fundamental Completo',
+  medio_incompleto: 'Médio Incompleto',
+  medio_completo: 'Médio Completo',
+  superior_incompleto: 'Superior Incompleto',
+  superior_completo: 'Superior Completo',
+  pos_graduacao: 'Pós-Graduação',
+  mestrado: 'Mestrado',
+  doutorado: 'Doutorado',
 };
 
 interface Base {
@@ -285,14 +330,17 @@ export default function MembroDetalhes() {
       setMembro(data);
 
       // Se houver vínculo com perfil, buscar TODOS os dados pessoais do profiles
+      // FONTE ABSOLUTA DA VERDADE: profiles quando vinculado
       let profile: ProfileData | null = null;
       if (data.user_id) {
         const { data: profileResult, error: profileError } = await supabase
           .from('profiles')
           .select(`
-            nome, email, telefone, data_nascimento, foto_url,
+            nome, email, telefone, cpf, sexo, data_nascimento, naturalidade, foto_url,
             logradouro, numero, complemento, bairro, cidade, uf, cep,
-            estado_civil, data_batismo, batizado_aguas
+            estado_civil, grau_instrucao, formacao, profissao, pcd,
+            batizado_aguas, data_batismo, data_cadastro,
+            created_at, updated_at
           `)
           .eq('id', data.user_id)
           .maybeSingle();
@@ -304,30 +352,21 @@ export default function MembroDetalhes() {
         if (profileResult) {
           profile = profileResult;
           setProfileData(profile);
-          console.log('Perfil vinculado carregado:', profile);
+          console.log('Perfil vinculado carregado (todos os campos):', profile);
         }
       }
 
-      // Dados combinados: profiles é fonte primária para dados pessoais quando vinculado
+      // Dados combinados: profiles é FONTE ABSOLUTA quando vinculado
       const combinedNome = profile?.nome || data.nome || '';
       const combinedEmail = profile?.email || data.email || '';
       const combinedTelefone = profile?.telefone || data.telefone || '';
       const combinedNascimento = profile?.data_nascimento || data.data_nascimento || '';
-      // Monta endereço completo a partir dos campos separados do perfil
       const combinedEndereco = profile 
         ? formatEnderecoFromProfile(profile) 
         : (data.endereco || '');
       const combinedEstadoCivil = profile?.estado_civil || data.estado_civil || '';
       const combinedBatismo = profile?.data_batismo || data.data_batismo || '';
       const combinedFoto = profile?.foto_url || data.foto_perfil;
-
-      console.log('Dados combinados para exibição:', {
-        nome: combinedNome,
-        email: combinedEmail,
-        telefone: combinedTelefone,
-        endereco: combinedEndereco,
-        isFromProfile: !!profile
-      });
 
       setFormData({
         nome: combinedNome,
@@ -818,243 +857,451 @@ export default function MembroDetalhes() {
         </Button>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Photo Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Foto
-              {isLinkedToProfile && (
-                <span className="text-xs text-muted-foreground font-normal">(perfil)</span>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <Avatar className="w-32 h-32">
-              <AvatarImage src={fotoPreview || undefined} alt={formData.nome} />
-              <AvatarFallback className="bg-primary/10 text-primary text-2xl">
-                {getInitials(formData.nome)}
-              </AvatarFallback>
-            </Avatar>
-            {isEditing && !isLinkedToProfile && (
-              <>
-                <Label htmlFor="foto" className="cursor-pointer">
-                  <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-muted transition-colors">
-                    <Upload className="w-4 h-4" />
-                    Trocar foto
-                  </div>
-                  <Input
-                    id="foto"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFotoChange}
-                  />
-                </Label>
-                <p className="text-xs text-muted-foreground">Máximo 5MB</p>
-              </>
-            )}
-            {isLinkedToProfile && (
-              <p className="text-xs text-muted-foreground text-center">
-                A foto é gerenciada pelo usuário em seu perfil
-              </p>
-            )}
-          </CardContent>
-        </Card>
+      {/* Seções organizadas para membro vinculado a perfil */}
+      {isLinkedToProfile && profileData ? (
+        <div className="space-y-6">
+          {/* Aviso de perfil vinculado */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <Link2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm text-blue-800 font-medium mb-1">
+                  Membro vinculado a uma conta de usuário
+                </p>
+                <p className="text-sm text-blue-700 mb-3">
+                  Os dados pessoais são gerenciados pelo próprio usuário em seu perfil. 
+                  Aqui você visualiza todos os dados e pode editar apenas as informações administrativas.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/admin/usuarios`)}
+                  className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                >
+                  <User className="w-3 h-3 mr-1" />
+                  Abrir perfil do usuário
+                </Button>
+              </div>
+            </div>
+          </div>
 
-        {/* Form Card */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Dados do Membro
-              {isLinkedToProfile && (
-                <Badge variant="secondary" className="flex items-center gap-1 text-xs font-normal">
-                  <Link2 className="w-3 h-3" />
-                  Vinculado a conta
-                </Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Aviso de campos somente-leitura para membros vinculados */}
-            {isLinkedToProfile && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm text-blue-800 mb-2">
-                      Dados pessoais são editáveis apenas no perfil do usuário. 
-                      Aqui você pode editar apenas os dados administrativos (status e observações).
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`/admin/usuarios`)}
-                      className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                    >
-                      <User className="w-3 h-3 mr-1" />
-                      Abrir perfil do usuário
-                    </Button>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Coluna da Foto */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  Foto de Perfil
+                  <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center gap-4">
+                <Avatar className="w-32 h-32">
+                  <AvatarImage src={profileData.foto_url || undefined} alt={profileData.nome} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+                    {getInitials(profileData.nome)}
+                  </AvatarFallback>
+                </Avatar>
+                <p className="text-xs text-muted-foreground text-center">
+                  Gerenciada pelo usuário
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Dados de Identificação */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <User className="w-4 h-4" />
+                  Identificação Pessoal
+                  <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Nome Completo</Label>
+                    <p className="font-medium">{profileData.nome || '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">E-mail</Label>
+                    <p className="font-medium">{profileData.email || '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Telefone</Label>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{formatPhoneBR(profileData.telefone) || '–'}</p>
+                      {hasValidPhone(profileData.telefone) && (
+                        <button
+                          onClick={() => window.open(getWhatsAppUrl(profileData.telefone), '_blank')}
+                          className="text-green-600 hover:text-green-700"
+                          title="Abrir WhatsApp"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">CPF</Label>
+                    <p className="font-medium">{profileData.cpf || '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Data de Nascimento</Label>
+                    <p className="font-medium">{profileData.data_nascimento ? formatDate(profileData.data_nascimento) : '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Sexo</Label>
+                    <p className="font-medium">{profileData.sexo ? (sexoLabels[profileData.sexo] || profileData.sexo) : '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Naturalidade</Label>
+                    <p className="font-medium">{profileData.naturalidade || '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Estado Civil</Label>
+                    <p className="font-medium">{profileData.estado_civil ? (estadoCivilLabels[profileData.estado_civil] || profileData.estado_civil) : '–'}</p>
                   </div>
                 </div>
-              </div>
-            )}
+              </CardContent>
+            </Card>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Endereço Completo */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MapPin className="w-4 h-4" />
+                Endereço
+                <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {profileData.logradouro || profileData.cidade ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2 space-y-1">
+                    <Label className="text-muted-foreground text-xs">Logradouro</Label>
+                    <p className="font-medium">
+                      {profileData.logradouro || '–'}
+                      {profileData.numero && `, ${profileData.numero}`}
+                      {profileData.complemento && ` - ${profileData.complemento}`}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">CEP</Label>
+                    <p className="font-medium">{profileData.cep || '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Bairro</Label>
+                    <p className="font-medium">{profileData.bairro || '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Cidade</Label>
+                    <p className="font-medium">{profileData.cidade || '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Estado</Label>
+                    <p className="font-medium">{profileData.uf || '–'}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">Endereço não informado</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Dados Profissionais e Educação */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Calendar className="w-4 h-4" />
+                Formação e Profissão
+                <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Escolaridade</Label>
+                  <p className="font-medium">
+                    {profileData.grau_instrucao ? (grauInstrucaoLabels[profileData.grau_instrucao] || profileData.grau_instrucao) : '–'}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Formação</Label>
+                  <p className="font-medium">{profileData.formacao || '–'}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Profissão</Label>
+                  <p className="font-medium">{profileData.profissao || '–'}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">PCD</Label>
+                  <p className="font-medium">{profileData.pcd || 'Não informado'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Dados Eclesiásticos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Heart className="w-4 h-4" />
+                Dados Eclesiásticos
+                <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Batizado nas Águas</Label>
+                  <p className="font-medium">{profileData.batizado_aguas ? 'Sim' : 'Não'}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Data do Batismo</Label>
+                  <p className="font-medium">{profileData.data_batismo ? formatDate(profileData.data_batismo) : '–'}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Data de Cadastro</Label>
+                  <p className="font-medium">{profileData.data_cadastro ? formatDate(profileData.data_cadastro) : '–'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Dados Administrativos - EDITÁVEIS */}
+          <Card className="border-primary/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <AlertCircle className="w-4 h-4" />
+                Dados Administrativos do Membro
+                <Badge variant="default" className="text-xs font-normal">editável</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status do Membro</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ativo">Ativo</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                      <SelectItem value="desligado">Desligado</SelectItem>
+                      <SelectItem value="transferido">Transferido</SelectItem>
+                      <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Membro desde</Label>
+                  <p className="font-medium pt-2">{formatDate(membro.data_registro || membro.created_at)}</p>
+                </div>
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="nome" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
-                  <User className="w-4 h-4 inline mr-1" />
-                  Nome {!isLinkedToProfile && '*'}
-                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
-                </Label>
-                <Input
-                  id="nome"
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  disabled={!isEditing || isLinkedToProfile}
-                  className={isLinkedToProfile ? 'bg-muted' : ''}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="telefone" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
-                  <Phone className="w-4 h-4 inline mr-1" />
-                  Telefone
-                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
-                </Label>
-                <Input
-                  id="telefone"
-                  value={formatPhoneBR(formData.telefone)}
-                  onChange={(e) => setFormData({ ...formData, telefone: formatPhoneBR(e.target.value) })}
-                  disabled={!isEditing || isLinkedToProfile}
-                  placeholder="(00) 00000-0000"
-                  className={isLinkedToProfile ? 'bg-muted' : ''}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
-                  <Mail className="w-4 h-4 inline mr-1" />
-                  E-mail
-                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  disabled={!isEditing || isLinkedToProfile}
-                  className={isLinkedToProfile ? 'bg-muted' : ''}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="data_nascimento" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
-                  <Calendar className="w-4 h-4 inline mr-1" />
-                  Data de Nascimento
-                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
-                </Label>
-                <Input
-                  id="data_nascimento"
-                  type="date"
-                  value={formData.data_nascimento}
-                  onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
-                  disabled={!isEditing || isLinkedToProfile}
-                  className={isLinkedToProfile ? 'bg-muted' : ''}
-                />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="endereco" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
-                  <MapPin className="w-4 h-4 inline mr-1" />
-                  Endereço
-                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
-                </Label>
-                <Input
-                  id="endereco"
-                  value={formData.endereco}
-                  onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-                  disabled={!isEditing || isLinkedToProfile}
-                  className={isLinkedToProfile ? 'bg-muted' : ''}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="estado_civil" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
-                  <Heart className="w-4 h-4 inline mr-1" />
-                  Estado Civil
-                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
-                </Label>
-                <Select
-                  value={formData.estado_civil}
-                  onValueChange={(value) => setFormData({ ...formData, estado_civil: value })}
-                  disabled={!isEditing || isLinkedToProfile}
-                >
-                  <SelectTrigger className={isLinkedToProfile ? 'bg-muted' : ''}>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {estadoCivilOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="data_batismo" className={isLinkedToProfile ? 'text-muted-foreground' : ''}>
-                  <Calendar className="w-4 h-4 inline mr-1" />
-                  Data do Batismo
-                  {isLinkedToProfile && <span className="text-xs ml-1">(perfil)</span>}
-                </Label>
-                <Input
-                  id="data_batismo"
-                  type="date"
-                  value={formData.data_batismo}
-                  onChange={(e) => setFormData({ ...formData, data_batismo: e.target.value })}
-                  disabled={!isEditing || isLinkedToProfile}
-                  className={isLinkedToProfile ? 'bg-muted' : ''}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value })}
+                <Label htmlFor="observacoes">Observações Administrativas</Label>
+                <Textarea
+                  id="observacoes"
+                  value={formData.observacoes}
+                  onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
                   disabled={!isEditing}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ativo">Ativo</SelectItem>
-                    <SelectItem value="inativo">Inativo</SelectItem>
-                    <SelectItem value="desligado">Desligado</SelectItem>
-                    <SelectItem value="transferido">Transferido</SelectItem>
-                    <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
-                  </SelectContent>
-                </Select>
+                  rows={4}
+                  placeholder="Observações internas sobre o membro..."
+                />
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        /* Layout tradicional para membros SEM vínculo com perfil */
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Photo Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">Foto</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-4">
+              <Avatar className="w-32 h-32">
+                <AvatarImage src={fotoPreview || undefined} alt={formData.nome} />
+                <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+                  {getInitials(formData.nome)}
+                </AvatarFallback>
+              </Avatar>
+              {isEditing && (
+                <>
+                  <Label htmlFor="foto" className="cursor-pointer">
+                    <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-muted transition-colors">
+                      <Upload className="w-4 h-4" />
+                      Trocar foto
+                    </div>
+                    <Input
+                      id="foto"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFotoChange}
+                    />
+                  </Label>
+                  <p className="text-xs text-muted-foreground">Máximo 5MB</p>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
-            <div className="space-y-2">
-              <Label htmlFor="observacoes">Observações</Label>
-              <Textarea
-                id="observacoes"
-                value={formData.observacoes}
-                onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                disabled={!isEditing}
-                rows={4}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Form Card */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">Dados do Membro</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nome">
+                    <User className="w-4 h-4 inline mr-1" />
+                    Nome *
+                  </Label>
+                  <Input
+                    id="nome"
+                    value={formData.nome}
+                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telefone">
+                    <Phone className="w-4 h-4 inline mr-1" />
+                    Telefone
+                  </Label>
+                  <Input
+                    id="telefone"
+                    value={formatPhoneBR(formData.telefone)}
+                    onChange={(e) => setFormData({ ...formData, telefone: formatPhoneBR(e.target.value) })}
+                    disabled={!isEditing}
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">
+                    <Mail className="w-4 h-4 inline mr-1" />
+                    E-mail
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="data_nascimento">
+                    <Calendar className="w-4 h-4 inline mr-1" />
+                    Data de Nascimento
+                  </Label>
+                  <Input
+                    id="data_nascimento"
+                    type="date"
+                    value={formData.data_nascimento}
+                    onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="endereco">
+                    <MapPin className="w-4 h-4 inline mr-1" />
+                    Endereço
+                  </Label>
+                  <Input
+                    id="endereco"
+                    value={formData.endereco}
+                    onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="estado_civil">
+                    <Heart className="w-4 h-4 inline mr-1" />
+                    Estado Civil
+                  </Label>
+                  <Select
+                    value={formData.estado_civil}
+                    onValueChange={(value) => setFormData({ ...formData, estado_civil: value })}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {estadoCivilOptions.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="data_batismo">
+                    <Calendar className="w-4 h-4 inline mr-1" />
+                    Data do Batismo
+                  </Label>
+                  <Input
+                    id="data_batismo"
+                    type="date"
+                    value={formData.data_batismo}
+                    onChange={(e) => setFormData({ ...formData, data_batismo: e.target.value })}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ativo">Ativo</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                      <SelectItem value="desligado">Desligado</SelectItem>
+                      <SelectItem value="transferido">Transferido</SelectItem>
+                      <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="observacoes">Observações</Label>
+                <Textarea
+                  id="observacoes"
+                  value={formData.observacoes}
+                  onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                  disabled={!isEditing}
+                  rows={4}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Histórico de Bases */}
       <Card>
