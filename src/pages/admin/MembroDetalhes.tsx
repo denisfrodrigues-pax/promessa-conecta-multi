@@ -68,10 +68,45 @@ interface ProfileData {
   telefone: string | null;
   data_nascimento: string | null;
   foto_url: string | null;
-  endereco: string | null;
+  // Campos de endereço separados (estrutura da tabela profiles)
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
+  cep: string | null;
+  // Outros campos pessoais
   estado_civil: string | null;
   data_batismo: string | null;
+  batizado_aguas: boolean | null;
 }
+
+/**
+ * Monta o endereço completo a partir dos campos separados do perfil
+ */
+const formatEnderecoFromProfile = (profile: ProfileData): string => {
+  const parts: string[] = [];
+  
+  if (profile.logradouro) {
+    let endereco = profile.logradouro;
+    if (profile.numero) endereco += `, ${profile.numero}`;
+    if (profile.complemento) endereco += ` - ${profile.complemento}`;
+    parts.push(endereco);
+  }
+  
+  if (profile.bairro) parts.push(profile.bairro);
+  
+  if (profile.cidade) {
+    let cidadeUf = profile.cidade;
+    if (profile.uf) cidadeUf += `/${profile.uf}`;
+    parts.push(cidadeUf);
+  }
+  
+  if (profile.cep) parts.push(`CEP: ${profile.cep}`);
+  
+  return parts.join(' - ') || '';
+};
 
 interface Base {
   id: string;
@@ -249,18 +284,27 @@ export default function MembroDetalhes() {
 
       setMembro(data);
 
-      // Se houver vínculo com perfil, buscar dados do profiles
+      // Se houver vínculo com perfil, buscar TODOS os dados pessoais do profiles
       let profile: ProfileData | null = null;
       if (data.user_id) {
-        const { data: profileResult } = await supabase
+        const { data: profileResult, error: profileError } = await supabase
           .from('profiles')
-          .select('nome, email, telefone, data_nascimento, foto_url, endereco, estado_civil, data_batismo')
+          .select(`
+            nome, email, telefone, data_nascimento, foto_url,
+            logradouro, numero, complemento, bairro, cidade, uf, cep,
+            estado_civil, data_batismo, batizado_aguas
+          `)
           .eq('id', data.user_id)
           .maybeSingle();
+        
+        if (profileError) {
+          console.error('Erro ao buscar perfil vinculado:', profileError);
+        }
         
         if (profileResult) {
           profile = profileResult;
           setProfileData(profile);
+          console.log('Perfil vinculado carregado:', profile);
         }
       }
 
@@ -269,10 +313,21 @@ export default function MembroDetalhes() {
       const combinedEmail = profile?.email || data.email || '';
       const combinedTelefone = profile?.telefone || data.telefone || '';
       const combinedNascimento = profile?.data_nascimento || data.data_nascimento || '';
-      const combinedEndereco = profile?.endereco || data.endereco || '';
+      // Monta endereço completo a partir dos campos separados do perfil
+      const combinedEndereco = profile 
+        ? formatEnderecoFromProfile(profile) 
+        : (data.endereco || '');
       const combinedEstadoCivil = profile?.estado_civil || data.estado_civil || '';
       const combinedBatismo = profile?.data_batismo || data.data_batismo || '';
       const combinedFoto = profile?.foto_url || data.foto_perfil;
+
+      console.log('Dados combinados para exibição:', {
+        nome: combinedNome,
+        email: combinedEmail,
+        telefone: combinedTelefone,
+        endereco: combinedEndereco,
+        isFromProfile: !!profile
+      });
 
       setFormData({
         nome: combinedNome,
