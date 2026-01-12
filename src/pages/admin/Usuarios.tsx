@@ -77,15 +77,30 @@ export default function Usuarios() {
     return membrosVinculados.some(m => m.user_id === profileId);
   };
 
-  // Converte usuário em membro (apenas vincula, não duplica dados pessoais)
+  /**
+   * CONVERSÃO DE USUÁRIO EM MEMBRO
+   * 
+   * Cria apenas o registro administrativo em 'membros' com vínculo via user_id.
+   * NÃO duplica dados pessoais (nome, email, telefone, data_nascimento).
+   * 
+   * O campo 'nome' é preenchido apenas por exigência do banco (NOT NULL),
+   * mas NÃO é fonte de verdade - quando exibido, usar sempre dados de profiles.
+   * 
+   * @see src/pages/admin/MembroDetalhes.tsx para lógica de exibição combinada
+   */
   const handleConvertToMembro = async () => {
     if (!convertingUser) return;
     
     setConverting(true);
     try {
-      // Apenas cria o vínculo - dados pessoais ficam em profiles
+      /**
+       * IMPORTANTE: Apenas criamos o vínculo.
+       * - O campo 'nome' aqui é apenas fallback técnico (banco exige NOT NULL)
+       * - Dados pessoais reais virão de profiles quando o membro for exibido
+       * - NÃO copiar email, telefone, data_nascimento para evitar duplicação
+       */
       const { error } = await supabase.from('membros').insert({
-        nome: convertingUser.nome, // Nome é obrigatório na tabela, mas será buscado de profiles quando exibido
+        nome: convertingUser.nome, // Fallback técnico - NÃO é fonte de verdade quando user_id existe
         user_id: convertingUser.id,
         status: 'ativo',
       });
@@ -525,8 +540,7 @@ export default function Usuarios() {
             <AlertDialogDescription>
               O usuário <strong>{convertingUser?.nome}</strong> será adicionado à lista de membros da igreja.
               <br /><br />
-              Os dados de nome, email e telefone serão copiados para o cadastro de membro.
-              O vínculo entre as contas será mantido automaticamente.
+              <strong>Nota:</strong> Os dados pessoais (nome, email, telefone, nascimento) permanecerão vinculados ao perfil do usuário e serão atualizados automaticamente quando ele editar seu perfil.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

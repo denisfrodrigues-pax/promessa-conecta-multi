@@ -21,8 +21,27 @@ import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { formatPhoneBR, cleanPhone } from '@/lib/formatters';
 
+/**
+ * ARQUITETURA DE DADOS: PROFILES vs MEMBROS
+ * 
+ * - profiles: tabela de DADOS PESSOAIS (fonte primária quando há vínculo)
+ *   → nome, email, telefone, data_nascimento, endereco, estado_civil, data_batismo, foto_url
+ * 
+ * - membros: tabela de DADOS ADMINISTRATIVOS/ECLESIÁSTICOS
+ *   → status, observacoes, data_registro
+ *   → O campo 'nome' existe apenas como fallback técnico (quando user_id = null)
+ * 
+ * Quando membros.user_id existe:
+ *   → Dados pessoais são exibidos de profiles (NÃO de membros)
+ *   → Dados pessoais são editáveis APENAS pelo usuário no seu perfil
+ *   → Admin pode editar apenas dados administrativos (status, observacoes)
+ * 
+ * @see src/pages/member/Perfil.tsx para edição de dados pessoais pelo usuário
+ */
 interface Membro {
   id: string;
+  // ATENÇÃO: Este campo NÃO é fonte de verdade quando user_id existe.
+  // Quando vinculado a um perfil, usar profileData.nome para exibição.
   nome: string;
   telefone: string | null;
   email: string | null;
@@ -35,9 +54,14 @@ interface Membro {
   observacoes: string | null;
   status: string | null;
   created_at: string | null;
+  // Quando não-nulo, profiles é a fonte primária de dados pessoais
   user_id: string | null;
 }
 
+/**
+ * Dados pessoais vindos da tabela profiles.
+ * Esta é a FONTE PRIMÁRIA de dados pessoais quando membro está vinculado a uma conta.
+ */
 interface ProfileData {
   nome: string;
   email: string;
@@ -455,7 +479,17 @@ export default function MembroDetalhes() {
   };
 
   const handleSave = async () => {
-    // Para membros vinculados a perfil, nome não é editável aqui
+    /**
+     * PROTEÇÃO CONTRA SOBRESCRITA ACIDENTAL
+     * 
+     * Quando user_id existe (isLinkedToProfile = true):
+     * - NÃO atualizar: nome, email, telefone, data_nascimento, endereco, 
+     *   estado_civil, data_batismo, foto_perfil
+     * - Estes campos são gerenciados pelo usuário em seu perfil (profiles)
+     * - Aqui atualizamos APENAS dados administrativos: status, observacoes
+     */
+    
+    // Para membros sem vínculo, nome é obrigatório
     if (!isLinkedToProfile && !formData.nome.trim()) {
       toast.error('Nome é obrigatório');
       return;
@@ -463,14 +497,14 @@ export default function MembroDetalhes() {
 
     setSaving(true);
     try {
-      // Para membros vinculados, apenas salvar dados administrativos
-      // Dados pessoais são gerenciados pelo próprio usuário em seu perfil
+      // DADOS ADMINISTRATIVOS - sempre editáveis pelo admin
       const updateData: Record<string, unknown> = {
         status: formData.status,
         observacoes: formData.observacoes.trim() || null,
       };
 
-      // Se NÃO vinculado a perfil, salvar dados pessoais em membros
+      // DADOS PESSOAIS - APENAS quando NÃO vinculado a perfil
+      // Quando vinculado, esses dados vêm de profiles e NÃO podem ser alterados aqui
       if (!isLinkedToProfile) {
         let fotoUrl = membro?.foto_perfil;
         if (fotoFile) {
@@ -790,12 +824,26 @@ export default function MembroDetalhes() {
           <CardContent className="space-y-4">
             {/* Aviso de campos somente-leitura para membros vinculados */}
             {isLinkedToProfile && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-blue-800">
-                  Os dados pessoais deste membro são gerenciados pelo próprio usuário em seu perfil. 
-                  Aqui você pode editar apenas os dados administrativos (status e observações).
-                </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm text-blue-800 mb-2">
+                      Dados pessoais são editáveis apenas no perfil do usuário. 
+                      Aqui você pode editar apenas os dados administrativos (status e observações).
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/admin/usuarios`)}
+                      className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                    >
+                      <User className="w-3 h-3 mr-1" />
+                      Abrir perfil do usuário
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
 
