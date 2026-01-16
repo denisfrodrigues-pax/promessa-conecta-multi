@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Search, Calendar, MapPin, Users, Edit, Trash2, MoreHorizontal, Download, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Search, Calendar, MapPin, Users, Edit, Trash2, MoreHorizontal, Download, Clock, CheckCircle, XCircle, Upload, Image, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -70,6 +70,10 @@ export default function Eventos() {
     local: '',
     vagas: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchData();
@@ -109,6 +113,7 @@ export default function Eventos() {
         local: evento.local || '',
         vagas: evento.vagas?.toString() || '',
       });
+      setImagePreview(evento.imagem_url || null);
     } else {
       setEditingEvento(null);
       setFormData({
@@ -119,8 +124,67 @@ export default function Eventos() {
         local: '',
         vagas: '',
       });
+      setImagePreview(null);
     }
+    setImageFile(null);
     setIsDialogOpen(true);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Formato não suportado. Use JPG, PNG ou WebP.');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Imagem muito grande. Máximo 5MB.');
+      return;
+    }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadImage = async (eventoId: string): Promise<string | null> => {
+    if (!imageFile) return editingEvento?.imagem_url || null;
+
+    setUploadingImage(true);
+    try {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${eventoId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('eventos')
+        .upload(fileName, imageFile, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('eventos')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Erro ao enviar imagem');
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSave = async () => {
@@ -130,25 +194,50 @@ export default function Eventos() {
     }
 
     try {
-      const data = {
-        titulo: formData.titulo,
-        descricao: formData.descricao || null,
-        data_inicio: formData.data_inicio,
-        data_fim: formData.data_fim || null,
-        local: formData.local || null,
-        vagas: formData.vagas ? parseInt(formData.vagas) : null,
-      };
+      let eventoId = editingEvento?.id;
+      
+      // If creating new event, insert first to get the ID
+      if (!eventoId) {
+        const { data: newEvento, error: insertError } = await supabase
+          .from('eventos')
+          .insert({
+            titulo: formData.titulo,
+            descricao: formData.descricao || null,
+            data_inicio: formData.data_inicio,
+            data_fim: formData.data_fim || null,
+            local: formData.local || null,
+            vagas: formData.vagas ? parseInt(formData.vagas) : null,
+          })
+          .select('id')
+          .single();
 
-      if (editingEvento) {
-        const { error } = await supabase.from('eventos').update(data).eq('id', editingEvento.id);
-        if (error) throw error;
-        toast.success('Evento atualizado com sucesso');
-      } else {
-        const { error } = await supabase.from('eventos').insert(data);
-        if (error) throw error;
-        toast.success('Evento criado com sucesso');
+        if (insertError) throw insertError;
+        eventoId = newEvento.id;
       }
 
+      // Upload image if selected
+      const imagemUrl = await uploadImage(eventoId);
+
+      // Update event with image URL (and other data if editing)
+      const updateData: any = { imagem_url: imagemUrl };
+      
+      if (editingEvento) {
+        updateData.titulo = formData.titulo;
+        updateData.descricao = formData.descricao || null;
+        updateData.data_inicio = formData.data_inicio;
+        updateData.data_fim = formData.data_fim || null;
+        updateData.local = formData.local || null;
+        updateData.vagas = formData.vagas ? parseInt(formData.vagas) : null;
+      }
+
+      const { error: updateError } = await supabase
+        .from('eventos')
+        .update(updateData)
+        .eq('id', eventoId);
+
+      if (updateError) throw updateError;
+
+      toast.success(editingEvento ? 'Evento atualizado com sucesso' : 'Evento criado com sucesso');
       setIsDialogOpen(false);
       fetchData();
     } catch (error) {
@@ -317,9 +406,17 @@ export default function Eventos() {
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="aspect-video bg-gradient-to-br from-promessa-500 to-promessa-700 relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Calendar className="w-16 h-16 text-white/20" />
-                  </div>
+                  {evento.imagem_url ? (
+                    <img 
+                      src={evento.imagem_url} 
+                      alt={evento.titulo}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Calendar className="w-16 h-16 text-white/20" />
+                    </div>
+                  )}
                   
                   {/* Status Badge */}
                   {isPast ? (
@@ -484,13 +581,60 @@ export default function Eventos() {
                 className="rounded-xl"
               />
             </div>
+            
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Imagem do Evento</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+              
+              {imagePreview ? (
+                <div className="relative rounded-xl overflow-hidden border border-border">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="w-full h-32 object-cover"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-8 w-8 rounded-lg"
+                    onClick={handleRemoveImage}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-24 rounded-xl border-dashed flex flex-col gap-2"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-6 h-6 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Clique para enviar (JPG, PNG, WebP - máx 5MB)
+                  </span>
+                </Button>
+              )}
+            </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="rounded-xl">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="rounded-xl" disabled={uploadingImage}>
               Cancelar
             </Button>
-            <Button onClick={handleSave} className="rounded-xl bg-gradient-to-r from-promessa-500 to-promessa-700">
-              {editingEvento ? 'Salvar' : 'Criar'}
+            <Button 
+              onClick={handleSave} 
+              className="rounded-xl bg-gradient-to-r from-promessa-500 to-promessa-700"
+              disabled={uploadingImage}
+            >
+              {uploadingImage ? 'Enviando...' : editingEvento ? 'Salvar' : 'Criar'}
             </Button>
           </DialogFooter>
         </DialogContent>
