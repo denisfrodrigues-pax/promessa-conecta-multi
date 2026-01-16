@@ -33,8 +33,8 @@ const DEFAULT_CONFIG: ChurchConfig = {
 };
 
 export function useChurchConfig() {
-  // Initialize with defaults so config is never null
-  const [config, setConfig] = useState<ChurchConfig>(DEFAULT_CONFIG);
+  // Initialize with defaults so config is never null - CRITICAL: ChurchConfig not null
+  const [config, setConfig] = useState<ChurchConfig>(() => ({ ...DEFAULT_CONFIG }));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -80,18 +80,20 @@ export function useChurchConfig() {
     }
   }
 
-  // Helper to get a value with fallback - uses optional chaining for safety
+  // Helper to get a value with fallback
   const getValue = <K extends keyof ChurchConfig>(key: K): ChurchConfig[K] | string => {
-    const value = config?.[key];
+    if (!config) return DEFAULT_CONFIG[key] ?? 'Informações em atualização';
+    const value = config[key];
     if (value !== null && value !== undefined && value !== '') {
       return value;
     }
     return DEFAULT_CONFIG[key] ?? 'Informações em atualização';
   };
 
-  // Formatted helpers - all use optional chaining for extra safety
+  // Formatted helpers - all check for null config first
   const getEndereco = (): string => {
-    const endereco = config?.endereco;
+    if (!config) return DEFAULT_CONFIG.endereco || 'Informações em atualização';
+    const endereco = config.endereco;
     if (!endereco || endereco.trim() === '') {
       return DEFAULT_CONFIG.endereco || 'Informações em atualização';
     }
@@ -99,44 +101,51 @@ export function useChurchConfig() {
   };
 
   const getTelefone = (): string | null => {
-    const telefone = config?.telefone;
+    if (!config) return null;
+    const telefone = config.telefone;
     return telefone && telefone.trim() !== '' ? telefone : null;
   };
 
   const getEmail = (): string | null => {
-    const email = config?.email;
+    if (!config) return null;
+    const email = config.email;
     return email && email.trim() !== '' ? email : null;
   };
 
   const getHorarios = (): { ebd: string; culto: string } => {
     return {
-      ebd: config?.horario_ebd || DEFAULT_CONFIG.horario_ebd || '18:00',
-      culto: config?.horario_culto || DEFAULT_CONFIG.horario_culto || '19:07',
+      ebd: config?.horario_ebd || '18h',
+      culto: config?.horario_culto || '19h07',
     };
   };
 
   const getGoogleMapsUrl = (): string | null => {
-    const url = config?.google_maps_url;
+    if (!config) return null;
+    const url = config.google_maps_url;
     return url && url.trim() !== '' ? url : null;
   };
 
   const getInstagram = (): string | null => {
-    const instagram = config?.urls_transmissao?.instagram;
+    if (!config || !config.urls_transmissao) return null;
+    const instagram = config.urls_transmissao.instagram;
     return instagram && instagram.trim() !== '' ? instagram : null;
   };
 
   const getYoutube = (): string | null => {
-    const youtube = config?.urls_transmissao?.youtube;
+    if (!config || !config.urls_transmissao) return null;
+    const youtube = config.urls_transmissao.youtube;
     return youtube && youtube.trim() !== '' ? youtube : null;
   };
 
   const getFacebook = (): string | null => {
-    const facebook = config?.facebook;
+    if (!config) return null;
+    const facebook = config.facebook;
     return facebook && facebook.trim() !== '' ? facebook : null;
   };
 
   const hasContactInfo = (): boolean => {
-    return !!(config?.endereco || config?.telefone || config?.email);
+    if (!config) return false;
+    return !!(config.endereco || config.telefone || config.email);
   };
 
   return { 
