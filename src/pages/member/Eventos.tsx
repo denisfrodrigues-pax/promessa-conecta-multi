@@ -20,6 +20,7 @@ interface Evento {
   data_fim: string | null;
   local: string | null;
   vagas: number | null;
+  imagem_url: string | null;
 }
 
 export default function MemberEventos() {
@@ -158,16 +159,40 @@ export default function MemberEventos() {
             <Card key={evento.id} className="shadow-card hover:shadow-elevated transition-all duration-300 overflow-hidden">
               <div className="flex flex-col md:flex-row">
                 {/* Image/Date Banner */}
-                <div className="md:w-48 bg-gradient-hero p-6 flex flex-col items-center justify-center text-primary-foreground">
-                  <span className="text-3xl font-bold font-display">
-                    {format(new Date(evento.data_inicio), 'dd')}
-                  </span>
-                  <span className="text-sm uppercase">
-                    {format(new Date(evento.data_inicio), 'MMM', { locale: ptBR })}
-                  </span>
-                  <span className="text-xs mt-1 opacity-80">
-                    {format(new Date(evento.data_inicio), 'HH:mm')}
-                  </span>
+                <div className="md:w-48 bg-gradient-hero relative flex flex-col items-center justify-center text-primary-foreground overflow-hidden">
+                  {evento.imagem_url ? (
+                    <>
+                      <img 
+                        src={evento.imagem_url} 
+                        alt={evento.titulo}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40" />
+                      <div className="relative z-10 p-6 flex flex-col items-center justify-center">
+                        <span className="text-3xl font-bold font-display">
+                          {format(new Date(evento.data_inicio), 'dd')}
+                        </span>
+                        <span className="text-sm uppercase">
+                          {format(new Date(evento.data_inicio), 'MMM', { locale: ptBR })}
+                        </span>
+                        <span className="text-xs mt-1 opacity-80">
+                          {format(new Date(evento.data_inicio), 'HH:mm')}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-6 flex flex-col items-center justify-center">
+                      <span className="text-3xl font-bold font-display">
+                        {format(new Date(evento.data_inicio), 'dd')}
+                      </span>
+                      <span className="text-sm uppercase">
+                        {format(new Date(evento.data_inicio), 'MMM', { locale: ptBR })}
+                      </span>
+                      <span className="text-xs mt-1 opacity-80">
+                        {format(new Date(evento.data_inicio), 'HH:mm')}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <CardContent className="flex-1 p-4">
