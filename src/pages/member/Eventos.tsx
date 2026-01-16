@@ -173,9 +173,7 @@ export default function MemberEventos() {
                 <CardContent className="flex-1 p-4">
                   <div className="flex flex-col h-full">
                     <div className="flex items-start justify-between mb-2">
-                      <Link to={`/eventos/${evento.id}`} className="hover:text-primary transition-colors">
-                        <h3 className="font-display font-semibold text-lg">{evento.titulo}</h3>
-                      </Link>
+                      <h3 className="font-display font-semibold text-lg">{evento.titulo}</h3>
                       {isInscrito && (
                         <Badge className="bg-primary text-primary-foreground">
                           <CheckCircle className="w-3 h-3 mr-1" />
@@ -221,9 +219,6 @@ export default function MemberEventos() {
                           Inscrever-se
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link to={`/eventos/${evento.id}`}>Ver Detalhes</Link>
-                      </Button>
                     </div>
                   </div>
                 </CardContent>

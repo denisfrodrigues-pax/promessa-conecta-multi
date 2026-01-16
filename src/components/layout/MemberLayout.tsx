@@ -3,13 +3,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
 import { Logo } from '@/components/Logo';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
-import { Home, Users, Calendar, Bell, User, Menu, CalendarCheck, Loader2 } from 'lucide-react';
+import { Home, Users, Calendar, Bell, User, Menu, CalendarCheck, Loader2, Baby } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useKidsVolunteer } from '@/hooks/useKidsVolunteer';
 
 const navItems = [
   { icon: Home, label: 'Início', path: '/home' },
@@ -22,6 +23,7 @@ const navItems = [
 export default function MemberLayout() {
   const { user, loading, profile, signOut, isAdmin, isLider } = useAuth();
   const { unreadCount } = useNotifications();
+  const { isKidsVolunteer } = useKidsVolunteer();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (loading) {
@@ -74,6 +76,17 @@ export default function MemberLayout() {
                 </Badge>
               )}
             </NavLink>
+            {/* Check-in Kids - apenas para voluntários do ministério Kids */}
+            {isKidsVolunteer && (
+              <NavLink
+                to="/check-in-kids"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50 transition-colors"
+                activeClassName="bg-promessa-100 text-promessa-700 font-medium"
+              >
+                <Baby className="w-4 h-4" />
+                <span className="text-sm">Check-in Kids</span>
+              </NavLink>
+            )}
             {(isAdmin || isLider) && (
               <Button asChild variant="promessa" className="ml-2 font-semibold">
                 <RouterNavLink to={isAdmin ? '/admin' : '/lider'}>
@@ -142,6 +155,18 @@ export default function MemberLayout() {
                         <Badge className="ml-auto">{unreadCount}</Badge>
                       )}
                     </NavLink>
+                    {/* Check-in Kids - apenas para voluntários do ministério Kids */}
+                    {isKidsVolunteer && (
+                      <NavLink
+                        to="/check-in-kids"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        activeClassName="bg-primary/10 text-primary font-medium"
+                      >
+                        <Baby className="w-5 h-5" />
+                        <span>Check-in Kids</span>
+                      </NavLink>
+                    )}
                     {(isAdmin || isLider) && (
                       <NavLink
                         to={isAdmin ? '/admin' : '/lider'}

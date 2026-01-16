@@ -207,11 +207,11 @@ export default function BasesPublicas() {
               </div>
               <div className="bg-muted/30 rounded-2xl p-6 text-center border border-border/50">
                 <div className="w-14 h-14 bg-promessa-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MapPin className="w-7 h-7 text-promessa-600" />
+                  <Home className="w-7 h-7 text-promessa-600" />
                 </div>
-                <h3 className="font-bold text-foreground mb-2">Proximidade</h3>
+                <h3 className="font-bold text-foreground mb-2">Acolhimento</h3>
                 <p className="text-sm text-muted-foreground">
-                  Grupos próximos de onde você mora ou trabalha
+                  Ambiente acolhedor onde você é recebido como família
                 </p>
               </div>
             </div>
