@@ -420,6 +420,9 @@ export type Database = {
           endereco: string | null
           facebook: string | null
           favicon_url: string | null
+          google_maps_url: string | null
+          horario_culto: string | null
+          horario_ebd: string | null
           id: string
           logo_monochrome_url: string | null
           logo_url: string | null
@@ -446,6 +449,9 @@ export type Database = {
           endereco?: string | null
           facebook?: string | null
           favicon_url?: string | null
+          google_maps_url?: string | null
+          horario_culto?: string | null
+          horario_ebd?: string | null
           id?: string
           logo_monochrome_url?: string | null
           logo_url?: string | null
@@ -472,6 +478,9 @@ export type Database = {
           endereco?: string | null
           facebook?: string | null
           favicon_url?: string | null
+          google_maps_url?: string | null
+          horario_culto?: string | null
+          horario_ebd?: string | null
           id?: string
           logo_monochrome_url?: string | null
           logo_url?: string | null

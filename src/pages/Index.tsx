@@ -19,11 +19,20 @@ import {
 } from "lucide-react";
 import { InstitutionalHeader } from "@/components/layout/InstitutionalHeader";
 import { useAuth } from "@/contexts/AuthContext";
+import { useChurchConfig } from "@/hooks/useChurchConfig";
 import heroImage from "@/assets/hero-home.png";
 
 export default function Index() {
   const { user, profile, roles, loading } = useAuth();
   const navigate = useNavigate();
+  const { 
+    getEndereco, 
+    getTelefone, 
+    getEmail, 
+    getHorarios, 
+    getGoogleMapsUrl,
+    getInstagram 
+  } = useChurchConfig();
 
   const handleAccessPanel = () => {
     navigate('/app');
@@ -31,6 +40,18 @@ export default function Index() {
 
   // Get user's first name for greeting
   const firstName = profile?.nome?.split(' ')[0] || 'usuário';
+
+  // Get config values
+  const endereco = getEndereco();
+  const telefone = getTelefone();
+  const email = getEmail();
+  const horarios = getHorarios();
+  const mapsUrl = getGoogleMapsUrl();
+  const instagramUrl = getInstagram();
+  
+  // Default Google Maps embed
+  const defaultMapsEmbed = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3675.7!2d-47.21!3d-22.87!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjLCsDUyJzEyLjAiUyA0N8KwMTInMzYuMCJX!5e0!3m2!1spt-BR!2sbr!4v1";
+  const embedUrl = mapsUrl && mapsUrl.includes('/embed') ? mapsUrl : defaultMapsEmbed;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -174,7 +195,7 @@ export default function Index() {
               </div>
               <h3 className="font-display font-semibold text-lg text-foreground mb-2">Sábado</h3>
               <p className="text-muted-foreground text-sm mb-2">Escola Bíblica</p>
-              <p className="text-promessa-600 font-semibold text-lg">18:00</p>
+              <p className="text-promessa-600 font-semibold text-lg">{horarios.ebd}</p>
             </div>
             <div className="bg-card rounded-2xl p-8 text-center border border-border shadow-soft hover:shadow-elevated transition-all duration-300 hover:-translate-y-1">
               <div className="w-14 h-14 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-4">
@@ -182,7 +203,7 @@ export default function Index() {
               </div>
               <h3 className="font-display font-semibold text-lg text-foreground mb-2">Sábado</h3>
               <p className="text-muted-foreground text-sm mb-2">Culto de Celebração</p>
-              <p className="text-promessa-600 font-semibold text-lg">19:07</p>
+              <p className="text-promessa-600 font-semibold text-lg">{horarios.culto}</p>
             </div>
             <div className="bg-card rounded-2xl p-8 text-center border border-border shadow-soft hover:shadow-elevated transition-all duration-300 hover:-translate-y-1">
               <div className="w-14 h-14 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-4">
@@ -323,39 +344,42 @@ export default function Index() {
               <div className="space-y-4 text-muted-foreground">
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 mt-1 flex-shrink-0 text-promessa-600" />
-                  <p>
-                    Rua Luiz Camilo de Camargo, 520 - Parque Gabriel<br />
-                    Hortolândia - SP, 13186-612
-                  </p>
+                  <p className="whitespace-pre-line">{endereco}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="w-5 h-5 flex-shrink-0 text-promessa-600" />
-                  <p>(19) 99999-9999</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 flex-shrink-0 text-promessa-600" />
-                  <p>contato@promessahortolandia.com.br</p>
-                </div>
+                {telefone && (
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-5 h-5 flex-shrink-0 text-promessa-600" />
+                    <p>{telefone}</p>
+                  </div>
+                )}
+                {email && (
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-5 h-5 flex-shrink-0 text-promessa-600" />
+                    <p>{email}</p>
+                  </div>
+                )}
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 mt-1 flex-shrink-0 text-promessa-600" />
                   <div>
                     <p className="font-medium text-foreground">Horários dos cultos:</p>
-                    <p>Sábados às 18:00 (Escola Bíblica) e 19:07 (Culto)</p>
+                    <p>Sábados às {horarios.ebd} (Escola Bíblica) e {horarios.culto} (Culto)</p>
                   </div>
                 </div>
               </div>
               
               {/* Social Links */}
               <div className="flex gap-3 mt-8">
-                <a
-                  href="https://instagram.com/promessahortolandia"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-promessa-100 flex items-center justify-center hover:bg-promessa-200 transition-colors"
-                  aria-label="Instagram"
-                >
-                  <Instagram className="w-5 h-5 text-promessa-600" />
-                </a>
+                {instagramUrl && (
+                  <a
+                    href={instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-promessa-100 flex items-center justify-center hover:bg-promessa-200 transition-colors"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="w-5 h-5 text-promessa-600" />
+                  </a>
+                )}
                 <a
                   href="https://open.spotify.com/user/promessahortolandia"
                   target="_blank"
@@ -371,7 +395,7 @@ export default function Index() {
             {/* Map */}
             <div className="relative aspect-video bg-muted rounded-2xl overflow-hidden border border-border">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3675.7!2d-47.21!3d-22.87!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjLCsDUyJzEyLjAiUyA0N8KwMTInMzYuMCJX!5e0!3m2!1spt-BR!2sbr!4v1"
+                src={embedUrl}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
@@ -403,21 +427,27 @@ export default function Index() {
               <div className="space-y-2 text-sm">
                 <p className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  Rua Luiz Camilo de Camargo, 520 - Parque Gabriel, Hortolândia - SP
+                  {endereco}
                 </p>
-                <p className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  (19) 99999-9999
-                </p>
-                <p className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  contato@promessahortolandia.com.br
-                </p>
+                {telefone && (
+                  <p className="flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    {telefone}
+                  </p>
+                )}
+                {email && (
+                  <p className="flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    {email}
+                  </p>
+                )}
               </div>
               <div className="flex gap-3 mt-4">
-                <a href="https://instagram.com/promessahortolandia" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" aria-label="Instagram">
-                  <Instagram className="w-5 h-5" />
-                </a>
+                {instagramUrl && (
+                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" aria-label="Instagram">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                )}
                 <a href="https://open.spotify.com/user/promessahortolandia" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" aria-label="Spotify">
                   <Music2 className="w-5 h-5" />
                 </a>
@@ -439,8 +469,8 @@ export default function Index() {
             <div>
               <h4 className="font-display font-semibold text-white mb-4">Horários</h4>
               <ul className="space-y-2 text-sm">
-                <li>Sábado 18:00 - Escola Bíblica</li>
-                <li>Sábado 19:07 - Culto de Celebração</li>
+                <li>Sábado {horarios.ebd} - Escola Bíblica</li>
+                <li>Sábado {horarios.culto} - Culto de Celebração</li>
                 <li>Bases - Durante a semana</li>
               </ul>
             </div>

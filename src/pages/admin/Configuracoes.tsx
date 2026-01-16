@@ -28,7 +28,8 @@ import {
   History,
   Upload,
   X,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Clock
 } from 'lucide-react';
 
 interface Configuracoes {
@@ -50,6 +51,9 @@ interface Configuracoes {
   notificacoes_lideres: boolean | null;
   notificacoes_email: boolean | null;
   notificacoes_push: boolean | null;
+  google_maps_url: string | null;
+  horario_ebd: string | null;
+  horario_culto: string | null;
 }
 
 // Mock de logs para demonstração
@@ -97,6 +101,9 @@ export default function Configuracoes() {
   const [notificacoesLideres, setNotificacoesLideres] = useState(true);
   const [notificacoesEmail, setNotificacoesEmail] = useState(false);
   const [notificacoesPush, setNotificacoesPush] = useState(false);
+  const [googleMapsUrl, setGoogleMapsUrl] = useState('');
+  const [horarioEbd, setHorarioEbd] = useState('18:00');
+  const [horarioCulto, setHorarioCulto] = useState('19:07');
 
   // Logo state
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -138,6 +145,9 @@ export default function Configuracoes() {
         setNotificacoesLideres(data.notificacoes_lideres ?? true);
         setNotificacoesEmail(data.notificacoes_email ?? false);
         setNotificacoesPush(data.notificacoes_push ?? false);
+        setGoogleMapsUrl(data.google_maps_url || '');
+        setHorarioEbd(data.horario_ebd || '18:00');
+        setHorarioCulto(data.horario_culto || '19:07');
       }
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
@@ -246,6 +256,9 @@ export default function Configuracoes() {
         notificacoes_lideres: notificacoesLideres,
         notificacoes_email: notificacoesEmail,
         notificacoes_push: notificacoesPush,
+        google_maps_url: googleMapsUrl || null,
+        horario_ebd: horarioEbd || null,
+        horario_culto: horarioCulto || null,
         updated_at: new Date().toISOString(),
       };
 
@@ -434,6 +447,57 @@ export default function Configuracoes() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="contato@igreja.com"
                 />
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Horários e Mapa */}
+            <div className="space-y-4">
+              <Label className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Horários e Localização
+              </Label>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="horario_ebd" className="text-xs">
+                    Horário Escola Bíblica
+                  </Label>
+                  <Input
+                    id="horario_ebd"
+                    value={horarioEbd}
+                    onChange={(e) => setHorarioEbd(e.target.value)}
+                    placeholder="18:00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="horario_culto" className="text-xs">
+                    Horário Culto de Celebração
+                  </Label>
+                  <Input
+                    id="horario_culto"
+                    value={horarioCulto}
+                    onChange={(e) => setHorarioCulto(e.target.value)}
+                    placeholder="19:07"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="google_maps_url" className="text-xs flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  Link do Google Maps (embed)
+                </Label>
+                <Input
+                  id="google_maps_url"
+                  value={googleMapsUrl}
+                  onChange={(e) => setGoogleMapsUrl(e.target.value)}
+                  placeholder="https://www.google.com/maps/embed?pb=..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Cole o link embed do Google Maps para exibir o mapa na página de contato
+                </p>
               </div>
             </div>
 

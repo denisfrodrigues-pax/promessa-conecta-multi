@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   MapPin, 
   Phone, 
@@ -13,8 +14,19 @@ import {
   MessageCircle
 } from "lucide-react";
 import { toast } from "sonner";
+import { useChurchConfig } from "@/hooks/useChurchConfig";
 
 export default function Contato() {
+  const { 
+    loading, 
+    getEndereco, 
+    getTelefone, 
+    getEmail, 
+    getHorarios, 
+    getGoogleMapsUrl,
+    hasContactInfo 
+  } = useChurchConfig();
+
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -49,6 +61,30 @@ export default function Contato() {
     });
     setIsSubmitting(false);
   };
+
+  const endereco = getEndereco();
+  const telefone = getTelefone();
+  const email = getEmail();
+  const horarios = getHorarios();
+  const mapsUrl = getGoogleMapsUrl();
+
+  // Default Google Maps embed if no custom URL is set
+  const defaultMapsEmbed = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3676.8!2d-47.2147!3d-22.8597!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjLCsDUxJzM1LjAiUyA0N8KwMTInNTMuMCJX!5e0!3m2!1spt-BR!2sbr!4v1";
+  
+  // Convert place URL to embed URL if necessary
+  const getEmbedUrl = (): string | null => {
+    if (!mapsUrl) return defaultMapsEmbed;
+    
+    // If it's already an embed URL, use it directly
+    if (mapsUrl.includes('/embed')) {
+      return mapsUrl;
+    }
+    
+    // Otherwise return the custom URL or default
+    return mapsUrl.includes('google.com/maps') ? mapsUrl : defaultMapsEmbed;
+  };
+
+  const embedUrl = getEmbedUrl();
 
   return (
     <div className="min-h-screen bg-background">
@@ -194,63 +230,79 @@ export default function Contato() {
 
                 {/* Contact Cards */}
                 <div className="space-y-4 mb-8">
-                  <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
-                    <MapPin className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Endereço</h3>
-                      <p className="text-muted-foreground text-sm">
-                        R. Antônio Rodrigues Santana, 1231 - Parque Ortolândia<br />
-                        Hortolândia - SP, 13184-210
-                      </p>
-                    </div>
-                  </div>
+                  {loading ? (
+                    <>
+                      <Skeleton className="h-20 w-full rounded-xl" />
+                      <Skeleton className="h-16 w-full rounded-xl" />
+                      <Skeleton className="h-16 w-full rounded-xl" />
+                      <Skeleton className="h-20 w-full rounded-xl" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
+                        <MapPin className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-semibold text-foreground mb-1">Endereço</h3>
+                          <p className="text-muted-foreground text-sm whitespace-pre-line">
+                            {endereco}
+                          </p>
+                        </div>
+                      </div>
 
-                  <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
-                    <Phone className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Telefone</h3>
-                      <p className="text-muted-foreground text-sm">
-                        (19) 99999-9999 (WhatsApp)
-                      </p>
-                    </div>
-                  </div>
+                      {telefone && (
+                        <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
+                          <Phone className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h3 className="font-semibold text-foreground mb-1">Telefone</h3>
+                            <p className="text-muted-foreground text-sm">
+                              {telefone}
+                            </p>
+                          </div>
+                        </div>
+                      )}
 
-                  <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
-                    <Mail className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">E-mail</h3>
-                      <p className="text-muted-foreground text-sm">
-                        contato@seudominio.com
-                      </p>
-                    </div>
-                  </div>
+                      {email && (
+                        <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
+                          <Mail className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h3 className="font-semibold text-foreground mb-1">E-mail</h3>
+                            <p className="text-muted-foreground text-sm">
+                              {email}
+                            </p>
+                          </div>
+                        </div>
+                      )}
 
-                  <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
-                    <Clock className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Horários</h3>
-                      <p className="text-muted-foreground text-sm">
-                        Escola Bíblica – 18h<br />
-                        Celebração – 19h07
-                      </p>
-                    </div>
-                  </div>
+                      <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
+                        <Clock className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-semibold text-foreground mb-1">Horários</h3>
+                          <p className="text-muted-foreground text-sm">
+                            Escola Bíblica – {horarios.ebd}<br />
+                            Celebração – {horarios.culto}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Map */}
-                <div className="relative aspect-video bg-muted rounded-2xl overflow-hidden border border-border/50">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3676.8!2d-47.2147!3d-22.8597!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94c8bf3e8c8c8c8c%3A0x1234567890abcdef!2sR.%20Ant%C3%B4nio%20Rodrigues%20Santana%2C%201231%20-%20Parque%20Ortol%C3%A2ndia%2C%20Hortol%C3%A2ndia%20-%20SP%2C%2013184-210!5e0!3m2!1spt-BR!2sbr!4v1"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    className="absolute inset-0"
-                    title="Localização da Igreja da Promessa"
-                  />
-                </div>
+                {embedUrl && (
+                  <div className="relative aspect-video bg-muted rounded-2xl overflow-hidden border border-border/50">
+                    <iframe
+                      src={embedUrl}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="absolute inset-0"
+                      title="Localização da Igreja da Promessa"
+                    />
+                  </div>
+                )}
               </div>
 
             </div>
