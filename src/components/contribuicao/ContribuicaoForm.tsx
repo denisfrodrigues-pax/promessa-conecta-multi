@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// Select import removido - campo Frequência não mais utilizado
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -91,11 +91,7 @@ function generatePixPayload(valor?: number): string {
   return payloadWithoutCRC + crc;
 }
 
-const FREQUENCIAS = [
-  { value: 'semanal', label: 'Semanal' },
-  { value: 'quinzenal', label: 'Quinzenal' },
-  { value: 'mensal', label: 'Mensal' },
-];
+// FREQUENCIAS removido - campo não mais utilizado
 
 interface ContribuicaoFormProps {
   origem: 'publica' | 'app';
@@ -121,7 +117,7 @@ export function ContribuicaoForm({
   const [tipoContribuicao, setTipoContribuicao] = useState<'recorrente' | 'especial'>('recorrente');
   const [formaPagamento, setFormaPagamento] = useState<'pix' | 'cartao' | 'boleto'>('pix');
   const [valor, setValor] = useState('');
-  const [frequencia, setFrequencia] = useState('mensal');
+  const [destinoContribuicao, setDestinoContribuicao] = useState('');
   const [nome, setNome] = useState(profileNome || '');
   const [email, setEmail] = useState(profileEmail || '');
   const [copiedPix, setCopiedPix] = useState(false);
@@ -161,6 +157,15 @@ export function ContribuicaoForm({
       return;
     }
 
+    if (tipoContribuicao === 'especial' && !destinoContribuicao.trim()) {
+      toast({
+        title: 'Destino obrigatório',
+        description: 'Informe o destino da contribuição especial.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -174,8 +179,11 @@ export function ContribuicaoForm({
       const origemLabel = origem === 'app' ? 'app' : 'site';
       const tipoLabel = tipoContribuicao === 'recorrente' ? 'Contribuição recorrente' : 'Contribuição especial';
       const nomeLabel = nome || profileNome;
+      const destinoLabel = tipoContribuicao === 'especial' && destinoContribuicao.trim() 
+        ? ` | Destino: ${destinoContribuicao.trim()}` 
+        : '';
       
-      const descricao = `${tipoLabel} via ${origemLabel}${nomeLabel ? ` - ${nomeLabel}` : ''}`;
+      const descricao = `${tipoLabel} via ${origemLabel}${nomeLabel ? ` - ${nomeLabel}` : ''}${destinoLabel}`;
 
       const { error } = await supabase.from('transacoes_financeiras').insert({
         tipo: 'receita',
@@ -355,21 +363,20 @@ export function ContribuicaoForm({
                   </div>
                 </div>
 
-                {tipoContribuicao === 'recorrente' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="frequencia">Frequência</Label>
-                    <Select value={frequencia} onValueChange={setFrequencia}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a frequência" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {FREQUENCIAS.map((freq) => (
-                          <SelectItem key={freq.value} value={freq.value}>
-                            {freq.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {tipoContribuicao === 'especial' && (
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="destino">Destino da contribuição *</Label>
+                    <Input
+                      id="destino"
+                      type="text"
+                      placeholder="Ex: Missões, Reforma do templo, Campanha..."
+                      value={destinoContribuicao}
+                      onChange={(e) => setDestinoContribuicao(e.target.value)}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Informe para qual finalidade será destinada esta contribuição especial.
+                    </p>
                   </div>
                 )}
               </div>

@@ -199,8 +199,8 @@ export default function Contato() {
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Endereço</h3>
                       <p className="text-muted-foreground text-sm">
-                        Rua Exemplo, 123 - Centro<br />
-                        Hortolândia - SP, 13184-000
+                        R. Antônio Rodrigues Santana, 1231 - Parque Ortolândia<br />
+                        Hortolândia - SP, 13184-210
                       </p>
                     </div>
                   </div>
@@ -210,8 +210,7 @@ export default function Contato() {
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Telefone</h3>
                       <p className="text-muted-foreground text-sm">
-                        (19) 3000-0000<br />
-                        (19) 99000-0000 (WhatsApp)
+                        (19) 99999-9999 (WhatsApp)
                       </p>
                     </div>
                   </div>
@@ -221,7 +220,7 @@ export default function Contato() {
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">E-mail</h3>
                       <p className="text-muted-foreground text-sm">
-                        contato@promessahortolandia.com.br
+                        contato@seudominio.com
                       </p>
                     </div>
                   </div>
@@ -229,18 +228,19 @@ export default function Contato() {
                   <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
                     <Clock className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <h3 className="font-semibold text-foreground mb-1">Horário dos cultos</h3>
+                      <h3 className="font-semibold text-foreground mb-1">Horários</h3>
                       <p className="text-muted-foreground text-sm">
-                        Sábados às 18:00 e 19:07
+                        Escola Bíblica – 18h<br />
+                        Celebração – 19h07
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Map Placeholder */}
+                {/* Map */}
                 <div className="relative aspect-video bg-muted rounded-2xl overflow-hidden border border-border/50">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d58827.49067985621!2d-47.25!3d-22.87!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94c8bf2c3e9fc091%3A0x8c93bc53b0e0c095!2sHortol%C3%A2ndia%2C%20SP!5e0!3m2!1spt-BR!2sbr!4v1"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3676.8!2d-47.2147!3d-22.8597!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94c8bf3e8c8c8c8c%3A0x1234567890abcdef!2sR.%20Ant%C3%B4nio%20Rodrigues%20Santana%2C%201231%20-%20Parque%20Ortol%C3%A2ndia%2C%20Hortol%C3%A2ndia%20-%20SP%2C%2013184-210!5e0!3m2!1spt-BR!2sbr!4v1"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
