@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,7 +21,37 @@ import {
 import { InstitutionalHeader } from "@/components/layout/InstitutionalHeader";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChurchConfig } from "@/hooks/useChurchConfig";
-import heroImage from "@/assets/hero-home.png";
+
+// Hero slideshow images
+import heroSlide1 from "@/assets/hero-slide-1.png";
+import heroSlide2 from "@/assets/hero-slide-2.png";
+import heroSlide3 from "@/assets/hero-slide-3.png";
+import heroSlide4 from "@/assets/hero-slide-4.png";
+import heroSlide5 from "@/assets/hero-slide-5.jpg";
+import heroSlide6 from "@/assets/hero-slide-6.jpg";
+import heroSlide7 from "@/assets/hero-slide-7.jpg";
+import heroSlide8 from "@/assets/hero-slide-8.png";
+
+const HERO_IMAGES = [
+  heroSlide1,
+  heroSlide2,
+  heroSlide3,
+  heroSlide4,
+  heroSlide5,
+  heroSlide6,
+  heroSlide7,
+  heroSlide8,
+];
+
+// Shuffle array helper
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 export default function Index() {
   const { user, profile, roles, loading } = useAuth();
@@ -33,6 +64,17 @@ export default function Index() {
     getGoogleMapsUrl,
     getInstagram 
   } = useChurchConfig();
+
+  // Slideshow state - randomize order once on mount
+  const shuffledImages = useMemo(() => shuffleArray(HERO_IMAGES), []);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % shuffledImages.length);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [shuffledImages.length]);
 
   const handleAccessPanel = () => {
     navigate('/app');
@@ -64,11 +106,17 @@ export default function Index() {
       <section 
         className="relative flex flex-col items-center justify-center text-center min-h-screen pt-28 px-4 overflow-hidden"
       >
-        {/* Background image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        />
+        {/* Slideshow background images */}
+        {shuffledImages.map((img, index) => (
+          <div 
+            key={index}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+            style={{ 
+              backgroundImage: `url(${img})`,
+              opacity: index === currentSlide ? 1 : 0
+            }}
+          />
+        ))}
         {/* Dark overlay - uniform, no fade to white */}
         <div className="absolute inset-0 bg-black/55" />
         
