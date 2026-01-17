@@ -781,7 +781,15 @@ export default function MembroDetalhes() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Batismo</p>
-                <p className="font-medium">{membro.data_batismo ? formatDate(membro.data_batismo) : 'Não batizado'}</p>
+                {/* Fonte de verdade: profiles quando vinculado */}
+                <p className="font-medium">
+                  {isLinkedToProfile 
+                    ? (profileData?.batizado_aguas 
+                        ? (profileData.data_batismo ? formatDate(profileData.data_batismo) : 'Batizado') 
+                        : 'Não batizado')
+                    : (membro.data_batismo ? formatDate(membro.data_batismo) : 'Não batizado')
+                  }
+                </p>
               </div>
             </div>
           </CardContent>
@@ -794,7 +802,13 @@ export default function MembroDetalhes() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Telefone</p>
-                <p className="font-medium">{membro.telefone || '–'}</p>
+                {/* Fonte de verdade: profiles quando vinculado */}
+                <p className="font-medium">
+                  {isLinkedToProfile 
+                    ? (profileData?.telefone ? formatPhoneBR(profileData.telefone) : '–')
+                    : (membro.telefone ? formatPhoneBR(membro.telefone) : '–')
+                  }
+                </p>
               </div>
             </div>
           </CardContent>

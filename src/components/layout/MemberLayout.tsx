@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
 import { Logo } from '@/components/Logo';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
-import { Home, Users, Calendar, Bell, User, Menu, CalendarCheck, Loader2, Baby } from 'lucide-react';
+import { Home, Users, Calendar, Bell, User, Menu, CalendarCheck, Loader2, Baby, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
@@ -13,11 +13,11 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useKidsVolunteer } from '@/hooks/useKidsVolunteer';
 
 const navItems = [
-  { icon: Home, label: 'Início', path: '/home' },
-  { icon: CalendarCheck, label: 'Escalas', path: '/minhas-escalas' },
-  { icon: Users, label: 'Bases', path: '/bases' },
-  { icon: Calendar, label: 'Eventos', path: '/eventos' },
-  { icon: User, label: 'Perfil', path: '/perfil' },
+  { icon: Home, label: 'Início', path: '/app' },
+  { icon: CalendarCheck, label: 'Escalas', path: '/app/escalas' },
+  { icon: Users, label: 'Bases', path: '/app/bases' },
+  { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
+  { icon: User, label: 'Perfil', path: '/app/perfil' },
 ];
 
 export default function MemberLayout() {
@@ -76,6 +76,15 @@ export default function MemberLayout() {
                 </Badge>
               )}
             </NavLink>
+            {/* Voluntários do Dia - link para todos os usuários logados */}
+            <NavLink
+              to="/app/voluntarios-do-dia"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50 transition-colors"
+              activeClassName="bg-promessa-100 text-promessa-700 font-medium"
+            >
+              <ClipboardCheck className="w-4 h-4" />
+              <span className="text-sm">Escala do Dia</span>
+            </NavLink>
             {/* Check-in Kids - apenas para voluntários do ministério Kids */}
             {isKidsVolunteer && (
               <NavLink
@@ -87,10 +96,17 @@ export default function MemberLayout() {
                 <span className="text-sm">Check-in Kids</span>
               </NavLink>
             )}
-            {(isAdmin || isLider) && (
+            {isAdmin && (
               <Button asChild variant="promessa" className="ml-2 font-semibold">
-                <RouterNavLink to={isAdmin ? '/admin' : '/lider'}>
-                  {isAdmin ? 'Painel Admin' : 'Painel Líder'}
+                <RouterNavLink to="/admin">
+                  Painel Admin
+                </RouterNavLink>
+              </Button>
+            )}
+            {isLider && !isAdmin && (
+              <Button asChild variant="promessa" className="ml-2 font-semibold">
+                <RouterNavLink to="/lider">
+                  Painel Líder
                 </RouterNavLink>
               </Button>
             )}
@@ -167,13 +183,22 @@ export default function MemberLayout() {
                         <span>Check-in Kids</span>
                       </NavLink>
                     )}
-                    {(isAdmin || isLider) && (
+                    {isAdmin && (
                       <NavLink
-                        to={isAdmin ? '/admin' : '/lider'}
+                        to="/admin"
                         onClick={() => setMobileMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-3 rounded-lg bg-promessa-100 text-promessa-700 hover:bg-promessa-200 transition-colors"
                       >
-                        <span className="font-medium">{isAdmin ? 'Painel Admin' : 'Painel Líder'}</span>
+                        <span className="font-medium">Painel Admin</span>
+                      </NavLink>
+                    )}
+                    {isLider && !isAdmin && (
+                      <NavLink
+                        to="/lider"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg bg-promessa-100 text-promessa-700 hover:bg-promessa-200 transition-colors"
+                      >
+                        <span className="font-medium">Painel Líder</span>
                       </NavLink>
                     )}
                   </nav>

@@ -188,7 +188,7 @@ export default function AdminSidebar() {
         )}
         {!collapsed && (
           <div className="animate-fade-in min-w-0">
-            <p className="text-sm font-semibold text-promessa-700">Painel Admin</p>
+            <p className="text-sm font-semibold text-promessa-700">Painel Administrativo</p>
             <p className="text-xs text-neutral-500 truncate">{churchName}</p>
           </div>
         )}
