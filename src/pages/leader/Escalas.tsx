@@ -5,14 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, Users, Eye } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, Users, Eye, Plus, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { parseLocalDate, isDatePast } from '@/lib/dateUtils';
+import { parseLocalDate, isDatePast, formatDateForDB } from '@/lib/dateUtils';
+import { cn } from '@/lib/utils';
 
 interface Escala {
   id: string;
@@ -48,6 +54,41 @@ interface EscalaGroup {
   }>;
 }
 
+interface Ministerio {
+  id: string;
+  nome: string;
+}
+
+interface Funcao {
+  id: string;
+  ministerio_id: string;
+  nome: string;
+}
+
+interface Profile {
+  id: string;
+  nome: string;
+  user_id: string;
+}
+
+interface EscalaFormData {
+  ministerio_id: string;
+  data: Date;
+  horario: string;
+  funcao: string;
+  turno: string;
+  voluntarios_ids: string[];
+}
+
+const initialFormData: EscalaFormData = {
+  ministerio_id: '',
+  data: new Date(),
+  horario: '',
+  funcao: '',
+  turno: '',
+  voluntarios_ids: [],
+};
+
 export default function LeaderEscalas() {
   const { profile, isLider } = useAuth();
   const [minhasEscalas, setMinhasEscalas] = useState<Escala[]>([]);
@@ -58,6 +99,14 @@ export default function LeaderEscalas() {
   const [isRecusing, setIsRecusing] = useState(false);
   const [viewingGroup, setViewingGroup] = useState<EscalaGroup | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  
+  // Estados para criação de escalas
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [meusMinisterios, setMeusMinisterios] = useState<Ministerio[]>([]);
+  const [funcoes, setFuncoes] = useState<Funcao[]>([]);
+  const [voluntarios, setVoluntarios] = useState<Profile[]>([]);
+  const [formData, setFormData] = useState<EscalaFormData>(initialFormData);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -93,11 +142,26 @@ export default function LeaderEscalas() {
     if (!isLider) return;
     
     try {
-      // Fetch escalas where this user is the responsavel
+      // Primeiro buscar os ministérios onde o usuário é líder
+      const { data: meusMinisterios, error: minError } = await supabase
+        .from('ministerios')
+        .select('id')
+        .eq('lider_id', profile?.id);
+      
+      if (minError) throw minError;
+      
+      const ministerioIds = meusMinisterios?.map(m => m.id) || [];
+      
+      if (ministerioIds.length === 0) {
+        setEscalasGerenciadas([]);
+        return;
+      }
+      
+      // Buscar escalas dos ministérios onde sou líder
       const { data, error } = await supabase
         .from('escalas')
         .select('*, ministerios(nome), voluntario:profiles!escalas_voluntario_id_fkey(nome)')
-        .eq('responsavel_id', profile?.id)
+        .in('ministerio_id', ministerioIds)
         .order('data', { ascending: true });
 
       if (error) throw error;
@@ -105,8 +169,152 @@ export default function LeaderEscalas() {
       // Group escalas
       const groups = groupEscalas(data || []);
       setEscalasGerenciadas(groups);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching escalas gerenciadas:', error);
+      toast.error(`Erro ao buscar escalas: ${error?.message || 'Erro desconhecido'}`);
+    }
+  };
+
+  const fetchMeusMinisterios = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ministerios')
+        .select('id, nome')
+        .eq('lider_id', profile?.id)
+        .order('nome');
+
+      if (error) throw error;
+      setMeusMinisterios(data || []);
+    } catch (error) {
+      console.error('Error fetching ministerios:', error);
+    }
+  };
+
+  const fetchFuncoesByMinisterio = async (ministerioId: string) => {
+    if (!ministerioId) {
+      setFuncoes([]);
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('ministerio_funcoes')
+        .select('id, ministerio_id, nome')
+        .eq('ministerio_id', ministerioId)
+        .eq('ativo', true)
+        .order('nome');
+
+      if (error) throw error;
+      setFuncoes(data || []);
+    } catch (error) {
+      console.error('Error fetching funcoes:', error);
+      setFuncoes([]);
+    }
+  };
+
+  const fetchVoluntariosByMinisterio = async (ministerioId: string) => {
+    if (!ministerioId) {
+      setVoluntarios([]);
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('ministerio_voluntarios')
+        .select(`
+          user_id,
+          profile:profiles!ministerio_voluntarios_user_id_fkey(id, nome, user_id)
+        `)
+        .eq('ministerio_id', ministerioId)
+        .eq('ativo', true);
+
+      if (error) throw error;
+      
+      const profiles = (data || [])
+        .filter(item => item.profile)
+        .map(item => ({
+          id: item.profile!.id,
+          nome: item.profile!.nome,
+          user_id: item.profile!.user_id,
+        }))
+        .sort((a, b) => a.nome.localeCompare(b.nome));
+      
+      setVoluntarios(profiles);
+    } catch (error) {
+      console.error('Error fetching voluntarios:', error);
+      setVoluntarios([]);
+    }
+  };
+
+  const handleOpenCreateDialog = () => {
+    setFormData(initialFormData);
+    setFuncoes([]);
+    setVoluntarios([]);
+    fetchMeusMinisterios();
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleMinisterioChange = (ministerioId: string) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      ministerio_id: ministerioId, 
+      funcao: '',
+      voluntarios_ids: [] 
+    }));
+    fetchFuncoesByMinisterio(ministerioId);
+    fetchVoluntariosByMinisterio(ministerioId);
+  };
+
+  const toggleVoluntario = (voluntarioId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      voluntarios_ids: prev.voluntarios_ids.includes(voluntarioId)
+        ? prev.voluntarios_ids.filter((id) => id !== voluntarioId)
+        : [...prev.voluntarios_ids, voluntarioId],
+    }));
+  };
+
+  const handleSubmitEscala = async () => {
+    if (!formData.ministerio_id) {
+      toast.error('Selecione um ministério');
+      return;
+    }
+    if (!formData.funcao) {
+      toast.error('Selecione uma função');
+      return;
+    }
+    if (formData.voluntarios_ids.length === 0) {
+      toast.error('Selecione pelo menos um voluntário');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const escalasToInsert = formData.voluntarios_ids.map((voluntarioId) => ({
+        ministerio_id: formData.ministerio_id,
+        data: formatDateForDB(formData.data),
+        horario: formData.horario || null,
+        funcao: formData.funcao,
+        turno: formData.turno || null,
+        responsavel_id: profile?.id || null,
+        voluntario_id: voluntarioId,
+        status_geral: 'planejada' as const,
+        status: 'pendente' as const,
+      }));
+
+      const { error } = await supabase
+        .from('escalas')
+        .insert(escalasToInsert);
+
+      if (error) throw error;
+      
+      toast.success(`${escalasToInsert.length} escala(s) criada(s) com sucesso`);
+      setIsCreateDialogOpen(false);
+      setFormData(initialFormData);
+      fetchData();
+    } catch (error: any) {
+      console.error('Error creating escala:', error);
+      toast.error(`Erro ao criar escala: ${error?.message || 'Erro desconhecido'}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -481,9 +689,17 @@ export default function LeaderEscalas() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Minhas Escalas</h1>
-        <p className="text-muted-foreground">Gerencie suas escalas de serviço</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Minhas Escalas</h1>
+          <p className="text-muted-foreground">Gerencie suas escalas de serviço</p>
+        </div>
+        {isLider && (
+          <Button onClick={handleOpenCreateDialog}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nova Escala
+          </Button>
+        )}
       </div>
 
       {isLider ? (
@@ -668,6 +884,157 @@ export default function LeaderEscalas() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
               Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Criação de Escala */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nova Escala</DialogTitle>
+            <DialogDescription>
+              Crie uma nova escala para seu ministério
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Ministério */}
+            <div className="space-y-2">
+              <Label>Ministério *</Label>
+              <Select
+                value={formData.ministerio_id}
+                onValueChange={handleMinisterioChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o ministério" />
+                </SelectTrigger>
+                <SelectContent>
+                  {meusMinisterios.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Data */}
+            <div className="space-y-2">
+              <Label>Data *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.data && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.data ? format(formData.data, "PPP", { locale: ptBR }) : "Selecione a data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={formData.data}
+                    onSelect={(date) => date && setFormData(prev => ({ ...prev, data: date }))}
+                    locale={ptBR}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Horário */}
+            <div className="space-y-2">
+              <Label>Horário</Label>
+              <Input
+                type="time"
+                value={formData.horario}
+                onChange={(e) => setFormData(prev => ({ ...prev, horario: e.target.value }))}
+              />
+            </div>
+
+            {/* Turno */}
+            <div className="space-y-2">
+              <Label>Turno</Label>
+              <Select
+                value={formData.turno}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, turno: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o turno (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Manhã">Manhã</SelectItem>
+                  <SelectItem value="Tarde">Tarde</SelectItem>
+                  <SelectItem value="Noite">Noite</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Função */}
+            <div className="space-y-2">
+              <Label>Função *</Label>
+              <Select
+                value={formData.funcao}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, funcao: value }))}
+                disabled={!formData.ministerio_id}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={!formData.ministerio_id ? "Selecione um ministério primeiro" : "Selecione a função"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {funcoes.map((f) => (
+                    <SelectItem key={f.id} value={f.nome}>
+                      {f.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Voluntários */}
+            <div className="space-y-2">
+              <Label>Voluntários *</Label>
+              {!formData.ministerio_id ? (
+                <p className="text-sm text-muted-foreground">Selecione um ministério primeiro</p>
+              ) : voluntarios.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhum voluntário no ministério</p>
+              ) : (
+                <div className="border rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
+                  {voluntarios.map((vol) => (
+                    <div
+                      key={vol.id}
+                      className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer"
+                      onClick={() => toggleVoluntario(vol.id)}
+                    >
+                      <Checkbox
+                        checked={formData.voluntarios_ids.includes(vol.id)}
+                        onCheckedChange={() => toggleVoluntario(vol.id)}
+                      />
+                      <span className="text-sm">{vol.nome}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {formData.voluntarios_ids.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {formData.voluntarios_ids.length} voluntário(s) selecionado(s)
+                </p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={submitting}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmitEscala} disabled={submitting}>
+              {submitting ? 'Salvando...' : 'Criar Escala'}
             </Button>
           </DialogFooter>
         </DialogContent>

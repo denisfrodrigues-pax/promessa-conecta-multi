@@ -756,9 +756,10 @@ export default function AdminEscalas() {
       setFormData(initialFormData);
       setEditingGroup(null);
       fetchEscalas();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving escala:', error);
-      toast.error('Erro ao salvar escala');
+      const errorMessage = error?.message || 'Erro desconhecido ao salvar escala';
+      toast.error(`Erro ao salvar escala: ${errorMessage}`);
     }
   };
 
