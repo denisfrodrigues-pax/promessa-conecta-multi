@@ -14,8 +14,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Separator } from '@/components/ui/separator';
 import { 
   ArrowLeft, MessageCircle, Phone, Search, Clock, MapPin, Users, 
-  CalendarDays, User, Download, Info, UserCheck, Building2 
+  CalendarDays, User, Download, Info, UserCheck, Building2, Pencil, Loader2, Save
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { 
   Breadcrumb, 
@@ -39,7 +43,18 @@ interface Base {
   capacidade: number | null;
   visibilidade: string | null;
   data_criacao: string;
+  foto_url: string | null;
+  whatsapp_lider: string | null;
   lider?: { nome: string; telefone: string | null } | null;
+}
+
+interface EditFormData {
+  nome: string;
+  descricao: string;
+  dia_semana: string;
+  horario: string;
+  foto_url: string;
+  whatsapp_lider: string;
 }
 
 interface Membro {
@@ -212,6 +227,28 @@ export default function LeaderBaseDetalhes() {
   const [searchMembro, setSearchMembro] = useState('');
   const [searchVisitante, setSearchVisitante] = useState('');
   const [filtroStatusVisitante, setFiltroStatusVisitante] = useState('todos');
+  
+  // Estados de edição
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState<EditFormData>({
+    nome: '',
+    descricao: '',
+    dia_semana: '',
+    horario: '',
+    foto_url: '',
+    whatsapp_lider: ''
+  });
+  const [saving, setSaving] = useState(false);
+
+  const diasSemana = [
+    'Segunda-feira',
+    'Terça-feira',
+    'Quarta-feira',
+    'Quinta-feira',
+    'Sexta-feira',
+    'Sábado',
+    'Domingo'
+  ];
 
   // Redirect if not leader
   useEffect(() => {
@@ -244,7 +281,7 @@ export default function LeaderBaseDetalhes() {
       .from('bases')
       .select(`
         id, nome, descricao, lider_id, status, dia_semana, horario, 
-        local, capacidade, visibilidade, data_criacao,
+        local, capacidade, visibilidade, data_criacao, foto_url, whatsapp_lider,
         lider:profiles!bases_lider_id_fkey(nome, telefone)
       `)
       .eq('id', id)
@@ -368,6 +405,52 @@ export default function LeaderBaseDetalhes() {
     toast.success('CSV exportado!');
   };
 
+  // ===== EDIT BASE FUNCTIONS =====
+  const handleOpenEditDialog = () => {
+    if (!base) return;
+    setEditFormData({
+      nome: base.nome || '',
+      descricao: base.descricao || '',
+      dia_semana: base.dia_semana || '',
+      horario: base.horario || '',
+      foto_url: base.foto_url || '',
+      whatsapp_lider: base.whatsapp_lider || ''
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveBase = async () => {
+    if (!base || !id) return;
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('bases')
+        .update({
+          nome: editFormData.nome.trim(),
+          descricao: editFormData.descricao.trim() || null,
+          dia_semana: editFormData.dia_semana || null,
+          horario: editFormData.horario.trim() || null,
+          foto_url: editFormData.foto_url.trim() || null,
+          whatsapp_lider: editFormData.whatsapp_lider.trim() || null
+        })
+        .eq('id', id);
+
+      if (error) {
+        toast.error('Erro ao salvar: ' + error.message);
+        throw error;
+      }
+
+      toast.success('Base atualizada com sucesso!');
+      setIsEditDialogOpen(false);
+      fetchData(); // Reload data
+    } catch (error) {
+      console.error('Erro ao salvar base:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ===== RENDER =====
   if (authLoading || loading) {
     return <LeaderBaseDetalhesSkeleton />;
@@ -428,7 +511,116 @@ export default function LeaderBaseDetalhes() {
             <p className="text-sm text-muted-foreground">Detalhes da base que você lidera</p>
           </div>
         </div>
+        
+        {/* Botão Editar */}
+        <Button variant="outline" onClick={handleOpenEditDialog}>
+          <Pencil className="h-4 w-4 mr-2" />
+          Editar Base
+        </Button>
       </div>
+
+      {/* ===== DIALOG DE EDIÇÃO ===== */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Base</DialogTitle>
+            <DialogDescription>
+              Atualize as informações da base. O endereço só pode ser alterado por um administrador.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-nome">Nome da Base *</Label>
+              <Input
+                id="edit-nome"
+                value={editFormData.nome}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, nome: e.target.value }))}
+                placeholder="Nome da base"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-descricao">Descrição</Label>
+              <Textarea
+                id="edit-descricao"
+                value={editFormData.descricao}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, descricao: e.target.value }))}
+                placeholder="Descrição da base"
+                rows={3}
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-dia">Dia da Semana</Label>
+                <Select 
+                  value={editFormData.dia_semana} 
+                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, dia_semana: value }))}
+                >
+                  <SelectTrigger id="edit-dia">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {diasSemana.map(dia => (
+                      <SelectItem key={dia} value={dia}>{dia}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-horario">Horário</Label>
+                <Input
+                  id="edit-horario"
+                  type="time"
+                  value={editFormData.horario}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, horario: e.target.value }))}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-foto">URL da Foto</Label>
+              <Input
+                id="edit-foto"
+                value={editFormData.foto_url}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, foto_url: e.target.value }))}
+                placeholder="https://exemplo.com/foto.jpg"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-whatsapp">WhatsApp do Líder</Label>
+              <Input
+                id="edit-whatsapp"
+                value={editFormData.whatsapp_lider}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, whatsapp_lider: e.target.value }))}
+                placeholder="(99) 99999-9999"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveBase} disabled={saving || !editFormData.nome.trim()}>
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ===== KPIs ===== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

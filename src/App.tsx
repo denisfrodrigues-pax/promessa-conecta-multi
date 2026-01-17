@@ -186,7 +186,11 @@ const App = () => (
             <Route path="notificacoes" element={<MemberNotificacoes />} />
             <Route path="contribuicoes" element={<MinhasContribuicoes />} />
             <Route path="contribuir" element={<Contribuir />} />
-            <Route path="voluntarios-do-dia" element={<VoluntariosDoDia />} />
+            <Route path="voluntarios-do-dia" element={
+              <PrivateRoute allowedRoles={['admin', 'lider', 'voluntario']}>
+                <VoluntariosDoDia />
+              </PrivateRoute>
+            } />
           </Route>
 
           {/* Legacy redirects - redirect old paths to new /app/* paths */}

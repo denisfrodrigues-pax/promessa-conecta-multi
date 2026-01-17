@@ -25,8 +25,8 @@ export default function MemberLayout() {
   const { unreadCount } = useNotifications();
   const { isKidsVolunteer } = useKidsVolunteer();
   
-  // Check if user can see "Escala do Dia" - only for schedulable roles
-  const canSeeEscalaDoDia = roles.some(r => ['admin', 'financeiro', 'lider', 'voluntario'].includes(r));
+  // Check if user can see "Escala do Dia" - only for schedulable roles (NOT financeiro-only)
+  const canSeeEscalaDoDia = roles.some(r => ['admin', 'lider', 'voluntario'].includes(r));
   // Check if user is financeiro-only (not admin)
   const isFinanceiroOnly = roles.includes('financeiro') && !roles.includes('admin');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarFoto } from '@/components/ui/avatar-foto';
 import { cn } from '@/lib/utils';
 
 interface UserAvatarMenuProps {
@@ -27,13 +27,11 @@ export function UserAvatarMenu({ size = 'md', showName = false, className }: Use
     navigate('/auth');
   };
 
-  const sizeClasses = {
-    sm: 'h-8 w-8',
-    md: 'h-10 w-10',
-    lg: 'h-12 w-12',
+  const sizeMap = {
+    sm: 'sm' as const,
+    md: 'md' as const,
+    lg: 'lg' as const,
   };
-
-  const initial = profile?.nome?.charAt(0).toUpperCase() || 'U';
 
   return (
     <DropdownMenu>
@@ -44,12 +42,12 @@ export function UserAvatarMenu({ size = 'md', showName = false, className }: Use
             className
           )}
         >
-          <Avatar className={cn(sizeClasses[size], 'cursor-pointer')}>
-            <AvatarImage src={profile?.foto_url || undefined} alt={profile?.nome || 'Usuário'} />
-            <AvatarFallback className="bg-promessa-700 text-white font-semibold">
-              {initial}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarFoto 
+            src={profile?.foto_url} 
+            nome={profile?.nome || 'Usuário'} 
+            size={size}
+            className="cursor-pointer"
+          />
           {showName && profile?.nome && (
             <span className="text-sm font-medium text-neutral-700 hidden sm:block">
               {profile.nome.split(' ')[0]}
