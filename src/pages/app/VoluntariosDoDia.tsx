@@ -4,32 +4,36 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfYear, endOfYear, getDay, addDays } from 'date-fns';
+import { format, getDay, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarCheck, Users, ShieldAlert } from 'lucide-react';
+import { CalendarCheck, Users, ShieldAlert, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface EscalaConfirmada {
   id: string;
   funcao: string;
   ministerio_nome: string | null;
+  voluntario_id: string;
   voluntario_nome: string;
   status: string;
+  checked_in: boolean;
 }
 
 interface MinisterioGrupo {
   nome: string;
-  funcoes: { [funcao: string]: string[] };
+  funcoes: { [funcao: string]: EscalaConfirmada[] };
 }
 
 export default function VoluntariosDoDia() {
   const navigate = useNavigate();
-  const { roles, loading: authLoading } = useAuth();
+  const { profile, roles, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [escalas, setEscalas] = useState<EscalaConfirmada[]>([]);
+  const [checkingIn, setCheckingIn] = useState<string | null>(null);
 
   // Verificar permissão - apenas admin, lider, voluntario podem ver
   const canAccess = roles.some(r => ['admin', 'lider', 'voluntario'].includes(r));
@@ -41,23 +45,20 @@ export default function VoluntariosDoDia() {
     }
   }, [authLoading, canAccess, navigate]);
 
-  // Gerar todos os sábados do ano atual
-  const sabados = useMemo(() => {
-    const year = new Date().getFullYear();
-    const start = startOfYear(new Date(year, 0, 1));
-    const end = endOfYear(new Date(year, 11, 31));
-    
+  // Gerar todos os sábados do ano de 2026
+  const sabados2026 = useMemo(() => {
     const allSaturdays: Date[] = [];
-    let current = start;
+    // Primeiro dia de 2026
+    let current = new Date(2026, 0, 1);
     
-    // Encontrar o primeiro sábado
+    // Encontrar o primeiro sábado de 2026
     while (getDay(current) !== 6) {
       current = addDays(current, 1);
     }
     
-    // Gerar todos os sábados do ano
-    while (current <= end) {
-      allSaturdays.push(current);
+    // Gerar todos os sábados de 2026
+    while (current.getFullYear() === 2026) {
+      allSaturdays.push(new Date(current));
       current = addDays(current, 7);
     }
     
@@ -67,11 +68,11 @@ export default function VoluntariosDoDia() {
   // Selecionar o próximo sábado por padrão
   useEffect(() => {
     const today = new Date();
-    const nextSaturday = sabados.find(s => s >= today) || sabados[0];
+    const nextSaturday = sabados2026.find(s => s >= today) || sabados2026[0];
     if (nextSaturday) {
       setSelectedDate(format(nextSaturday, 'yyyy-MM-dd'));
     }
-  }, [sabados]);
+  }, [sabados2026]);
 
   // Buscar escalas confirmadas para a data selecionada
   useEffect(() => {
@@ -83,14 +84,16 @@ export default function VoluntariosDoDia() {
   const fetchEscalas = async () => {
     setLoading(true);
     try {
+      // Buscar escalas confirmadas
       const { data, error } = await supabase
         .from('escalas')
         .select(`
           id,
           funcao,
           status,
+          voluntario_id,
           ministerios(nome),
-          voluntario:profiles!escalas_voluntario_id_fkey(nome)
+          voluntario:profiles!escalas_voluntario_id_fkey(id, nome)
         `)
         .eq('data', selectedDate)
         .eq('status', 'confirmado');
@@ -100,12 +103,29 @@ export default function VoluntariosDoDia() {
         throw error;
       }
 
+      // Buscar check-ins da data
+      const escalaIds = (data || []).map(e => e.id);
+      let checkins: Record<string, boolean> = {};
+      
+      if (escalaIds.length > 0) {
+        const { data: checkinData } = await supabase
+          .from('escala_checkins')
+          .select('escala_id')
+          .in('escala_id', escalaIds);
+        
+        (checkinData || []).forEach(c => {
+          checkins[c.escala_id] = true;
+        });
+      }
+
       const formatted: EscalaConfirmada[] = (data || []).map(item => ({
         id: item.id,
         funcao: item.funcao,
         ministerio_nome: (item.ministerios as any)?.nome || null,
+        voluntario_id: (item.voluntario as any)?.id || item.voluntario_id,
         voluntario_nome: (item.voluntario as any)?.nome || 'Desconhecido',
         status: item.status,
+        checked_in: !!checkins[item.id],
       }));
 
       setEscalas(formatted);
@@ -113,6 +133,40 @@ export default function VoluntariosDoDia() {
       console.error('Erro ao buscar escalas:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fazer check-in
+  const handleCheckin = async (escalaId: string) => {
+    if (!profile?.id) return;
+    
+    setCheckingIn(escalaId);
+    try {
+      const { error } = await supabase
+        .from('escala_checkins')
+        .insert({
+          escala_id: escalaId,
+          user_id: profile.id
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.info('Você já fez check-in nesta escala');
+        } else {
+          toast.error('Erro ao fazer check-in: ' + error.message);
+        }
+      } else {
+        toast.success('Check-in realizado com sucesso!');
+        // Atualizar lista
+        setEscalas(prev => prev.map(e => 
+          e.id === escalaId ? { ...e, checked_in: true } : e
+        ));
+      }
+    } catch (error: any) {
+      console.error('Erro ao fazer check-in:', error);
+      toast.error('Erro ao fazer check-in');
+    } finally {
+      setCheckingIn(null);
     }
   };
 
@@ -134,19 +188,11 @@ export default function VoluntariosDoDia() {
         grupos[minName].funcoes[e.funcao] = [];
       }
 
-      grupos[minName].funcoes[e.funcao].push(e.voluntario_nome);
+      grupos[minName].funcoes[e.funcao].push(e);
     });
 
     return Object.values(grupos).sort((a, b) => a.nome.localeCompare(b.nome));
   }, [escalas]);
-
-  // Filtrar sábados para mostrar apenas Fev-Abr (meses 1, 2, 3 em 0-indexed)
-  const sabadosFevAbr = useMemo(() => {
-    return sabados.filter(s => {
-      const month = s.getMonth();
-      return month >= 1 && month <= 3; // Fev, Mar, Abr
-    });
-  }, [sabados]);
 
   // Se ainda está carregando auth ou não tem acesso
   if (authLoading) {
@@ -180,7 +226,7 @@ export default function VoluntariosDoDia() {
           Voluntários do Dia
         </h1>
         <p className="text-muted-foreground mt-1">
-          Visualize os voluntários confirmados por sábado
+          Visualize os voluntários confirmados e faça seu check-in
         </p>
       </div>
 
@@ -193,8 +239,8 @@ export default function VoluntariosDoDia() {
               <SelectTrigger className="w-full sm:w-[280px]">
                 <SelectValue placeholder="Selecione uma data" />
               </SelectTrigger>
-              <SelectContent>
-                {sabadosFevAbr.map(sabado => (
+              <SelectContent className="max-h-[300px]">
+                {sabados2026.map(sabado => (
                   <SelectItem 
                     key={format(sabado, 'yyyy-MM-dd')} 
                     value={format(sabado, 'yyyy-MM-dd')}
@@ -248,20 +294,46 @@ export default function VoluntariosDoDia() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {Object.entries(grupo.funcoes).map(([funcao, voluntarios]) => (
-                  <div key={funcao} className="flex flex-wrap items-start gap-2">
-                    <span className="text-sm font-medium text-muted-foreground min-w-[120px]">
+                  <div key={funcao} className="space-y-2">
+                    <span className="text-sm font-medium text-muted-foreground">
                       {funcao}:
                     </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {voluntarios.map((nome, idx) => (
-                        <Badge 
-                          key={idx} 
-                          variant="outline"
-                          className="bg-green-50 text-green-700 border-green-200"
-                        >
-                          {nome}
-                        </Badge>
-                      ))}
+                    <div className="flex flex-wrap gap-2">
+                      {voluntarios.map((vol) => {
+                        const isMe = profile?.id === vol.voluntario_id;
+                        const canCheckin = isMe && !vol.checked_in;
+                        
+                        return (
+                          <div
+                            key={vol.id}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${
+                              vol.checked_in 
+                                ? 'bg-green-50 border-green-200 text-green-700' 
+                                : 'bg-muted/50 border-border'
+                            }`}
+                          >
+                            <span className="text-sm">{vol.voluntario_nome}</span>
+                            
+                            {vol.checked_in ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : canCheckin ? (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-xs"
+                                disabled={checkingIn === vol.id}
+                                onClick={() => handleCheckin(vol.id)}
+                              >
+                                {checkingIn === vol.id ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  'Check-in'
+                                )}
+                              </Button>
+                            ) : null}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}

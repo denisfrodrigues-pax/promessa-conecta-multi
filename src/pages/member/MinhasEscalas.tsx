@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, History } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, History, ClipboardCheck } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { parseLocalDate, isDatePast } from '@/lib/dateUtils';
@@ -30,7 +30,8 @@ interface Escala {
 }
 
 export default function MinhasEscalas() {
-  const { profile } = useAuth();
+  const { profile, roles } = useAuth();
+  const navigate = useNavigate();
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEscala, setSelectedEscala] = useState<Escala | null>(null);
@@ -176,21 +177,37 @@ export default function MinhasEscalas() {
     );
   }
 
+  // Verificar se pode ver Voluntários do Dia
+  const canSeeVoluntariosDoDia = roles.some(r => ['admin', 'lider', 'voluntario'].includes(r));
+
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-      <div className="mb-8 flex items-start justify-between">
+      <div className="mb-8 flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold tracking-tight">Minhas Escalas</h1>
           <p className="text-muted-foreground mt-1">
             Visualize e confirme sua participação nas escalas
           </p>
         </div>
-        <Link to="/historico-escalas">
-          <Button variant="outline" size="sm" className="shadow-sm">
-            <History className="w-4 h-4 mr-1" />
-            Histórico
-          </Button>
-        </Link>
+        <div className="flex gap-2 flex-wrap">
+          {canSeeVoluntariosDoDia && (
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="shadow-sm"
+              onClick={() => navigate('/app/voluntarios-do-dia')}
+            >
+              <ClipboardCheck className="w-4 h-4 mr-1" />
+              Escala do Dia
+            </Button>
+          )}
+          <Link to="/historico-escalas">
+            <Button variant="outline" size="sm" className="shadow-sm">
+              <History className="w-4 h-4 mr-1" />
+              Histórico
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="space-y-8">

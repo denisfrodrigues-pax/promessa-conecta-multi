@@ -20,7 +20,7 @@ export default function RelatorioBases() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 20;
-  const [kpis, setKpis] = useState({ total: 0, ocupacaoMedia: 0, lotadas: 0 });
+  const [kpis, setKpis] = useState({ total: 0, ocupacaoMedia: 0, lotadas: 0, totalPresencasMes: 0 });
   const [chartData, setChartData] = useState({ ocupacao: [] as any[], crescimento: [] as any[] });
 
   useEffect(() => {
@@ -35,17 +35,38 @@ export default function RelatorioBases() {
       setTotal(count || 0);
 
       const { data: basesData } = await supabase.from('bases')
-        .select('*')
+        .select('*, lider:profiles!bases_lider_id_fkey(nome)')
         .eq('status', 'ativo')
         .order('nome')
         .range((page - 1) * limit, page * limit - 1);
-      
+
+      // Período do mês atual para presenças
+      const inicioMes = startOfMonth(new Date()).toISOString();
+      const fimMes = endOfMonth(new Date()).toISOString();
+
       const basesComOcupacao = await Promise.all((basesData || []).map(async (base) => {
-        const { count } = await supabase.from('bases_membros').select('*', { count: 'exact', head: true })
+        const { count: membroCount } = await supabase.from('bases_membros').select('*', { count: 'exact', head: true })
           .eq('base_id', base.id).eq('status', 'ativo');
-        const ocupacao = count || 0;
+        
+        // Contar presenças do mês
+        const { count: presencaCount } = await supabase.from('presencas')
+          .select('*', { count: 'exact', head: true })
+          .eq('referencia_tipo', 'base')
+          .eq('referencia_id', base.id)
+          .gte('data', inicioMes.split('T')[0])
+          .lte('data', fimMes.split('T')[0]);
+
+        const ocupacao = membroCount || 0;
         const percentual = base.capacidade ? Math.round((ocupacao / base.capacidade) * 100) : 0;
-        return { ...base, ocupacao, percentual };
+        const liderNome = Array.isArray(base.lider) ? base.lider[0]?.nome : base.lider?.nome;
+        
+        return { 
+          ...base, 
+          ocupacao, 
+          percentual, 
+          liderNome: liderNome || 'Sem líder',
+          presencasMes: presencaCount || 0
+        };
       }));
 
       setBases(basesComOcupacao);
@@ -63,7 +84,8 @@ export default function RelatorioBases() {
       const totalBases = allBasesOcupacao.length;
       const ocupacaoMedia = totalBases > 0 ? Math.round(allBasesOcupacao.reduce((s, b) => s + b.percentual, 0) / totalBases) : 0;
       const lotadas = allBasesOcupacao.filter(b => b.percentual >= 100).length;
-      setKpis({ total: totalBases, ocupacaoMedia, lotadas });
+      const totalPresencasMes = basesComOcupacao.reduce((acc, b) => acc + (b.presencasMes || 0), 0);
+      setKpis({ total: totalBases, ocupacaoMedia, lotadas, totalPresencasMes });
 
       // Charts
       const ocupacao = basesComOcupacao.slice(0, 10).map(b => ({ nome: b.nome, ocupacao: b.percentual }));
@@ -276,8 +298,10 @@ export default function RelatorioBases() {
                 <thead>
                   <tr className="bg-muted/50">
                     <th className="text-left p-3 font-semibold">Nome</th>
+                    <th className="text-left p-3 font-semibold">Líder</th>
                     <th className="text-left p-3 font-semibold">Dia/Horário</th>
                     <th className="text-left p-3 font-semibold">Ocupação</th>
+                    <th className="text-left p-3 font-semibold">Presenças (mês)</th>
                     <th className="text-left p-3 font-semibold">Status</th>
                   </tr>
                 </thead>
@@ -285,6 +309,7 @@ export default function RelatorioBases() {
                   {bases.map((b, idx) => (
                     <tr key={b.id} className={`border-t hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? 'bg-background' : 'bg-muted/10'}`}>
                       <td className="p-3 font-medium">{b.nome}</td>
+                      <td className="p-3 text-muted-foreground">{b.liderNome}</td>
                       <td className="p-3 text-muted-foreground">{b.dia_semana} {b.horario}</td>
                       <td className="p-3">
                         <div className="flex items-center gap-3">
@@ -292,6 +317,7 @@ export default function RelatorioBases() {
                           <span className="text-xs font-medium tabular-nums">{b.ocupacao}/{b.capacidade}</span>
                         </div>
                       </td>
+                      <td className="p-3 text-center font-medium">{b.presencasMes}</td>
                       <td className="p-3">{getStatusBadge(b.percentual)}</td>
                     </tr>
                   ))}

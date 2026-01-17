@@ -647,6 +647,38 @@ export type Database = {
           },
         ]
       }
+      escala_checkins: {
+        Row: {
+          checked_in_at: string
+          created_at: string
+          escala_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          checked_in_at?: string
+          created_at?: string
+          escala_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          checked_in_at?: string
+          created_at?: string
+          escala_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escala_checkins_escala_id_fkey"
+            columns: ["escala_id"]
+            isOneToOne: false
+            referencedRelation: "escalas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       escalas: {
         Row: {
           confirmado_em: string | null
