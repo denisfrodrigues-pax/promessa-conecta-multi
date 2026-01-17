@@ -25,6 +25,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   hasRole: (role: UserRole) => boolean;
   isAdmin: boolean;
+  isFinanceiro: boolean;
   isLider: boolean;
   isVoluntario: boolean;
 }
@@ -119,7 +120,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const hasRole = (role: UserRole) => roles.includes(role);
-  const isAdmin = roles.includes('admin') || roles.includes('financeiro');
+  // Admin is ONLY for 'admin' role - financeiro is separate
+  const isAdmin = roles.includes('admin');
+  const isFinanceiro = roles.includes('financeiro') && !roles.includes('admin');
   const isLider = roles.includes('lider') || roles.includes('admin');
   const isVoluntario = roles.includes('voluntario') || roles.includes('lider') || roles.includes('admin');
 
@@ -135,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut,
       hasRole,
       isAdmin,
+      isFinanceiro,
       isLider,
       isVoluntario,
     }}>

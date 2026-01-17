@@ -146,13 +146,31 @@ export default function LeaderMinhaEquipe() {
     if (!ministerio) return;
 
     try {
+      // Fetch users with schedulable roles (admin, financeiro, lider, voluntario)
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('role', ['admin', 'financeiro', 'lider', 'voluntario']);
+
+      if (rolesError) throw rolesError;
+
+      const schedulableUserIds = [...new Set((rolesData || []).map((r) => r.user_id))];
+
+      if (schedulableUserIds.length === 0) {
+        setAvailableProfiles([]);
+        return;
+      }
+
+      // Fetch profiles for schedulable users
       const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, nome, email, user_id')
+        .in('user_id', schedulableUserIds)
         .order('nome');
 
       if (profilesError) throw profilesError;
 
+      // Fetch existing volunteers in this ministry
       const { data: existingVoluntarios, error: existingError } = await supabase
         .from('ministerio_voluntarios')
         .select('user_id')
@@ -162,6 +180,7 @@ export default function LeaderMinhaEquipe() {
 
       const existingUserIds = new Set(existingVoluntarios?.map((v) => v.user_id) || []);
       
+      // Filter out already added users
       const available = (allProfiles || []).filter(
         (profile) => !existingUserIds.has(profile.user_id)
       );
