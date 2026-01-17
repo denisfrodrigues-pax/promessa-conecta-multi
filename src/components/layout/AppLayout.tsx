@@ -12,8 +12,7 @@ import {
   Menu,
   X,
   Home,
-  User,
-  ClipboardCheck
+  User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -53,9 +52,6 @@ export default function AppLayout() {
   const panelRoute = getPanelRoute();
   const panelLabel = getPanelLabel();
   
-  // Apenas admin, lider, voluntario podem ver Voluntários do Dia
-  const canSeeVoluntariosDoDia = roles.some(r => ['admin', 'lider', 'voluntario'].includes(r));
-
   const navItems = [
     { icon: Home, label: 'Início', path: '/app' },
     { icon: CalendarDays, label: 'Escalas', path: '/app/escalas' },
@@ -65,11 +61,6 @@ export default function AppLayout() {
     { icon: Heart, label: 'Contribuições', path: '/app/contribuicoes' },
     { icon: User, label: 'Perfil', path: '/app/perfil' },
   ];
-  
-  // Item condicional para Voluntários do Dia
-  const voluntariosDoDiaItem = canSeeVoluntariosDoDia 
-    ? { icon: ClipboardCheck, label: 'Escala do Dia', path: '/app/voluntarios-do-dia' }
-    : null;
 
   // Items for bottom mobile nav (limited)
   const mobileBottomNavItems = [
@@ -115,24 +106,6 @@ export default function AppLayout() {
                   )}
                 </NavLink>
               ))}
-              
-              {/* Voluntários do Dia - apenas para roles específicas */}
-              {voluntariosDoDiaItem && (
-                <NavLink
-                  to={voluntariosDoDiaItem.path}
-                  className={({ isActive }) =>
-                    cn(
-                      'relative flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors',
-                      isActive
-                        ? 'bg-promessa-100 text-promessa-700'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                    )
-                  }
-                >
-                  <voluntariosDoDiaItem.icon className="h-4 w-4" />
-                  <span>{voluntariosDoDiaItem.label}</span>
-                </NavLink>
-              )}
 
               {/* Panel Button - only for admin/lider/voluntario */}
               {panelRoute && (
@@ -197,25 +170,6 @@ export default function AppLayout() {
                   )}
                 </NavLink>
               ))}
-              
-              {/* Voluntários do Dia - Mobile */}
-              {voluntariosDoDiaItem && (
-                <NavLink
-                  to={voluntariosDoDiaItem.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    cn(
-                      'relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors',
-                      isActive
-                        ? 'bg-promessa-100 text-promessa-700'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                    )
-                  }
-                >
-                  <voluntariosDoDiaItem.icon className="h-5 w-5" />
-                  <span>{voluntariosDoDiaItem.label}</span>
-                </NavLink>
-              )}
 
               {/* Panel Button - Mobile */}
               {panelRoute && (
