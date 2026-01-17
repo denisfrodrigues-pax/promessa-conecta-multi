@@ -27,6 +27,13 @@ export default function BaseNova() {
     dia_semana: '',
     horario: '',
     local: '',
+    rua: '',
+    numero: '',
+    bairro: '',
+    cidade: '',
+    uf: '',
+    foto_url: '',
+    whatsapp_lider: '',
     capacidade: 20,
     visibilidade: 'publico',
     lider_id: '',
@@ -63,6 +70,13 @@ export default function BaseNova() {
         dia_semana: formData.dia_semana || null,
         horario: formData.horario || null,
         local: formData.local.trim() || null,
+        rua: formData.rua.trim() || null,
+        numero: formData.numero.trim() || null,
+        bairro: formData.bairro.trim() || null,
+        cidade: formData.cidade.trim() || null,
+        uf: formData.uf.trim() || null,
+        foto_url: formData.foto_url.trim() || null,
+        whatsapp_lider: formData.whatsapp_lider.trim() || null,
         capacidade: formData.capacidade,
         visibilidade: formData.visibilidade,
         lider_id: formData.lider_id || null,
@@ -155,14 +169,85 @@ export default function BaseNova() {
               </div>
             </div>
 
-            {/* Local */}
+            {/* Local (referência) */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Local</Label>
+              <Label className="text-xs text-muted-foreground">Local (referência)</Label>
               <Input
                 value={formData.local}
                 onChange={(e) => setFormData({ ...formData, local: e.target.value })}
-                placeholder="Endereço ou local do encontro"
+                placeholder="Ex: Próximo ao parque central"
               />
+            </div>
+
+            {/* Endereço completo */}
+            <div className="border-t pt-4 mt-4">
+              <h3 className="text-sm font-medium mb-3">Endereço (visível apenas para membros)</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2 space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Rua</Label>
+                  <Input
+                    value={formData.rua}
+                    onChange={(e) => setFormData({ ...formData, rua: e.target.value })}
+                    placeholder="Rua, Avenida, etc."
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Número</Label>
+                  <Input
+                    value={formData.numero}
+                    onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
+                    placeholder="Nº"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Bairro</Label>
+                  <Input
+                    value={formData.bairro}
+                    onChange={(e) => setFormData({ ...formData, bairro: e.target.value })}
+                    placeholder="Bairro"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Cidade</Label>
+                  <Input
+                    value={formData.cidade}
+                    onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
+                    placeholder="Cidade"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">UF</Label>
+                  <Input
+                    value={formData.uf}
+                    onChange={(e) => setFormData({ ...formData, uf: e.target.value.toUpperCase().slice(0, 2) })}
+                    placeholder="SP"
+                    maxLength={2}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Foto e WhatsApp */}
+            <div className="border-t pt-4 mt-4">
+              <h3 className="text-sm font-medium mb-3">Foto e Contato</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2 space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">URL da Foto da Base/Anfitriões</Label>
+                  <Input
+                    value={formData.foto_url}
+                    onChange={(e) => setFormData({ ...formData, foto_url: e.target.value })}
+                    placeholder="https://exemplo.com/foto.jpg"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">WhatsApp do Líder</Label>
+                  <Input
+                    value={formData.whatsapp_lider}
+                    onChange={(e) => setFormData({ ...formData, whatsapp_lider: e.target.value })}
+                    placeholder="(99) 99999-9999"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Capacidade + Visibilidade */}

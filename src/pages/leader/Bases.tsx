@@ -333,7 +333,7 @@ export default function LeaderBases() {
                         variant="outline" 
                         size="sm" 
                         className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                        onClick={() => navigate(`/lider/bases/${base.id}`)}
+                        onClick={() => navigate(`/leader/bases/${base.id}`)}
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         Ver Detalhes

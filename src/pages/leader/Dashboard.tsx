@@ -133,7 +133,7 @@ export default function LeaderDashboard() {
               <CardDescription>Bases que você lidera</CardDescription>
             </div>
             <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
-              <Link to="/lider/bases">
+              <Link to="/leader/bases">
                 Ver todas <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
@@ -149,7 +149,7 @@ export default function LeaderDashboard() {
                 {bases.map((base) => (
                   <Link
                     key={base.id}
-                    to={`/lider/bases/${base.id}`}
+                    to={`/leader/bases/${base.id}`}
                     className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-200 cursor-pointer group"
                   >
                     <div>

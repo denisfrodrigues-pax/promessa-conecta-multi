@@ -184,49 +184,70 @@ export type Database = {
       }
       bases: {
         Row: {
+          bairro: string | null
           capacidade: number | null
+          cidade: string | null
           created_at: string | null
           data_criacao: string | null
           descricao: string | null
           dia_semana: string | null
+          foto_url: string | null
           horario: string | null
           id: string
           lider_id: string | null
           local: string | null
           nome: string
+          numero: string | null
+          rua: string | null
           status: string | null
+          uf: string | null
           updated_at: string | null
           visibilidade: string | null
+          whatsapp_lider: string | null
         }
         Insert: {
+          bairro?: string | null
           capacidade?: number | null
+          cidade?: string | null
           created_at?: string | null
           data_criacao?: string | null
           descricao?: string | null
           dia_semana?: string | null
+          foto_url?: string | null
           horario?: string | null
           id?: string
           lider_id?: string | null
           local?: string | null
           nome: string
+          numero?: string | null
+          rua?: string | null
           status?: string | null
+          uf?: string | null
           updated_at?: string | null
           visibilidade?: string | null
+          whatsapp_lider?: string | null
         }
         Update: {
+          bairro?: string | null
           capacidade?: number | null
+          cidade?: string | null
           created_at?: string | null
           data_criacao?: string | null
           descricao?: string | null
           dia_semana?: string | null
+          foto_url?: string | null
           horario?: string | null
           id?: string
           lider_id?: string | null
           local?: string | null
           nome?: string
+          numero?: string | null
+          rua?: string | null
           status?: string | null
+          uf?: string | null
           updated_at?: string | null
           visibilidade?: string | null
+          whatsapp_lider?: string | null
         }
         Relationships: [
           {
