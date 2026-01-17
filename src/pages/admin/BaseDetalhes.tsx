@@ -9,13 +9,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Save, Network, UserPlus, UserMinus, MessageCircle, Edit, X, Search, Clock, MapPin, Users, CalendarDays, User } from 'lucide-react';
+import { ArrowLeft, Save, Network, UserPlus, UserMinus, MessageCircle, Edit, X, Search, Clock, MapPin, Users, CalendarDays, User, Trash2, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { BaseFotoUpload } from '@/components/base/BaseFotoUpload';
 
 // ===== INTERFACES =====
 interface Base {
@@ -129,6 +130,8 @@ export default function BaseDetalhes() {
   const [filtroStatusVisitante, setFiltroStatusVisitante] = useState('todos');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [searchMembro, setSearchMembro] = useState('');
@@ -142,6 +145,7 @@ export default function BaseDetalhes() {
     visibilidade: 'publico',
     lider_id: '',
     status: '',
+    foto_url: '',
   });
 
   const totalMembros = membrosBase.length + visitantesBase.length;
@@ -177,6 +181,7 @@ export default function BaseDetalhes() {
         visibilidade: data.visibilidade || 'publico',
         lider_id: data.lider_id || '',
         status: data.status,
+        foto_url: data.foto_url || '',
       });
 
       if (data.lider_id) {
@@ -274,19 +279,44 @@ export default function BaseDetalhes() {
         visibilidade: formData.visibilidade,
         lider_id: formData.lider_id || null,
         status: formData.status,
+        foto_url: formData.foto_url || null,
       })
       .eq('id', id);
 
     setSaving(false);
 
     if (error) {
-      toast.error('Erro ao salvar');
+      toast.error('Erro ao salvar: ' + error.message);
       return;
     }
 
     toast.success('Base atualizada!');
     setEditing(false);
     fetchBase();
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      // Delete the base (ON DELETE CASCADE will handle bases_membros)
+      const { error } = await supabase
+        .from('bases')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        toast.error('Erro ao excluir base: ' + error.message);
+        return;
+      }
+
+      toast.success('Base excluída com sucesso!');
+      navigate('/admin/bases');
+    } catch (error: any) {
+      toast.error('Erro ao excluir base: ' + error.message);
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
   };
 
   const addMembro = async (membroId: string) => {
@@ -397,6 +427,45 @@ export default function BaseDetalhes() {
               Editar
             </Button>
           )}
+          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="destructive" size="sm">
+                <Trash2 className="h-4 w-4 mr-1" />
+                Excluir
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  Confirmar Exclusão
+                </DialogTitle>
+                <DialogDescription>
+                  Tem certeza que deseja excluir a base "{base.nome}"? 
+                  Esta ação removerá permanentemente a base e todos os vínculos de membros e visitantes.
+                  Esta ação não pode ser desfeita.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+                  Cancelar
+                </Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+                  {deleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Excluindo...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir Base
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -435,6 +504,13 @@ export default function BaseDetalhes() {
                 <Label className="text-xs text-muted-foreground">Descrição</Label>
                 <Textarea value={formData.descricao} onChange={(e) => setFormData({ ...formData, descricao: e.target.value })} rows={2} />
               </div>
+
+              <BaseFotoUpload
+                currentUrl={formData.foto_url || null}
+                baseId={id || 'new'}
+                onUploadComplete={(url) => setFormData({ ...formData, foto_url: url })}
+                disabled={saving}
+              />
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
