@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -38,7 +39,7 @@ interface MinisterioVoluntario {
   ativo: boolean;
   funcao_principal_id: string | null;
   profile?: { nome: string; email: string };
-  funcao_principal?: { nome: string } | null;
+  funcoes: { id: string; nome: string }[];
 }
 
 export default function LeaderMinhaEquipe() {
@@ -53,12 +54,12 @@ export default function LeaderMinhaEquipe() {
   // Dialogs
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEditFuncaoDialogOpen, setIsEditFuncaoDialogOpen] = useState(false);
+  const [isEditFuncoesDialogOpen, setIsEditFuncoesDialogOpen] = useState(false);
   
   const [deletingVoluntario, setDeletingVoluntario] = useState<MinisterioVoluntario | null>(null);
   const [editingVoluntario, setEditingVoluntario] = useState<MinisterioVoluntario | null>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string>('');
-  const [selectedFuncaoId, setSelectedFuncaoId] = useState<string>('');
+  const [selectedFuncaoIds, setSelectedFuncaoIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (profile?.id) {
@@ -86,9 +87,9 @@ export default function LeaderMinhaEquipe() {
       if (error) throw error;
       setMinisterio(data);
       setLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching ministerio:', error);
-      toast.error('Erro ao carregar ministério');
+      toast.error(error.message || 'Erro ao carregar ministério');
       setLoading(false);
     }
   };
@@ -105,22 +106,35 @@ export default function LeaderMinhaEquipe() {
           user_id,
           ativo,
           funcao_principal_id,
-          profile:profiles!ministerio_voluntarios_user_id_fkey(nome, email),
-          funcao_principal:ministerio_funcoes(nome)
+          profile:profiles!ministerio_voluntarios_user_id_fkey(nome, email)
         `)
         .eq('ministerio_id', ministerio.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Fetch functions for each volunteer from the junction table
+      const voluntariosWithFuncoes = await Promise.all((data || []).map(async (vol) => {
+        const { data: funcoesData } = await supabase
+          .from('ministerio_voluntarios_funcoes')
+          .select('funcao_id, ministerio_funcoes(id, nome)')
+          .eq('ministerio_voluntario_id', vol.id);
+        
+        const funcoes = (funcoesData || [])
+          .filter(f => f.ministerio_funcoes)
+          .map(f => ({ id: f.ministerio_funcoes!.id, nome: f.ministerio_funcoes!.nome }));
+        
+        return { ...vol, funcoes };
+      }));
       
       // Sort alphabetically by name
-      const sorted = (data || []).sort((a, b) => 
+      const sorted = voluntariosWithFuncoes.sort((a, b) => 
         (a.profile?.nome || '').localeCompare(b.profile?.nome || '')
       );
       setVoluntarios(sorted);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching voluntarios:', error);
-      toast.error('Erro ao carregar voluntários');
+      toast.error(error.message || 'Erro ao carregar voluntários');
     }
   };
 
@@ -186,15 +200,15 @@ export default function LeaderMinhaEquipe() {
       );
 
       setAvailableProfiles(available);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching available profiles:', error);
-      toast.error('Erro ao carregar usuários disponíveis');
+      toast.error(error.message || 'Erro ao carregar usuários disponíveis');
     }
   };
 
   const handleOpenAddDialog = () => {
     setSelectedProfileId('');
-    setSelectedFuncaoId('');
+    setSelectedFuncaoIds([]);
     fetchAvailableProfiles();
     setIsAddDialogOpen(true);
   };
@@ -205,6 +219,11 @@ export default function LeaderMinhaEquipe() {
       return;
     }
 
+    if (selectedFuncaoIds.length === 0) {
+      toast.error('Selecione ao menos uma função');
+      return;
+    }
+
     const profileToAdd = availableProfiles.find((p) => p.id === selectedProfileId);
     if (!profileToAdd) {
       toast.error('Perfil não encontrado');
@@ -212,17 +231,31 @@ export default function LeaderMinhaEquipe() {
     }
 
     try {
-      const funcaoId = selectedFuncaoId && selectedFuncaoId !== '__none__' ? selectedFuncaoId : null;
-      const { error } = await supabase
+      // Insert voluntario
+      const { data: newVol, error } = await supabase
         .from('ministerio_voluntarios')
         .insert({
           ministerio_id: ministerio.id,
           user_id: profileToAdd.user_id,
           ativo: true,
-          funcao_principal_id: funcaoId,
-        });
+          funcao_principal_id: selectedFuncaoIds[0] || null,
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      // Insert all functions into junction table
+      const funcoesInsert = selectedFuncaoIds.map(funcaoId => ({
+        ministerio_voluntario_id: newVol.id,
+        funcao_id: funcaoId,
+      }));
+
+      const { error: funcError } = await supabase
+        .from('ministerio_voluntarios_funcoes')
+        .insert(funcoesInsert);
+
+      if (funcError) throw funcError;
 
       toast.success('Voluntário adicionado com sucesso');
       setIsAddDialogOpen(false);
@@ -232,36 +265,57 @@ export default function LeaderMinhaEquipe() {
       if (error.code === '23505') {
         toast.error('Este voluntário já está neste ministério');
       } else {
-        toast.error('Erro ao adicionar voluntário');
+        toast.error(error.message || 'Erro ao adicionar voluntário');
       }
     }
   };
 
-  const handleOpenEditFuncaoDialog = (voluntario: MinisterioVoluntario) => {
+  const handleOpenEditFuncoesDialog = (voluntario: MinisterioVoluntario) => {
     setEditingVoluntario(voluntario);
-    setSelectedFuncaoId(voluntario.funcao_principal_id || '');
-    setIsEditFuncaoDialogOpen(true);
+    setSelectedFuncaoIds(voluntario.funcoes.map(f => f.id));
+    setIsEditFuncoesDialogOpen(true);
   };
 
-  const handleUpdateFuncao = async () => {
+  const handleUpdateFuncoes = async () => {
     if (!editingVoluntario) return;
 
+    if (selectedFuncaoIds.length === 0) {
+      toast.error('Selecione ao menos uma função');
+      return;
+    }
+
     try {
-      const funcaoId = selectedFuncaoId && selectedFuncaoId !== '__none__' ? selectedFuncaoId : null;
-      const { error } = await supabase
+      // Delete all existing functions
+      await supabase
+        .from('ministerio_voluntarios_funcoes')
+        .delete()
+        .eq('ministerio_voluntario_id', editingVoluntario.id);
+
+      // Insert new functions
+      const funcoesInsert = selectedFuncaoIds.map(funcaoId => ({
+        ministerio_voluntario_id: editingVoluntario.id,
+        funcao_id: funcaoId,
+      }));
+
+      const { error: funcError } = await supabase
+        .from('ministerio_voluntarios_funcoes')
+        .insert(funcoesInsert);
+
+      if (funcError) throw funcError;
+
+      // Update funcao_principal_id for compatibility
+      await supabase
         .from('ministerio_voluntarios')
-        .update({ funcao_principal_id: funcaoId })
+        .update({ funcao_principal_id: selectedFuncaoIds[0] || null })
         .eq('id', editingVoluntario.id);
 
-      if (error) throw error;
-
-      toast.success('Função principal atualizada');
-      setIsEditFuncaoDialogOpen(false);
+      toast.success('Funções atualizadas');
+      setIsEditFuncoesDialogOpen(false);
       setEditingVoluntario(null);
       fetchVoluntarios();
-    } catch (error) {
-      console.error('Error updating funcao:', error);
-      toast.error('Erro ao atualizar função');
+    } catch (error: any) {
+      console.error('Error updating funcoes:', error);
+      toast.error(error.message || 'Erro ao atualizar funções');
     }
   };
 
@@ -276,9 +330,9 @@ export default function LeaderMinhaEquipe() {
 
       toast.success(voluntario.ativo ? 'Voluntário desativado' : 'Voluntário ativado');
       fetchVoluntarios();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling voluntario:', error);
-      toast.error('Erro ao atualizar status');
+      toast.error(error.message || 'Erro ao atualizar status');
     }
   };
 
@@ -297,10 +351,18 @@ export default function LeaderMinhaEquipe() {
       setIsDeleteDialogOpen(false);
       setDeletingVoluntario(null);
       fetchVoluntarios();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting voluntario:', error);
-      toast.error('Erro ao remover voluntário');
+      toast.error(error.message || 'Erro ao remover voluntário');
     }
+  };
+
+  const toggleFuncaoSelection = (funcaoId: string) => {
+    setSelectedFuncaoIds(prev => 
+      prev.includes(funcaoId)
+        ? prev.filter(id => id !== funcaoId)
+        : [...prev, funcaoId]
+    );
   };
 
   // Filter voluntarios by search term
@@ -381,7 +443,7 @@ export default function LeaderMinhaEquipe() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome / Email</TableHead>
-                  <TableHead>Função Principal</TableHead>
+                  <TableHead>Funções</TableHead>
                   <TableHead className="text-center">Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -396,15 +458,21 @@ export default function LeaderMinhaEquipe() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">
-                          {voluntario.funcao_principal?.nome || 'Não definida'}
-                        </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {voluntario.funcoes.length === 0 ? (
+                          <span className="text-sm text-muted-foreground">Nenhuma</span>
+                        ) : (
+                          voluntario.funcoes.map(f => (
+                            <Badge key={f.id} variant="secondary" className="text-xs">
+                              {f.nome}
+                            </Badge>
+                          ))
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
-                          onClick={() => handleOpenEditFuncaoDialog(voluntario)}
+                          onClick={() => handleOpenEditFuncoesDialog(voluntario)}
                         >
                           <Pencil className="h-3 w-3" />
                         </Button>
@@ -476,63 +544,79 @@ export default function LeaderMinhaEquipe() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Função Principal (opcional)</Label>
-              <Select value={selectedFuncaoId} onValueChange={setSelectedFuncaoId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma função" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Nenhuma</SelectItem>
-                  {funcoes.map((funcao) => (
-                    <SelectItem key={funcao.id} value={funcao.id}>
-                      {funcao.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Funções (selecione ao menos uma)</Label>
+              <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
+                {funcoes.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhuma função cadastrada</p>
+                ) : (
+                  funcoes.map((funcao) => (
+                    <div key={funcao.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`add-funcao-${funcao.id}`}
+                        checked={selectedFuncaoIds.includes(funcao.id)}
+                        onCheckedChange={() => toggleFuncaoSelection(funcao.id)}
+                      />
+                      <label
+                        htmlFor={`add-funcao-${funcao.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {funcao.nome}
+                      </label>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleAddVoluntario} disabled={!selectedProfileId}>
+            <Button onClick={handleAddVoluntario} disabled={!selectedProfileId || selectedFuncaoIds.length === 0}>
               Adicionar
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Edit Funcao Dialog */}
-      <Dialog open={isEditFuncaoDialogOpen} onOpenChange={setIsEditFuncaoDialogOpen}>
+      {/* Edit Funcoes Dialog */}
+      <Dialog open={isEditFuncoesDialogOpen} onOpenChange={setIsEditFuncoesDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar Função Principal</DialogTitle>
+            <DialogTitle>Editar Funções</DialogTitle>
             <DialogDescription>
-              Defina a função principal de {editingVoluntario?.profile?.nome}
+              Defina as funções de {editingVoluntario?.profile?.nome}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label>Função Principal</Label>
-            <Select value={selectedFuncaoId} onValueChange={setSelectedFuncaoId}>
-              <SelectTrigger className="mt-2">
-                <SelectValue placeholder="Selecione uma função" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">Nenhuma</SelectItem>
-                {funcoes.map((funcao) => (
-                  <SelectItem key={funcao.id} value={funcao.id}>
-                    {funcao.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Funções (selecione ao menos uma)</Label>
+            <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto mt-2">
+              {funcoes.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhuma função cadastrada</p>
+              ) : (
+                funcoes.map((funcao) => (
+                  <div key={funcao.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`edit-funcao-${funcao.id}`}
+                      checked={selectedFuncaoIds.includes(funcao.id)}
+                      onCheckedChange={() => toggleFuncaoSelection(funcao.id)}
+                    />
+                    <label
+                      htmlFor={`edit-funcao-${funcao.id}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {funcao.nome}
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditFuncaoDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsEditFuncoesDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleUpdateFuncao}>
+            <Button onClick={handleUpdateFuncoes} disabled={selectedFuncaoIds.length === 0}>
               Salvar
             </Button>
           </DialogFooter>

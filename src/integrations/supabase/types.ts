@@ -1179,6 +1179,42 @@ export type Database = {
           },
         ]
       }
+      ministerio_voluntarios_funcoes: {
+        Row: {
+          created_at: string
+          funcao_id: string
+          id: string
+          ministerio_voluntario_id: string
+        }
+        Insert: {
+          created_at?: string
+          funcao_id: string
+          id?: string
+          ministerio_voluntario_id: string
+        }
+        Update: {
+          created_at?: string
+          funcao_id?: string
+          id?: string
+          ministerio_voluntario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministerio_voluntarios_funcoes_funcao_id_fkey"
+            columns: ["funcao_id"]
+            isOneToOne: false
+            referencedRelation: "ministerio_funcoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministerio_voluntarios_funcoes_ministerio_voluntario_id_fkey"
+            columns: ["ministerio_voluntario_id"]
+            isOneToOne: false
+            referencedRelation: "ministerio_voluntarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ministerios: {
         Row: {
           ativo: boolean | null
