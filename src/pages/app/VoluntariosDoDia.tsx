@@ -29,7 +29,7 @@ interface MinisterioGrupo {
 
 export default function VoluntariosDoDia() {
   const navigate = useNavigate();
-  const { profile, roles, loading: authLoading } = useAuth();
+  const { user, profile, roles, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [escalas, setEscalas] = useState<EscalaConfirmada[]>([]);
@@ -136,17 +136,17 @@ export default function VoluntariosDoDia() {
     }
   };
 
-  // Fazer check-in
+  // Fazer check-in - usa auth.uid() como user_id (default no banco)
   const handleCheckin = async (escalaId: string) => {
-    if (!profile?.id) return;
+    if (!user?.id) return;
     
     setCheckingIn(escalaId);
     try {
+      // Não passa user_id - o banco usa auth.uid() como default
       const { error } = await supabase
         .from('escala_checkins')
         .insert({
-          escala_id: escalaId,
-          user_id: profile.id
+          escala_id: escalaId
         });
 
       if (error) {
@@ -300,6 +300,7 @@ export default function VoluntariosDoDia() {
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {voluntarios.map((vol) => {
+                        // Compara com profile.id pois escalas.voluntario_id referencia profiles.id
                         const isMe = profile?.id === vol.voluntario_id;
                         const canCheckin = isMe && !vol.checked_in;
                         

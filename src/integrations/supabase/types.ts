@@ -660,7 +660,7 @@ export type Database = {
           created_at?: string
           escala_id: string
           id?: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           checked_in_at?: string

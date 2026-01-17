@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Separator } from '@/components/ui/separator';
 import { 
   ArrowLeft, MessageCircle, Phone, Search, Clock, MapPin, Users, 
-  CalendarDays, User, Download, Info, UserCheck, Building2, Pencil, Loader2, Save
+  CalendarDays, User, Download, Info, UserCheck, Building2, Pencil, Loader2, Save, ClipboardCheck
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -29,6 +29,9 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from '@/components/ui/breadcrumb';
+import { BaseFotoUpload } from '@/components/base/BaseFotoUpload';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 // ===== INTERFACES =====
 interface Base {
@@ -55,6 +58,14 @@ interface EditFormData {
   horario: string;
   foto_url: string;
   whatsapp_lider: string;
+}
+
+interface Presenca {
+  id: string;
+  usuario_id: string;
+  data: string;
+  presente: boolean;
+  usuario?: { nome: string };
 }
 
 interface Membro {
@@ -239,6 +250,10 @@ export default function LeaderBaseDetalhes() {
     whatsapp_lider: ''
   });
   const [saving, setSaving] = useState(false);
+  
+  // Estado para presenças
+  const [presencas, setPresencas] = useState<Presenca[]>([]);
+  const [presencasHoje, setPresencasHoje] = useState<Presenca[]>([]);
 
   const diasSemana = [
     'Segunda-feira',
@@ -268,11 +283,47 @@ export default function LeaderBaseDetalhes() {
         fetchBase(),
         fetchMembrosBase(),
         fetchVisitantesBase(),
+        fetchPresencas(),
       ]);
     } catch (error) {
       toast.error('Não foi possível carregar os dados da base');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPresencas = async () => {
+    const hoje = format(new Date(), 'yyyy-MM-dd');
+    
+    // Buscar presenças do dia
+    const { data: presencasHojeData } = await supabase
+      .from('presencas')
+      .select('id, usuario_id, data, presente, usuario:profiles!presencas_usuario_id_fkey(nome)')
+      .eq('referencia_tipo', 'base')
+      .eq('referencia_id', id)
+      .eq('data', hoje);
+
+    if (presencasHojeData) {
+      setPresencasHoje(presencasHojeData.map(p => ({
+        ...p,
+        usuario: Array.isArray(p.usuario) ? p.usuario[0] : p.usuario
+      })) as Presenca[]);
+    }
+
+    // Buscar últimas 10 presenças
+    const { data: presencasData } = await supabase
+      .from('presencas')
+      .select('id, usuario_id, data, presente, usuario:profiles!presencas_usuario_id_fkey(nome)')
+      .eq('referencia_tipo', 'base')
+      .eq('referencia_id', id)
+      .order('data', { ascending: false })
+      .limit(10);
+
+    if (presencasData) {
+      setPresencas(presencasData.map(p => ({
+        ...p,
+        usuario: Array.isArray(p.usuario) ? p.usuario[0] : p.usuario
+      })) as Presenca[]);
     }
   };
 
@@ -580,15 +631,12 @@ export default function LeaderBaseDetalhes() {
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="edit-foto">URL da Foto</Label>
-              <Input
-                id="edit-foto"
-                value={editFormData.foto_url}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, foto_url: e.target.value }))}
-                placeholder="https://exemplo.com/foto.jpg"
-              />
-            </div>
+            <BaseFotoUpload
+              currentUrl={editFormData.foto_url || null}
+              baseId={id || 'new'}
+              onUploadComplete={(url) => setEditFormData(prev => ({ ...prev, foto_url: url }))}
+              disabled={saving}
+            />
             
             <div className="space-y-2">
               <Label htmlFor="edit-whatsapp">WhatsApp do Líder</Label>
@@ -647,18 +695,22 @@ export default function LeaderBaseDetalhes() {
 
       {/* ===== TABS ===== */}
       <Tabs defaultValue="membros" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-md">
+        <TabsList className="grid w-full grid-cols-4 max-w-lg">
           <TabsTrigger value="membros">
             <Users className="h-4 w-4 mr-2" />
-            Membros ({membrosBase.length})
+            Membros
           </TabsTrigger>
           <TabsTrigger value="visitantes">
             <UserCheck className="h-4 w-4 mr-2" />
-            Visitantes ({visitantesBase.length})
+            Visitantes
+          </TabsTrigger>
+          <TabsTrigger value="presencas">
+            <ClipboardCheck className="h-4 w-4 mr-2" />
+            Presenças
           </TabsTrigger>
           <TabsTrigger value="info">
             <Info className="h-4 w-4 mr-2" />
-            Informações
+            Info
           </TabsTrigger>
         </TabsList>
 
@@ -859,6 +911,81 @@ export default function LeaderBaseDetalhes() {
                                 </>
                               )}
                             </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ===== TAB: PRESENÇAS ===== */}
+        <TabsContent value="presencas" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Presenças de Hoje</CardTitle>
+              <CardDescription>
+                {format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {presencasHoje.length === 0 ? (
+                <div className="text-center py-8">
+                  <ClipboardCheck className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+                  <p className="text-muted-foreground text-sm">Nenhuma presença registrada hoje</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {presencasHoje.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                      <span className="text-sm font-medium">{p.usuario?.nome || 'Membro'}</span>
+                      <Badge variant={p.presente ? 'success' : 'secondary'}>
+                        {p.presente ? 'Presente' : 'Ausente'}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Últimas Presenças</CardTitle>
+              <CardDescription>Histórico recente de presenças na base</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {presencas.length === 0 ? (
+                <div className="text-center py-8">
+                  <ClipboardCheck className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+                  <p className="text-muted-foreground text-sm">Nenhuma presença registrada ainda</p>
+                </div>
+              ) : (
+                <div className="rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Membro</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead className="text-right">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {presencas.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell className="font-medium text-sm">
+                            {p.usuario?.nome || 'Membro'}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {format(new Date(p.data), 'dd/MM/yyyy', { locale: ptBR })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Badge variant={p.presente ? 'success' : 'secondary'} className="text-xs">
+                              {p.presente ? 'Presente' : 'Ausente'}
+                            </Badge>
                           </TableCell>
                         </TableRow>
                       ))}
