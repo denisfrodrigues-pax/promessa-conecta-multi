@@ -1,12 +1,15 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfYear, endOfYear, eachWeekOfInterval, isSaturday, getDay, addDays } from 'date-fns';
+import { format, startOfYear, endOfYear, getDay, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarCheck, Users } from 'lucide-react';
+import { CalendarCheck, Users, ShieldAlert } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface EscalaConfirmada {
   id: string;
@@ -22,9 +25,21 @@ interface MinisterioGrupo {
 }
 
 export default function VoluntariosDoDia() {
+  const navigate = useNavigate();
+  const { roles, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [escalas, setEscalas] = useState<EscalaConfirmada[]>([]);
+
+  // Verificar permissão - apenas admin, lider, voluntario podem ver
+  const canAccess = roles.some(r => ['admin', 'lider', 'voluntario'].includes(r));
+
+  useEffect(() => {
+    if (!authLoading && !canAccess) {
+      toast.error('Você não tem permissão para acessar esta página');
+      navigate('/app');
+    }
+  }, [authLoading, canAccess, navigate]);
 
   // Gerar todos os sábados do ano atual
   const sabados = useMemo(() => {
@@ -80,7 +95,10 @@ export default function VoluntariosDoDia() {
         .eq('data', selectedDate)
         .eq('status', 'confirmado');
 
-      if (error) throw error;
+      if (error) {
+        toast.error('Erro ao buscar escalas: ' + error.message);
+        throw error;
+      }
 
       const formatted: EscalaConfirmada[] = (data || []).map(item => ({
         id: item.id,
@@ -91,7 +109,7 @@ export default function VoluntariosDoDia() {
       }));
 
       setEscalas(formatted);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao buscar escalas:', error);
     } finally {
       setLoading(false);
@@ -129,6 +147,29 @@ export default function VoluntariosDoDia() {
       return month >= 1 && month <= 3; // Fev, Mar, Abr
     });
   }, [sabados]);
+
+  // Se ainda está carregando auth ou não tem acesso
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl">
+        <Skeleton className="h-10 w-48 mb-4" />
+        <Skeleton className="h-24 w-full mb-4" />
+        <Skeleton className="h-48 w-full" />
+      </div>
+    );
+  }
+
+  if (!canAccess) {
+    return (
+      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl text-center">
+        <ShieldAlert className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+        <h1 className="text-2xl font-bold mb-2">Acesso Restrito</h1>
+        <p className="text-muted-foreground">
+          Esta página é visível apenas para voluntários, líderes e administradores.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl">

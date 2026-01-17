@@ -25,6 +25,11 @@ interface Base {
   horario: string | null;
   descricao: string | null;
   lider_id: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
+  foto_url: string | null;
+  whatsapp_lider: string | null;
   lider?: {
     nome: string;
     telefone: string | null;
@@ -59,13 +64,18 @@ export default function BasesPublicas() {
           horario,
           descricao,
           lider_id,
+          bairro,
+          cidade,
+          uf,
+          foto_url,
+          whatsapp_lider,
           profiles:lider_id (
             nome,
             telefone
           )
         `)
-        .eq('status', 'ativa')
-        .eq('visibilidade', 'publica')
+        .eq('status', 'ativo')
+        .eq('visibilidade', 'publico')
         .order('nome');
 
       if (error) throw error;
@@ -78,7 +88,7 @@ export default function BasesPublicas() {
         } : undefined
       })) || [];
 
-      setBases(formattedBases);
+      setBases(formattedBases as Base[]);
     } catch (error) {
       console.error('Erro ao carregar bases:', error);
     } finally {
@@ -242,54 +252,80 @@ export default function BasesPublicas() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                {bases.map((base) => (
-                  <Card key={base.id} className="border border-border/50 hover:shadow-lg transition-shadow">
-                    <CardContent className="p-6">
-                      <h3 className="text-xl font-bold text-foreground mb-3">{base.nome}</h3>
-                      
-                      {base.local && (
-                        <div className="flex items-start gap-2 text-sm text-muted-foreground mb-2">
-                          <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-promessa-600" />
-                          <span>{base.local}</span>
+                {bases.map((base) => {
+                  // Formatar localização (bairro, cidade, UF) - sem rua/número
+                  const localizacao = [base.bairro, base.cidade, base.uf]
+                    .filter(Boolean)
+                    .join(', ');
+                  
+                  // WhatsApp do líder (priorizar whatsapp_lider, fallback para telefone do líder)
+                  const whatsappNumber = base.whatsapp_lider || base.lider?.telefone;
+                  
+                  return (
+                    <Card key={base.id} className="border border-border/50 hover:shadow-lg transition-shadow overflow-hidden">
+                      {/* Foto da base */}
+                      {base.foto_url ? (
+                        <div className="aspect-video w-full overflow-hidden">
+                          <img 
+                            src={base.foto_url} 
+                            alt={base.nome}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="aspect-video w-full bg-muted flex items-center justify-center">
+                          <Home className="w-12 h-12 text-muted-foreground/30" />
                         </div>
                       )}
                       
-                      {(base.dia_semana || base.horario) && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          <Clock className="w-4 h-4 flex-shrink-0 text-promessa-600" />
-                          <span>
-                            {base.dia_semana}{base.horario && ` às ${base.horario}`}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {base.lider && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                          <Users className="w-4 h-4 flex-shrink-0 text-promessa-600" />
-                          <span>Líder: {base.lider.nome}</span>
-                        </div>
-                      )}
-                      
-                      {base.descricao && (
-                        <p className="text-sm text-muted-foreground mb-4">
-                          {base.descricao}
-                        </p>
-                      )}
+                      <CardContent className="p-6">
+                        <h3 className="text-xl font-bold text-foreground mb-3">{base.nome}</h3>
+                        
+                        {/* Localização (apenas bairro, cidade, UF) */}
+                        {localizacao && (
+                          <div className="flex items-start gap-2 text-sm text-muted-foreground mb-2">
+                            <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-promessa-600" />
+                            <span>{localizacao}</span>
+                          </div>
+                        )}
+                        
+                        {(base.dia_semana || base.horario) && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                            <Clock className="w-4 h-4 flex-shrink-0 text-promessa-600" />
+                            <span>
+                              {base.dia_semana}{base.horario && ` às ${base.horario}`}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {base.lider && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                            <Users className="w-4 h-4 flex-shrink-0 text-promessa-600" />
+                            <span>Líder: {base.lider.nome}</span>
+                          </div>
+                        )}
+                        
+                        {base.descricao && (
+                          <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                            {base.descricao}
+                          </p>
+                        )}
 
-                      {base.lider?.telefone && (
-                        <a 
-                          href={`https://wa.me/55${base.lider.telefone.replace(/\D/g, '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-sm text-promessa-600 hover:text-promessa-700 font-medium"
-                        >
-                          <Phone className="w-4 h-4" />
-                          Entrar em contato
-                        </a>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                        {whatsappNumber && (
+                          <a 
+                            href={`https://wa.me/55${whatsappNumber.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm text-promessa-600 hover:text-promessa-700 font-medium"
+                          >
+                            <Phone className="w-4 h-4" />
+                            Entrar em contato
+                          </a>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
