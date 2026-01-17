@@ -212,13 +212,14 @@ export default function LeaderMinhaEquipe() {
     }
 
     try {
+      const funcaoId = selectedFuncaoId && selectedFuncaoId !== '__none__' ? selectedFuncaoId : null;
       const { error } = await supabase
         .from('ministerio_voluntarios')
         .insert({
           ministerio_id: ministerio.id,
           user_id: profileToAdd.user_id,
           ativo: true,
-          funcao_principal_id: selectedFuncaoId || null,
+          funcao_principal_id: funcaoId,
         });
 
       if (error) throw error;
@@ -246,9 +247,10 @@ export default function LeaderMinhaEquipe() {
     if (!editingVoluntario) return;
 
     try {
+      const funcaoId = selectedFuncaoId && selectedFuncaoId !== '__none__' ? selectedFuncaoId : null;
       const { error } = await supabase
         .from('ministerio_voluntarios')
-        .update({ funcao_principal_id: selectedFuncaoId || null })
+        .update({ funcao_principal_id: funcaoId })
         .eq('id', editingVoluntario.id);
 
       if (error) throw error;
