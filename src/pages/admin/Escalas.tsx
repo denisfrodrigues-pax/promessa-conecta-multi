@@ -237,13 +237,29 @@ export default function AdminEscalas() {
 
   const fetchVoluntarios = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, nome, user_id, telefone')
-        .order('nome');
+      // Buscar usuários com roles que podem ser escalados: admin, financeiro, lider, voluntario
+      // NÃO incluir membro e visitante
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .in('role', ['admin', 'financeiro', 'lider', 'voluntario']);
 
-      if (error) throw error;
-      setVoluntarios(data || []);
+      if (rolesError) throw rolesError;
+
+      const userIds = rolesData?.map(r => r.user_id) || [];
+      
+      if (userIds.length > 0) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, nome, user_id, telefone')
+          .in('user_id', userIds)
+          .order('nome');
+
+        if (error) throw error;
+        setVoluntarios(data || []);
+      } else {
+        setVoluntarios([]);
+      }
     } catch (error) {
       console.error('Error fetching voluntarios:', error);
     }

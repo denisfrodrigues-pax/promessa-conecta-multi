@@ -123,14 +123,7 @@ export function InstitutionalHeader() {
                 </AccordionContent>
               </AccordionItem>
 
-              {/* 7. Check-in Kids - SIMPLES (independente) - oculto na home pública */}
-              {!isHomePage && (
-                <div className="border-b py-4">
-                  <Link onClick={closeMenu} to="/check-in-kids" className="text-lg font-medium">
-                    Check-in Kids
-                  </Link>
-                </div>
-              )}
+              {/* Check-in Kids removido do menu público - disponível apenas no app para voluntários do ministério Kids */}
             </Accordion>
           </nav>
         </div>
@@ -198,10 +191,7 @@ export function InstitutionalHeader() {
             </div>
           </div>
 
-          {/* 7. Check-in Kids - SIMPLES (independente) - oculto na home pública */}
-          {!isHomePage && (
-            <Link to="/check-in-kids" className="hover:text-primary transition-colors">Check-in Kids</Link>
-          )}
+          {/* Check-in Kids removido do menu público - disponível apenas no app para voluntários do ministério Kids */}
 
           {/* 8. Login - Botão independente */}
           <Button asChild variant="outline" size="sm" className="ml-2">

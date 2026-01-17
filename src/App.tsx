@@ -87,6 +87,10 @@ import Contribuir from "@/pages/member/Contribuir";
 
 // App Home
 import AppHome from "@/pages/app/AppHome";
+import VoluntariosDoDia from "@/pages/app/VoluntariosDoDia";
+
+// Financeiro Layout
+import FinanceiroLayout from "@/components/layout/FinanceiroLayout";
 
 // Kids Panel Pages
 import KidsCheckinPanel from "@/pages/kids/KidsCheckinPanel";
@@ -182,6 +186,7 @@ const App = () => (
             <Route path="notificacoes" element={<MemberNotificacoes />} />
             <Route path="contribuicoes" element={<MinhasContribuicoes />} />
             <Route path="contribuir" element={<Contribuir />} />
+            <Route path="voluntarios-do-dia" element={<VoluntariosDoDia />} />
           </Route>
 
           {/* Legacy redirects - redirect old paths to new /app/* paths */}
@@ -253,6 +258,22 @@ const App = () => (
             <Route path="auditoria" element={<AdminAuditoria />} />
             <Route path="configuracoes" element={<AdminConfiguracoes />} />
             <Route path="whatsapp-test" element={<WhatsAppTest />} />
+          </Route>
+
+          {/* Financeiro Routes - only financeiro role (non-admin) */}
+          <Route path="/financeiro" element={
+            <PrivateRoute allowedRoles={['financeiro']}>
+              <FinanceiroLayout />
+            </PrivateRoute>
+          }>
+            <Route index element={<FinanceiroDashboard />} />
+            <Route path="transacoes" element={<Transacoes />} />
+            <Route path="transacoes/novo" element={<TransacaoForm />} />
+            <Route path="transacoes/:id" element={<TransacaoForm />} />
+            <Route path="contas" element={<Contas />} />
+            <Route path="categorias" element={<Categorias />} />
+            <Route path="relatorios" element={<FinanceiroRelatorio />} />
+            <Route path="auditoria" element={<FinanceiroAuditoria />} />
           </Route>
 
           {/* Leader Routes - only lider */}

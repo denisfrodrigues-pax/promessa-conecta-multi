@@ -55,7 +55,7 @@ export default function Usuarios() {
   const fetchUsers = async () => {
     try {
       const [usersRes, rolesRes, membrosRes] = await Promise.all([
-        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('*, foto_url').order('created_at', { ascending: false }),
         supabase.from('user_roles').select('user_id, role'),
         supabase.from('membros').select('id, user_id').not('user_id', 'is', null),
       ]);
@@ -366,11 +366,22 @@ export default function Usuarios() {
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/10">
-                            <span className="text-primary font-semibold text-lg">
-                              {user.nome.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+                          {/* Mostrar foto quando existir, senão inicial */}
+                          {(user as any).foto_url && !(user as any).foto_url.includes('placeholder') ? (
+                            <div className="w-11 h-11 rounded-xl overflow-hidden border border-primary/10">
+                              <img 
+                                src={(user as any).foto_url} 
+                                alt={user.nome}
+                                className="w-full h-full object-cover object-center"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/10">
+                              <span className="text-primary font-semibold text-lg">
+                                {user.nome.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
                           <div>
                             <p className="font-medium text-foreground">{user.nome}</p>
                             <p className="text-sm text-muted-foreground">{user.email}</p>
