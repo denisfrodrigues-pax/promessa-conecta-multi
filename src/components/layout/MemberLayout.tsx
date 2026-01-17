@@ -21,9 +21,14 @@ const navItems = [
 ];
 
 export default function MemberLayout() {
-  const { user, loading, profile, signOut, isAdmin, isLider } = useAuth();
+  const { user, loading, profile, signOut, isAdmin, isLider, roles } = useAuth();
   const { unreadCount } = useNotifications();
   const { isKidsVolunteer } = useKidsVolunteer();
+  
+  // Check if user can see "Escala do Dia" - only for schedulable roles
+  const canSeeEscalaDoDia = roles.some(r => ['admin', 'financeiro', 'lider', 'voluntario'].includes(r));
+  // Check if user is financeiro-only (not admin)
+  const isFinanceiroOnly = roles.includes('financeiro') && !roles.includes('admin');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (loading) {
@@ -76,15 +81,17 @@ export default function MemberLayout() {
                 </Badge>
               )}
             </NavLink>
-            {/* Voluntários do Dia - link para todos os usuários logados */}
-            <NavLink
-              to="/app/voluntarios-do-dia"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50 transition-colors"
-              activeClassName="bg-promessa-100 text-promessa-700 font-medium"
-            >
-              <ClipboardCheck className="w-4 h-4" />
-              <span className="text-sm">Escala do Dia</span>
-            </NavLink>
+            {/* Voluntários do Dia - only for schedulable roles */}
+            {canSeeEscalaDoDia && (
+              <NavLink
+                to="/app/voluntarios-do-dia"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50 transition-colors"
+                activeClassName="bg-promessa-100 text-promessa-700 font-medium"
+              >
+                <ClipboardCheck className="w-4 h-4" />
+                <span className="text-sm">Escala do Dia</span>
+              </NavLink>
+            )}
             {/* Check-in Kids - apenas para voluntários do ministério Kids */}
             {isKidsVolunteer && (
               <NavLink
@@ -103,9 +110,16 @@ export default function MemberLayout() {
                 </RouterNavLink>
               </Button>
             )}
-            {isLider && !isAdmin && (
+            {isFinanceiroOnly && (
               <Button asChild variant="promessa" className="ml-2 font-semibold">
-                <RouterNavLink to="/lider">
+                <RouterNavLink to="/financeiro">
+                  Painel Financeiro
+                </RouterNavLink>
+              </Button>
+            )}
+            {isLider && !isAdmin && !isFinanceiroOnly && (
+              <Button asChild variant="promessa" className="ml-2 font-semibold">
+                <RouterNavLink to="/leader">
                   Painel Líder
                 </RouterNavLink>
               </Button>
@@ -192,9 +206,18 @@ export default function MemberLayout() {
                         <span className="font-medium">Painel Admin</span>
                       </NavLink>
                     )}
-                    {isLider && !isAdmin && (
+                    {isFinanceiroOnly && (
                       <NavLink
-                        to="/lider"
+                        to="/financeiro"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg bg-promessa-100 text-promessa-700 hover:bg-promessa-200 transition-colors"
+                      >
+                        <span className="font-medium">Painel Financeiro</span>
+                      </NavLink>
+                    )}
+                    {isLider && !isAdmin && !isFinanceiroOnly && (
+                      <NavLink
+                        to="/leader"
                         onClick={() => setMobileMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-3 rounded-lg bg-promessa-100 text-promessa-700 hover:bg-promessa-200 transition-colors"
                       >

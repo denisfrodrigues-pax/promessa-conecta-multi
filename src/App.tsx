@@ -205,9 +205,9 @@ const App = () => (
           <Route path="/financeiro/minhas-contribuicoes" element={<Navigate to="/app/contribuicoes" replace />} />
           <Route path="/app/minhas-contribuicoes" element={<Navigate to="/app/contribuicoes" replace />} />
 
-          {/* Admin Routes - only admin and financeiro */}
+          {/* Admin Routes - only admin */}
           <Route path="/admin" element={
-            <PrivateRoute allowedRoles={['admin', 'financeiro']}>
+            <PrivateRoute allowedRoles={['admin']}>
               <AdminLayout />
             </PrivateRoute>
           }>

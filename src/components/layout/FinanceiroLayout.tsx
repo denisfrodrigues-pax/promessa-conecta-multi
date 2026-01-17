@@ -18,13 +18,17 @@ export default function FinanceiroLayout() {
     return <Navigate to="/auth" replace />;
   }
 
-  // Financeiro layout only for 'financeiro' role (not admin)
-  const isFinanceiroOnly = roles.includes('financeiro') && !roles.includes('admin');
-  
-  if (!isFinanceiroOnly) {
-    // Admin users should use AdminLayout
+  // If user is admin, redirect to admin panel (admin has full access there)
+  if (roles.includes('admin')) {
     return <Navigate to="/admin" replace />;
   }
+
+  // If user doesn't have financeiro role at all, redirect to app
+  if (!roles.includes('financeiro')) {
+    return <Navigate to="/app" replace />;
+  }
+
+  // User has financeiro role but not admin - show financeiro panel
 
   return (
     <div className="min-h-screen flex w-full bg-background">
