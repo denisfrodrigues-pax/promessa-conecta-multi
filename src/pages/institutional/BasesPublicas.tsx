@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { FotoCapa } from "@/components/ui/foto-capa";
 
 interface Base {
   id: string;
@@ -263,20 +264,13 @@ export default function BasesPublicas() {
                   
                   return (
                     <Card key={base.id} className="border border-border/50 hover:shadow-lg transition-shadow overflow-hidden">
-                      {/* Foto da base */}
-                      {base.foto_url ? (
-                        <div className="aspect-video w-full overflow-hidden">
-                          <img 
-                            src={base.foto_url} 
-                            alt={base.nome}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="aspect-video w-full bg-muted flex items-center justify-center">
-                          <Home className="w-12 h-12 text-muted-foreground/30" />
-                        </div>
-                      )}
+                      {/* Foto da base usando FotoCapa */}
+                      <FotoCapa 
+                        src={base.foto_url} 
+                        alt={base.nome}
+                        aspectRatio="16/9"
+                        fallbackIcon={<Home className="w-12 h-12" />}
+                      />
                       
                       <CardContent className="p-6">
                         <h3 className="text-xl font-bold text-foreground mb-3">{base.nome}</h3>
