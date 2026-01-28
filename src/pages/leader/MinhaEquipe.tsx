@@ -156,62 +156,49 @@ export default function LeaderMinhaEquipe() {
     }
   };
 
-  const fetchAvailableProfiles = async () => {
+  const fetchAvailableProfiles = async (search: string = '') => {
     if (!ministerio) return;
 
     try {
-      // Fetch users with schedulable roles (admin, financeiro, lider, voluntario)
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('role', ['admin', 'financeiro', 'lider', 'voluntario']);
+      // Use secure RPC function to fetch eligible volunteers
+      const { data, error } = await supabase
+        .rpc('get_eligible_volunteers_for_ministry', {
+          p_ministerio_id: ministerio.id,
+          p_search_term: search
+        });
 
-      if (rolesError) throw rolesError;
+      if (error) throw error;
 
-      const schedulableUserIds = [...new Set((rolesData || []).map((r) => r.user_id))];
-
-      if (schedulableUserIds.length === 0) {
-        setAvailableProfiles([]);
-        return;
-      }
-
-      // Fetch profiles for schedulable users
-      const { data: allProfiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, nome, email, user_id')
-        .in('user_id', schedulableUserIds)
-        .order('nome');
-
-      if (profilesError) throw profilesError;
-
-      // Fetch existing volunteers in this ministry
-      const { data: existingVoluntarios, error: existingError } = await supabase
-        .from('ministerio_voluntarios')
-        .select('user_id')
-        .eq('ministerio_id', ministerio.id);
-
-      if (existingError) throw existingError;
-
-      const existingUserIds = new Set(existingVoluntarios?.map((v) => v.user_id) || []);
-      
-      // Filter out already added users
-      const available = (allProfiles || []).filter(
-        (profile) => !existingUserIds.has(profile.user_id)
-      );
-
-      setAvailableProfiles(available);
+      setAvailableProfiles(data || []);
     } catch (error: any) {
       console.error('Error fetching available profiles:', error);
       toast.error(error.message || 'Erro ao carregar usuários disponíveis');
     }
   };
 
+  const [profileSearchTerm, setProfileSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+
   const handleOpenAddDialog = () => {
     setSelectedProfileId('');
     setSelectedFuncaoIds([]);
-    fetchAvailableProfiles();
+    setProfileSearchTerm('');
+    setAvailableProfiles([]);
     setIsAddDialogOpen(true);
   };
+
+  // Debounced search for profiles
+  useEffect(() => {
+    if (!isAddDialogOpen || !ministerio) return;
+    
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      await fetchAvailableProfiles(profileSearchTerm);
+      setIsSearching(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [profileSearchTerm, isAddDialogOpen, ministerio]);
 
   const handleAddVoluntario = async () => {
     if (!ministerio || !selectedProfileId) {
@@ -515,33 +502,62 @@ export default function LeaderMinhaEquipe() {
           <DialogHeader>
             <DialogTitle>Adicionar Voluntário</DialogTitle>
             <DialogDescription>
-              Selecione um usuário para adicionar ao ministério {ministerio.nome}
+              Busque e selecione um usuário para adicionar ao ministério {ministerio.nome}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Voluntário</Label>
-              <Select value={selectedProfileId} onValueChange={setSelectedProfileId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um voluntário" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableProfiles.length === 0 ? (
-                    <div className="p-2 text-center text-muted-foreground">
-                      Todos os usuários já estão neste ministério
-                    </div>
-                  ) : (
-                    availableProfiles.map((profile) => (
-                      <SelectItem key={profile.id} value={profile.id}>
-                        <div>
-                          <span>{profile.nome}</span>
-                          <span className="text-muted-foreground ml-2 text-sm">({profile.email})</span>
+              <Label>Buscar Voluntário</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Digite o nome ou email..."
+                  value={profileSearchTerm}
+                  onChange={(e) => setProfileSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              {/* Search Results */}
+              <div className="border rounded-md max-h-48 overflow-y-auto">
+                {isSearching ? (
+                  <div className="p-4 text-center text-muted-foreground">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mx-auto"></div>
+                  </div>
+                ) : profileSearchTerm.length === 0 ? (
+                  <div className="p-4 text-center text-muted-foreground text-sm">
+                    Digite ao menos 1 caractere para buscar
+                  </div>
+                ) : availableProfiles.length === 0 ? (
+                  <div className="p-4 text-center text-muted-foreground text-sm">
+                    Nenhum voluntário encontrado
+                  </div>
+                ) : (
+                  availableProfiles.map((profile) => (
+                    <div
+                      key={profile.id}
+                      className={`p-3 cursor-pointer hover:bg-muted/50 border-b last:border-b-0 transition-colors ${
+                        selectedProfileId === profile.id ? 'bg-primary/10 border-primary' : ''
+                      }`}
+                      onClick={() => setSelectedProfileId(profile.id)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          selectedProfileId === profile.id ? 'border-primary bg-primary' : 'border-muted-foreground'
+                        }`}>
+                          {selectedProfileId === profile.id && (
+                            <div className="w-2 h-2 rounded-full bg-white" />
+                          )}
                         </div>
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                        <div>
+                          <p className="font-medium text-sm">{profile.nome}</p>
+                          <p className="text-xs text-muted-foreground">{profile.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Funções (selecione ao menos uma)</Label>
