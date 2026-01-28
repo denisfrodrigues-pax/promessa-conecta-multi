@@ -14,7 +14,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, Users, Eye, Plus, CalendarIcon } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, Users, Eye, Plus, CalendarIcon, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { parseLocalDate, isDatePast, formatDateForDB } from '@/lib/dateUtils';
@@ -76,7 +86,6 @@ interface EscalaFormData {
   data: Date;
   horario: string;
   funcao: string;
-  turno: string;
   voluntarios_ids: string[];
 }
 
@@ -85,7 +94,6 @@ const initialFormData: EscalaFormData = {
   data: new Date(),
   horario: '',
   funcao: '',
-  turno: '',
   voluntarios_ids: [],
 };
 
@@ -106,6 +114,11 @@ export default function LeaderEscalas() {
   const [funcoes, setFuncoes] = useState<Funcao[]>([]);
   const [voluntarios, setVoluntarios] = useState<Profile[]>([]);
   const [formData, setFormData] = useState<EscalaFormData>(initialFormData);
+  
+  // Estados para exclusão de escalas
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<EscalaGroup | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -293,7 +306,7 @@ export default function LeaderEscalas() {
         data: formatDateForDB(formData.data),
         horario: formData.horario || null,
         funcao: formData.funcao,
-        turno: formData.turno || null,
+        turno: null,
         responsavel_id: profile?.id || null,
         voluntario_id: voluntarioId,
         status_geral: 'planejada' as const,
@@ -398,6 +411,38 @@ export default function LeaderEscalas() {
     } catch (error) {
       console.error('Error:', error);
       toast.error('Erro ao recusar escala');
+    }
+  };
+
+  const handleOpenDeleteConfirm = (group: EscalaGroup) => {
+    setGroupToDelete(group);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteEscalas = async () => {
+    if (!groupToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      // Delete all escalas in the group (by their individual IDs)
+      const escalaIds = groupToDelete.voluntarios.map(v => v.id);
+      
+      const { error } = await supabase
+        .from('escalas')
+        .delete()
+        .in('id', escalaIds);
+
+      if (error) throw error;
+      
+      toast.success('Escala(s) excluída(s) com sucesso');
+      setDeleteConfirmOpen(false);
+      setGroupToDelete(null);
+      fetchData();
+    } catch (error: any) {
+      console.error('Error deleting escala:', error);
+      toast.error(`Erro ao excluir escala: ${error?.message || 'Erro desconhecido'}`);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -634,6 +679,14 @@ export default function LeaderEscalas() {
                         >
                           <Eye className="w-4 h-4 mr-1" />
                           Ver Detalhes
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={() => handleOpenDeleteConfirm(group)}
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -958,25 +1011,26 @@ export default function LeaderEscalas() {
               />
             </div>
 
-            {/* Turno */}
+            {/* Função */}
             <div className="space-y-2">
-              <Label>Turno</Label>
+              <Label>Função *</Label>
               <Select
-                value={formData.turno}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, turno: value }))}
+                value={formData.funcao}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, funcao: value }))}
+                disabled={!formData.ministerio_id}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o turno (opcional)" />
+                  <SelectValue placeholder={!formData.ministerio_id ? "Selecione um ministério primeiro" : "Selecione a função"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Manhã">Manhã</SelectItem>
-                  <SelectItem value="Tarde">Tarde</SelectItem>
-                  <SelectItem value="Noite">Noite</SelectItem>
+                  {funcoes.map((f) => (
+                    <SelectItem key={f.id} value={f.nome}>
+                      {f.nome}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Função */}
             <div className="space-y-2">
               <Label>Função *</Label>
               <Select
@@ -1039,6 +1093,40 @@ export default function LeaderEscalas() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de Confirmação de Exclusão */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir escala?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação remove a escala e não pode ser desfeita.
+              {groupToDelete && (
+                <div className="mt-3 p-3 rounded-lg bg-muted">
+                  <p className="font-medium">{groupToDelete.funcao}</p>
+                  <p className="text-sm">
+                    {format(parseLocalDate(groupToDelete.data), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                    {groupToDelete.ministerio_nome && ` • ${groupToDelete.ministerio_nome}`}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {groupToDelete.voluntarios.length} voluntário(s) serão removidos desta escala.
+                  </p>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEscalas}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
