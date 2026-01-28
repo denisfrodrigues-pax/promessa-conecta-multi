@@ -179,12 +179,19 @@ export default function LeaderMinhaEquipe() {
   const [profileSearchTerm, setProfileSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
-  const handleOpenAddDialog = () => {
+  const handleOpenAddDialog = async () => {
     setSelectedProfileId('');
     setSelectedFuncaoIds([]);
     setProfileSearchTerm('');
     setAvailableProfiles([]);
     setIsAddDialogOpen(true);
+    
+    // Load initial list immediately when opening dialog
+    if (ministerio) {
+      setIsSearching(true);
+      await fetchAvailableProfiles('');
+      setIsSearching(false);
+    }
   };
 
   // Debounced search for profiles
@@ -523,14 +530,13 @@ export default function LeaderMinhaEquipe() {
                 {isSearching ? (
                   <div className="p-4 text-center text-muted-foreground">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mx-auto"></div>
-                  </div>
-                ) : profileSearchTerm.length === 0 ? (
-                  <div className="p-4 text-center text-muted-foreground text-sm">
-                    Digite ao menos 1 caractere para buscar
+                    <p className="text-sm mt-2">Buscando...</p>
                   </div>
                 ) : availableProfiles.length === 0 ? (
                   <div className="p-4 text-center text-muted-foreground text-sm">
-                    Nenhum voluntário encontrado
+                    {profileSearchTerm 
+                      ? 'Nenhum voluntário encontrado' 
+                      : 'Todos os usuários já estão neste ministério'}
                   </div>
                 ) : (
                   availableProfiles.map((profile) => (
