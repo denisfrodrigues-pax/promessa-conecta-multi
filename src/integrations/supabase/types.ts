@@ -1843,6 +1843,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_eligible_volunteers_for_ministry: {
+        Args: { p_ministerio_id: string; p_search_term?: string }
+        Returns: {
+          email: string
+          id: string
+          nome: string
+          user_id: string
+        }[]
+      }
       get_profile_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
