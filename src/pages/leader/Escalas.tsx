@@ -1031,25 +1031,6 @@ export default function LeaderEscalas() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Função *</Label>
-              <Select
-                value={formData.funcao}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, funcao: value }))}
-                disabled={!formData.ministerio_id}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={!formData.ministerio_id ? "Selecione um ministério primeiro" : "Selecione a função"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {funcoes.map((f) => (
-                    <SelectItem key={f.id} value={f.nome}>
-                      {f.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
             {/* Voluntários */}
             <div className="space-y-2">
