@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield, UserX, UserPlus } from 'lucide-react';
+import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield, UserX, UserPlus, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -43,7 +43,9 @@ export default function Usuarios() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deactivatingUser, setDeactivatingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [convertingUser, setConvertingUser] = useState<User | null>(null);
   const [converting, setConverting] = useState(false);
   const [editData, setEditData] = useState({ nome: '', telefone: '', status: '', role: '' });
@@ -203,23 +205,60 @@ export default function Usuarios() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!deletingUser) return;
+  const handleDeactivate = async () => {
+    if (!deactivatingUser) return;
 
     try {
       const { error } = await supabase
         .from('profiles')
         .update({ status: 'inativo' as const })
-        .eq('id', deletingUser.id);
+        .eq('id', deactivatingUser.id);
 
       if (error) throw error;
 
       toast.success('Usuário desativado com sucesso');
+      setDeactivatingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error deactivating user:', error);
+      toast.error(error.message || 'Erro ao desativar usuário');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingUser) return;
+
+    setDeleting(true);
+    try {
+      // Delete related records first (if any constraints exist)
+      // Delete from user_roles
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', deletingUser.user_id);
+
+      // Delete from membros if linked
+      await supabase
+        .from('membros')
+        .delete()
+        .eq('user_id', deletingUser.id);
+
+      // Delete the profile
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', deletingUser.id);
+
+      if (error) throw error;
+
+      toast.success('Usuário excluído permanentemente');
       setDeletingUser(null);
       fetchUsers();
-    } catch (error) {
-      console.error('Error deactivating user:', error);
-      toast.error('Erro ao desativar usuário');
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error(error.message || 'Erro ao excluir usuário');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -428,13 +467,22 @@ export default function Usuarios() {
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem 
-                                  onClick={() => setDeletingUser(user)}
-                                  className="text-destructive focus:text-destructive"
+                                  onClick={() => setDeactivatingUser(user)}
+                                  className="text-warning focus:text-warning"
                                 >
                                   <UserX className="w-4 h-4 mr-2" />
                                   Desativar usuário
                                 </DropdownMenuItem>
                               </>
+                            )}
+                            {isAdmin && (
+                              <DropdownMenuItem 
+                                onClick={() => setDeletingUser(user)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Excluir permanentemente
+                              </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -519,13 +567,13 @@ export default function Usuarios() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deletingUser} onOpenChange={() => setDeletingUser(null)}>
+      {/* Deactivate Confirmation Dialog */}
+      <AlertDialog open={!!deactivatingUser} onOpenChange={() => setDeactivatingUser(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Desativar usuário?</AlertDialogTitle>
             <AlertDialogDescription>
-              O usuário <strong>{deletingUser?.nome}</strong> será desativado e não poderá mais acessar o sistema. 
+              O usuário <strong>{deactivatingUser?.nome}</strong> será desativado e não poderá mais acessar o sistema. 
               Os dados históricos (escalas, contribuições, registros) serão mantidos.
               <br /><br />
               Esta ação pode ser revertida alterando o status do usuário para "Ativo".
@@ -534,10 +582,41 @@ export default function Usuarios() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeactivate}
+              className="bg-warning text-warning-foreground hover:bg-warning/90"
             >
               Desativar usuário
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingUser} onOpenChange={() => setDeletingUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir usuário permanentemente?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong className="text-destructive">ATENÇÃO:</strong> O usuário <strong>{deletingUser?.nome}</strong> será excluído permanentemente do sistema.
+              <br /><br />
+              Todos os dados associados serão removidos, incluindo:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Perfil e informações pessoais</li>
+                <li>Vínculo com membros (se houver)</li>
+                <li>Funções e permissões</li>
+              </ul>
+              <br />
+              <strong>Esta ação NÃO pode ser desfeita.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'Excluindo...' : 'Excluir permanentemente'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
