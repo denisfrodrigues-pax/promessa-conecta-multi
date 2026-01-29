@@ -11,67 +11,172 @@ import {
 
 const beliefGroups = [
   {
-    title: "Sobre Deus e a Criação",
+    title: "I. A Revelação de Deus",
     beliefs: [
-      { title: "Cremos na Trindade Divina", description: "Um só Deus eterno, subsistente em três pessoas: Pai, Filho e Espírito Santo." },
-      { title: "Cremos que Deus criou o mundo", description: "Deus é o Criador de todas as coisas, e tudo existe por Sua vontade e propósito." },
+      { 
+        title: "1. A Bíblia Sagrada", 
+        description: "Cremos que a Bíblia é a Palavra inspirada de Deus, plenamente confiável, suficiente e autoridade suprema em matéria de fé e prática cristã. Por meio dela, Deus revela sua vontade, seu plano de salvação e sua verdade para a humanidade." 
+      },
     ],
   },
   {
-    title: "Sobre a Bíblia",
+    title: "II. Deus e Sua Obra Criadora",
     beliefs: [
-      { title: "Cremos na Bíblia Sagrada como Palavra inspirada de Deus", description: "A Bíblia é a revelação escrita de Deus, autoridade máxima para fé e prática cristã." },
+      { 
+        title: "2. A Triunidade Divina", 
+        description: "Cremos em um único Deus, eterno e soberano, que subsiste em três pessoas: Pai, Filho e Espírito Santo, iguais em essência, poder e glória, atuando harmoniosamente na criação, redenção e consumação." 
+      },
+      { 
+        title: "3. A Criação do Mundo", 
+        description: "Cremos que Deus criou todas as coisas pelo poder da sua palavra, de forma intencional, ordenada e boa, sendo Ele o sustentador de toda a criação." 
+      },
+      { 
+        title: "4. Origem, Queda e Restauração do Ser Humano", 
+        description: "Cremos que o ser humano foi criado à imagem de Deus, mas caiu em pecado, rompendo seu relacionamento com o Criador. Em Cristo, Deus providenciou o caminho da restauração espiritual e da reconciliação." 
+      },
     ],
   },
   {
-    title: "Sobre o Ser Humano e a Salvação",
+    title: "III. A Obra Salvadora de Cristo",
     beliefs: [
-      { title: "Cremos na queda e na restauração do ser humano", description: "O ser humano caiu pelo pecado, mas pode ser restaurado pela graça de Deus." },
-      { title: "Cremos em Jesus Cristo como Salvador e Mediador", description: "Jesus é o único caminho para a salvação e o mediador entre Deus e os homens." },
-      { title: "Cremos na eleição e no chamado", description: "Deus chama pessoas para viverem segundo Seu propósito e vontade." },
-      { title: "Cremos na conversão, regeneração, justificação e adoção", description: "Pela fé em Cristo, o pecador é transformado, perdoado e feito filho de Deus." },
-      { title: "Cremos na santificação e perseverança", description: "A vida cristã é um processo contínuo de transformação e fidelidade a Deus." },
+      { 
+        title: "5. Jesus Cristo: Salvador e Mediador da Humanidade", 
+        description: "Cremos que Jesus Cristo é o Filho de Deus, plenamente divino e plenamente humano, único Salvador e mediador entre Deus e os homens, cuja obra redentora é suficiente para a salvação." 
+      },
+      { 
+        title: "6. Regeneração e Conversão", 
+        description: "Cremos que a salvação começa com o novo nascimento, operado pelo Espírito Santo, quando o pecador se arrepende, crê em Cristo e é transformado interiormente." 
+      },
+      { 
+        title: "7. Justificação e Adoção", 
+        description: "Cremos que, pela fé, o pecador é justificado diante de Deus e adotado como filho, recebendo perdão, nova identidade e acesso à família de Deus." 
+      },
+      { 
+        title: "8. Santificação e Perseverança", 
+        description: "Cremos que o salvo é chamado a uma vida de santificação contínua, vivendo em obediência a Deus e perseverando na fé até o fim." 
+      },
     ],
   },
   {
-    title: "Sobre o Espírito Santo",
+    title: "IV. O Espírito Santo e Sua Atuação",
     beliefs: [
-      { title: "Cremos no batismo no Espírito Santo", description: "Uma experiência concedida por Deus para capacitação espiritual e testemunho." },
-      { title: "Cremos nos dons espirituais", description: "O Espírito Santo distribui dons para edificação da igreja e serviço cristão." },
+      { 
+        title: "9. O Batismo no Espírito Santo", 
+        description: "Cremos que o batismo no Espírito Santo é uma experiência distinta da conversão, concedida por Deus para capacitação espiritual e testemunho cristão." 
+      },
+      { 
+        title: "10. Os Dons Espirituais", 
+        description: "Cremos que o Espírito Santo concede dons à Igreja para edificação do corpo de Cristo, serviço e manifestação do poder de Deus." 
+      },
     ],
   },
   {
-    title: "Sobre a Vida Cristã",
+    title: "V. A Missão da Igreja",
     beliefs: [
-      { title: "Cremos na oração e sua eficácia", description: "A oração é um meio poderoso de comunhão com Deus." },
-      { title: "Cremos na cura divina", description: "Deus continua agindo com poder para curar conforme Sua vontade." },
-      { title: "Cremos na evangelização e no discipulado", description: "Todo cristão é chamado para anunciar o evangelho e formar discípulos." },
-      { title: "Cremos na sã doutrina", description: "A fé cristã deve ser vivida em fidelidade ao ensino bíblico." },
-      { title: "Cremos na abstinência e na temperança", description: "A vida cristã envolve escolhas responsáveis e equilíbrio." },
-      { title: "Cremos na submissão às autoridades e na liberdade de consciência", description: "Respeitamos as autoridades constituídas, preservando a consciência cristã diante de Deus." },
+      { 
+        title: "11. Evangelização e Discipulado", 
+        description: "Cremos que a Igreja é chamada a anunciar o evangelho e formar discípulos, conduzindo pessoas a uma vida de fé, obediência e maturidade espiritual." 
+      },
+      { 
+        title: "12. Ordenanças Instituídas por Cristo", 
+        description: "Cremos nas ordenanças deixadas por Jesus: o batismo nas águas, a Ceia do Senhor e o lava-pés, como expressões de fé, comunhão e obediência." 
+      },
+      { 
+        title: "13. A Sã Doutrina", 
+        description: "Cremos na importância de preservar o ensino bíblico fiel, rejeitando heresias e permanecendo firmes na verdade revelada nas Escrituras." 
+      },
     ],
   },
   {
-    title: "Sobre a Igreja e as Ordenanças",
+    title: "VI. Vida Cristã e Prática",
     beliefs: [
-      { title: "Cremos no batismo por imersão", description: "Um testemunho público de fé em Jesus Cristo." },
-      { title: "Cremos no lava-pés", description: "Um ato de humildade, serviço e comunhão cristã." },
-      { title: "Cremos na Ceia do Senhor", description: "Memorial da morte e ressurreição de Cristo." },
-      { title: "Cremos na manutenção da obra por meio de dízimos e ofertas", description: "Um princípio bíblico de fidelidade e gratidão." },
-      { title: "Cremos na igreja de Cristo", description: "A igreja é o corpo vivo de Cristo na terra." },
-      { title: "Cremos no casamento, no lar e na família", description: "Instituições criadas por Deus para o bem da sociedade." },
+      { 
+        title: "14. Abstinência e Temperança", 
+        description: "Cremos que o cristão deve viver com domínio próprio, abstendo-se de práticas que desonrem a Deus e prejudiquem o corpo e a vida espiritual." 
+      },
+      { 
+        title: "15. A Oração e sua Eficácia", 
+        description: "Cremos que a oração é um meio estabelecido por Deus para comunhão, fortalecimento espiritual e manifestação do seu agir." 
+      },
+      { 
+        title: "16. A Cura Divina", 
+        description: "Cremos que Deus continua curando segundo sua vontade, respondendo às orações feitas com fé." 
+      },
     ],
   },
   {
-    title: "Sobre o Fim dos Tempos",
+    title: "VII. A Lei e os Princípios Divinos",
     beliefs: [
-      { title: "Cremos na mortalidade da alma", description: "A vida eterna é um dom concedido por Deus." },
-      { title: "Cremos na segunda vinda de Cristo", description: "Jesus voltará para buscar o Seu povo." },
-      { title: "Cremos nas duas ressurreições", description: "Ressurreição dos justos e dos injustos." },
-      { title: "Cremos no milênio", description: "Um período estabelecido por Deus em Seu plano redentor." },
-      { title: "Cremos no juízo final", description: "Deus julgará toda a humanidade com justiça." },
-      { title: "Cremos na extinção da maldade", description: "O pecado e o mal terão um fim definitivo." },
-      { title: "Cremos na nova terra, lar dos remidos", description: "Um novo céu e uma nova terra preparados por Deus." },
+      { 
+        title: "17. A Lei dos Dez Mandamentos e sua Vigência", 
+        description: "Cremos que a lei moral de Deus permanece como expressão de sua vontade e caráter." 
+      },
+      { 
+        title: "18. O Verdadeiro Dia de Descanso", 
+        description: "Cremos que o sábado é o dia instituído por Deus como memorial da criação e tempo de descanso e adoração." 
+      },
+      { 
+        title: "19. A Distinção das Leis", 
+        description: "Cremos na distinção entre leis morais, cerimoniais e civis, compreendendo sua aplicação à luz do Novo Testamento." 
+      },
+    ],
+  },
+  {
+    title: "VIII. A Vida em Comunidade",
+    beliefs: [
+      { 
+        title: "20. A Manutenção da Obra: Dízimos e Ofertas", 
+        description: "Cremos que a contribuição voluntária sustenta a obra de Deus e expressa fidelidade e gratidão." 
+      },
+      { 
+        title: "21. Submissão às Autoridades e Liberdade de Consciência", 
+        description: "Cremos no respeito às autoridades constituídas, preservando a liberdade de consciência diante de Deus." 
+      },
+      { 
+        title: "22. O Casamento, o Lar e a Família", 
+        description: "Cremos que a família é uma instituição divina, baseada no casamento entre homem e mulher, sendo o lar um espaço de fé, amor e ensino cristão." 
+      },
+      { 
+        title: "23. A Igreja de Cristo", 
+        description: "Cremos que a Igreja é o corpo de Cristo, composta por todos os salvos, chamada a viver em comunhão, serviço e missão." 
+      },
+    ],
+  },
+  {
+    title: "IX. As Últimas Coisas",
+    beliefs: [
+      { 
+        title: "24. A Mortalidade da Alma", 
+        description: "Cremos que a alma não é imortal por natureza e que a vida eterna é dom de Deus concedido aos salvos." 
+      },
+      { 
+        title: "25. O Dia da Crucificação e da Ressurreição de Jesus", 
+        description: "Cremos na morte real e na ressurreição literal de Jesus Cristo como fundamento da fé cristã." 
+      },
+      { 
+        title: "26. A Segunda Vinda de Cristo", 
+        description: "Cremos que Jesus Cristo voltará de forma visível, gloriosa e literal para buscar seu povo." 
+      },
+      { 
+        title: "27. As Ressurreições dos Mortos", 
+        description: "Cremos na ressurreição dos justos para a vida eterna e dos ímpios para juízo." 
+      },
+      { 
+        title: "28. O Milênio", 
+        description: "Cremos no período milenar conforme revelado nas Escrituras, como parte do plano final de Deus." 
+      },
+      { 
+        title: "29. O Juízo Final", 
+        description: "Cremos que todos comparecerão diante de Deus para julgamento, segundo suas obras." 
+      },
+      { 
+        title: "30. A Origem e a Extinção da Maldade", 
+        description: "Cremos que o mal teve origem na rebelião contra Deus e será definitivamente eliminado." 
+      },
+      { 
+        title: "31. A Nova Terra, o Lar dos Remidos", 
+        description: "Cremos que Deus criará novos céus e nova terra, onde os salvos viverão eternamente em sua presença." 
+      },
     ],
   },
 ];
@@ -100,7 +205,7 @@ export default function Teologia() {
               Nossa Teologia
             </h1>
             <p className="text-lg text-white/80 max-w-2xl mx-auto">
-              Nossa fé é fundamentada na Bíblia Sagrada e vivida de forma prática, relacional e responsável.
+              Cremos e ensinamos conforme a Palavra de Deus
             </p>
           </div>
         </div>
