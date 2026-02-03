@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Save, Network } from 'lucide-react';
 import { toast } from 'sonner';
+import { BaseFotoUpload } from '@/components/base/BaseFotoUpload';
 
 interface Profile {
   id: string;
@@ -33,11 +34,13 @@ export default function BaseNova() {
     cidade: '',
     uf: '',
     foto_url: '',
+    anfitrioes: '',
     whatsapp_lider: '',
     capacidade: 20,
     visibilidade: 'publico',
     lider_id: '',
     status: 'ativo',
+    observacoes: '',
   });
 
   useEffect(() => {
@@ -76,11 +79,13 @@ export default function BaseNova() {
         cidade: formData.cidade.trim() || null,
         uf: formData.uf.trim() || null,
         foto_url: formData.foto_url.trim() || null,
+        anfitrioes: formData.anfitrioes.trim() || null,
         whatsapp_lider: formData.whatsapp_lider.trim() || null,
         capacidade: formData.capacidade,
         visibilidade: formData.visibilidade,
         lider_id: formData.lider_id || null,
         status: formData.status,
+        observacoes: formData.observacoes.trim() || null,
       });
 
       if (error) throw error;
@@ -227,16 +232,23 @@ export default function BaseNova() {
               </div>
             </div>
 
-            {/* Foto e WhatsApp */}
+            {/* Foto, Anfitriões e Contato */}
             <div className="border-t pt-4 mt-4">
-              <h3 className="text-sm font-medium mb-3">Foto e Contato</h3>
+              <h3 className="text-sm font-medium mb-3">Foto, Anfitriões e Contato</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <BaseFotoUpload
+                    currentUrl={formData.foto_url || null}
+                    baseId="new"
+                    onUploadComplete={(url) => setFormData({ ...formData, foto_url: url })}
+                  />
+                </div>
                 <div className="sm:col-span-2 space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">URL da Foto da Base/Anfitriões</Label>
+                  <Label className="text-xs text-muted-foreground">Anfitriões</Label>
                   <Input
-                    value={formData.foto_url}
-                    onChange={(e) => setFormData({ ...formData, foto_url: e.target.value })}
-                    placeholder="https://exemplo.com/foto.jpg"
+                    value={formData.anfitrioes}
+                    onChange={(e) => setFormData({ ...formData, anfitrioes: e.target.value })}
+                    placeholder="Ex: João e Maria, Família Silva"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -248,6 +260,17 @@ export default function BaseNova() {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Observações */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Observações</Label>
+              <Textarea
+                value={formData.observacoes}
+                onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                placeholder="Informações importantes, orientações internas, detalhes logísticos..."
+                rows={3}
+              />
             </div>
 
             {/* Capacidade + Visibilidade */}

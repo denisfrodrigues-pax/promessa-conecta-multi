@@ -47,7 +47,9 @@ interface Base {
   visibilidade: string | null;
   data_criacao: string;
   foto_url: string | null;
+  anfitrioes: string | null;
   whatsapp_lider: string | null;
+  observacoes: string | null;
   lider?: { nome: string; telefone: string | null } | null;
 }
 
@@ -57,7 +59,9 @@ interface EditFormData {
   dia_semana: string;
   horario: string;
   foto_url: string;
+  anfitrioes: string;
   whatsapp_lider: string;
+  observacoes: string;
 }
 
 interface Presenca {
@@ -247,7 +251,9 @@ export default function LeaderBaseDetalhes() {
     dia_semana: '',
     horario: '',
     foto_url: '',
-    whatsapp_lider: ''
+    anfitrioes: '',
+    whatsapp_lider: '',
+    observacoes: ''
   });
   const [saving, setSaving] = useState(false);
   
@@ -332,7 +338,7 @@ export default function LeaderBaseDetalhes() {
       .from('bases')
       .select(`
         id, nome, descricao, lider_id, status, dia_semana, horario, 
-        local, capacidade, visibilidade, data_criacao, foto_url, whatsapp_lider,
+        local, capacidade, visibilidade, data_criacao, foto_url, anfitrioes, whatsapp_lider, observacoes,
         lider:profiles!bases_lider_id_fkey(nome, telefone)
       `)
       .eq('id', id)
@@ -465,7 +471,9 @@ export default function LeaderBaseDetalhes() {
       dia_semana: base.dia_semana || '',
       horario: base.horario || '',
       foto_url: base.foto_url || '',
-      whatsapp_lider: base.whatsapp_lider || ''
+      anfitrioes: base.anfitrioes || '',
+      whatsapp_lider: base.whatsapp_lider || '',
+      observacoes: base.observacoes || ''
     });
     setIsEditDialogOpen(true);
   };
@@ -483,7 +491,9 @@ export default function LeaderBaseDetalhes() {
           dia_semana: editFormData.dia_semana || null,
           horario: editFormData.horario.trim() || null,
           foto_url: editFormData.foto_url.trim() || null,
-          whatsapp_lider: editFormData.whatsapp_lider.trim() || null
+          anfitrioes: editFormData.anfitrioes.trim() || null,
+          whatsapp_lider: editFormData.whatsapp_lider.trim() || null,
+          observacoes: editFormData.observacoes.trim() || null
         })
         .eq('id', id);
 
@@ -639,12 +649,33 @@ export default function LeaderBaseDetalhes() {
             />
             
             <div className="space-y-2">
+              <Label htmlFor="edit-anfitrioes">Anfitriões</Label>
+              <Input
+                id="edit-anfitrioes"
+                value={editFormData.anfitrioes}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, anfitrioes: e.target.value }))}
+                placeholder="Ex: João e Maria, Família Silva"
+              />
+            </div>
+            
+            <div className="space-y-2">
               <Label htmlFor="edit-whatsapp">WhatsApp do Líder</Label>
               <Input
                 id="edit-whatsapp"
                 value={editFormData.whatsapp_lider}
                 onChange={(e) => setEditFormData(prev => ({ ...prev, whatsapp_lider: e.target.value }))}
                 placeholder="(99) 99999-9999"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-observacoes">Observações</Label>
+              <Textarea
+                id="edit-observacoes"
+                value={editFormData.observacoes}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, observacoes: e.target.value }))}
+                placeholder="Informações importantes, orientações internas..."
+                rows={3}
               />
             </div>
           </div>
