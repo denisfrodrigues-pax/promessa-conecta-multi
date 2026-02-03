@@ -184,6 +184,7 @@ export type Database = {
       }
       bases: {
         Row: {
+          anfitrioes: string | null
           bairro: string | null
           capacidade: number | null
           cidade: string | null
@@ -198,6 +199,7 @@ export type Database = {
           local: string | null
           nome: string
           numero: string | null
+          observacoes: string | null
           rua: string | null
           status: string | null
           uf: string | null
@@ -206,6 +208,7 @@ export type Database = {
           whatsapp_lider: string | null
         }
         Insert: {
+          anfitrioes?: string | null
           bairro?: string | null
           capacidade?: number | null
           cidade?: string | null
@@ -220,6 +223,7 @@ export type Database = {
           local?: string | null
           nome: string
           numero?: string | null
+          observacoes?: string | null
           rua?: string | null
           status?: string | null
           uf?: string | null
@@ -228,6 +232,7 @@ export type Database = {
           whatsapp_lider?: string | null
         }
         Update: {
+          anfitrioes?: string | null
           bairro?: string | null
           capacidade?: number | null
           cidade?: string | null
@@ -242,6 +247,7 @@ export type Database = {
           local?: string | null
           nome?: string
           numero?: string | null
+          observacoes?: string | null
           rua?: string | null
           status?: string | null
           uf?: string | null

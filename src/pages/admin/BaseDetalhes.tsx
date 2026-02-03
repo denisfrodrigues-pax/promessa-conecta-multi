@@ -146,6 +146,8 @@ export default function BaseDetalhes() {
     lider_id: '',
     status: '',
     foto_url: '',
+    anfitrioes: '',
+    observacoes: '',
   });
 
   const totalMembros = membrosBase.length + visitantesBase.length;
@@ -182,6 +184,8 @@ export default function BaseDetalhes() {
         lider_id: data.lider_id || '',
         status: data.status,
         foto_url: data.foto_url || '',
+        anfitrioes: data.anfitrioes || '',
+        observacoes: data.observacoes || '',
       });
 
       if (data.lider_id) {
@@ -280,6 +284,8 @@ export default function BaseDetalhes() {
         lider_id: formData.lider_id || null,
         status: formData.status,
         foto_url: formData.foto_url || null,
+        anfitrioes: formData.anfitrioes.trim() || null,
+        observacoes: formData.observacoes.trim() || null,
       })
       .eq('id', id);
 
@@ -512,6 +518,15 @@ export default function BaseDetalhes() {
                 disabled={saving}
               />
 
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Anfitriões</Label>
+                <Input 
+                  value={formData.anfitrioes} 
+                  onChange={(e) => setFormData({ ...formData, anfitrioes: e.target.value })} 
+                  placeholder="Ex: João e Maria, Família Silva"
+                />
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Dia</Label>
@@ -560,6 +575,15 @@ export default function BaseDetalhes() {
                 </div>
               </div>
 
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Observações</Label>
+                <Textarea 
+                  value={formData.observacoes} 
+                  onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })} 
+                  placeholder="Informações importantes, orientações internas, detalhes logísticos..."
+                  rows={3}
+                />
+              </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setEditing(false)}>Cancelar</Button>
                 <Button onClick={handleSave} disabled={saving}>
