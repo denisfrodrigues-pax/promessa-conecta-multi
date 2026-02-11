@@ -326,9 +326,21 @@ export default function BaseDetalhes() {
   };
 
   const addMembro = async (membroId: string) => {
-    const { error } = await supabase.from('bases_membros').insert({ base_id: id, membro_id: membroId, status: 'ativo' });
+    // Look up the membro's profile_id (user_id in membros references profiles.id)
+    const { data: membroData } = await supabase
+      .from('membros')
+      .select('user_id')
+      .eq('id', membroId)
+      .maybeSingle();
+
+    const insertData: { base_id: string; membro_id: string; status: string; profile_id?: string } = { base_id: id!, membro_id: membroId, status: 'ativo' };
+    if (membroData?.user_id) {
+      insertData.profile_id = membroData.user_id;
+    }
+
+    const { error } = await supabase.from('bases_membros').insert(insertData);
     if (error) {
-      toast.error('Erro ao adicionar membro');
+      toast.error('Erro ao adicionar membro: ' + error.message);
       return;
     }
     toast.success('Membro adicionado!');

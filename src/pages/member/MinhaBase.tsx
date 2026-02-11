@@ -16,7 +16,8 @@ import {
   Loader2,
   AlertCircle,
   NotebookPen,
-  Save
+  Save,
+  Home
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -29,6 +30,8 @@ interface Base {
   horario: string | null;
   capacidade: number | null;
   lider_id: string | null;
+  foto_url: string | null;
+  anfitrioes: string | null;
   lider?: {
     nome: string;
   } | null;
@@ -59,7 +62,8 @@ interface NotaBase {
 export default function MinhaBase() {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [baseData, setBaseData] = useState<BasesMembro | null>(null);
+  const [basesData, setBasesData] = useState<BasesMembro[]>([]);
+  const [selectedBaseId, setSelectedBaseId] = useState<string | null>(null);
   const [presencaHoje, setPresencaHoje] = useState<Presenca | null>(null);
   const [notaHoje, setNotaHoje] = useState<NotaBase | null>(null);
   const [notaConteudo, setNotaConteudo] = useState('');
@@ -71,16 +75,21 @@ export default function MinhaBase() {
 
   useEffect(() => {
     if (profile?.id) {
-      fetchData();
+      fetchBases();
     }
   }, [profile?.id]);
 
-  const fetchData = async () => {
+  useEffect(() => {
+    if (selectedBaseId && profile?.id) {
+      fetchBaseDetails(selectedBaseId);
+    }
+  }, [selectedBaseId]);
+
+  const fetchBases = async () => {
     if (!profile?.id) return;
 
     setLoading(true);
     try {
-      // Fetch user's base membership
       const { data: membroData, error: membroError } = await supabase
         .from('bases_membros')
         .select(`
@@ -97,67 +106,102 @@ export default function MinhaBase() {
             dia_semana,
             horario,
             capacidade,
-            lider_id
+            lider_id,
+            foto_url,
+            anfitrioes
           )
         `)
         .eq('profile_id', profile.id)
-        .eq('status', 'ativo')
-        .maybeSingle();
+        .eq('status', 'ativo');
 
       if (membroError) throw membroError;
 
-      if (membroData) {
-        // Fetch leader info if exists
-        if (membroData.bases?.lider_id) {
-          const { data: liderData } = await supabase
-            .from('profiles')
-            .select('nome')
-            .eq('id', membroData.bases.lider_id)
-            .single();
+      const validData = (membroData || []).filter(d => d.bases) as unknown as BasesMembro[];
 
-          if (liderData && membroData.bases) {
-            (membroData.bases as Base).lider = liderData;
-          }
-        }
+      // Fetch leader names for all bases
+      const liderIds = validData
+        .map(d => d.bases?.lider_id)
+        .filter(Boolean) as string[];
 
-        setBaseData(membroData as unknown as BasesMembro);
+      if (liderIds.length > 0) {
+        const { data: lideres } = await supabase
+          .from('profiles')
+          .select('id, nome')
+          .in('id', liderIds);
 
-        // Fetch today's presence
-        const { data: presencaData } = await supabase
-          .from('presencas')
-          .select('id, data, presente, created_at')
-          .eq('usuario_id', profile.id)
-          .eq('referencia_tipo', 'base')
-          .eq('referencia_id', membroData.base_id)
-          .eq('data', hoje)
-          .maybeSingle();
-
-        setPresencaHoje(presencaData);
-
-        // Fetch today's note
-        const { data: notaData } = await supabase
-          .from('notas_base')
-          .select('id, conteudo, data')
-          .eq('profile_id', profile.id)
-          .eq('base_id', membroData.base_id)
-          .eq('data', hoje)
-          .maybeSingle();
-
-        if (notaData) {
-          setNotaHoje(notaData);
-          setNotaConteudo(notaData.conteudo || '');
+        if (lideres) {
+          const liderMap = new Map(lideres.map(l => [l.id, l]));
+          validData.forEach(d => {
+            if (d.bases?.lider_id && liderMap.has(d.bases.lider_id)) {
+              d.bases.lider = liderMap.get(d.bases.lider_id)!;
+            }
+          });
         }
       }
+
+      setBasesData(validData);
+
+      // Auto-select first base or preserve selection
+      if (validData.length > 0) {
+        const currentStillValid = selectedBaseId && validData.some(d => d.base_id === selectedBaseId);
+        const idToSelect = currentStillValid ? selectedBaseId! : validData[0].base_id;
+        setSelectedBaseId(idToSelect);
+        await fetchBaseDetails(idToSelect);
+      }
     } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Erro ao carregar dados da base');
+      console.error('Error fetching bases:', error);
+      toast.error('Erro ao carregar dados das bases');
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchBaseDetails = async (baseId: string) => {
+    if (!profile?.id) return;
+
+    try {
+      // Fetch today's presence
+      const { data: presencaData } = await supabase
+        .from('presencas')
+        .select('id, data, presente, created_at')
+        .eq('usuario_id', profile.id)
+        .eq('referencia_tipo', 'base')
+        .eq('referencia_id', baseId)
+        .eq('data', hoje)
+        .maybeSingle();
+
+      setPresencaHoje(presencaData);
+
+      // Fetch today's note
+      const { data: notaData } = await supabase
+        .from('notas_base')
+        .select('id, conteudo, data')
+        .eq('profile_id', profile.id)
+        .eq('base_id', baseId)
+        .eq('data', hoje)
+        .maybeSingle();
+
+      if (notaData) {
+        setNotaHoje(notaData);
+        setNotaConteudo(notaData.conteudo || '');
+      } else {
+        setNotaHoje(null);
+        setNotaConteudo('');
+      }
+    } catch (error) {
+      console.error('Error fetching base details:', error);
+    }
+  };
+
+  const handleSelectBase = (baseId: string) => {
+    setSelectedBaseId(baseId);
+    setPresencaHoje(null);
+    setNotaHoje(null);
+    setNotaConteudo('');
+  };
+
   const handleCheckin = async () => {
-    if (!profile?.id || !baseData) return;
+    if (!profile?.id || !selectedBaseId) return;
     if (presencaHoje) {
       toast.info('Você já registrou presença hoje!');
       return;
@@ -170,7 +214,7 @@ export default function MinhaBase() {
         .insert({
           usuario_id: profile.id,
           referencia_tipo: 'base',
-          referencia_id: baseData.base_id,
+          referencia_id: selectedBaseId,
           data: hoje,
           presente: true,
           marcado_por: profile.id
@@ -186,9 +230,9 @@ export default function MinhaBase() {
       console.error('Error checking in:', error);
       if (error.code === '23505') {
         toast.info('Você já registrou presença hoje!');
-        fetchData(); // Refresh to get the existing record
+        fetchBaseDetails(selectedBaseId);
       } else {
-        toast.error('Erro ao registrar presença');
+        toast.error('Erro ao registrar presença: ' + error.message);
       }
     } finally {
       setCheckingIn(false);
@@ -196,12 +240,11 @@ export default function MinhaBase() {
   };
 
   const handleSaveNota = async () => {
-    if (!profile?.id || !baseData) return;
+    if (!profile?.id || !selectedBaseId) return;
 
     setSavingNota(true);
     try {
       if (notaHoje) {
-        // Update existing note
         const { error } = await supabase
           .from('notas_base')
           .update({ conteudo: notaConteudo })
@@ -209,12 +252,11 @@ export default function MinhaBase() {
 
         if (error) throw error;
       } else {
-        // Create new note
         const { data, error } = await supabase
           .from('notas_base')
           .insert({
             profile_id: profile.id,
-            base_id: baseData.base_id,
+            base_id: selectedBaseId,
             data: hoje,
             conteudo: notaConteudo
           })
@@ -228,7 +270,7 @@ export default function MinhaBase() {
       toast.success('Anotação salva!');
     } catch (error: any) {
       console.error('Error saving note:', error);
-      toast.error('Erro ao salvar anotação');
+      toast.error('Erro ao salvar anotação: ' + error.message);
     } finally {
       setSavingNota(false);
     }
@@ -247,7 +289,7 @@ export default function MinhaBase() {
     );
   }
 
-  if (!baseData) {
+  if (basesData.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">
@@ -270,7 +312,8 @@ export default function MinhaBase() {
     );
   }
 
-  const base = baseData.bases;
+  const selectedMembership = basesData.find(d => d.base_id === selectedBaseId);
+  const base = selectedMembership?.bases;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -279,147 +322,202 @@ export default function MinhaBase() {
       </h1>
       <p className="text-muted-foreground mb-6 capitalize">{hojeFormatado}</p>
 
-      <div className="grid gap-6">
-        {/* Base Info Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-promessa-600" />
-              {base.nome}
-            </CardTitle>
-            {base.descricao && (
-              <CardDescription>{base.descricao}</CardDescription>
-            )}
-          </CardHeader>
-          <CardContent>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {base.local && (
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Local</p>
-                    <p className="text-sm text-muted-foreground">{base.local}</p>
-                  </div>
+      {/* Base selector when user has multiple bases */}
+      {basesData.length > 1 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+          {basesData.map((bm) => (
+            <button
+              key={bm.base_id}
+              onClick={() => handleSelectBase(bm.base_id)}
+              className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                selectedBaseId === bm.base_id
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                  : 'border-border hover:border-primary/50 hover:bg-muted/50'
+              }`}
+            >
+              {bm.bases?.foto_url ? (
+                <img
+                  src={bm.bases.foto_url}
+                  alt={bm.bases.nome}
+                  className="w-10 h-10 rounded-md object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center">
+                  <Home className="w-5 h-5 text-muted-foreground" />
                 </div>
               )}
-              {base.dia_semana && (
-                <div className="flex items-start gap-3">
-                  <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Dia da Semana</p>
-                    <p className="text-sm text-muted-foreground">{base.dia_semana}</p>
-                  </div>
-                </div>
-              )}
-              {base.horario && (
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Horário</p>
-                    <p className="text-sm text-muted-foreground">{base.horario}</p>
-                  </div>
-                </div>
-              )}
-              {base.lider && (
-                <div className="flex items-start gap-3">
-                  <Users className="w-5 h-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Líder</p>
-                    <p className="text-sm text-muted-foreground">{base.lider.nome}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Check-in Card */}
-        <Card className={presencaHoje ? 'border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20' : ''}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle2 className={`w-5 h-5 ${presencaHoje ? 'text-green-600' : 'text-muted-foreground'}`} />
-              Check-in de Presença
-            </CardTitle>
-            <CardDescription>
-              Registre sua presença no encontro de hoje
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {presencaHoje ? (
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <CheckCircle2 className="w-6 h-6 text-green-600" />
-                <div>
-                  <p className="font-medium text-green-800 dark:text-green-200">
-                    Presença registrada!
-                  </p>
-                  <p className="text-sm text-green-600 dark:text-green-400">
-                    Registrado às {format(new Date(presencaHoje.created_at), 'HH:mm')}
-                  </p>
-                </div>
+              <div className="min-w-0">
+                <p className="font-medium text-foreground text-sm truncate">{bm.bases?.nome}</p>
+                {bm.bases?.dia_semana && (
+                  <p className="text-xs text-muted-foreground">{bm.bases.dia_semana}</p>
+                )}
               </div>
-            ) : (
+            </button>
+          ))}
+        </div>
+      )}
+
+      {base && (
+        <div className="grid gap-6">
+          {/* Base Info Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                {base.nome}
+              </CardTitle>
+              {base.descricao && (
+                <CardDescription>{base.descricao}</CardDescription>
+              )}
+            </CardHeader>
+            <CardContent>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {base.local && (
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Local</p>
+                      <p className="text-sm text-muted-foreground">{base.local}</p>
+                    </div>
+                  </div>
+                )}
+                {base.dia_semana && (
+                  <div className="flex items-start gap-3">
+                    <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Dia da Semana</p>
+                      <p className="text-sm text-muted-foreground">{base.dia_semana}</p>
+                    </div>
+                  </div>
+                )}
+                {base.horario && (
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Horário</p>
+                      <p className="text-sm text-muted-foreground">{base.horario}</p>
+                    </div>
+                  </div>
+                )}
+                {base.anfitrioes && (
+                  <div className="flex items-start gap-3">
+                    <Home className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Anfitriões</p>
+                      <p className="text-sm text-muted-foreground">{base.anfitrioes}</p>
+                    </div>
+                  </div>
+                )}
+                {base.lider && (
+                  <div className="flex items-start gap-3">
+                    <Users className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Líder</p>
+                      <p className="text-sm text-muted-foreground">{base.lider.nome}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {base.foto_url && (
+                <div className="mt-4">
+                  <img
+                    src={base.foto_url}
+                    alt={base.nome}
+                    className="w-full max-h-48 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Check-in Card */}
+          <Card className={presencaHoje ? 'border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20' : ''}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle2 className={`w-5 h-5 ${presencaHoje ? 'text-green-600' : 'text-muted-foreground'}`} />
+                Check-in de Presença
+              </CardTitle>
+              <CardDescription>
+                Registre sua presença no encontro de hoje
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {presencaHoje ? (
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-green-100 dark:bg-green-900/30">
+                  <CheckCircle2 className="w-6 h-6 text-green-600" />
+                  <div>
+                    <p className="font-medium text-green-800 dark:text-green-200">
+                      Presença registrada!
+                    </p>
+                    <p className="text-sm text-green-600 dark:text-green-400">
+                      Registrado às {format(new Date(presencaHoje.created_at), 'HH:mm')}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  onClick={handleCheckin}
+                  disabled={checkingIn}
+                  className="w-full sm:w-auto"
+                  size="lg"
+                >
+                  {checkingIn ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Registrando...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Registrar Presença Hoje
+                    </>
+                  )}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Notes Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <NotebookPen className="w-5 h-5 text-primary" />
+                Anotações do Dia
+              </CardTitle>
+              <CardDescription>
+                Suas anotações pessoais sobre o encontro de hoje (privadas)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                placeholder="Escreva suas anotações aqui..."
+                value={notaConteudo}
+                onChange={(e) => setNotaConteudo(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
               <Button
-                onClick={handleCheckin}
-                disabled={checkingIn}
+                onClick={handleSaveNota}
+                disabled={savingNota}
+                variant="outline"
                 className="w-full sm:w-auto"
-                size="lg"
               >
-                {checkingIn ? (
+                {savingNota ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Registrando...
+                    Salvando...
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Registrar Presença Hoje
+                    <Save className="w-4 h-4 mr-2" />
+                    Salvar Anotação
                   </>
                 )}
               </Button>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Notes Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <NotebookPen className="w-5 h-5 text-promessa-600" />
-              Anotações do Dia
-            </CardTitle>
-            <CardDescription>
-              Suas anotações pessoais sobre o encontro de hoje (privadas)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Textarea
-              placeholder="Escreva suas anotações aqui..."
-              value={notaConteudo}
-              onChange={(e) => setNotaConteudo(e.target.value)}
-              rows={4}
-              className="resize-none"
-            />
-            <Button
-              onClick={handleSaveNota}
-              disabled={savingNota}
-              variant="outline"
-              className="w-full sm:w-auto"
-            >
-              {savingNota ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Salvar Anotação
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
