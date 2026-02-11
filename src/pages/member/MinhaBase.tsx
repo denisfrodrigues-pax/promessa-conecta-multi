@@ -90,55 +90,11 @@ export default function MinhaBase() {
 
     setLoading(true);
     try {
-      const { data: membroData, error: membroError } = await supabase
-        .from('bases_membros')
-        .select(`
-          id,
-          base_id,
-          profile_id,
-          data_entrada,
-          status,
-          bases (
-            id,
-            nome,
-            descricao,
-            local,
-            dia_semana,
-            horario,
-            capacidade,
-            lider_id,
-            foto_url,
-            anfitrioes
-          )
-        `)
-        .eq('profile_id', profile.id)
-        .eq('status', 'ativo');
+      const { data, error } = await supabase.rpc('get_my_bases');
 
-      if (membroError) throw membroError;
+      if (error) throw error;
 
-      const validData = (membroData || []).filter(d => d.bases) as unknown as BasesMembro[];
-
-      // Fetch leader names for all bases
-      const liderIds = validData
-        .map(d => d.bases?.lider_id)
-        .filter(Boolean) as string[];
-
-      if (liderIds.length > 0) {
-        const { data: lideres } = await supabase
-          .from('profiles')
-          .select('id, nome')
-          .in('id', liderIds);
-
-        if (lideres) {
-          const liderMap = new Map(lideres.map(l => [l.id, l]));
-          validData.forEach(d => {
-            if (d.bases?.lider_id && liderMap.has(d.bases.lider_id)) {
-              d.bases.lider = liderMap.get(d.bases.lider_id)!;
-            }
-          });
-        }
-      }
-
+      const validData = (data || []) as unknown as BasesMembro[];
       setBasesData(validData);
 
       // Auto-select first base or preserve selection
