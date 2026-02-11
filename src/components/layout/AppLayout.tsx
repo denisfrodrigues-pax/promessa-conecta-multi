@@ -27,8 +27,10 @@ export default function AppLayout() {
 
   // Determine panel route based on role
   const getPanelRoute = () => {
-    if (roles.includes('admin') || roles.includes('financeiro')) {
+    if (roles.includes('admin')) {
       return '/admin/dashboard';
+    } else if (roles.includes('financeiro')) {
+      return '/financeiro';
     } else if (roles.includes('lider')) {
       return '/leader';
     } else if (roles.includes('voluntario')) {
@@ -39,8 +41,10 @@ export default function AppLayout() {
 
   // Determine panel label based on role
   const getPanelLabel = () => {
-    if (roles.includes('admin') || roles.includes('financeiro')) {
+    if (roles.includes('admin')) {
       return 'Painel Admin';
+    } else if (roles.includes('financeiro')) {
+      return 'Painel Financeiro';
     } else if (roles.includes('lider')) {
       return 'Painel Líder';
     } else if (roles.includes('voluntario')) {
