@@ -40,11 +40,15 @@ interface Membro {
   foto_perfil: string | null;
 }
 
-interface BaseMembro {
-  id: string;
-  membro_id: string;
+interface BaseMembroUnificado {
+  id: string; // bases_membros.id
+  membro_id: string | null;
+  profile_id: string | null;
   data_entrada: string;
-  membro: Membro;
+  nome: string;
+  telefone: string | null;
+  foto_url: string | null;
+  origem: 'membro' | 'profile' | 'ambos';
 }
 
 interface Visitante {
@@ -121,7 +125,7 @@ export default function BaseDetalhes() {
   const navigate = useNavigate();
 
   const [base, setBase] = useState<Base | null>(null);
-  const [membrosBase, setMembrosBase] = useState<BaseMembro[]>([]);
+  const [membrosBase, setMembrosBase] = useState<BaseMembroUnificado[]>([]);
   const [membrosDisponiveis, setMembrosDisponiveis] = useState<Membro[]>([]);
   const [liderInfo, setLiderInfo] = useState<Membro | null>(null);
   const [todosMembros, setTodosMembros] = useState<Membro[]>([]);
@@ -201,14 +205,37 @@ export default function BaseDetalhes() {
   };
 
   const fetchMembrosBase = async () => {
+    // Fetch ALL active member links (membro_id, profile_id, or both)
     const { data } = await supabase
       .from('bases_membros')
-      .select('id, membro_id, data_entrada, membro:membros(id, nome, telefone, foto_perfil)')
+      .select('id, membro_id, profile_id, data_entrada, membro:membros(id, nome, telefone, foto_perfil), profile:profiles!bases_membros_profile_id_fkey(id, nome, telefone, foto_url)')
       .eq('base_id', id)
-      .eq('status', 'ativo')
-      .not('membro_id', 'is', null);
+      .eq('status', 'ativo');
 
-    if (data) setMembrosBase(data as unknown as BaseMembro[]);
+    if (!data) return;
+
+    // Filter: must have at least membro_id or profile_id (exclude visitante-only rows)
+    const filtered = data.filter((row: any) => row.membro_id || row.profile_id);
+
+    // Deduplicate: use bases_membros.id as unique key (already unique per row)
+    // Priority: profile > membro for display data
+    const unificados: BaseMembroUnificado[] = filtered.map((row: any) => {
+      const hasProfile = row.profile_id && row.profile;
+      const hasMembro = row.membro_id && row.membro;
+
+      return {
+        id: row.id,
+        membro_id: row.membro_id,
+        profile_id: row.profile_id,
+        data_entrada: row.data_entrada,
+        nome: hasProfile ? row.profile.nome : (hasMembro ? row.membro.nome : 'Sem nome'),
+        telefone: hasProfile ? row.profile.telefone : (hasMembro ? row.membro.telefone : null),
+        foto_url: hasProfile ? row.profile.foto_url : (hasMembro ? row.membro.foto_perfil : null),
+        origem: (hasProfile && hasMembro) ? 'ambos' : (hasProfile ? 'profile' : 'membro'),
+      };
+    });
+
+    setMembrosBase(unificados);
   };
 
   const fetchVisitantesBase = async () => {
@@ -742,20 +769,22 @@ export default function BaseDetalhes() {
                 <div key={bm.id} className="flex items-center justify-between p-3 rounded-lg border">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={bm.membro?.foto_perfil || undefined} />
-                      <AvatarFallback>{getInitials(bm.membro?.nome || '')}</AvatarFallback>
+                      <AvatarImage src={bm.foto_url || undefined} />
+                      <AvatarFallback>{getInitials(bm.nome)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">{bm.membro?.nome}</p>
+                      <p className="font-medium">{bm.nome}</p>
                       <p className="text-xs text-muted-foreground">
                         Entrada: {formatDateTime(bm.data_entrada)}
+                        {bm.origem === 'profile' && ' • via perfil'}
+                        {bm.origem === 'ambos' && ' • vinculado'}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    {hasValidPhone(bm.membro?.telefone) && (
+                    {hasValidPhone(bm.telefone) && (
                       <button
-                        onClick={() => window.open(getWhatsAppUrl(bm.membro?.telefone), '_blank')}
+                        onClick={() => window.open(getWhatsAppUrl(bm.telefone), '_blank')}
                         className="text-green-600 hover:text-green-700 p-1.5"
                       >
                         <MessageCircle className="h-4 w-4" />
