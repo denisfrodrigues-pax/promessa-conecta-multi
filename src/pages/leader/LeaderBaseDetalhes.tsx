@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Separator } from '@/components/ui/separator';
 import { 
   ArrowLeft, MessageCircle, Phone, Search, Clock, MapPin, Users, 
-  CalendarDays, User, Download, Info, UserCheck, Building2, Pencil, Loader2, Save, ClipboardCheck
+  CalendarDays, User, Download, Info, UserCheck, Building2, Pencil, Loader2, Save, ClipboardCheck, UserPlus, Trash2
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -257,6 +257,71 @@ export default function LeaderBaseDetalhes() {
   // Estado para presenças
   const [presencas, setPresencas] = useState<Presenca[]>([]);
   const [presencasHoje, setPresencasHoje] = useState<Presenca[]>([]);
+
+  // Estado para adicionar membro
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [addMemberSearch, setAddMemberSearch] = useState('');
+  const [eligiblePeople, setEligiblePeople] = useState<{ id: string; nome: string; email: string }[]>([]);
+  const [searchingPeople, setSearchingPeople] = useState(false);
+  const [addingMemberId, setAddingMemberId] = useState<string | null>(null);
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+
+  // Debounce para busca de pessoas elegíveis
+  useEffect(() => {
+    if (!isAddMemberOpen) return;
+    const timer = setTimeout(async () => {
+      if (!id) return;
+      setSearchingPeople(true);
+      try {
+        const { data, error } = await supabase.rpc('get_eligible_people_for_base', {
+          p_base_id: id,
+          p_search: addMemberSearch || null,
+        });
+        if (error) throw error;
+        setEligiblePeople((data as any[]) || []);
+      } catch (err: any) {
+        toast.error('Erro ao buscar pessoas: ' + (err.message || 'Erro desconhecido'));
+      } finally {
+        setSearchingPeople(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [addMemberSearch, isAddMemberOpen, id]);
+
+  const handleAddMember = async (profileId: string) => {
+    if (!id) return;
+    setAddingMemberId(profileId);
+    try {
+      const { error } = await supabase.rpc('leader_add_member_to_base', {
+        p_base_id: id,
+        p_profile_id: profileId,
+      });
+      if (error) throw error;
+      toast.success('Membro adicionado com sucesso!');
+      setEligiblePeople((prev) => prev.filter((p) => p.id !== profileId));
+      await fetchMembrosBase();
+    } catch (err: any) {
+      toast.error('Erro ao adicionar: ' + (err.message || 'Erro desconhecido'));
+    } finally {
+      setAddingMemberId(null);
+    }
+  };
+
+  const handleRemoveMember = async (basesMembrosId: string) => {
+    setRemovingMemberId(basesMembrosId);
+    try {
+      const { error } = await supabase.rpc('leader_remove_member_from_base', {
+        p_bases_membros_id: basesMembrosId,
+      });
+      if (error) throw error;
+      toast.success('Membro removido da base');
+      await fetchMembrosBase();
+    } catch (err: any) {
+      toast.error('Erro ao remover: ' + (err.message || 'Erro desconhecido'));
+    } finally {
+      setRemovingMemberId(null);
+    }
+  };
 
   const diasSemana = [
     'Segunda-feira',
@@ -768,6 +833,10 @@ export default function LeaderBaseDetalhes() {
                       className="pl-9"
                     />
                   </div>
+                  <Button size="sm" onClick={() => { setAddMemberSearch(''); setEligiblePeople([]); setIsAddMemberOpen(true); }}>
+                    <UserPlus className="h-4 w-4 mr-1" />
+                    Adicionar
+                  </Button>
                   {membrosBase.length > 0 && (
                     <Button variant="outline" size="sm" onClick={exportMembrosCSV}>
                       <Download className="h-4 w-4 mr-1" />
@@ -847,6 +916,20 @@ export default function LeaderBaseDetalhes() {
                                   </Button>
                                 </>
                               )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => handleRemoveMember(bm.bases_membros_id)}
+                                disabled={removingMemberId === bm.bases_membros_id}
+                                title="Remover da base"
+                              >
+                                {removingMemberId === bm.bases_membros_id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -857,6 +940,61 @@ export default function LeaderBaseDetalhes() {
               )}
             </CardContent>
           </Card>
+
+          {/* Modal Adicionar Membro */}
+          <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Adicionar Membro à Base</DialogTitle>
+                <DialogDescription>Busque pelo nome ou e-mail da pessoa.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nome ou e-mail..."
+                    value={addMemberSearch}
+                    onChange={(e) => setAddMemberSearch(e.target.value)}
+                    className="pl-9"
+                    autoFocus
+                  />
+                </div>
+                <div className="max-h-64 overflow-y-auto space-y-1">
+                  {searchingPeople && (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                  {!searchingPeople && eligiblePeople.length === 0 && addMemberSearch && (
+                    <p className="text-sm text-muted-foreground text-center py-6">Nenhuma pessoa encontrada</p>
+                  )}
+                  {!searchingPeople && eligiblePeople.map((person) => (
+                    <div
+                      key={person.id}
+                      className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{person.nome}</p>
+                        <p className="text-xs text-muted-foreground truncate">{person.email}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleAddMember(person.id)}
+                        disabled={addingMemberId === person.id}
+                      >
+                        {addingMemberId === person.id ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <UserPlus className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         {/* ===== TAB: VISITANTES ===== */}

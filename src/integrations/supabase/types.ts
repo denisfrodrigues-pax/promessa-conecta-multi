@@ -1880,6 +1880,14 @@ export type Database = {
           visitantes_em_bases_distintos: number
         }[]
       }
+      get_eligible_people_for_base: {
+        Args: { p_base_id: string; p_search?: string }
+        Returns: {
+          email: string
+          id: string
+          nome: string
+        }[]
+      }
       get_eligible_volunteers_for_ministry: {
         Args: { p_ministerio_id: string; p_search_term?: string }
         Returns: {
@@ -1898,7 +1906,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      leader_add_member_to_base: {
+        Args: { p_base_id: string; p_profile_id: string }
+        Returns: undefined
+      }
       leader_of_base: { Args: { _base_id: string }; Returns: boolean }
+      leader_remove_member_from_base: {
+        Args: { p_bases_membros_id: string }
+        Returns: undefined
+      }
       recalcula_saldo_conta: { Args: { p_conta_id: string }; Returns: number }
     }
     Enums: {
