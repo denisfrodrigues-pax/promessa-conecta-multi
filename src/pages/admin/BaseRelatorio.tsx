@@ -91,13 +91,20 @@ export default function BaseRelatorio() {
       const totalMembrosEmBases = basesResult.reduce((sum, b) => sum + b.total_membros, 0);
       const totalVisitantesEmBases = basesResult.reduce((sum, b) => sum + b.total_visitantes, 0);
 
+      // Global counts from RPC (same value on every row)
+      const first = rpcData?.[0];
+      const totalMembrosAtivos = Number(first?.total_membros_ativos) || 0;
+      const totalVisitantesGeral = Number(first?.total_visitantes_geral) || 0;
+      const membrosEmBasesDistintos = Number(first?.membros_em_bases_distintos) || 0;
+      const visitantesEmBasesDistintos = Number(first?.visitantes_em_bases_distintos) || 0;
+
       setStats({
         totalBases: basesResult.length,
         basesAtivas: basesResult.filter((b) => b.status === 'ativo').length,
         membrosEmBases: totalMembrosEmBases,
-        membrosSemBase: 0,
+        membrosSemBase: Math.max(0, totalMembrosAtivos - membrosEmBasesDistintos),
         visitantesEmBases: totalVisitantesEmBases,
-        visitantesSemBase: 0,
+        visitantesSemBase: Math.max(0, totalVisitantesGeral - visitantesEmBasesDistintos),
       });
 
       setBases(basesResult);
