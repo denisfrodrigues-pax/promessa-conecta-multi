@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Search, Network, Users, Eye, Clock, MapPin, MessageCircle, Download } from 'lucide-react';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, Search, Network, Users, Eye, Clock, MapPin, MessageCircle, Download } from "lucide-react";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 // ===== INTERFACES =====
 interface Base {
@@ -31,8 +31,8 @@ interface Base {
 
 // ===== HELPERS =====
 const cleanPhone = (phone: string | null): string => {
-  if (!phone) return '';
-  return phone.replace(/\D/g, '');
+  if (!phone) return "";
+  return phone.replace(/\D/g, "");
 };
 
 const hasValidPhone = (phone: string | null): boolean => {
@@ -41,8 +41,8 @@ const hasValidPhone = (phone: string | null): boolean => {
 
 const getWhatsAppUrl = (phone: string | null): string => {
   const digits = cleanPhone(phone);
-  const phoneWithCountry = digits.startsWith('55') ? digits : `55${digits}`;
-  const message = encodeURIComponent('Olá! Sou da Igreja da Promessa.');
+  const phoneWithCountry = digits.startsWith("55") ? digits : `55${digits}`;
+  const message = encodeURIComponent("Olá! Sou da Igreja da Promessa.");
   return `https://wa.me/${phoneWithCountry}?text=${message}`;
 };
 
@@ -52,37 +52,47 @@ const isBaseLotada = (membrosCount: number, capacidade: number | null): boolean 
 
 // ===== STATUS CONFIG =====
 const statusColors: Record<string, string> = {
-  ativo: 'bg-green-100 text-green-800 border-green-300',
-  inativo: 'bg-gray-100 text-gray-800 border-gray-300',
+  ativo: "bg-green-100 text-green-800 border-green-300",
+  inativo: "bg-gray-100 text-gray-800 border-gray-300",
 };
 
-const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
 // ===== CSV EXPORT =====
 const exportToCSV = (bases: Base[]) => {
-  const headers = ['nome', 'lider', 'telefone_lider', 'dia_semana', 'horario', 'local', 'membros', 'capacidade', 'status'];
+  const headers = [
+    "nome",
+    "lider",
+    "telefone_lider",
+    "dia_semana",
+    "horario",
+    "local",
+    "membros",
+    "capacidade",
+    "status",
+  ];
   const rows = bases.map((b) => [
     b.nome,
-    b.lider_nome || '',
-    b.lider_telefone || '',
-    b.dia_semana || '',
-    b.horario || '',
-    b.local || '',
+    b.lider_nome || "",
+    b.lider_telefone || "",
+    b.dia_semana || "",
+    b.horario || "",
+    b.local || "",
     b.membros_count.toString(),
     (b.capacidade || 20).toString(),
     b.status,
   ]);
 
   const csvContent = [headers, ...rows]
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-    .join('\n');
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
 
-  const BOM = '\uFEFF';
-  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const BOM = "\uFEFF";
+  const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
-  link.download = `bases_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+  link.download = `bases_${format(new Date(), "yyyy-MM-dd")}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 };
@@ -92,9 +102,9 @@ export default function Bases() {
   const navigate = useNavigate();
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filtroStatus, setFiltroStatus] = useState('todos');
-  const [filtroDia, setFiltroDia] = useState('todos');
+  const [search, setSearch] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("todos");
+  const [filtroDia, setFiltroDia] = useState("todos");
 
   useEffect(() => {
     fetchBases();
@@ -104,9 +114,14 @@ export default function Bases() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('bases')
-        .select('id, nome, descricao, lider_id, status, dia_semana, horario, local, capacidade, visibilidade, data_criacao')
-        .order('nome');
+        .from("bases")
+        .select(
+          "id, nome, descricao, lider_id, status, dia_semana, horario, local, capacidade, visibilidade, data_criacao",
+        )
+        .order("nome");
+
+      console.log("BASES DATA:", data);
+      console.log("BASES ERROR:", error);
 
       if (error) throw error;
 
@@ -117,19 +132,19 @@ export default function Bases() {
 
           if (base.lider_id) {
             const { data: lider } = await supabase
-              .from('profiles')
-              .select('nome, telefone')
-              .eq('id', base.lider_id)
+              .from("profiles")
+              .select("nome, telefone")
+              .eq("id", base.lider_id)
               .maybeSingle();
             lider_nome = lider?.nome;
             lider_telefone = lider?.telefone;
           }
 
           const { count } = await supabase
-            .from('bases_membros')
-            .select('*', { count: 'exact', head: true })
-            .eq('base_id', base.id)
-            .eq('status', 'ativo');
+            .from("bases_membros")
+            .select("*", { count: "exact", head: true })
+            .eq("base_id", base.id)
+            .eq("status", "ativo");
 
           return {
             ...base,
@@ -137,12 +152,12 @@ export default function Bases() {
             lider_telefone,
             membros_count: count || 0,
           };
-        })
+        }),
       );
 
       setBases(basesWithDetails);
     } catch (error: any) {
-      toast.error('Erro ao carregar bases: ' + error.message);
+      toast.error("Erro ao carregar bases: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -156,19 +171,19 @@ export default function Bases() {
       base.local?.toLowerCase().includes(searchLower) ||
       base.lider_nome?.toLowerCase().includes(searchLower);
 
-    const matchesStatus = filtroStatus === 'todos' || base.status === filtroStatus;
-    const matchesDia = filtroDia === 'todos' || base.dia_semana === filtroDia;
+    const matchesStatus = filtroStatus === "todos" || base.status === filtroStatus;
+    const matchesDia = filtroDia === "todos" || base.dia_semana === filtroDia;
 
     return matchesSearch && matchesStatus && matchesDia;
   });
 
   const handleExportCSV = () => {
     if (filtered.length === 0) {
-      toast.error('Nenhuma base para exportar');
+      toast.error("Nenhuma base para exportar");
       return;
     }
     exportToCSV(filtered);
-    toast.success('CSV exportado com sucesso!');
+    toast.success("CSV exportado com sucesso!");
   };
 
   return (
@@ -187,7 +202,7 @@ export default function Bases() {
             <Download className="h-4 w-4 mr-1" />
             Exportar CSV
           </Button>
-          <Button onClick={() => navigate('/admin/bases/nova')}>
+          <Button onClick={() => navigate("/admin/bases/nova")}>
             <Plus className="h-4 w-4 mr-1" />
             Nova Base
           </Button>
@@ -222,7 +237,9 @@ export default function Bases() {
           <SelectContent>
             <SelectItem value="todos">Todos os dias</SelectItem>
             {diasSemana.map((dia) => (
-              <SelectItem key={dia} value={dia}>{dia}</SelectItem>
+              <SelectItem key={dia} value={dia}>
+                {dia}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -253,14 +270,12 @@ export default function Bases() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-foreground">{base.nome}</h3>
                       <Badge variant="outline" className={statusColors[base.status]}>
-                        {base.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                        {base.status === "ativo" ? "Ativo" : "Inativo"}
                       </Badge>
-                      <Badge variant={base.visibilidade === 'publico' ? 'default' : 'secondary'}>
-                        {base.visibilidade === 'publico' ? 'Público' : 'Privado'}
+                      <Badge variant={base.visibilidade === "publico" ? "default" : "secondary"}>
+                        {base.visibilidade === "publico" ? "Público" : "Privado"}
                       </Badge>
-                      {isBaseLotada(base.membros_count, base.capacidade) && (
-                        <Badge variant="destructive">Lotada</Badge>
-                      )}
+                      {isBaseLotada(base.membros_count, base.capacidade) && <Badge variant="destructive">Lotada</Badge>}
                     </div>
 
                     {/* Info Row */}
@@ -277,7 +292,7 @@ export default function Bases() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                window.open(getWhatsAppUrl(base.lider_telefone), '_blank');
+                                window.open(getWhatsAppUrl(base.lider_telefone), "_blank");
                               }}
                               className="text-green-600 hover:text-green-700 p-0.5"
                               title="WhatsApp do líder"
@@ -304,11 +319,7 @@ export default function Bases() {
                     </div>
                   </div>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/admin/bases/${base.id}`)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => navigate(`/admin/bases/${base.id}`)}>
                     <Eye className="h-4 w-4 mr-1" />
                     Ver detalhes
                   </Button>
