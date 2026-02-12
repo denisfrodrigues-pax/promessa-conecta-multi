@@ -1849,6 +1849,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_base_members_for_leader: {
+        Args: { p_base_id: string; p_search?: string }
+        Returns: {
+          bases_membros_id: string
+          data_entrada: string
+          foto_url: string
+          membro_id: string
+          nome: string
+          origem: string
+          profile_id: string
+          telefone: string
+        }[]
+      }
+      get_bases_report: {
+        Args: never
+        Returns: {
+          base_id: string
+          capacidade: number
+          lider_id: string
+          lider_nome: string
+          nome: string
+          status: string
+          total_membros: number
+          total_visitantes: number
+          visibilidade: string
+        }[]
+      }
       get_eligible_volunteers_for_ministry: {
         Args: { p_ministerio_id: string; p_search_term?: string }
         Returns: {
@@ -1867,6 +1894,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      leader_of_base: { Args: { _base_id: string }; Returns: boolean }
       recalcula_saldo_conta: { Args: { p_conta_id: string }; Returns: number }
     }
     Enums: {

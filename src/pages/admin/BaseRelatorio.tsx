@@ -11,13 +11,15 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 interface BaseResumo {
-  id: string;
+  base_id: string;
   nome: string;
   status: string;
+  lider_id: string | null;
   lider_nome: string | null;
-  membros_count: number;
-  visitantes_count: number;
+  total_membros: number;
+  total_visitantes: number;
   capacidade: number;
+  visibilidade: string;
 }
 
 // ===== CSV EXPORT =====
@@ -26,8 +28,8 @@ const exportToCSV = (bases: BaseResumo[], stats: any) => {
   const rows = bases.map((b) => [
     b.nome,
     b.lider_nome || '',
-    b.membros_count.toString(),
-    b.visitantes_count.toString(),
+    b.total_membros.toString(),
+    b.total_visitantes.toString(),
     b.capacidade.toString(),
     b.status,
   ]);
@@ -65,81 +67,40 @@ export default function BaseRelatorio() {
 
   const fetchData = async () => {
     try {
-      const { data: basesData } = await supabase
-        .from('bases')
-        .select('id, nome, status, lider_id, capacidade')
-        .order('nome');
+      const { data: rpcData, error } = await supabase.rpc('get_bases_report');
 
-      const { data: basesMembrosData } = await supabase
-        .from('bases_membros')
-        .select('base_id, membro_id, visitante_id')
-        .eq('status', 'ativo');
+      if (error) {
+        console.error('Erro ao carregar relatório:', error);
+        toast.error('Erro ao carregar relatório');
+        setLoading(false);
+        return;
+      }
 
-      const { data: basesVisitantesData } = await supabase
-        .from('bases_membros')
-        .select('base_id, visitante_id')
-        .not('visitante_id', 'is', null)
-        .neq('status', 'desligado');
+      const basesResult: BaseResumo[] = (rpcData || []).map((b: any) => ({
+        base_id: b.base_id,
+        nome: b.nome,
+        status: b.status,
+        visibilidade: b.visibilidade,
+        capacidade: b.capacidade || 20,
+        lider_id: b.lider_id,
+        lider_nome: b.lider_nome,
+        total_membros: Number(b.total_membros) || 0,
+        total_visitantes: Number(b.total_visitantes) || 0,
+      }));
 
-      const { count: totalMembros } = await supabase
-        .from('membros')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'ativo');
-
-      const { count: totalVisitantes } = await supabase
-        .from('visitantes')
-        .select('*', { count: 'exact', head: true });
-
-      const basesWithDetails: BaseResumo[] = await Promise.all(
-        (basesData || []).map(async (base) => {
-          let lider_nome = null;
-          if (base.lider_id) {
-            const { data: lider } = await supabase
-              .from('membros')
-              .select('nome')
-              .eq('id', base.lider_id)
-              .maybeSingle();
-            lider_nome = lider?.nome || null;
-          }
-
-          const membros_count = (basesMembrosData || []).filter(
-            (bm) => bm.base_id === base.id && bm.membro_id
-          ).length;
-
-          const visitantes_count = (basesVisitantesData || []).filter(
-            (bv) => bv.base_id === base.id
-          ).length;
-
-          return {
-            id: base.id,
-            nome: base.nome,
-            status: base.status,
-            lider_nome,
-            membros_count,
-            visitantes_count,
-            capacidade: base.capacidade || 20,
-          };
-        })
-      );
-
-      const membrosEmBases = new Set(
-        (basesMembrosData || []).filter((bm) => bm.membro_id).map((bm) => bm.membro_id)
-      ).size;
-
-      const visitantesEmBases = new Set(
-        (basesVisitantesData || []).map((bv) => bv.visitante_id)
-      ).size;
+      const totalMembrosEmBases = basesResult.reduce((sum, b) => sum + b.total_membros, 0);
+      const totalVisitantesEmBases = basesResult.reduce((sum, b) => sum + b.total_visitantes, 0);
 
       setStats({
-        totalBases: basesData?.length || 0,
-        basesAtivas: basesData?.filter((b) => b.status === 'ativo').length || 0,
-        membrosEmBases,
-        membrosSemBase: (totalMembros || 0) - membrosEmBases,
-        visitantesEmBases,
-        visitantesSemBase: (totalVisitantes || 0) - visitantesEmBases,
+        totalBases: basesResult.length,
+        basesAtivas: basesResult.filter((b) => b.status === 'ativo').length,
+        membrosEmBases: totalMembrosEmBases,
+        membrosSemBase: 0,
+        visitantesEmBases: totalVisitantesEmBases,
+        visitantesSemBase: 0,
       });
 
-      setBases(basesWithDetails);
+      setBases(basesResult);
     } catch (error) {
       console.error('Erro ao carregar relatório:', error);
     } finally {
@@ -287,12 +248,12 @@ export default function BaseRelatorio() {
           ) : (
             <div className="space-y-3">
               {bases.map((base) => {
-                const totalPessoas = base.membros_count + base.visitantes_count;
+                const totalPessoas = base.total_membros + base.total_visitantes;
                 const ocupacao = Math.min(100, (totalPessoas / base.capacidade) * 100);
                 const isLotada = totalPessoas >= base.capacidade;
 
                 return (
-                  <div key={base.id} className="p-4 rounded-lg border space-y-3">
+                  <div key={base.base_id} className="p-4 rounded-lg border space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{base.nome}</span>
@@ -310,8 +271,8 @@ export default function BaseRelatorio() {
                     </div>
 
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{base.membros_count} membros</span>
-                      <span>{base.visitantes_count} visitantes</span>
+                      <span>{base.total_membros} membros</span>
+                      <span>{base.total_visitantes} visitantes</span>
                       <span>{totalPessoas}/{base.capacidade} total</span>
                     </div>
 

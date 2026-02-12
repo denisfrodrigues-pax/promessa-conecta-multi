@@ -361,15 +361,25 @@ export default function LeaderBaseDetalhes() {
   };
 
   const fetchMembrosBase = async () => {
-    const { data, error } = await supabase
-      .from('bases_membros')
-      .select('id, membro_id, data_entrada, membro:membros(id, nome, telefone, foto_perfil)')
-      .eq('base_id', id)
-      .eq('status', 'ativo')
-      .not('membro_id', 'is', null);
+    const { data, error } = await supabase.rpc('get_base_members_for_leader', {
+      p_base_id: id!,
+      p_search: searchMembro || null,
+    });
 
     if (error) throw error;
-    if (data) setMembrosBase(data as unknown as BaseMembro[]);
+    if (data) {
+      setMembrosBase((data as any[]).map((m) => ({
+        id: m.bases_membros_id,
+        membro_id: m.membro_id || m.profile_id,
+        data_entrada: m.data_entrada,
+        membro: {
+          id: m.membro_id || m.profile_id,
+          nome: m.nome,
+          telefone: m.telefone,
+          foto_perfil: m.foto_url,
+        },
+      })));
+    }
   };
 
   const fetchVisitantesBase = async () => {
