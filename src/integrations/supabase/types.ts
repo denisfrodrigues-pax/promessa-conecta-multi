@@ -1869,11 +1869,15 @@ export type Database = {
           capacidade: number
           lider_id: string
           lider_nome: string
+          membros_em_bases_distintos: number
           nome: string
           status: string
           total_membros: number
+          total_membros_ativos: number
           total_visitantes: number
+          total_visitantes_geral: number
           visibilidade: string
+          visitantes_em_bases_distintos: number
         }[]
       }
       get_eligible_volunteers_for_ministry: {
