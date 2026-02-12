@@ -72,18 +72,15 @@ interface Presenca {
   usuario?: { nome: string };
 }
 
-interface Membro {
-  id: string;
+interface BaseMemberUnified {
+  bases_membros_id: string;
+  profile_id: string | null;
+  membro_id: string | null;
   nome: string;
   telefone: string | null;
-  foto_perfil: string | null;
-}
-
-interface BaseMembro {
-  id: string;
-  membro_id: string;
+  foto_url: string | null;
   data_entrada: string;
-  membro: Membro;
+  origem: 'profile' | 'membro' | 'ambos';
 }
 
 interface Visitante {
@@ -236,7 +233,7 @@ export default function LeaderBaseDetalhes() {
   const { profile, isLider, loading: authLoading } = useAuth();
 
   const [base, setBase] = useState<Base | null>(null);
-  const [membrosBase, setMembrosBase] = useState<BaseMembro[]>([]);
+  const [membrosBase, setMembrosBase] = useState<BaseMemberUnified[]>([]);
   const [visitantesBase, setVisitantesBase] = useState<BaseVisitante[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchMembro, setSearchMembro] = useState('');
@@ -369,15 +366,14 @@ export default function LeaderBaseDetalhes() {
     if (error) throw error;
     if (data) {
       setMembrosBase((data as any[]).map((m) => ({
-        id: m.bases_membros_id,
-        membro_id: m.membro_id || m.profile_id,
+        bases_membros_id: m.bases_membros_id,
+        profile_id: m.profile_id || null,
+        membro_id: m.membro_id || null,
+        nome: m.nome,
+        telefone: m.telefone,
+        foto_url: m.foto_url,
         data_entrada: m.data_entrada,
-        membro: {
-          id: m.membro_id || m.profile_id,
-          nome: m.nome,
-          telefone: m.telefone,
-          foto_perfil: m.foto_url,
-        },
+        origem: m.origem,
       })));
     }
   };
@@ -423,7 +419,7 @@ export default function LeaderBaseDetalhes() {
 
   // ===== FILTERS =====
   const membrosFiltrados = membrosBase.filter((m) =>
-    m.membro?.nome?.toLowerCase().includes(searchMembro.toLowerCase())
+    m.nome?.toLowerCase().includes(searchMembro.toLowerCase())
   );
 
   const visitantesFiltrados = visitantesBase
@@ -436,10 +432,11 @@ export default function LeaderBaseDetalhes() {
 
   // ===== EXPORT CSV =====
   const exportMembrosCSV = () => {
-    const headers = ['Nome', 'Telefone'];
+    const headers = ['Nome', 'Telefone', 'Origem'];
     const rows = membrosBase.map((m) => [
-      m.membro?.nome || '',
-      m.membro?.telefone || '',
+      m.nome || '',
+      m.telefone || '',
+      m.origem || '',
     ]);
     
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -795,35 +792,46 @@ export default function LeaderBaseDetalhes() {
                     </TableHeader>
                     <TableBody>
                       {membrosFiltrados.map((bm) => (
-                        <TableRow key={bm.id}>
+                        <TableRow key={bm.bases_membros_id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <Avatar className="h-9 w-9">
-                                <AvatarImage src={bm.membro?.foto_perfil || undefined} />
+                                <AvatarImage src={bm.foto_url || undefined} />
                                 <AvatarFallback className="text-xs">
-                                  {getInitials(bm.membro?.nome || 'M')}
+                                  {getInitials(bm.nome || 'M')}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="font-medium text-sm">{bm.membro?.nome}</p>
+                                <div className="flex items-center gap-1.5">
+                                  <p className="font-medium text-sm">{bm.nome}</p>
+                                  {bm.origem === 'profile' && (
+                                    <Badge variant="info" className="text-[10px] px-1.5 py-0">via perfil</Badge>
+                                  )}
+                                  {bm.origem === 'membro' && (
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">vinculado</Badge>
+                                  )}
+                                  {bm.origem === 'ambos' && (
+                                    <Badge variant="promessa" className="text-[10px] px-1.5 py-0">perfil + vínculo</Badge>
+                                  )}
+                                </div>
                                 <p className="text-xs text-muted-foreground sm:hidden">
-                                  {bm.membro?.telefone || 'Sem telefone'}
+                                  {bm.telefone || 'Sem telefone'}
                                 </p>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
-                            {bm.membro?.telefone || '–'}
+                            {bm.telefone || '–'}
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
-                              {hasValidPhone(bm.membro?.telefone) && (
+                              {hasValidPhone(bm.telefone) && (
                                 <>
                                   <Button
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                    onClick={() => window.open(getWhatsAppUrl(bm.membro?.telefone), '_blank')}
+                                    onClick={() => window.open(getWhatsAppUrl(bm.telefone), '_blank')}
                                     title="WhatsApp"
                                   >
                                     <MessageCircle className="h-4 w-4" />
@@ -832,7 +840,7 @@ export default function LeaderBaseDetalhes() {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                    onClick={() => window.open(`tel:${cleanPhone(bm.membro?.telefone)}`, '_blank')}
+                                    onClick={() => window.open(`tel:${cleanPhone(bm.telefone)}`, '_blank')}
                                     title="Ligar"
                                   >
                                     <Phone className="h-4 w-4" />
