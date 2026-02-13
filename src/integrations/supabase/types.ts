@@ -1240,6 +1240,7 @@ export type Database = {
           id: string
           lider_id: string | null
           nome: string
+          slug: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1250,6 +1251,7 @@ export type Database = {
           id?: string
           lider_id?: string | null
           nome: string
+          slug?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1260,6 +1262,7 @@ export type Database = {
           id?: string
           lider_id?: string | null
           nome?: string
+          slug?: string | null
           updated_at?: string | null
         }
         Relationships: [
