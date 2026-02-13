@@ -13,6 +13,7 @@ import PrivateRoute from "@/components/routes/PrivateRoute";
 import AdminLayout from "@/components/layout/AdminLayout";
 import LeaderLayout from "@/components/layout/LeaderLayout";
 import KidsLayout from "@/components/layout/KidsLayout";
+import VoluntarioLayout from "@/components/layout/VoluntarioLayout";
 import AppLayout from "@/components/layout/AppLayout";
 
 // Auth
@@ -94,6 +95,9 @@ import FinanceiroLayout from "@/components/layout/FinanceiroLayout";
 
 // Kids Panel Pages
 import KidsCheckinPanel from "@/pages/kids/KidsCheckinPanel";
+
+// Voluntario Pages
+import VoluntarioDashboard from "@/pages/voluntario/VoluntarioDashboard";
 
 // Leader Pages
 import LeaderDashboard from "@/pages/leader/Dashboard";
@@ -295,6 +299,15 @@ const App = () => (
             <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
             <Route path="notificacoes" element={<LeaderNotificacoes />} />
             <Route path="relatorios" element={<LeaderRelatorios />} />
+          </Route>
+
+          {/* Voluntario Hub Routes */}
+          <Route path="/voluntario" element={
+            <PrivateRoute allowedRoles={['voluntario', 'admin', 'lider']}>
+              <VoluntarioLayout />
+            </PrivateRoute>
+          }>
+            <Route index element={<VoluntarioDashboard />} />
           </Route>
 
           {/* Kids Panel Routes - admin, lider, voluntario */}

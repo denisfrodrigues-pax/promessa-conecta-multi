@@ -42,7 +42,7 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
         return <Navigate to="/leader/dashboard" replace />;
       }
       if (roles.includes('voluntario')) {
-        return <Navigate to="/kids/check-in" replace />;
+        return <Navigate to="/voluntario" replace />;
       }
       return <Navigate to="/app" replace />;
     }

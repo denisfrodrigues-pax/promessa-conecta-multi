@@ -1908,6 +1908,7 @@ export type Database = {
         }[]
       }
       get_my_bases: { Args: never; Returns: Json }
+      get_my_ministries: { Args: never; Returns: Json }
       get_profile_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
