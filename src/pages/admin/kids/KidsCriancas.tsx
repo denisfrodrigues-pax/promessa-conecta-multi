@@ -149,6 +149,18 @@ export default function KidsCriancas() {
 
     setSaving(true);
     try {
+      // Get the logged-in user's profile_id (criancas.responsavel_id references profiles.id)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError || !profileData) throw new Error('Profile não encontrado');
+
       let criancaId = editingCrianca?.id;
 
       if (editingCrianca) {
@@ -165,8 +177,7 @@ export default function KidsCriancas() {
 
         if (error) throw error;
       } else {
-        // Create new - need a responsavel_id for the foreign key constraint
-        // Using the first selected responsavel or null if none selected
+        // Create new - responsavel_id must reference profiles.id (NOT responsaveis.id)
         const { data, error } = await supabase
           .from('criancas')
           .insert({
@@ -174,7 +185,7 @@ export default function KidsCriancas() {
             data_nascimento: formData.data_nascimento || null,
             observacoes: formData.observacoes || null,
             alergias: formData.alergias || null,
-            responsavel_id: formData.responsaveis_ids[0] || null
+            responsavel_id: profileData.id
           })
           .select()
           .single();
@@ -183,7 +194,7 @@ export default function KidsCriancas() {
         criancaId = data.id;
       }
 
-      // Update responsaveis links
+      // Update responsaveis links (criancas_responsaveis references responsaveis.id)
       if (criancaId) {
         // Delete existing links
         await supabase
@@ -199,18 +210,23 @@ export default function KidsCriancas() {
             tipo_relacao: 'responsável'
           }));
 
-          await supabase
+          const { error: linkError } = await supabase
             .from('criancas_responsaveis')
             .insert(links);
+
+          if (linkError) {
+            console.warn('Erro ao vincular responsáveis:', linkError);
+          }
         }
       }
 
       toast({ title: editingCrianca ? 'Criança atualizada!' : 'Criança cadastrada!' });
       setShowModal(false);
       fetchData();
-    } catch (error) {
-      console.error('Error saving:', error);
-      toast({ title: 'Erro ao salvar', variant: 'destructive' });
+    } catch (error: any) {
+      console.error('Erro ao salvar criança:', error);
+      const msg = error?.message || 'Erro desconhecido';
+      toast({ title: 'Erro ao salvar criança', description: msg, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -263,9 +279,10 @@ export default function KidsCriancas() {
       });
       setShowResponsavelModal(false);
       setNewResponsavel({ nome: '', telefone: '', observacoes: '' });
-    } catch (error) {
-      console.error('Error saving responsavel:', error);
-      toast({ title: 'Erro ao salvar', variant: 'destructive' });
+    } catch (error: any) {
+      console.error('Erro ao salvar responsável:', error);
+      const msg = error?.message || 'Erro desconhecido';
+      toast({ title: 'Erro ao salvar responsável', description: msg, variant: 'destructive' });
     } finally {
       setSaving(false);
     }

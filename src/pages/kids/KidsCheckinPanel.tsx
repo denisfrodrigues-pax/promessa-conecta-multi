@@ -212,10 +212,12 @@ export default function KidsCheckinPanel() {
       setShowCheckinModal(false);
       setNewCheckin({ crianca_id: "", responsavel_id: "", sala_id: "", observacao: "" });
       fetchData();
-    } catch (error) {
-      console.error("Error creating checkin:", error);
+    } catch (error: any) {
+      console.error("Erro ao realizar check-in:", error);
+      const msg = error?.message || "Erro desconhecido";
       toast({
         title: "Erro ao realizar check-in",
+        description: msg,
         variant: "destructive",
       });
     } finally {
@@ -366,11 +368,12 @@ export default function KidsCheckinPanel() {
         checkin_observacao: "",
       });
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro no cadastro rápido:", error);
+      const msg = error?.message || "Erro desconhecido";
       toast({
         title: "Erro ao cadastrar",
-        description: "Tente novamente",
+        description: msg,
         variant: "destructive",
       });
     } finally {
