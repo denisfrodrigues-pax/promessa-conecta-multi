@@ -121,9 +121,9 @@ export default function KidsSalas() {
         counts[c.sala_id] = (counts[c.sala_id] || 0) + 1;
       });
       setTodayCheckinCounts(counts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching data:', error);
-      toast({ title: 'Erro ao carregar dados', variant: 'destructive' });
+      toast({ title: 'Erro ao carregar dados', description: error?.message || String(error), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -163,7 +163,7 @@ export default function KidsSalas() {
       })));
     } catch (error) {
       console.error('Error fetching sala detail:', error);
-      toast({ title: 'Erro ao carregar detalhes', variant: 'destructive' });
+      toast({ title: 'Erro ao carregar detalhes', description: (error as any)?.message || String(error), variant: 'destructive' });
     } finally {
       setLoadingDetail(false);
     }
@@ -276,11 +276,10 @@ export default function KidsSalas() {
       if (error) throw error;
       toast({ title: 'Criança vinculada à sala!' });
       fetchSalaDetail(selectedSala);
-      // Update available list
       setCriancasDisponiveis(prev => prev.filter(c => c.id !== criancaId));
     } catch (error: any) {
       console.error('Error assigning child:', error);
-      toast({ title: 'Erro ao vincular', description: error?.message, variant: 'destructive' });
+      toast({ title: 'Erro ao vincular criança', description: error?.message || String(error), variant: 'destructive' });
     }
   };
 
@@ -297,7 +296,7 @@ export default function KidsSalas() {
       fetchSalaDetail(selectedSala);
     } catch (error: any) {
       console.error('Error removing child:', error);
-      toast({ title: 'Erro ao remover', description: error?.message, variant: 'destructive' });
+      toast({ title: 'Erro ao remover criança', description: error?.message || String(error), variant: 'destructive' });
     }
   };
 
