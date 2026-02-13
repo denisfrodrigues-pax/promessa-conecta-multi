@@ -1916,6 +1916,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_kids_team: { Args: { _user_id: string }; Returns: boolean }
       leader_add_member_to_base: {
         Args: { p_base_id: string; p_profile_id: string }
         Returns: undefined
