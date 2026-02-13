@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,9 +17,13 @@ import {
   MapPin, 
   Edit,
   Trash2,
-  Users,
-  Baby
+  Baby,
+  Clock,
+  UserMinus,
+  UserPlus
 } from 'lucide-react';
+import { format, isToday, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface Sala {
   id: string;
@@ -27,7 +31,26 @@ interface Sala {
   capacidade: number;
   observacao: string | null;
   status: string;
-  presentes_count?: number;
+}
+
+interface CriancaVinculada {
+  id: string;
+  nome: string;
+  data_nascimento: string | null;
+}
+
+interface CheckinHoje {
+  id: string;
+  crianca_nome: string;
+  checkin_at: string;
+  status: string;
+}
+
+interface CriancaDisponivel {
+  id: string;
+  nome: string;
+  data_nascimento: string | null;
+  sala_id: string | null;
 }
 
 const statusLabels: Record<string, string> = {
@@ -56,6 +79,18 @@ export default function KidsSalas() {
   });
   const [saving, setSaving] = useState(false);
 
+  // Detail view state
+  const [selectedSala, setSelectedSala] = useState<Sala | null>(null);
+  const [criancasVinculadas, setCriancasVinculadas] = useState<CriancaVinculada[]>([]);
+  const [checkinsHoje, setCheckinsHoje] = useState<CheckinHoje[]>([]);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
+  // Add child to room
+  const [showAddChildModal, setShowAddChildModal] = useState(false);
+  const [criancasDisponiveis, setCriancasDisponiveis] = useState<CriancaDisponivel[]>([]);
+  const [childSearch, setChildSearch] = useState('');
+  const [todayCheckinCounts, setTodayCheckinCounts] = useState<Record<string, number>>({});
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -69,25 +104,68 @@ export default function KidsSalas() {
         .order('nome');
 
       if (error) throw error;
+      setSalas(data || []);
 
-      // Get count of presentes for each sala
-      const salasWithCount = await Promise.all(
-        (data || []).map(async (sala) => {
-          const { count } = await supabase
-            .from('checkins_kids')
-            .select('*', { count: 'exact', head: true })
-            .eq('sala_id', sala.id)
-            .eq('status', 'presente');
-          return { ...sala, presentes_count: count || 0 };
-        })
-      );
+      // Get today's checkin counts per sala
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
 
-      setSalas(salasWithCount);
+      const { data: checkins } = await supabase
+        .from('checkins_kids')
+        .select('sala_id')
+        .gte('checkin_at', todayStart.toISOString())
+        .eq('status', 'presente');
+
+      const counts: Record<string, number> = {};
+      (checkins || []).forEach(c => {
+        counts[c.sala_id] = (counts[c.sala_id] || 0) + 1;
+      });
+      setTodayCheckinCounts(counts);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({ title: 'Erro ao carregar dados', variant: 'destructive' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSalaDetail = async (sala: Sala) => {
+    setSelectedSala(sala);
+    setLoadingDetail(true);
+    try {
+      // Fetch fixed children (sala_id on criancas)
+      const { data: criancas, error: criancasError } = await supabase
+        .from('criancas')
+        .select('id, nome, data_nascimento')
+        .eq('sala_id', sala.id)
+        .order('nome');
+
+      if (criancasError) throw criancasError;
+      setCriancasVinculadas(criancas || []);
+
+      // Fetch today's checkins for this room
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      const { data: checkins, error: checkinsError } = await supabase
+        .from('checkins_kids')
+        .select('id, checkin_at, status, crianca:criancas(nome)')
+        .eq('sala_id', sala.id)
+        .gte('checkin_at', todayStart.toISOString())
+        .order('checkin_at', { ascending: false });
+
+      if (checkinsError) throw checkinsError;
+      setCheckinsHoje((checkins || []).map((c: any) => ({
+        id: c.id,
+        crianca_nome: c.crianca?.nome || 'Desconhecida',
+        checkin_at: c.checkin_at,
+        status: c.status,
+      })));
+    } catch (error) {
+      console.error('Error fetching sala detail:', error);
+      toast({ title: 'Erro ao carregar detalhes', variant: 'destructive' });
+    } finally {
+      setLoadingDetail(false);
     }
   };
 
@@ -116,37 +194,35 @@ export default function KidsSalas() {
 
     setSaving(true);
     try {
+      const payload = {
+        nome: formData.nome,
+        capacidade: parseInt(formData.capacidade) || 20,
+        observacao: formData.observacao || null,
+        status: formData.status
+      };
+
       if (editingSala) {
         const { error } = await supabase
           .from('salas_kids')
-          .update({
-            nome: formData.nome,
-            capacidade: parseInt(formData.capacidade) || 20,
-            observacao: formData.observacao || null,
-            status: formData.status
-          })
+          .update(payload)
           .eq('id', editingSala.id);
-
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('salas_kids')
-          .insert({
-            nome: formData.nome,
-            capacidade: parseInt(formData.capacidade) || 20,
-            observacao: formData.observacao || null,
-            status: formData.status
-          });
-
+          .insert(payload);
         if (error) throw error;
       }
 
       toast({ title: editingSala ? 'Sala atualizada!' : 'Sala cadastrada!' });
       setShowModal(false);
       fetchData();
-    } catch (error) {
+      if (selectedSala && editingSala?.id === selectedSala.id) {
+        fetchSalaDetail({ ...selectedSala, ...payload });
+      }
+    } catch (error: any) {
       console.error('Error saving:', error);
-      toast({ title: 'Erro ao salvar', variant: 'destructive' });
+      toast({ title: 'Erro ao salvar', description: error?.message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -164,24 +240,82 @@ export default function KidsSalas() {
       if (error) throw error;
 
       toast({ title: 'Sala excluída!' });
+      if (selectedSala?.id === sala.id) setSelectedSala(null);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting:', error);
-      toast({ title: 'Erro ao excluir. A sala pode estar vinculada a check-ins.', variant: 'destructive' });
+      toast({ title: 'Erro ao excluir. A sala pode estar vinculada a check-ins.', description: error?.message, variant: 'destructive' });
     }
+  };
+
+  const openAddChildModal = async () => {
+    if (!selectedSala) return;
+    setChildSearch('');
+    setShowAddChildModal(true);
+
+    // Fetch children not assigned to this room
+    const { data, error } = await supabase
+      .from('criancas')
+      .select('id, nome, data_nascimento, sala_id')
+      .or(`sala_id.is.null,sala_id.neq.${selectedSala.id}`)
+      .order('nome');
+
+    if (!error) {
+      setCriancasDisponiveis(data || []);
+    }
+  };
+
+  const assignChildToRoom = async (criancaId: string) => {
+    if (!selectedSala) return;
+    try {
+      const { error } = await supabase
+        .from('criancas')
+        .update({ sala_id: selectedSala.id })
+        .eq('id', criancaId);
+
+      if (error) throw error;
+      toast({ title: 'Criança vinculada à sala!' });
+      fetchSalaDetail(selectedSala);
+      // Update available list
+      setCriancasDisponiveis(prev => prev.filter(c => c.id !== criancaId));
+    } catch (error: any) {
+      console.error('Error assigning child:', error);
+      toast({ title: 'Erro ao vincular', description: error?.message, variant: 'destructive' });
+    }
+  };
+
+  const removeChildFromRoom = async (criancaId: string) => {
+    if (!selectedSala) return;
+    try {
+      const { error } = await supabase
+        .from('criancas')
+        .update({ sala_id: null })
+        .eq('id', criancaId);
+
+      if (error) throw error;
+      toast({ title: 'Criança removida da sala!' });
+      fetchSalaDetail(selectedSala);
+    } catch (error: any) {
+      console.error('Error removing child:', error);
+      toast({ title: 'Erro ao remover', description: error?.message, variant: 'destructive' });
+    }
+  };
+
+  const getOcupacaoHoje = (salaId: string): number => {
+    return todayCheckinCounts[salaId] || 0;
   };
 
   const getOcupacaoPercent = (sala: Sala): number => {
     if (!sala.capacidade) return 0;
-    return Math.min(100, ((sala.presentes_count || 0) / sala.capacidade) * 100);
-  };
-
-  const isLotada = (sala: Sala): boolean => {
-    return (sala.presentes_count || 0) >= sala.capacidade;
+    return Math.min(100, (getOcupacaoHoje(sala.id) / sala.capacidade) * 100);
   };
 
   const filtered = salas.filter(s => 
     search === '' || s.nome.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredDisponiveis = criancasDisponiveis.filter(c =>
+    childSearch === '' || c.nome.toLowerCase().includes(childSearch.toLowerCase())
   );
 
   if (loading) {
@@ -192,7 +326,7 @@ export default function KidsSalas() {
           <Skeleton className="h-10 w-32" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map(i => (
+          {[1, 2, 3].map(i => (
             <Skeleton key={i} className="h-40" />
           ))}
         </div>
@@ -225,85 +359,176 @@ export default function KidsSalas() {
         />
       </div>
 
-      {/* Cards Grid */}
-      {filtered.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Nenhuma sala encontrada</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map(sala => (
-            <Card key={sala.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MapPin className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-semibold">{sala.nome}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={statusColors[sala.status]}>
-                      {statusLabels[sala.status]}
-                    </Badge>
-                    {isLotada(sala) && (
-                      <Badge className="bg-red-100 text-red-800 border-red-200">
-                        Lotada
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground flex items-center gap-1">
-                      <Baby className="w-4 h-4" />
-                      Ocupação
-                    </span>
-                    <span className="font-medium">
-                      {sala.presentes_count || 0} / {sala.capacidade}
-                    </span>
-                  </div>
-                  <Progress value={getOcupacaoPercent(sala)} className="h-2" />
-                </div>
-
-                {sala.observacao && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {sala.observacao}
-                  </p>
-                )}
-
-                <div className="flex gap-2 pt-2 border-t">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => openEditModal(sala)}
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Editar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(sala)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Cards Grid */}
+        <div className={selectedSala ? 'lg:col-span-1' : 'lg:col-span-3'}>
+          {filtered.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">Nenhuma sala encontrada</p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className={`grid gap-4 ${selectedSala ? '' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+              {filtered.map(sala => (
+                <Card 
+                  key={sala.id} 
+                  className={`hover:shadow-md transition-shadow cursor-pointer ${selectedSala?.id === sala.id ? 'ring-2 ring-primary' : ''}`}
+                  onClick={() => fetchSalaDetail(sala)}
+                >
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <MapPin className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">{sala.nome}</p>
+                        </div>
+                      </div>
+                      <Badge className={statusColors[sala.status]}>
+                        {statusLabels[sala.status]}
+                      </Badge>
+                    </div>
 
-      {/* Modal */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <Baby className="w-4 h-4" />
+                          Ocupação hoje
+                        </span>
+                        <span className="font-medium">
+                          {getOcupacaoHoje(sala.id)} / {sala.capacidade}
+                        </span>
+                      </div>
+                      <Progress value={getOcupacaoPercent(sala)} className="h-2" />
+                    </div>
+
+                    <div className="flex gap-2 pt-2 border-t" onClick={e => e.stopPropagation()}>
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => openEditModal(sala)}>
+                        <Edit className="w-4 h-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(sala)} className="text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Detail Panel */}
+        {selectedSala && (
+          <div className="lg:col-span-2 space-y-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">{selectedSala.nome}</CardTitle>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedSala(null)}>✕</Button>
+                </div>
+              </CardHeader>
+            </Card>
+
+            {loadingDetail ? (
+              <div className="space-y-4">
+                <Skeleton className="h-48" />
+                <Skeleton className="h-48" />
+              </div>
+            ) : (
+              <>
+                {/* Fixed children */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Baby className="w-4 h-4" />
+                        Crianças desta sala ({criancasVinculadas.length})
+                      </CardTitle>
+                      <Button size="sm" variant="outline" onClick={openAddChildModal}>
+                        <UserPlus className="w-4 h-4 mr-1" />
+                        Adicionar
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {criancasVinculadas.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Nenhuma criança vinculada a esta sala
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {criancasVinculadas.map(c => (
+                          <div key={c.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                            <div className="flex items-center gap-2">
+                              <Baby className="w-4 h-4 text-primary" />
+                              <span className="text-sm font-medium">{c.nome}</span>
+                              {c.data_nascimento && (
+                                <span className="text-xs text-muted-foreground">
+                                  ({format(new Date(c.data_nascimento), 'dd/MM/yyyy')})
+                                </span>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive h-7 px-2"
+                              onClick={() => removeChildFromRoom(c.id)}
+                            >
+                              <UserMinus className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Today's checkins */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Check-ins de hoje ({checkinsHoje.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {checkinsHoje.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Nenhum check-in hoje nesta sala
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {checkinsHoje.map(c => (
+                          <div key={c.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                            <div className="flex items-center gap-2">
+                              <Baby className="w-4 h-4 text-primary" />
+                              <span className="text-sm font-medium">{c.crianca_nome}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(c.checkin_at), 'HH:mm')}
+                              </span>
+                              <Badge variant="secondary" className="text-xs">
+                                {c.status === 'presente' ? 'Presente' : c.status === 'checkout' ? 'Checkout' : c.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Sala Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -361,6 +586,45 @@ export default function KidsSalas() {
               {saving ? 'Salvando...' : 'Salvar'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Child to Room Modal */}
+      <Dialog open={showAddChildModal} onOpenChange={setShowAddChildModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Adicionar criança à sala</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              placeholder="Buscar criança..."
+              value={childSearch}
+              onChange={(e) => setChildSearch(e.target.value)}
+            />
+            <div className="max-h-64 overflow-y-auto space-y-1">
+              {filteredDisponiveis.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Nenhuma criança disponível
+                </p>
+              ) : (
+                filteredDisponiveis.map(c => (
+                  <button
+                    key={c.id}
+                    className="w-full text-left p-2 rounded-md hover:bg-muted flex items-center justify-between"
+                    onClick={() => assignChildToRoom(c.id)}
+                  >
+                    <div>
+                      <span className="font-medium text-sm">{c.nome}</span>
+                      {c.sala_id && (
+                        <span className="text-xs text-muted-foreground ml-2">(já em outra sala)</span>
+                      )}
+                    </div>
+                    <Plus className="w-4 h-4 text-primary" />
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

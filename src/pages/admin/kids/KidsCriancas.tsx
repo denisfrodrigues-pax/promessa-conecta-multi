@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -28,13 +29,20 @@ interface Crianca {
   data_nascimento: string | null;
   observacoes: string | null;
   alergias: string | null;
+  sala_id: string | null;
   responsaveis_count?: number;
+  sala_nome?: string;
 }
 
 interface Responsavel {
   id: string;
   nome: string;
   telefone: string | null;
+}
+
+interface SalaOption {
+  id: string;
+  nome: string;
 }
 
 const calculateAge = (birthDate: string | null): string => {
@@ -47,6 +55,7 @@ export default function KidsCriancas() {
   const navigate = useNavigate();
   const [criancas, setCriancas] = useState<Crianca[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
+  const [salas, setSalas] = useState<SalaOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   
@@ -59,6 +68,7 @@ export default function KidsCriancas() {
     data_nascimento: '',
     observacoes: '',
     alergias: '',
+    sala_id: '',
     responsaveis_ids: [] as string[]
   });
   const [newResponsavel, setNewResponsavel] = useState({
@@ -75,22 +85,22 @@ export default function KidsCriancas() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch criancas
+      // Fetch criancas with sala name
       const { data: criancasData, error } = await supabase
         .from('criancas')
-        .select('*')
+        .select('*, sala:salas_kids(nome)')
         .order('nome');
 
       if (error) throw error;
 
       // Get count of responsaveis for each crianca
       const criancasWithCount = await Promise.all(
-        (criancasData || []).map(async (crianca) => {
+        (criancasData || []).map(async (crianca: any) => {
           const { count } = await supabase
             .from('criancas_responsaveis')
             .select('*', { count: 'exact', head: true })
             .eq('crianca_id', crianca.id);
-          return { ...crianca, responsaveis_count: count || 0 };
+          return { ...crianca, responsaveis_count: count || 0, sala_nome: crianca.sala?.nome || null };
         })
       );
 
@@ -102,6 +112,14 @@ export default function KidsCriancas() {
         .select('id, nome, telefone')
         .order('nome');
       setResponsaveis(responsaveisData || []);
+
+      // Fetch salas
+      const { data: salasData } = await supabase
+        .from('salas_kids')
+        .select('id, nome')
+        .eq('status', 'ativa')
+        .order('nome');
+      setSalas(salasData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({ title: 'Erro ao carregar dados', variant: 'destructive' });
@@ -117,6 +135,7 @@ export default function KidsCriancas() {
       data_nascimento: '',
       observacoes: '',
       alergias: '',
+      sala_id: '',
       responsaveis_ids: []
     });
     setShowModal(true);
@@ -136,6 +155,7 @@ export default function KidsCriancas() {
       data_nascimento: crianca.data_nascimento || '',
       observacoes: crianca.observacoes || '',
       alergias: crianca.alergias || '',
+      sala_id: crianca.sala_id || '',
       responsaveis_ids: links?.map(l => l.responsavel_id) || []
     });
     setShowModal(true);
@@ -171,7 +191,8 @@ export default function KidsCriancas() {
             nome: formData.nome,
             data_nascimento: formData.data_nascimento || null,
             observacoes: formData.observacoes || null,
-            alergias: formData.alergias || null
+            alergias: formData.alergias || null,
+            sala_id: formData.sala_id || null
           })
           .eq('id', editingCrianca.id);
 
@@ -185,6 +206,7 @@ export default function KidsCriancas() {
             data_nascimento: formData.data_nascimento || null,
             observacoes: formData.observacoes || null,
             alergias: formData.alergias || null,
+            sala_id: formData.sala_id || null,
             responsavel_id: profileData.id
           })
           .select()
@@ -382,6 +404,9 @@ export default function KidsCriancas() {
                     </div>
                   )}
                   <p>{crianca.responsaveis_count} responsável(is)</p>
+                  {crianca.sala_nome && (
+                    <p className="text-xs">🏠 Sala: {crianca.sala_nome}</p>
+                  )}
                 </div>
 
                 {crianca.alergias && (
@@ -447,6 +472,23 @@ export default function KidsCriancas() {
                 onChange={(e) => setFormData({...formData, alergias: e.target.value})}
                 placeholder="Alergias conhecidas"
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Sala principal</Label>
+              <Select 
+                value={formData.sala_id} 
+                onValueChange={(v) => setFormData({...formData, sala_id: v})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a sala" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nenhuma</SelectItem>
+                  {salas.map(s => (
+                    <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Observações</Label>
