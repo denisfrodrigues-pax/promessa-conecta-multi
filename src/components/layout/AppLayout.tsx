@@ -34,7 +34,7 @@ export default function AppLayout() {
     } else if (roles.includes('lider')) {
       return '/leader';
     } else if (roles.includes('voluntario')) {
-      return '/kids/check-in';
+      return '/voluntario';
     }
     return null;
   };
