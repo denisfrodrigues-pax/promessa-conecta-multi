@@ -99,6 +99,9 @@ import KidsCheckinPanel from "@/pages/kids/KidsCheckinPanel";
 // Voluntario Pages
 import VoluntarioDashboard from "@/pages/voluntario/VoluntarioDashboard";
 
+// Route Guards
+import RequireMinistry from "@/components/routes/RequireMinistry";
+
 // Leader Pages
 import LeaderDashboard from "@/pages/leader/Dashboard";
 import LeaderBases from "@/pages/leader/Bases";
@@ -310,10 +313,12 @@ const App = () => (
             <Route index element={<VoluntarioDashboard />} />
           </Route>
 
-          {/* Kids Panel Routes - admin, lider, voluntario */}
+          {/* Kids Panel Routes - admin, lider, voluntario with Kids ministry */}
           <Route path="/kids" element={
             <PrivateRoute allowedRoles={['admin', 'lider', 'voluntario']}>
-              <KidsLayout />
+              <RequireMinistry slug="kids">
+                <KidsLayout />
+              </RequireMinistry>
             </PrivateRoute>
           }>
             <Route index element={<Navigate to="/kids/check-in" replace />} />

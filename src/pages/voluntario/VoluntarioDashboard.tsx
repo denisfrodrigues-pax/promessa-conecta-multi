@@ -10,25 +10,23 @@ import { toast } from '@/hooks/use-toast';
 interface Ministry {
   id: string;
   nome: string;
+  slug: string | null;
   descricao: string | null;
 }
 
-// Map ministry names to icons and routes
-const getMinistryConfig = (nome: string) => {
-  const lower = nome.toLowerCase();
-  if (lower.includes('kids') || lower.includes('infantil') || lower.includes('criança')) {
-    return { icon: Baby, route: '/kids/check-in', color: 'text-pink-600 bg-pink-100' };
-  }
-  if (lower.includes('louvor') || lower.includes('música') || lower.includes('worship')) {
-    return { icon: Music, route: null, color: 'text-purple-600 bg-purple-100' };
-  }
-  if (lower.includes('ensino') || lower.includes('ebd') || lower.includes('escola')) {
-    return { icon: BookOpen, route: null, color: 'text-blue-600 bg-blue-100' };
-  }
-  if (lower.includes('recepção') || lower.includes('recepcao') || lower.includes('acolhimento')) {
-    return { icon: Users, route: null, color: 'text-green-600 bg-green-100' };
-  }
-  return { icon: Heart, route: null, color: 'text-amber-600 bg-amber-100' };
+// Map ministry slugs to icons and routes
+const SLUG_CONFIG: Record<string, { icon: typeof Baby; route: string | null; color: string }> = {
+  kids: { icon: Baby, route: '/kids/check-in', color: 'text-pink-600 bg-pink-100' },
+  louvor: { icon: Music, route: null, color: 'text-purple-600 bg-purple-100' },
+  ensino: { icon: BookOpen, route: null, color: 'text-blue-600 bg-blue-100' },
+  recepcao: { icon: Users, route: null, color: 'text-green-600 bg-green-100' },
+};
+
+const DEFAULT_CONFIG = { icon: Heart, route: null, color: 'text-amber-600 bg-amber-100' };
+
+const getMinistryConfig = (slug: string | null) => {
+  if (!slug) return DEFAULT_CONFIG;
+  return SLUG_CONFIG[slug] ?? DEFAULT_CONFIG;
 };
 
 export default function VoluntarioDashboard() {
@@ -56,7 +54,7 @@ export default function VoluntarioDashboard() {
   };
 
   const handleMinistryClick = (ministry: Ministry) => {
-    const config = getMinistryConfig(ministry.nome);
+    const config = getMinistryConfig(ministry.slug);
     if (config.route) {
       navigate(config.route);
     } else {
@@ -98,7 +96,7 @@ export default function VoluntarioDashboard() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {ministries.map(ministry => {
-            const config = getMinistryConfig(ministry.nome);
+            const config = getMinistryConfig(ministry.slug);
             const Icon = config.icon;
             return (
               <Card
