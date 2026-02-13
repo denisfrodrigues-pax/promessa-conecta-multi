@@ -570,6 +570,7 @@ export type Database = {
           nome: string
           observacoes: string | null
           responsavel_id: string
+          sala_id: string | null
           turma_id: string | null
           updated_at: string | null
         }
@@ -582,6 +583,7 @@ export type Database = {
           nome: string
           observacoes?: string | null
           responsavel_id: string
+          sala_id?: string | null
           turma_id?: string | null
           updated_at?: string | null
         }
@@ -594,6 +596,7 @@ export type Database = {
           nome?: string
           observacoes?: string | null
           responsavel_id?: string
+          sala_id?: string | null
           turma_id?: string | null
           updated_at?: string | null
         }
@@ -603,6 +606,13 @@ export type Database = {
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "criancas_sala_id_fkey"
+            columns: ["sala_id"]
+            isOneToOne: false
+            referencedRelation: "salas_kids"
             referencedColumns: ["id"]
           },
           {

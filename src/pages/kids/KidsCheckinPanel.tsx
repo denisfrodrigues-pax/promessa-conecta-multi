@@ -53,6 +53,7 @@ interface Crianca {
   id: string;
   nome: string;
   data_nascimento: string | null;
+  sala_id: string | null;
 }
 
 interface Responsavel {
@@ -108,6 +109,7 @@ export default function KidsCheckinPanel() {
     responsavel_id: "",
     sala_id: "",
     observacao: "",
+    updateFixedRoom: false,
   });
   const [checkoutResponsavelId, setCheckoutResponsavelId] = useState("");
   const [saving, setSaving] = useState(false);
@@ -158,7 +160,7 @@ export default function KidsCheckinPanel() {
       // Fetch criancas
       const { data: criancasData } = await supabase
         .from("criancas")
-        .select("id, nome, data_nascimento")
+        .select("id, nome, data_nascimento, sala_id")
         .order("nome");
       setCriancas(criancasData || []);
 
@@ -208,9 +210,17 @@ export default function KidsCheckinPanel() {
 
       if (error) throw error;
 
+      // Optionally update fixed room
+      if (newCheckin.updateFixedRoom && newCheckin.sala_id) {
+        await supabase
+          .from("criancas")
+          .update({ sala_id: newCheckin.sala_id })
+          .eq("id", newCheckin.crianca_id);
+      }
+
       toast({ title: "Check-in realizado com sucesso!" });
       setShowCheckinModal(false);
-      setNewCheckin({ crianca_id: "", responsavel_id: "", sala_id: "", observacao: "" });
+      setNewCheckin({ crianca_id: "", responsavel_id: "", sala_id: "", observacao: "", updateFixedRoom: false });
       fetchData();
     } catch (error: any) {
       console.error("Erro ao realizar check-in:", error);
@@ -318,6 +328,7 @@ export default function KidsCheckinPanel() {
           alergias: cadastroRapido.crianca_alergias.trim() || null,
           observacoes: cadastroRapido.crianca_observacoes.trim() || null,
           autorizacao_foto: cadastroRapido.autorizacao_foto,
+          sala_id: cadastroRapido.sala_id || null,
           responsavel_id: profileData.id, // Referência ao profile do usuário logado
         })
         .select()
@@ -448,7 +459,8 @@ export default function KidsCheckinPanel() {
                     key={crianca.id}
                     className="w-full text-left p-2 rounded-md hover:bg-muted flex items-center justify-between"
                     onClick={() => {
-                      setNewCheckin({ ...newCheckin, crianca_id: crianca.id });
+                      const preselectedSala = crianca.sala_id || "";
+                      setNewCheckin({ ...newCheckin, crianca_id: crianca.id, sala_id: preselectedSala, updateFixedRoom: false });
                       setSearch("");
                       setShowCheckinModal(true);
                     }}
@@ -558,7 +570,10 @@ export default function KidsCheckinPanel() {
               <Label>Criança *</Label>
               <Select
                 value={newCheckin.crianca_id}
-                onValueChange={(v) => setNewCheckin({ ...newCheckin, crianca_id: v })}
+                onValueChange={(v) => {
+                  const selected = criancas.find(c => c.id === v);
+                  setNewCheckin({ ...newCheckin, crianca_id: v, sala_id: selected?.sala_id || newCheckin.sala_id, updateFixedRoom: false });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a criança" />
@@ -616,6 +631,23 @@ export default function KidsCheckinPanel() {
                 onChange={(e) => setNewCheckin({ ...newCheckin, observacao: e.target.value })}
               />
             </div>
+            {newCheckin.crianca_id && (() => {
+              const selected = criancas.find(c => c.id === newCheckin.crianca_id);
+              return selected && newCheckin.sala_id && selected.sala_id !== newCheckin.sala_id;
+            })() && (
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="updateFixedRoom"
+                  checked={newCheckin.updateFixedRoom}
+                  onCheckedChange={(checked) =>
+                    setNewCheckin({ ...newCheckin, updateFixedRoom: !!checked })
+                  }
+                />
+                <Label htmlFor="updateFixedRoom" className="text-sm font-normal cursor-pointer">
+                  Atualizar sala principal desta criança
+                </Label>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCheckinModal(false)}>
