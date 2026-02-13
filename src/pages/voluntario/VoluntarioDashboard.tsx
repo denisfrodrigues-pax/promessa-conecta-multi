@@ -8,7 +8,7 @@ import { Baby, Music, BookOpen, Users, Heart, ChevronRight } from 'lucide-react'
 import { toast } from '@/hooks/use-toast';
 
 interface Ministry {
-  id: string;
+  ministerio_id: string;
   nome: string;
   slug: string | null;
   descricao: string | null;
@@ -43,7 +43,7 @@ export default function VoluntarioDashboard() {
     try {
       const { data, error } = await supabase.rpc('get_my_ministries');
       if (error) throw error;
-      const parsed: Ministry[] = Array.isArray(data) ? data : (data ? JSON.parse(String(data)) : []);
+      const parsed: Ministry[] = (data ?? []) as Ministry[];
       setMinistries(parsed);
     } catch (error: any) {
       console.error('Erro ao buscar ministérios:', error);
@@ -100,7 +100,7 @@ export default function VoluntarioDashboard() {
             const Icon = config.icon;
             return (
               <Card
-                key={ministry.id}
+                key={ministry.ministerio_id}
                 className="hover:shadow-md transition-shadow cursor-pointer group"
                 onClick={() => handleMinistryClick(ministry)}
               >

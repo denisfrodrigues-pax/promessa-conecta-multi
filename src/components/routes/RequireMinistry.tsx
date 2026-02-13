@@ -27,11 +27,7 @@ export default function RequireMinistry({ slug, children }: RequireMinistryProps
       try {
         const { data, error } = await supabase.rpc('get_my_ministries');
         if (error) throw error;
-        const ministries: { slug: string | null }[] = Array.isArray(data)
-          ? data
-          : data
-            ? JSON.parse(String(data))
-            : [];
+        const ministries = (data ?? []) as { slug: string | null }[];
         const has = ministries.some((m) => m.slug === slug);
         if (!has) {
           toast({
