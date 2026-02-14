@@ -1,18 +1,9 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth, MyMinistry } from '@/contexts/AuthContext';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Baby, Music, BookOpen, Users, Heart, ChevronRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-
-interface Ministry {
-  ministerio_id: string;
-  nome: string;
-  slug: string | null;
-  descricao: string | null;
-}
 
 // Map ministry slugs to icons and routes
 const SLUG_CONFIG: Record<string, { icon: typeof Baby; route: string | null; color: string }> = {
@@ -30,30 +21,10 @@ const getMinistryConfig = (slug: string | null) => {
 };
 
 export default function VoluntarioDashboard() {
-  const { profile } = useAuth();
+  const { profile, myMinistries, myMinistriesLoading } = useAuth();
   const navigate = useNavigate();
-  const [ministries, setMinistries] = useState<Ministry[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchMinistries();
-  }, []);
-
-  const fetchMinistries = async () => {
-    try {
-      const { data, error } = await supabase.rpc('get_my_ministries');
-      if (error) throw error;
-      const parsed: Ministry[] = (data ?? []) as Ministry[];
-      setMinistries(parsed);
-    } catch (error: any) {
-      console.error('Erro ao buscar ministérios:', error);
-      toast({ title: 'Erro ao carregar ministérios', description: error?.message, variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleMinistryClick = (ministry: Ministry) => {
+  const handleMinistryClick = (ministry: MyMinistry) => {
     const config = getMinistryConfig(ministry.slug);
     if (config.route) {
       navigate(config.route);
@@ -62,7 +33,7 @@ export default function VoluntarioDashboard() {
     }
   };
 
-  if (loading) {
+  if (myMinistriesLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-64" />
@@ -82,7 +53,7 @@ export default function VoluntarioDashboard() {
         </p>
       </div>
 
-      {ministries.length === 0 ? (
+      {myMinistries.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Heart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
@@ -95,7 +66,7 @@ export default function VoluntarioDashboard() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {ministries.map(ministry => {
+          {myMinistries.map(ministry => {
             const config = getMinistryConfig(ministry.slug);
             const Icon = config.icon;
             return (

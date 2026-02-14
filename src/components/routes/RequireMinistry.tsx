@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   slug: string;
@@ -10,45 +10,40 @@ type Props = {
 };
 
 export default function RequireMinistry({ slug, children }: Props) {
-  const { roles } = useAuth();
-  const [status, setStatus] = useState<"loading" | "allowed" | "denied">("loading");
+  const { roles, myMinistries, myMinistriesLoading, refreshMyMinistries } = useAuth();
 
   const isAdmin = roles?.includes("admin");
 
+  // If ministries haven't been loaded yet and we're not admin, trigger a refresh
   useEffect(() => {
-    if (isAdmin) {
-      setStatus("allowed");
-      return;
+    if (!isAdmin && !myMinistriesLoading && myMinistries.length === 0) {
+      refreshMyMinistries();
     }
+  }, [isAdmin, myMinistriesLoading, myMinistries.length, refreshMyMinistries]);
 
-    const check = async () => {
-      try {
-        const { data, error } = await supabase.rpc("get_my_ministries");
-        if (error) throw error;
+  if (isAdmin) {
+    return <>{children}</>;
+  }
 
-        const ministries = (data ?? []) as { slug: string | null }[];
-        const has = ministries.some((m) => m.slug === slug);
+  if (myMinistriesLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="space-y-4 w-full max-w-md">
+          <Skeleton className="h-8 w-48 mx-auto" />
+          <Skeleton className="h-4 w-64 mx-auto" />
+        </div>
+      </div>
+    );
+  }
 
-        if (!has) {
-          toast({
-            title: "Sem permissão",
-            description: "Você não tem acesso a este módulo.",
-            variant: "destructive",
-          });
-        }
+  const hasAccess = myMinistries.some((m) => m.slug === slug);
 
-        setStatus(has ? "allowed" : "denied");
-      } catch {
-        setStatus("denied");
-      }
-    };
-
-    check();
-  }, [slug, isAdmin]);
-
-  if (status === "loading") return null;
-
-  if (status === "denied") {
+  if (!hasAccess) {
+    toast({
+      title: "Sem permissão",
+      description: "Você não tem acesso a este módulo.",
+      variant: "destructive",
+    });
     return <Navigate to="/voluntario" replace />;
   }
 
