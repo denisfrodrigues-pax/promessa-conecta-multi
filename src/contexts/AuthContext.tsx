@@ -1,8 +1,15 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 export type UserRole = 'admin' | 'lider' | 'voluntario' | 'membro' | 'visitante' | 'financeiro';
+
+export interface MyMinistry {
+  ministerio_id: string;
+  nome: string;
+  slug: string | null;
+  descricao: string | null;
+}
 
 interface Profile {
   id: string;
@@ -20,6 +27,9 @@ interface AuthContextType {
   profile: Profile | null;
   roles: UserRole[];
   loading: boolean;
+  myMinistries: MyMinistry[];
+  myMinistriesLoading: boolean;
+  refreshMyMinistries: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, nome: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -38,6 +48,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [myMinistries, setMyMinistries] = useState<MyMinistry[]>([]);
+  const [myMinistriesLoading, setMyMinistriesLoading] = useState(false);
+
+  const refreshMyMinistries = useCallback(async () => {
+    setMyMinistriesLoading(true);
+    try {
+      const { data, error } = await supabase.rpc('get_my_ministries');
+      if (error) throw error;
+      setMyMinistries((data ?? []) as MyMinistry[]);
+    } catch (error) {
+      console.error('Error fetching my ministries:', error);
+      setMyMinistries([]);
+    } finally {
+      setMyMinistriesLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -51,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setProfile(null);
         setRoles([]);
+        setMyMinistries([]);
         setLoading(false);
       }
     });
@@ -85,7 +112,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId);
 
       if (rolesError) throw rolesError;
-      setRoles((rolesData || []).map((r: { role: UserRole }) => r.role));
+      const userRoles = (rolesData || []).map((r: { role: UserRole }) => r.role);
+      setRoles(userRoles);
+
+      // Load ministries for non-admin users (admins bypass ministry checks)
+      if (!userRoles.includes('admin')) {
+        setTimeout(() => {
+          refreshMyMinistries();
+        }, 0);
+      }
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -117,10 +152,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     setProfile(null);
     setRoles([]);
+    setMyMinistries([]);
   };
 
   const hasRole = (role: UserRole) => roles.includes(role);
-  // Admin is ONLY for 'admin' role - financeiro is separate
   const isAdmin = roles.includes('admin');
   const isFinanceiro = roles.includes('financeiro') && !roles.includes('admin');
   const isLider = roles.includes('lider') || roles.includes('admin');
@@ -133,6 +168,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profile,
       roles,
       loading,
+      myMinistries,
+      myMinistriesLoading,
+      refreshMyMinistries,
       signIn,
       signUp,
       signOut,
