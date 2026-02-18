@@ -35,6 +35,7 @@ interface Escala {
   data: string;
   horario: string | null;
   funcao: string;
+  status: string;
   justificativa: string | null;
   ministerio_id: string | null;
   voluntario_id: string | null;
@@ -54,6 +55,7 @@ interface EscalaGroup {
     id: string;
     voluntario_id: string;
     nome: string;
+    status: string;
     justificativa: string | null;
   }>;
 }
@@ -302,6 +304,7 @@ export default function LeaderEscalas() {
         funcao: formData.funcao,
         responsavel_id: profile?.id || null,
         voluntario_id: voluntarioId,
+        status: 'pendente',
       }));
 
       const { error } = await supabase
@@ -346,6 +349,7 @@ export default function LeaderEscalas() {
           id: escala.id,
           voluntario_id: escala.voluntario_id,
           nome: escala.voluntario.nome,
+          status: escala.status,
           justificativa: escala.justificativa,
         });
       }

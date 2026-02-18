@@ -15,6 +15,7 @@ interface Escala {
   id: string;
   data: string;
   funcao: string;
+  status: string;
   ministerios: { nome: string } | null;
 }
 
@@ -35,7 +36,7 @@ export default function HistoricoEscalas() {
       const today = getTodayString();
       const { data, error } = await supabase
         .from('escalas')
-        .select('id, data, funcao, ministerios(nome)')
+        .select('id, data, funcao, status, ministerios(nome)')
         .eq('voluntario_id', profile?.id)
         .lt('data', today)
         .order('data', { ascending: false });
@@ -54,21 +55,21 @@ export default function HistoricoEscalas() {
     switch (status) {
       case 'confirmado':
         return (
-          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+          <Badge variant="success">
             <CheckCircle className="w-3 h-3 mr-1" />
             Confirmado
           </Badge>
         );
       case 'ausente':
         return (
-          <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
+          <Badge variant="destructive">
             <XCircle className="w-3 h-3 mr-1" />
             Ausente
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+          <Badge variant="warning">
             <Clock className="w-3 h-3 mr-1" />
             Pendente
           </Badge>
@@ -118,8 +119,9 @@ export default function HistoricoEscalas() {
           {escalas.map((escala) => (
             <Card key={escala.id} className="shadow-soft">
               <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center flex-shrink-0">
                       <span className="text-sm font-bold">
                         {format(parseLocalDate(escala.data), 'dd')}
                       </span>
@@ -134,8 +136,10 @@ export default function HistoricoEscalas() {
                       </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                  {getStatusBadge(escala.status)}
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
