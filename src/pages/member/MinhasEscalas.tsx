@@ -19,6 +19,7 @@ interface Escala {
   data: string;
   horario: string | null;
   funcao: string;
+  status: string;
   justificativa: string | null;
   confirmado_em: string | null;
   ministerio_id: string | null;
@@ -63,14 +64,14 @@ export default function MinhasEscalas() {
 
   const handleConfirmar = async (escala: Escala) => {
     if (escala.status !== 'pendente') return;
-    
+
     setIsSubmitting(true);
     try {
       const { error } = await supabase
         .from('escalas')
-        .update({ 
+        .update({
           status: 'confirmado',
-          confirmado_em: new Date().toISOString()
+          confirmado_em: new Date().toISOString(),
         })
         .eq('id', escala.id);
 
@@ -96,10 +97,10 @@ export default function MinhasEscalas() {
     try {
       const { error } = await supabase
         .from('escalas')
-        .update({ 
-          status: 'ausente', 
+        .update({
+          status: 'ausente',
           justificativa,
-          confirmado_em: new Date().toISOString()
+          confirmado_em: new Date().toISOString(),
         })
         .eq('id', selectedEscala.id);
 
@@ -188,9 +189,9 @@ export default function MinhasEscalas() {
         </div>
         <div className="flex gap-2 flex-wrap">
           {canSeeVoluntariosDoDia && (
-            <Button 
-              variant="default" 
-              size="sm" 
+            <Button
+              variant="default"
+              size="sm"
               className="shadow-sm"
               onClick={() => navigate('/app/voluntarios-do-dia')}
             >
@@ -246,6 +247,8 @@ export default function MinhasEscalas() {
                       </div>
 
                       <div className="flex items-center gap-3 flex-wrap">
+                        {getStatusBadge(escala.status)}
+                        {escala.status === 'pendente' && (
                           <div className="flex gap-2">
                             <Button
                               size="sm"
@@ -305,6 +308,7 @@ export default function MinhasEscalas() {
                           </p>
                         </div>
                       </div>
+                      {getStatusBadge(escala.status)}
                     </div>
                   </CardContent>
                 </Card>
@@ -356,8 +360,8 @@ export default function MinhasEscalas() {
           )}
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setIsRecusing(false);
                 setSelectedEscala(null);
@@ -367,8 +371,8 @@ export default function MinhasEscalas() {
             >
               Cancelar
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleRecusar}
               disabled={isSubmitting || !justificativa.trim()}
             >

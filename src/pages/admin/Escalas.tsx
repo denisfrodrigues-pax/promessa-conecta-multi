@@ -703,6 +703,7 @@ export default function AdminEscalas() {
           responsavel_id: formData.responsavel_id || null,
           voluntario_id: voluntarioId,
           lembrete_automatico_dias_antes: formData.lembrete_automatico_dias_antes,
+          status: 'pendente',
         }));
 
         const { error } = await supabase
@@ -721,6 +722,7 @@ export default function AdminEscalas() {
           responsavel_id: formData.responsavel_id || null,
           voluntario_id: voluntarioId,
           lembrete_automatico_dias_antes: formData.lembrete_automatico_dias_antes,
+          status: 'pendente',
         }));
 
         const { error } = await supabase
