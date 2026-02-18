@@ -1,7 +1,19 @@
 import { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, History, ClipboardCheck } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { parseLocalDate, isDatePast } from '@/lib/dateUtils';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -10,24 +22,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import {
-  Calendar,
-  CheckCircle,
-  XCircle,
-  Clock,
-  AlertCircle,
-  History,
-  ClipboardCheck,
-} from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { parseLocalDate, isDatePast } from '@/lib/dateUtils';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface Ministerio {
+  nome: string;
+}
 
 interface Escala {
   id: string;
@@ -39,10 +39,12 @@ interface Escala {
   confirmado_em: string | null;
   ministerio_id: string | null;
   voluntario_id: string | null;
-  ministerios: { nome: string } | null;
+  ministerios: Ministerio | null;
 }
 
-function StatusBadge({ status }: { status: Escala['status'] }) {
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function EscalaStatusBadge({ status }: { status: Escala['status'] }) {
   if (status === 'confirmado') {
     return (
       <Badge variant="success">
@@ -67,25 +69,29 @@ function StatusBadge({ status }: { status: Escala['status'] }) {
   );
 }
 
-function DateBox({ date, small = false }: { date: string; small?: boolean }) {
-  const parsed = parseLocalDate(date);
+function EscalaDateBox({ dateStr, compact }: { dateStr: string; compact?: boolean }) {
+  const parsed = parseLocalDate(dateStr);
+  const day = format(parsed, 'dd');
+  const month = format(parsed, 'MMM', { locale: ptBR });
+
+  if (compact) {
+    return (
+      <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center flex-shrink-0">
+        <span className="text-sm font-bold">{day}</span>
+        <span className="text-xs uppercase">{month}</span>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={`rounded-xl flex flex-col items-center justify-center flex-shrink-0 ${
-        small
-          ? 'w-12 h-12 rounded-lg bg-muted'
-          : 'w-14 h-14 bg-primary/10'
-      }`}
-    >
-      <span className={`font-bold ${small ? 'text-sm' : 'text-lg text-primary'}`}>
-        {format(parsed, 'dd')}
-      </span>
-      <span className={`text-xs uppercase ${small ? '' : 'text-primary'}`}>
-        {format(parsed, 'MMM', { locale: ptBR })}
-      </span>
+    <div className="w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center flex-shrink-0">
+      <span className="text-lg font-bold text-primary">{day}</span>
+      <span className="text-xs text-primary uppercase">{month}</span>
     </div>
   );
 }
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function MinhasEscalas() {
   const { profile, roles } = useAuth();
@@ -94,10 +100,11 @@ export default function MinhasEscalas() {
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [isRecusing, setIsRecusing] = useState(false);
   const [selectedEscala, setSelectedEscala] = useState<Escala | null>(null);
   const [justificativa, setJustificativa] = useState('');
+
+  // ─── Data fetching ───────────────────────────────────────────────────────
 
   const fetchEscalas = async () => {
     if (!profile?.id) return;
@@ -125,14 +132,20 @@ export default function MinhasEscalas() {
     }
   }, [profile]);
 
+  // ─── Actions ─────────────────────────────────────────────────────────────
+
   const handleConfirmar = async (escala: Escala) => {
     if (escala.status !== 'pendente') return;
     setIsSubmitting(true);
     try {
       const { error } = await supabase
         .from('escalas')
-        .update({ status: 'confirmado', confirmado_em: new Date().toISOString() })
+        .update({
+          status: 'confirmado',
+          confirmado_em: new Date().toISOString(),
+        })
         .eq('id', escala.id);
+
       if (error) throw error;
       toast.success('Escala confirmada com sucesso!');
       await fetchEscalas();
@@ -172,6 +185,7 @@ export default function MinhasEscalas() {
           confirmado_em: new Date().toISOString(),
         })
         .eq('id', selectedEscala.id);
+
       if (error) throw error;
       toast.success('Resposta registrada');
       closeRecusar();
@@ -184,11 +198,15 @@ export default function MinhasEscalas() {
     }
   };
 
+  // ─── Derived state ────────────────────────────────────────────────────────
+
   const proximas = escalas.filter((e) => !isDatePast(e.data));
   const passadas = escalas.filter((e) => isDatePast(e.data));
   const canSeeVoluntariosDoDia = roles.some((r) =>
     ['admin', 'lider', 'voluntario'].includes(r)
   );
+
+  // ─── Loading skeleton ────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -214,8 +232,11 @@ export default function MinhasEscalas() {
     );
   }
 
+  // ─── Render ───────────────────────────────────────────────────────────────
+
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+
       {/* Header */}
       <div className="mb-8 flex items-start justify-between flex-wrap gap-4">
         <div>
@@ -245,7 +266,9 @@ export default function MinhasEscalas() {
         </div>
       </div>
 
+      {/* Content */}
       <div className="space-y-8">
+
         {/* Próximas Escalas */}
         <section>
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -253,40 +276,43 @@ export default function MinhasEscalas() {
             Próximas Escalas
           </h2>
 
-          {proximas.length === 0 ? (
+          {proximas.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
                 <Calendar className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
                 <p className="text-muted-foreground">Nenhuma escala programada</p>
               </CardContent>
             </Card>
-          ) : (
+          )}
+
+          {proximas.length > 0 && (
             <div className="space-y-3">
               {proximas.map((escala) => (
                 <Card key={escala.id} className="shadow-card hover:shadow-elevated transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
                       <div className="flex items-center gap-4">
-                        <DateBox date={escala.data} />
+                        <EscalaDateBox dateStr={escala.data} />
                         <div>
                           <p className="font-display font-semibold">{escala.funcao}</p>
                           <p className="text-sm text-muted-foreground">
                             {escala.ministerios?.nome}
-                            {escala.horario && ` • ${escala.horario}`}
+                            {escala.horario ? ` • ${escala.horario}` : ''}
                           </p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3 flex-wrap">
-                        <StatusBadge status={escala.status} />
+                        <EscalaStatusBadge status={escala.status} />
 
                         {escala.status === 'pendente' && (
                           <div className="flex gap-2">
                             <Button
                               size="sm"
                               variant="success"
-                              onClick={() => handleConfirmar(escala)}
                               disabled={isSubmitting}
+                              onClick={() => handleConfirmar(escala)}
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Confirmar
@@ -294,9 +320,9 @@ export default function MinhasEscalas() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="border-destructive/30 text-destructive hover:bg-destructive/10"
-                              onClick={() => openRecusar(escala)}
                               disabled={isSubmitting}
+                              onClick={() => openRecusar(escala)}
+                              className="border-destructive/30 text-destructive hover:bg-destructive/10"
                             >
                               <XCircle className="w-4 h-4 mr-1" />
                               Não posso
@@ -304,6 +330,7 @@ export default function MinhasEscalas() {
                           </div>
                         )}
                       </div>
+
                     </div>
                   </CardContent>
                 </Card>
@@ -322,7 +349,7 @@ export default function MinhasEscalas() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <DateBox date={escala.data} small />
+                        <EscalaDateBox dateStr={escala.data} compact />
                         <div>
                           <p className="font-medium">{escala.funcao}</p>
                           <p className="text-sm text-muted-foreground">
@@ -330,7 +357,7 @@ export default function MinhasEscalas() {
                           </p>
                         </div>
                       </div>
-                      <StatusBadge status={escala.status} />
+                      <EscalaStatusBadge status={escala.status} />
                     </div>
                   </CardContent>
                 </Card>
@@ -338,10 +365,16 @@ export default function MinhasEscalas() {
             </div>
           </section>
         )}
+
       </div>
 
-      {/* Dialog: Recusar */}
-      <Dialog open={isRecusing} onOpenChange={(open) => { if (!open) closeRecusar(); }}>
+      {/* Dialog: Recusar Escala */}
+      <Dialog
+        open={isRecusing}
+        onOpenChange={(open) => {
+          if (!open) closeRecusar();
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -353,7 +386,7 @@ export default function MinhasEscalas() {
             </DialogDescription>
           </DialogHeader>
 
-          {selectedEscala && (
+          {selectedEscala !== null && (
             <div className="py-4">
               <div className="bg-muted/50 rounded-lg p-4 mb-4">
                 <p className="font-medium">{selectedEscala.funcao}</p>
@@ -378,19 +411,24 @@ export default function MinhasEscalas() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={closeRecusar} disabled={isSubmitting}>
+            <Button
+              variant="outline"
+              disabled={isSubmitting}
+              onClick={closeRecusar}
+            >
               Cancelar
             </Button>
             <Button
               variant="destructive"
-              onClick={handleRecusar}
               disabled={isSubmitting || !justificativa.trim()}
+              onClick={handleRecusar}
             >
               Confirmar Recusa
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }
