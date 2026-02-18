@@ -44,10 +44,7 @@ interface Escala {
   id: string;
   data: string;
   horario: string | null;
-  turno: string | null;
   funcao: string;
-  status: string;
-  status_geral: string | null;
   ministerio_id: string | null;
   voluntario_id: string | null;
   responsavel_id: string | null;
@@ -64,16 +61,13 @@ interface EscalaGroup {
   data: string;
   horario: string | null;
   funcao: string;
-  turno: string | null;
   responsavel_id: string | null;
-  status_geral: string | null;
   ministerio_nome: string | null;
   responsavel_nome: string | null;
   voluntarios: Array<{
     id: string;
     voluntario_id: string;
     nome: string;
-    status: string;
     justificativa: string | null;
   }>;
 }
@@ -83,10 +77,8 @@ interface EscalaFormData {
   data: Date;
   horario: string;
   funcao: string;
-  turno: string;
   responsavel_id: string;
   voluntarios_ids: string[];
-  status_geral: string;
   lembrete_automatico_dias_antes: number | null;
 }
 
@@ -95,10 +87,8 @@ const initialFormData: EscalaFormData = {
   data: new Date(),
   horario: '',
   funcao: '',
-  turno: '',
   responsavel_id: '',
   voluntarios_ids: [],
-  status_geral: 'planejada',
   lembrete_automatico_dias_antes: null,
 };
 
@@ -188,7 +178,7 @@ export default function AdminEscalas() {
     const groupMap = new Map<string, EscalaGroup>();
     
     escalas.forEach((escala) => {
-      const key = `${escala.ministerio_id}-${escala.data}-${escala.funcao}-${escala.turno || ''}`;
+      const key = `${escala.ministerio_id}-${escala.data}-${escala.funcao}`;
       
       if (!groupMap.has(key)) {
         groupMap.set(key, {
@@ -197,9 +187,7 @@ export default function AdminEscalas() {
           data: escala.data,
           horario: escala.horario,
           funcao: escala.funcao,
-          turno: escala.turno,
           responsavel_id: escala.responsavel_id,
-          status_geral: escala.status_geral,
           ministerio_nome: escala.ministerios?.nome || null,
           responsavel_nome: escala.responsavel?.nome || null,
           voluntarios: [],
@@ -212,7 +200,6 @@ export default function AdminEscalas() {
           id: escala.id,
           voluntario_id: escala.voluntario_id,
           nome: escala.voluntario.nome,
-          status: escala.status,
           justificativa: escala.justificativa,
         });
       }
@@ -369,10 +356,8 @@ export default function AdminEscalas() {
       data: parseLocalDate(group.data),
       horario: group.horario || '',
       funcao: group.funcao,
-      turno: group.turno || '',
       responsavel_id: group.responsavel_id || '',
       voluntarios_ids: group.voluntarios.map((v) => v.voluntario_id),
-      status_geral: group.status_geral || 'planejada',
       lembrete_automatico_dias_antes: (firstEscala as any)?.lembrete_automatico_dias_antes || null,
     });
     // Load volunteers and functions for the ministry
@@ -536,7 +521,7 @@ export default function AdminEscalas() {
   const handleSendBatchWhatsAppReminders = async () => {
     if (!viewingGroup) return;
 
-    const pendingVolunteers = viewingGroup.voluntarios.filter(v => v.status === 'pendente');
+    const pendingVolunteers = viewingGroup.voluntarios;
     
     if (pendingVolunteers.length === 0) {
       toast.info('Não há voluntários pendentes para enviar lembretes');
@@ -715,11 +700,8 @@ export default function AdminEscalas() {
           data: formatDateForDB(formData.data),
           horario: formData.horario || null,
           funcao: formData.funcao,
-          turno: formData.turno || null,
           responsavel_id: formData.responsavel_id || null,
           voluntario_id: voluntarioId,
-          status_geral: formData.status_geral as 'planejada' | 'ativa' | 'concluida',
-          status: 'pendente' as const,
           lembrete_automatico_dias_antes: formData.lembrete_automatico_dias_antes,
         }));
 
@@ -736,11 +718,8 @@ export default function AdminEscalas() {
           data: formatDateForDB(formData.data),
           horario: formData.horario || null,
           funcao: formData.funcao,
-          turno: formData.turno || null,
           responsavel_id: formData.responsavel_id || null,
           voluntario_id: voluntarioId,
-          status_geral: formData.status_geral as 'planejada' | 'ativa' | 'concluida',
-          status: 'pendente' as const,
           lembrete_automatico_dias_antes: formData.lembrete_automatico_dias_antes,
         }));
 
@@ -789,23 +768,8 @@ export default function AdminEscalas() {
     }
   };
 
-  const getStatusGeralBadge = (status: string | null) => {
-    switch (status) {
-      case 'ativa':
-        return <Badge className="bg-blue-100 text-blue-700">Ativa</Badge>;
-      case 'concluida':
-        return <Badge className="bg-gray-100 text-gray-700">Concluída</Badge>;
-      default:
-        return <Badge className="bg-purple-100 text-purple-700">Planejada</Badge>;
-    }
-  };
-
   const getVoluntariosStatusSummary = (voluntarios: EscalaGroup['voluntarios']) => {
-    const confirmados = voluntarios.filter((v) => v.status === 'confirmado').length;
-    const pendentes = voluntarios.filter((v) => v.status === 'pendente').length;
-    const ausentes = voluntarios.filter((v) => v.status === 'ausente').length;
-    
-    return { confirmados, pendentes, ausentes, total: voluntarios.length };
+    return { total: voluntarios.length };
   };
 
   const toggleVoluntario = (voluntarioId: string) => {
@@ -954,35 +918,15 @@ export default function AdminEscalas() {
                           </TableCell>
                           <TableCell>
                             <div className="font-medium">{group.funcao}</div>
-                            {group.turno && (
-                              <div className="text-sm text-muted-foreground capitalize">{group.turno}</div>
-                            )}
                           </TableCell>
                           <TableCell>{group.ministerio_nome || '-'}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Users className="w-4 h-4 text-muted-foreground" />
                               <span className="font-medium">{summary.total}</span>
-                              <div className="flex gap-1">
-                                {summary.confirmados > 0 && (
-                                  <Badge variant="outline" className="text-emerald-600 border-emerald-200 text-xs">
-                                    {summary.confirmados} ✓
-                                  </Badge>
-                                )}
-                                {summary.pendentes > 0 && (
-                                  <Badge variant="outline" className="text-yellow-600 border-yellow-200 text-xs">
-                                    {summary.pendentes} ⏳
-                                  </Badge>
-                                )}
-                                {summary.ausentes > 0 && (
-                                  <Badge variant="outline" className="text-red-600 border-red-200 text-xs">
-                                    {summary.ausentes} ✗
-                                  </Badge>
-                                )}
-                              </div>
                             </div>
                           </TableCell>
-                          <TableCell>{getStatusGeralBadge(group.status_geral)}</TableCell>
+                          <TableCell></TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
                               <Button variant="ghost" size="icon" onClick={() => handleView(group)}>
@@ -1054,7 +998,6 @@ export default function AdminEscalas() {
                                   {group.ministerio_nome} • {summary.total} voluntário(s)
                                 </p>
                               </div>
-                              {getStatusGeralBadge(group.status_geral)}
                             </div>
                           </div>
                         );
@@ -1109,95 +1052,26 @@ export default function AdminEscalas() {
                 )}
               </div>
 
-              {/* Status Counters */}
-              {(() => {
-                const summary = getVoluntariosStatusSummary(viewingGroup.voluntarios);
-                return (
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-center">
-                      <p className="text-2xl font-bold text-emerald-600">{summary.confirmados}</p>
-                      <p className="text-xs text-emerald-600 font-medium">Confirmados</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-100 text-center">
-                      <p className="text-2xl font-bold text-yellow-600">{summary.pendentes}</p>
-                      <p className="text-xs text-yellow-600 font-medium">Pendentes</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-center">
-                      <p className="text-2xl font-bold text-red-600">{summary.ausentes}</p>
-                      <p className="text-xs text-red-600 font-medium">Recusados</p>
-                    </div>
-                  </div>
-                );
-              })()}
+              {/* Volunteers count */}
+              <div className="p-4 rounded-lg bg-muted/50 text-center">
+                <p className="text-2xl font-bold text-primary">{viewingGroup.voluntarios.length}</p>
+                <p className="text-xs text-muted-foreground font-medium">Voluntário(s)</p>
+              </div>
 
-              {/* Grouped Volunteers by Status */}
-              <div className="space-y-4">
-                {/* Confirmados */}
-                {viewingGroup.voluntarios.filter(v => v.status === 'confirmado').length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2 text-emerald-700 flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Confirmados
-                    </h4>
-                    <div className="space-y-2">
-                      {viewingGroup.voluntarios.filter(v => v.status === 'confirmado').map((vol) => (
-                        <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-100">
-                          <p className="font-medium">{vol.nome}</p>
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(vol.status)}
-                          </div>
-                        </div>
-                      ))}
+              {/* Volunteers List */}
+              <div className="space-y-2">
+                {viewingGroup.voluntarios.map((vol) => (
+                  <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
+                    <div>
+                      <p className="font-medium">{vol.nome}</p>
+                      {vol.justificativa && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Justificativa: {vol.justificativa}
+                        </p>
+                      )}
                     </div>
                   </div>
-                )}
-
-                {/* Pendentes */}
-                {viewingGroup.voluntarios.filter(v => v.status === 'pendente').length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2 text-yellow-700 flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      Pendentes
-                    </h4>
-                    <div className="space-y-2">
-                      {viewingGroup.voluntarios.filter(v => v.status === 'pendente').map((vol) => (
-                        <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-100">
-                          <p className="font-medium">{vol.nome}</p>
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(vol.status)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Recusados */}
-                {viewingGroup.voluntarios.filter(v => v.status === 'ausente').length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2 text-red-700 flex items-center gap-2">
-                      <XCircle className="w-4 h-4" />
-                      Recusados
-                    </h4>
-                    <div className="space-y-2">
-                      {viewingGroup.voluntarios.filter(v => v.status === 'ausente').map((vol) => (
-                        <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100">
-                          <div>
-                            <p className="font-medium">{vol.nome}</p>
-                            {vol.justificativa && (
-                              <p className="text-sm text-red-600/80 mt-1">
-                                Justificativa: {vol.justificativa}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(vol.status)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
           )}
@@ -1342,14 +1216,14 @@ export default function AdminEscalas() {
                 </div>
               </div>
 
-              <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200">
-                <p className="text-sm font-medium text-yellow-800 mb-2">
-                  Voluntários pendentes: {viewingGroup.voluntarios.filter(v => v.status === 'pendente').length}
+              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+                <p className="text-sm font-medium mb-2">
+                  Voluntários nesta escala: {viewingGroup.voluntarios.length}
                 </p>
-                <ul className="text-sm text-yellow-700 space-y-1">
-                  {viewingGroup.voluntarios.filter(v => v.status === 'pendente').map(vol => (
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  {viewingGroup.voluntarios.map(vol => (
                     <li key={vol.id} className="flex items-center gap-2">
-                      <Clock className="w-3 h-3" />
+                      <Users className="w-3 h-3" />
                       {vol.nome}
                     </li>
                   ))}
@@ -1587,41 +1461,9 @@ export default function AdminEscalas() {
                   </Select>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label>Turno</Label>
-                <Select
-                  value={formData.turno}
-                  onValueChange={(value) => setFormData({ ...formData, turno: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="manha">Manhã</SelectItem>
-                    <SelectItem value="tarde">Tarde</SelectItem>
-                    <SelectItem value="noite">Noite</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Status Geral</Label>
-                <Select
-                  value={formData.status_geral}
-                  onValueChange={(value) => setFormData({ ...formData, status_geral: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="planejada">Planejada</SelectItem>
-                    <SelectItem value="ativa">Ativa</SelectItem>
-                    <SelectItem value="concluida">Concluída</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Bell className="w-4 h-4" />

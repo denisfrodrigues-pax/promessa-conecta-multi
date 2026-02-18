@@ -15,7 +15,6 @@ interface Escala {
   id: string;
   data: string;
   funcao: string;
-  status: string;
   ministerios: { nome: string } | null;
 }
 
@@ -36,13 +35,13 @@ export default function HistoricoEscalas() {
       const today = getTodayString();
       const { data, error } = await supabase
         .from('escalas')
-        .select('id, data, funcao, status, ministerios(nome)')
+        .select('id, data, funcao, ministerios(nome)')
         .eq('voluntario_id', profile?.id)
         .lt('data', today)
         .order('data', { ascending: false });
 
       if (error) throw error;
-      setEscalas(data || []);
+      setEscalas((data || []) as any);
     } catch (error) {
       console.error('Error fetching escalas:', error);
       toast.error('Erro ao carregar histórico');
@@ -119,8 +118,7 @@ export default function HistoricoEscalas() {
           {escalas.map((escala) => (
             <Card key={escala.id} className="shadow-soft">
               <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center">
                       <span className="text-sm font-bold">
                         {format(parseLocalDate(escala.data), 'dd')}
@@ -136,10 +134,8 @@ export default function HistoricoEscalas() {
                       </p>
                     </div>
                   </div>
-                  {getStatusBadge(escala.status)}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
           ))}
         </div>
       )}

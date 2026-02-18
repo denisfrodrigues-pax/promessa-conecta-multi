@@ -266,21 +266,18 @@ export default function LeaderRelatorios() {
 
     const { data: escalas } = await supabase
       .from('escalas')
-      .select('status')
+      .select('id')
       .in('ministerio_id', ministerioIds)
       .gte('data', format(dataInicio, 'yyyy-MM-dd'));
 
-    const confirmadas = escalas?.filter(e => e.status === 'confirmado').length || 0;
-    const pendentes = escalas?.filter(e => e.status === 'pendente').length || 0;
-    const ausentes = escalas?.filter(e => e.status === 'ausente').length || 0;
     const total = escalas?.length || 0;
 
     setEscalaStats({
-      confirmadas,
-      pendentes,
-      ausentes,
+      confirmadas: 0,
+      pendentes: 0,
+      ausentes: 0,
       total,
-      taxaConfirmacao: total > 0 ? Math.round((confirmadas / total) * 100) : 0
+      taxaConfirmacao: 0
     });
   }
 

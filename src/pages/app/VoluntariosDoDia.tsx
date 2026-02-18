@@ -90,13 +90,11 @@ export default function VoluntariosDoDia() {
         .select(`
           id,
           funcao,
-          status,
           voluntario_id,
           ministerios(nome),
           voluntario:profiles!escalas_voluntario_id_fkey(id, nome)
         `)
-        .eq('data', selectedDate)
-        .eq('status', 'confirmado');
+        .eq('data', selectedDate);
 
       if (error) {
         toast.error('Erro ao buscar escalas: ' + error.message);
@@ -104,7 +102,7 @@ export default function VoluntariosDoDia() {
       }
 
       // Buscar check-ins da data
-      const escalaIds = (data || []).map(e => e.id);
+      const escalaIds = (data || []).map((e: any) => e.id);
       let checkins: Record<string, boolean> = {};
       
       if (escalaIds.length > 0) {
@@ -118,13 +116,13 @@ export default function VoluntariosDoDia() {
         });
       }
 
-      const formatted: EscalaConfirmada[] = (data || []).map(item => ({
+      const formatted: EscalaConfirmada[] = (data || []).map((item: any) => ({
         id: item.id,
         funcao: item.funcao,
-        ministerio_nome: (item.ministerios as any)?.nome || null,
-        voluntario_id: (item.voluntario as any)?.id || item.voluntario_id,
-        voluntario_nome: (item.voluntario as any)?.nome || 'Desconhecido',
-        status: item.status,
+        ministerio_nome: item.ministerios?.nome || null,
+        voluntario_id: item.voluntario?.id || item.voluntario_id,
+        voluntario_nome: item.voluntario?.nome || 'Desconhecido',
+        status: 'escalado',
         checked_in: !!checkins[item.id],
       }));
 

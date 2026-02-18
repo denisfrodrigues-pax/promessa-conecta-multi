@@ -708,11 +708,6 @@ export type Database = {
           lembrete_automatico_dias_antes: number | null
           ministerio_id: string | null
           responsavel_id: string | null
-          status: Database["public"]["Enums"]["scale_status"] | null
-          status_geral:
-            | Database["public"]["Enums"]["escala_status_geral"]
-            | null
-          turno: string | null
           updated_at: string | null
           voluntario_id: string | null
         }
@@ -728,11 +723,6 @@ export type Database = {
           lembrete_automatico_dias_antes?: number | null
           ministerio_id?: string | null
           responsavel_id?: string | null
-          status?: Database["public"]["Enums"]["scale_status"] | null
-          status_geral?:
-            | Database["public"]["Enums"]["escala_status_geral"]
-            | null
-          turno?: string | null
           updated_at?: string | null
           voluntario_id?: string | null
         }
@@ -748,11 +738,6 @@ export type Database = {
           lembrete_automatico_dias_antes?: number | null
           ministerio_id?: string | null
           responsavel_id?: string | null
-          status?: Database["public"]["Enums"]["scale_status"] | null
-          status_geral?:
-            | Database["public"]["Enums"]["escala_status_geral"]
-            | null
-          turno?: string | null
           updated_at?: string | null
           voluntario_id?: string | null
         }
