@@ -21,7 +21,6 @@ interface Escala {
   id: string;
   data: string;
   funcao: string;
-  status: string;
   ministerios: { nome: string } | null;
 }
 
@@ -114,10 +113,10 @@ export default function LeaderDashboard() {
                 <CheckCircle className="w-7 h-7 text-promessa" />
               </div>
               <div>
-                <p className="text-3xl font-bold font-display text-promessa">
-                  {escalas.filter((e) => e.status === 'confirmado').length}
+        <p className="text-3xl font-bold font-display text-promessa">
+                  {escalas.length}
                 </p>
-                <p className="text-sm text-muted-foreground font-medium">Escalas Confirmadas</p>
+                <p className="text-sm text-muted-foreground font-medium">Próximas Escalas</p>
               </div>
             </div>
           </CardContent>
@@ -210,17 +209,6 @@ export default function LeaderDashboard() {
                         </p>
                       </div>
                     </div>
-                    {escala.status === 'confirmado' ? (
-                      <div className="flex items-center gap-2 text-promessa">
-                        <CheckCircle className="w-5 h-5" />
-                        <span className="text-xs font-medium hidden sm:inline">Confirmado</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-amber-500">
-                        <Clock className="w-5 h-5" />
-                        <span className="text-xs font-medium hidden sm:inline">Pendente</span>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>

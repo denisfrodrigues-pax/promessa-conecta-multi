@@ -33,11 +33,8 @@ import { cn } from '@/lib/utils';
 interface Escala {
   id: string;
   data: string;
-  turno: string | null;
   horario: string | null;
   funcao: string;
-  status: string;
-  status_geral: string | null;
   justificativa: string | null;
   ministerio_id: string | null;
   voluntario_id: string | null;
@@ -52,14 +49,11 @@ interface EscalaGroup {
   data: string;
   horario: string | null;
   funcao: string;
-  turno: string | null;
-  status_geral: string | null;
   ministerio_nome: string | null;
   voluntarios: Array<{
     id: string;
     voluntario_id: string;
     nome: string;
-    status: string;
     justificativa: string | null;
   }>;
 }
@@ -306,11 +300,8 @@ export default function LeaderEscalas() {
         data: formatDateForDB(formData.data),
         horario: formData.horario || null,
         funcao: formData.funcao,
-        turno: null,
         responsavel_id: profile?.id || null,
         voluntario_id: voluntarioId,
-        status_geral: 'planejada' as const,
-        status: 'pendente' as const,
       }));
 
       const { error } = await supabase
@@ -335,7 +326,7 @@ export default function LeaderEscalas() {
     const groupMap = new Map<string, EscalaGroup>();
     
     escalas.forEach((escala) => {
-      const key = `${escala.ministerio_id}-${escala.data}-${escala.funcao}-${escala.turno || ''}`;
+      const key = `${escala.ministerio_id}-${escala.data}-${escala.funcao}`;
       
       if (!groupMap.has(key)) {
         groupMap.set(key, {
@@ -344,8 +335,6 @@ export default function LeaderEscalas() {
           data: escala.data,
           horario: escala.horario,
           funcao: escala.funcao,
-          turno: escala.turno,
-          status_geral: escala.status_geral,
           ministerio_nome: escala.ministerios?.nome || null,
           voluntarios: [],
         });
@@ -357,7 +346,6 @@ export default function LeaderEscalas() {
           id: escala.id,
           voluntario_id: escala.voluntario_id,
           nome: escala.voluntario.nome,
-          status: escala.status,
           justificativa: escala.justificativa,
         });
       }
@@ -472,23 +460,8 @@ export default function LeaderEscalas() {
     }
   };
 
-  const getStatusGeralBadge = (status: string | null) => {
-    switch (status) {
-      case 'ativa':
-        return <Badge variant="info">Ativa</Badge>;
-      case 'concluida':
-        return <Badge variant="secondary">Concluída</Badge>;
-      default:
-        return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Planejada</Badge>;
-    }
-  };
-
   const getVoluntariosStatusSummary = (voluntarios: EscalaGroup['voluntarios']) => {
-    const confirmados = voluntarios.filter((v) => v.status === 'confirmado').length;
-    const pendentes = voluntarios.filter((v) => v.status === 'pendente').length;
-    const ausentes = voluntarios.filter((v) => v.status === 'ausente').length;
-    
-    return { confirmados, pendentes, ausentes, total: voluntarios.length };
+    return { total: voluntarios.length };
   };
 
   const isPast = (date: string) => isDatePast(date);
@@ -533,37 +506,16 @@ export default function LeaderEscalas() {
                         <p className="font-display font-semibold">{escala.funcao}</p>
                         <p className="text-sm text-muted-foreground">
                           {escala.ministerios?.nome}
-                          {escala.turno && ` • ${escala.turno}`}
                           {escala.horario && ` • ${escala.horario}`}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      {getStatusBadge(escala.status)}
-                      {escala.status === 'pendente' && (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="success"
-                            onClick={() => handleConfirmar(escala.id)}
-                          >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Confirmar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedEscala(escala);
-                              setIsRecusing(true);
-                            }}
-                          >
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Recusar
-                          </Button>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">{escala.funcao}</span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -598,7 +550,7 @@ export default function LeaderEscalas() {
                         </p>
                       </div>
                     </div>
-                    {getStatusBadge(escala.status)}
+                    {null}
                   </div>
                 </CardContent>
               </Card>
@@ -641,7 +593,6 @@ export default function LeaderEscalas() {
                           <p className="font-display font-semibold">{group.funcao}</p>
                           <p className="text-sm text-muted-foreground">
                             {group.ministerio_nome}
-                            {group.turno && ` • ${group.turno}`}
                             {group.horario && ` • ${group.horario}`}
                           </p>
                         </div>
@@ -650,24 +601,7 @@ export default function LeaderEscalas() {
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
                           <Users className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">{summary.total}</span>
-                          <div className="flex gap-1">
-                            {summary.confirmados > 0 && (
-                              <Badge variant="outline" className="text-emerald-600 border-emerald-200 text-xs">
-                                {summary.confirmados} ✓
-                              </Badge>
-                            )}
-                            {summary.pendentes > 0 && (
-                              <Badge variant="outline" className="text-yellow-600 border-yellow-200 text-xs">
-                                {summary.pendentes} ⏳
-                              </Badge>
-                            )}
-                            {summary.ausentes > 0 && (
-                              <Badge variant="outline" className="text-red-600 border-red-200 text-xs">
-                                {summary.ausentes} ✗
-                              </Badge>
-                            )}
-                          </div>
+                          <span className="text-sm font-medium">{summary.total} voluntário(s)</span>
                         </div>
                         <Button
                           size="sm"
@@ -728,7 +662,6 @@ export default function LeaderEscalas() {
                           </p>
                         </div>
                       </div>
-                      {getStatusGeralBadge(group.status_geral)}
                     </div>
                   </CardContent>
                 </Card>
@@ -847,89 +780,26 @@ export default function LeaderEscalas() {
                 </div>
               </div>
 
-              {/* Status Counters */}
-              {(() => {
-                const summary = getVoluntariosStatusSummary(viewingGroup.voluntarios);
-                return (
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-center">
-                      <p className="text-2xl font-bold text-emerald-600">{summary.confirmados}</p>
-                      <p className="text-xs text-emerald-600 font-medium">Confirmados</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-100 text-center">
-                      <p className="text-2xl font-bold text-yellow-600">{summary.pendentes}</p>
-                      <p className="text-xs text-yellow-600 font-medium">Pendentes</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-center">
-                      <p className="text-2xl font-bold text-red-600">{summary.ausentes}</p>
-                      <p className="text-xs text-red-600 font-medium">Recusados</p>
-                    </div>
-                  </div>
-                );
-              })()}
+              {/* Volunteers count */}
+              <div className="p-4 rounded-lg bg-muted/50 text-center">
+                <p className="text-2xl font-bold text-primary">{viewingGroup.voluntarios.length}</p>
+                <p className="text-xs text-muted-foreground font-medium">Voluntário(s)</p>
+              </div>
 
-              {/* Grouped Volunteers by Status */}
-              <div className="space-y-4">
-                {/* Confirmados */}
-                {viewingGroup.voluntarios.filter(v => v.status === 'confirmado').length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2 text-emerald-700 flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Confirmados
-                    </h4>
-                    <div className="space-y-2">
-                      {viewingGroup.voluntarios.filter(v => v.status === 'confirmado').map((vol) => (
-                        <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-100">
-                          <p className="font-medium">{vol.nome}</p>
-                          {getStatusBadge(vol.status)}
-                        </div>
-                      ))}
+              {/* Volunteers List */}
+              <div className="space-y-2">
+                {viewingGroup.voluntarios.map((vol) => (
+                  <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
+                    <div>
+                      <p className="font-medium">{vol.nome}</p>
+                      {vol.justificativa && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Justificativa: {vol.justificativa}
+                        </p>
+                      )}
                     </div>
                   </div>
-                )}
-
-                {/* Pendentes */}
-                {viewingGroup.voluntarios.filter(v => v.status === 'pendente').length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2 text-yellow-700 flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      Pendentes
-                    </h4>
-                    <div className="space-y-2">
-                      {viewingGroup.voluntarios.filter(v => v.status === 'pendente').map((vol) => (
-                        <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-100">
-                          <p className="font-medium">{vol.nome}</p>
-                          {getStatusBadge(vol.status)}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Recusados */}
-                {viewingGroup.voluntarios.filter(v => v.status === 'ausente').length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2 text-red-700 flex items-center gap-2">
-                      <XCircle className="w-4 h-4" />
-                      Recusados
-                    </h4>
-                    <div className="space-y-2">
-                      {viewingGroup.voluntarios.filter(v => v.status === 'ausente').map((vol) => (
-                        <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100">
-                          <div>
-                            <p className="font-medium">{vol.nome}</p>
-                            {vol.justificativa && (
-                              <p className="text-sm text-red-600/80 mt-1">
-                                Justificativa: {vol.justificativa}
-                              </p>
-                            )}
-                          </div>
-                          {getStatusBadge(vol.status)}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
           )}

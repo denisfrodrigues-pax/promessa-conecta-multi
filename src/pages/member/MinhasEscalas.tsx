@@ -17,11 +17,8 @@ import { parseLocalDate, isDatePast } from '@/lib/dateUtils';
 interface Escala {
   id: string;
   data: string;
-  turno: string | null;
   horario: string | null;
   funcao: string;
-  status: string;
-  status_geral: string | null;
   justificativa: string | null;
   confirmado_em: string | null;
   ministerio_id: string | null;
@@ -55,7 +52,7 @@ export default function MinhasEscalas() {
         .order('data', { ascending: true });
 
       if (error) throw error;
-      setEscalas(data || []);
+      setEscalas((data || []) as any);
     } catch (error) {
       console.error('Error fetching escalas:', error);
       toast.error('Erro ao carregar escalas');
@@ -243,16 +240,12 @@ export default function MinhasEscalas() {
                           <p className="font-display font-semibold">{escala.funcao}</p>
                           <p className="text-sm text-muted-foreground">
                             {escala.ministerios?.nome}
-                            {escala.turno && ` • ${escala.turno}`}
                             {escala.horario && ` • ${escala.horario}`}
                           </p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3 flex-wrap">
-                        {getStatusBadge(escala.status)}
-                        
-                        {escala.status === 'pendente' && (
                           <div className="flex gap-2">
                             <Button
                               size="sm"
@@ -312,7 +305,6 @@ export default function MinhasEscalas() {
                           </p>
                         </div>
                       </div>
-                      {getStatusBadge(escala.status)}
                     </div>
                   </CardContent>
                 </Card>
