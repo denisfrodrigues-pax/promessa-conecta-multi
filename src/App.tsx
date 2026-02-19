@@ -13,6 +13,7 @@ import PrivateRoute from "@/components/routes/PrivateRoute";
 import AdminLayout from "@/components/layout/AdminLayout";
 import LeaderLayout from "@/components/layout/LeaderLayout";
 import KidsLayout from "@/components/layout/KidsLayout";
+import MinisterioLayout from "@/components/layout/MinisterioLayout";
 import VoluntarioLayout from "@/components/layout/VoluntarioLayout";
 import AppLayout from "@/components/layout/AppLayout";
 
@@ -95,6 +96,10 @@ import FinanceiroLayout from "@/components/layout/FinanceiroLayout";
 
 // Kids Panel Pages
 import KidsCheckinPanel from "@/pages/kids/KidsCheckinPanel";
+
+// Ministerio Modular Pages
+import MinisterioHome from "@/pages/ministerio/MinisterioHome";
+import MinisterioModulo from "@/pages/ministerio/MinisterioModulo";
 
 // Voluntario Pages
 import VoluntarioDashboard from "@/pages/voluntario/VoluntarioDashboard";
@@ -313,7 +318,7 @@ const App = () => (
             <Route index element={<VoluntarioDashboard />} />
           </Route>
 
-          {/* Kids Panel Routes - admin, lider, voluntario with Kids ministry */}
+          {/* Kids Panel Routes - legacy, kept for backward compatibility */}
           <Route path="/kids" element={
             <PrivateRoute allowedRoles={['admin', 'lider', 'voluntario']}>
               <RequireMinistry slug="kids">
@@ -323,6 +328,16 @@ const App = () => (
           }>
             <Route index element={<Navigate to="/kids/check-in" replace />} />
             <Route path="check-in" element={<KidsCheckinPanel />} />
+          </Route>
+
+          {/* Dynamic Ministry Routes - modular access */}
+          <Route path="/ministerio/:slug" element={
+            <PrivateRoute allowedRoles={['admin', 'lider', 'voluntario']}>
+              <MinisterioLayout />
+            </PrivateRoute>
+          }>
+            <Route index element={<MinisterioHome />} />
+            <Route path=":modulo" element={<MinisterioModulo />} />
           </Route>
 
           {/* 404 - Show not found page */}
