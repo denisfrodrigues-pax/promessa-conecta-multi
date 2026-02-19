@@ -36,7 +36,7 @@ export function useLeaderNotifications() {
 
       // Get volunteers from my ministry
       const { data: volunteers } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .select('user_id')
         .eq('ministerio_id', ministry.id);
 

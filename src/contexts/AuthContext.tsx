@@ -9,6 +9,7 @@ export interface MyMinistry {
   nome: string;
   slug: string | null;
   descricao: string | null;
+  papel: string | null;
 }
 
 interface Profile {
@@ -34,6 +35,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, nome: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   hasRole: (role: UserRole) => boolean;
+  canMinistry: (action: 'read' | 'write', ministerioId: string) => boolean;
   isAdmin: boolean;
   isFinanceiro: boolean;
   isLider: boolean;
@@ -156,6 +158,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const hasRole = (role: UserRole) => roles.includes(role);
+  
+  const canMinistry = useCallback((action: 'read' | 'write', ministerioId: string): boolean => {
+    if (roles.includes('admin')) return true;
+    const ministry = myMinistries.find(m => m.ministerio_id === ministerioId);
+    if (!ministry) return false;
+    if (action === 'read') return true;
+    return ministry.papel === 'lider';
+  }, [roles, myMinistries]);
+  
   const isAdmin = roles.includes('admin');
   const isFinanceiro = roles.includes('financeiro') && !roles.includes('admin');
   const isLider = roles.includes('lider') || roles.includes('admin');
@@ -175,6 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUp,
       signOut,
       hasRole,
+      canMinistry,
       isAdmin,
       isFinanceiro,
       isLider,

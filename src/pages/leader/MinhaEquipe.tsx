@@ -99,7 +99,7 @@ export default function LeaderMinhaEquipe() {
 
     try {
       const { data, error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .select(`
           id,
           ministerio_id,
@@ -227,7 +227,7 @@ export default function LeaderMinhaEquipe() {
     try {
       // Insert voluntario
       const { data: newVol, error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .insert({
           ministerio_id: ministerio.id,
           user_id: profileToAdd.user_id,
@@ -299,7 +299,7 @@ export default function LeaderMinhaEquipe() {
 
       // Update funcao_principal_id for compatibility
       await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .update({ funcao_principal_id: selectedFuncaoIds[0] || null })
         .eq('id', editingVoluntario.id);
 
@@ -316,7 +316,7 @@ export default function LeaderMinhaEquipe() {
   const handleToggleAtivo = async (voluntario: MinisterioVoluntario) => {
     try {
       const { error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .update({ ativo: !voluntario.ativo })
         .eq('id', voluntario.id);
 
@@ -335,7 +335,7 @@ export default function LeaderMinhaEquipe() {
 
     try {
       const { error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .delete()
         .eq('id', deletingVoluntario.id);
 

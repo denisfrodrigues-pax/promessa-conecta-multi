@@ -227,7 +227,7 @@ export default function LeaderEscalas() {
     }
     try {
       const { data, error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .select(`
           user_id,
           profile:profiles!ministerio_voluntarios_user_id_fkey(id, nome, user_id)

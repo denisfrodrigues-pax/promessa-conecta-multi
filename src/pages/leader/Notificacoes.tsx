@@ -91,7 +91,7 @@ export default function LeaderNotificacoes() {
 
     try {
       const { data, error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .select(`
           id,
           user_id,
@@ -113,7 +113,7 @@ export default function LeaderNotificacoes() {
     setLoading(true);
     try {
       const { data: volunteers } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .select('user_id')
         .eq('ministerio_id', myMinisterioId);
 
