@@ -37,7 +37,7 @@ export function useKidsVolunteer() {
 
         // Verificar se o usuário é voluntário deste ministério
         const { data: voluntario, error: voluntarioError } = await supabase
-          .from('ministerio_voluntarios')
+          .from('ministerio_usuarios')
           .select('id')
           .eq('ministerio_id', ministerioKids.id)
           .eq('user_id', user.id)

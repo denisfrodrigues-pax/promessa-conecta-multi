@@ -93,7 +93,7 @@ export default function AdminVoluntariosMinisterios() {
   const fetchVoluntarios = async (ministerioId: string) => {
     try {
       const { data, error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .select(`
           id,
           ministerio_id,
@@ -160,7 +160,7 @@ export default function AdminVoluntariosMinisterios() {
       if (profilesError) throw profilesError;
 
       const { data: existingVoluntarios, error: existingError } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .select('user_id')
         .eq('ministerio_id', selectedMinisterio.id);
 
@@ -206,7 +206,7 @@ export default function AdminVoluntariosMinisterios() {
     try {
       // Insert voluntario
       const { data: newVol, error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .insert({
           ministerio_id: selectedMinisterio.id,
           user_id: profile.user_id,
@@ -278,7 +278,7 @@ export default function AdminVoluntariosMinisterios() {
 
       // Update funcao_principal_id for compatibility
       await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .update({ funcao_principal_id: selectedFuncaoIds[0] || null })
         .eq('id', editingVoluntario.id);
 
@@ -295,7 +295,7 @@ export default function AdminVoluntariosMinisterios() {
   const handleToggleAtivo = async (voluntario: MinisterioVoluntario) => {
     try {
       const { error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .update({ ativo: !voluntario.ativo })
         .eq('id', voluntario.id);
 
@@ -316,7 +316,7 @@ export default function AdminVoluntariosMinisterios() {
 
     try {
       const { error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .delete()
         .eq('id', deletingVoluntario.id);
 

@@ -1131,13 +1131,14 @@ export type Database = {
           },
         ]
       }
-      ministerio_voluntarios: {
+      ministerio_usuarios: {
         Row: {
           ativo: boolean | null
           created_at: string | null
           funcao_principal_id: string | null
           id: string
           ministerio_id: string
+          papel: Database["public"]["Enums"]["papel_ministerial"]
           updated_at: string | null
           user_id: string
         }
@@ -1147,6 +1148,7 @@ export type Database = {
           funcao_principal_id?: string | null
           id?: string
           ministerio_id: string
+          papel?: Database["public"]["Enums"]["papel_ministerial"]
           updated_at?: string | null
           user_id: string
         }
@@ -1156,6 +1158,7 @@ export type Database = {
           funcao_principal_id?: string | null
           id?: string
           ministerio_id?: string
+          papel?: Database["public"]["Enums"]["papel_ministerial"]
           updated_at?: string | null
           user_id?: string
         }
@@ -1214,7 +1217,7 @@ export type Database = {
             foreignKeyName: "ministerio_voluntarios_funcoes_ministerio_voluntario_id_fkey"
             columns: ["ministerio_voluntario_id"]
             isOneToOne: false
-            referencedRelation: "ministerio_voluntarios"
+            referencedRelation: "ministerio_usuarios"
             referencedColumns: ["id"]
           },
         ]
@@ -1850,6 +1853,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_ministry: {
+        Args: { _action: string; _ministerio_id: string; _user_id: string }
+        Returns: boolean
+      }
       get_base_members_for_leader: {
         Args: { p_base_id: string; p_search?: string }
         Returns: {
@@ -1905,6 +1912,7 @@ export type Database = {
           descricao: string
           ministerio_id: string
           nome: string
+          papel: string
           slug: string
         }[]
       }
@@ -1946,6 +1954,7 @@ export type Database = {
         | "sistema"
         | "ministerio"
         | "aviso_admin"
+      papel_ministerial: "lider" | "voluntario"
       participant_status: "ativo" | "saida" | "pendente"
       scale_status: "confirmado" | "pendente" | "ausente"
       user_status: "ativo" | "inativo" | "pendente"
@@ -2095,6 +2104,7 @@ export const Constants = {
         "ministerio",
         "aviso_admin",
       ],
+      papel_ministerial: ["lider", "voluntario"],
       participant_status: ["ativo", "saida", "pendente"],
       scale_status: ["confirmado", "pendente", "ausente"],
       user_status: ["ativo", "inativo", "pendente"],

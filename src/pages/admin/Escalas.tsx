@@ -259,7 +259,7 @@ export default function AdminEscalas() {
     }
     try {
       const { data, error } = await supabase
-        .from('ministerio_voluntarios')
+        .from('ministerio_usuarios')
         .select(`
           user_id,
           ativo,
