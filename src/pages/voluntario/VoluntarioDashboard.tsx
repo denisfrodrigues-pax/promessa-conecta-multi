@@ -6,14 +6,14 @@ import { Baby, Music, BookOpen, Users, Heart, ChevronRight } from 'lucide-react'
 import { toast } from '@/hooks/use-toast';
 
 // Map ministry slugs to icons and routes
-const SLUG_CONFIG: Record<string, { icon: typeof Baby; route: string | null; color: string }> = {
-  kids: { icon: Baby, route: '/kids/check-in', color: 'text-pink-600 bg-pink-100' },
-  louvor: { icon: Music, route: null, color: 'text-purple-600 bg-purple-100' },
-  ensino: { icon: BookOpen, route: null, color: 'text-blue-600 bg-blue-100' },
-  recepcao: { icon: Users, route: null, color: 'text-green-600 bg-green-100' },
+const SLUG_CONFIG: Record<string, { icon: typeof Baby; color: string }> = {
+  kids: { icon: Baby, color: 'text-pink-600 bg-pink-100' },
+  louvor: { icon: Music, color: 'text-purple-600 bg-purple-100' },
+  ensino: { icon: BookOpen, color: 'text-blue-600 bg-blue-100' },
+  recepcao: { icon: Users, color: 'text-green-600 bg-green-100' },
 };
 
-const DEFAULT_CONFIG = { icon: Heart, route: null, color: 'text-amber-600 bg-amber-100' };
+const DEFAULT_CONFIG = { icon: Heart, color: 'text-amber-600 bg-amber-100' };
 
 const getMinistryConfig = (slug: string | null) => {
   if (!slug) return DEFAULT_CONFIG;
@@ -25,9 +25,8 @@ export default function VoluntarioDashboard() {
   const navigate = useNavigate();
 
   const handleMinistryClick = (ministry: MyMinistry) => {
-    const config = getMinistryConfig(ministry.slug);
-    if (config.route) {
-      navigate(config.route);
+    if (ministry.slug) {
+      navigate(`/ministerio/${ministry.slug}`);
     } else {
       toast({ title: `Módulo "${ministry.nome}"`, description: 'Em breve! Este módulo está sendo preparado.' });
     }
@@ -82,7 +81,7 @@ export default function VoluntarioDashboard() {
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-foreground truncate">{ministry.nome}</p>
                     <p className="text-sm text-muted-foreground truncate">
-                      {config.route ? 'Clique para acessar' : 'Em breve'}
+                      {ministry.slug ? 'Clique para acessar' : 'Em breve'}
                     </p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />

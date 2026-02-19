@@ -1131,6 +1131,53 @@ export type Database = {
           },
         ]
       }
+      ministerio_modulos: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string | null
+          icone: string | null
+          id: string
+          ministerio_id: string
+          modulo_slug: string
+          nome: string
+          ordem: number
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          icone?: string | null
+          id?: string
+          ministerio_id: string
+          modulo_slug: string
+          nome: string
+          ordem?: number
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          icone?: string | null
+          id?: string
+          ministerio_id?: string
+          modulo_slug?: string
+          nome?: string
+          ordem?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministerio_modulos_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ministerio_usuarios: {
         Row: {
           ativo: boolean | null
