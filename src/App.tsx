@@ -109,6 +109,7 @@ import RequireMinistry from "@/components/routes/RequireMinistry";
 
 // Leader Pages
 import LeaderDashboard from "@/pages/leader/Dashboard";
+import LeaderEntry from "@/pages/leader/LeaderEntry";
 import LeaderBases from "@/pages/leader/Bases";
 import LeaderBaseDetalhes from "@/pages/leader/LeaderBaseDetalhes";
 import LeaderRelatorios from "@/pages/leader/Relatorios";
@@ -298,7 +299,7 @@ const App = () => (
               <LeaderLayout />
             </PrivateRoute>
           }>
-            <Route index element={<LeaderDashboard />} />
+            <Route index element={<LeaderEntry />} />
             <Route path="dashboard" element={<LeaderDashboard />} />
             <Route path="bases" element={<LeaderBases />} />
             <Route path="bases/:id" element={<LeaderBaseDetalhes />} />
