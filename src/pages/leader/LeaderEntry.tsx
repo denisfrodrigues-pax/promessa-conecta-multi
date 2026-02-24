@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Loader2 } from "lucide-react";
 
 export default function LeaderEntry() {
   const { myMinistries, myMinistriesLoading, loading } = useAuth();
@@ -10,20 +10,20 @@ export default function LeaderEntry() {
   useEffect(() => {
     if (loading || myMinistriesLoading) return;
 
-    const led = myMinistries.filter(m => m.papel === 'lider');
+    const liderMinistries = myMinistries.filter((m) => m.papel === "lider");
 
-    if (led.length === 0) {
-      navigate('/app', { replace: true });
-    } else if (led.length === 1 && led[0].slug) {
-      navigate(`/ministerio/${led[0].slug}`, { replace: true });
-    } else {
-      navigate('/voluntario', { replace: true });
+    if (!liderMinistries) return;
+
+    if (liderMinistries.length === 0) {
+      navigate("/app", { replace: true });
+      return;
     }
-  }, [loading, myMinistriesLoading, myMinistries, navigate]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Loader2 className="w-8 h-8 animate-spin text-primary" />
-    </div>
-  );
+    if (liderMinistries.length === 1 && liderMinistries[0].slug) {
+      navigate(`/ministerio/${liderMinistries[0].slug}`, { replace: true });
+      return;
+    }
+
+    navigate("/voluntario", { replace: true });
+  }, [loading, myMinistriesLoading, myMinistries]);
 }
