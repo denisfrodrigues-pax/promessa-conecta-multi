@@ -1,16 +1,51 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+
+interface LedMinistry {
+  ministerio_id: string;
+  nome: string;
+  slug: string | null;
+}
 
 export default function LeaderHub() {
   const navigate = useNavigate();
-  const { myMinistries, myMinistriesLoading } = useAuth();
+  const { user } = useAuth();
+  const [ledMinistries, setLedMinistries] = useState<LedMinistry[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const ledMinistries = myMinistries.filter(
-    (m) => m.papel?.toLowerCase().includes("lider")
-  );
+  useEffect(() => {
+    if (!user) return;
 
-  if (myMinistriesLoading) {
+    const fetchLedMinistries = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("ministerio_usuarios")
+        .select("ministerio_id, ministerios(nome, slug)")
+        .eq("user_id", user.id)
+        .eq("papel", "lider")
+        .eq("ativo", true);
+
+      if (error) {
+        console.error("Error fetching led ministries:", error);
+        setLedMinistries([]);
+      } else {
+        setLedMinistries(
+          (data || []).map((d: any) => ({
+            ministerio_id: d.ministerio_id,
+            nome: d.ministerios?.nome ?? "",
+            slug: d.ministerios?.slug ?? null,
+          }))
+        );
+      }
+      setLoading(false);
+    };
+
+    fetchLedMinistries();
+  }, [user]);
+
+  if (loading) {
     return <div className="p-6">Carregando...</div>;
   }
 
