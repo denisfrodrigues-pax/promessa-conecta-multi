@@ -24,22 +24,39 @@ export default function LeaderHub() {
 
     const fetchLedMinistries = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+
+      // Step 1: Get ministerio_ids where user is active leader
+      const { data: vinculos, error: errVinculos } = await supabase
         .from("ministerio_usuarios")
-        .select("ministerio_id, ministerios(nome, slug)")
+        .select("ministerio_id")
         .eq("user_id", user.id)
         .eq("papel", "lider")
         .eq("ativo", true);
 
-      if (error) {
-        console.error("Error fetching led ministries:", error);
+      if (errVinculos || !vinculos || vinculos.length === 0) {
+        if (errVinculos) console.error("Error fetching vinculos:", errVinculos);
+        setLedMinistries([]);
+        setLoading(false);
+        return;
+      }
+
+      const ids = vinculos.map((v) => v.ministerio_id);
+
+      // Step 2: Get ministry details
+      const { data: mins, error: errMins } = await supabase
+        .from("ministerios")
+        .select("id, nome, slug")
+        .in("id", ids);
+
+      if (errMins) {
+        console.error("Error fetching ministerios:", errMins);
         setLedMinistries([]);
       } else {
         setLedMinistries(
-          (data || []).map((d: any) => ({
-            ministerio_id: d.ministerio_id,
-            nome: d.ministerios?.nome ?? "",
-            slug: d.ministerios?.slug ?? null,
+          (mins || []).map((m) => ({
+            ministerio_id: m.id,
+            nome: m.nome,
+            slug: m.slug,
           }))
         );
       }
