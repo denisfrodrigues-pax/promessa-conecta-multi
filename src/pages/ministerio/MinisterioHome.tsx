@@ -16,8 +16,19 @@ interface MinisterioContext {
 }
 
 export default function MinisterioHome() {
-  const { ministerioNome, modulos } = useOutletContext<MinisterioContext>();
+  const context = useOutletContext<MinisterioContext>();
   const navigate = useNavigate();
+
+  const ministerioNome = context?.ministerioNome ?? "";
+  const modulos = context?.modulos ?? [];
+
+  if (!context?.ministerioId || modulos.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground">
+        Carregando ministério...
+      </div>
+    );
+  }
 
   // If only one module, redirect directly
   if (modulos.length === 1) {
