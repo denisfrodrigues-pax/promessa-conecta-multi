@@ -3,7 +3,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { ChurchLogo } from '@/components/ChurchLogo';
 import { 
-  CalendarDays, 
   Users, 
   Calendar, 
   Bell, 
@@ -58,7 +57,6 @@ export default function AppLayout() {
   
   const navItems = [
     { icon: Home, label: 'Início', path: '/app' },
-    { icon: CalendarDays, label: 'Escalas', path: '/app/escalas' },
     { icon: Users, label: 'Minha Base', path: '/app/minha-base' },
     { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
     { icon: Bell, label: 'Notificações', path: '/app/notificacoes', badge: unreadCount > 0 ? unreadCount : undefined },
@@ -69,7 +67,6 @@ export default function AppLayout() {
   // Items for bottom mobile nav (limited)
   const mobileBottomNavItems = [
     { icon: Home, label: 'Início', path: '/app' },
-    { icon: CalendarDays, label: 'Escalas', path: '/app/escalas' },
     { icon: Users, label: 'Base', path: '/app/minha-base' },
     { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
   ];
