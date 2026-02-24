@@ -1323,6 +1323,59 @@ export type Database = {
           },
         ]
       }
+      musicas_ministerio: {
+        Row: {
+          artista: string | null
+          ativo: boolean | null
+          bpm: number | null
+          categoria: string | null
+          cifra_url: string | null
+          created_at: string | null
+          id: string
+          ministerio_id: string
+          nome: string
+          tom: string | null
+          ultima_ministracao: string | null
+          vezes_ministrada: number | null
+        }
+        Insert: {
+          artista?: string | null
+          ativo?: boolean | null
+          bpm?: number | null
+          categoria?: string | null
+          cifra_url?: string | null
+          created_at?: string | null
+          id?: string
+          ministerio_id: string
+          nome: string
+          tom?: string | null
+          ultima_ministracao?: string | null
+          vezes_ministrada?: number | null
+        }
+        Update: {
+          artista?: string | null
+          ativo?: boolean | null
+          bpm?: number | null
+          categoria?: string | null
+          cifra_url?: string | null
+          created_at?: string | null
+          id?: string
+          ministerio_id?: string
+          nome?: string
+          tom?: string | null
+          ultima_ministracao?: string | null
+          vezes_ministrada?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "musicas_ministerio_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notas_base: {
         Row: {
           base_id: string
@@ -1652,6 +1705,80 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      repertorio_musicas: {
+        Row: {
+          id: string
+          musica_id: string
+          ordem: number | null
+          repertorio_id: string
+          tom_ministrado: string | null
+        }
+        Insert: {
+          id?: string
+          musica_id: string
+          ordem?: number | null
+          repertorio_id: string
+          tom_ministrado?: string | null
+        }
+        Update: {
+          id?: string
+          musica_id?: string
+          ordem?: number | null
+          repertorio_id?: string
+          tom_ministrado?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repertorio_musicas_musica_id_fkey"
+            columns: ["musica_id"]
+            isOneToOne: false
+            referencedRelation: "musicas_ministerio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repertorio_musicas_repertorio_id_fkey"
+            columns: ["repertorio_id"]
+            isOneToOne: false
+            referencedRelation: "repertorios_culto"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      repertorios_culto: {
+        Row: {
+          created_at: string | null
+          data_culto: string
+          id: string
+          ministerio_id: string
+          observacoes: string | null
+          titulo: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_culto: string
+          id?: string
+          ministerio_id: string
+          observacoes?: string | null
+          titulo?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_culto?: string
+          id?: string
+          ministerio_id?: string
+          observacoes?: string | null
+          titulo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repertorios_culto_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       responsaveis: {
         Row: {
