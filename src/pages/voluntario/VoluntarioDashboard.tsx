@@ -26,7 +26,7 @@ export default function VoluntarioDashboard() {
 
   const handleMinistryClick = (ministry: MyMinistry) => {
     if (ministry.slug) {
-      navigate(`/ministerio/${ministry.slug}`);
+      navigate(`/volunteer/${ministry.slug}`);
     } else {
       toast({ title: `Módulo "${ministry.nome}"`, description: 'Em breve! Este módulo está sendo preparado.' });
     }

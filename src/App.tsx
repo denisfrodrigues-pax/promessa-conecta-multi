@@ -16,6 +16,7 @@ import LeaderMinisterioLayout from "@/components/layout/LeaderMinisterioLayout";
 import KidsLayout from "@/components/layout/KidsLayout";
 import MinisterioLayout from "@/components/layout/MinisterioLayout";
 import VoluntarioLayout from "@/components/layout/VoluntarioLayout";
+import VolunteerMinisterioLayout from "@/components/layout/VolunteerMinisterioLayout";
 import AppLayout from "@/components/layout/AppLayout";
 
 // Auth
@@ -101,6 +102,7 @@ import KidsCheckinPanel from "@/pages/kids/KidsCheckinPanel";
 // Ministerio Modular Pages
 import MinisterioHome from "@/pages/ministerio/MinisterioHome";
 import MinisterioModulo from "@/pages/ministerio/MinisterioModulo";
+import MinisterioEscalas from "@/pages/ministerio/MinisterioEscalas";
 
 // Voluntario Pages
 import VoluntarioDashboard from "@/pages/voluntario/VoluntarioDashboard";
@@ -356,6 +358,19 @@ const App = () => (
             }
           >
             <Route index element={<VoluntarioDashboard />} />
+          </Route>
+
+          {/* Volunteer Ministry Routes */}
+          <Route
+            path="/volunteer/:slug"
+            element={
+              <PrivateRoute allowedRoles={["voluntario", "admin", "lider"]}>
+                <VolunteerMinisterioLayout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<Navigate to="escalas" replace />} />
+            <Route path="escalas" element={<MinisterioEscalas />} />
           </Route>
 
           {/* Kids Panel Routes - legacy, kept for backward compatibility */}
