@@ -92,7 +92,11 @@ const initialFormData: EscalaFormData = {
   lembrete_automatico_dias_antes: null,
 };
 
-export default function AdminEscalas() {
+interface AdminEscalasProps {
+  ministerioId?: string;
+}
+
+export default function AdminEscalas({ ministerioId: propMinisterioId }: AdminEscalasProps = {}) {
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [escalaGroups, setEscalaGroups] = useState<EscalaGroup[]>([]);
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
@@ -152,15 +156,20 @@ export default function AdminEscalas() {
 
   const fetchEscalas = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('escalas')
         .select(`
           *,
           ministerios(nome),
           voluntario:profiles!escalas_voluntario_id_fkey(nome),
           responsavel:profiles!escalas_responsavel_id_fkey(nome)
-        `)
-        .order('data', { ascending: false });
+        `);
+      
+      if (propMinisterioId) {
+        query = query.eq('ministerio_id', propMinisterioId);
+      }
+      
+      const { data, error } = await query.order('data', { ascending: false });
 
       if (error) throw error;
       setEscalas(data || []);
@@ -341,9 +350,16 @@ export default function AdminEscalas() {
 
   const handleCreate = () => {
     setEditingGroup(null);
-    setFormData(initialFormData);
-    setVoluntarios([]); // Clear volunteers until ministry is selected
-    setFuncoes([]); // Clear functions until ministry is selected
+    const initial = { ...initialFormData };
+    if (propMinisterioId) {
+      initial.ministerio_id = propMinisterioId;
+      fetchVoluntariosByMinisterio(propMinisterioId);
+      fetchFuncoesByMinisterio(propMinisterioId);
+    } else {
+      setVoluntarios([]); // Clear volunteers until ministry is selected
+      setFuncoes([]); // Clear functions until ministry is selected
+    }
+    setFormData(initial);
     setIsDialogOpen(true);
   };
 
@@ -1372,23 +1388,30 @@ export default function AdminEscalas() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Ministério *</Label>
-                <Select
-                  value={formData.ministerio_id}
-                  onValueChange={(value) => {
-                    setFormData({ ...formData, ministerio_id: value, voluntarios_ids: [], funcao: '' });
-                    fetchVoluntariosByMinisterio(value);
-                    fetchFuncoesByMinisterio(value);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ministerios.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {propMinisterioId ? (
+                  <Input
+                    value={ministerios.find(m => m.id === propMinisterioId)?.nome || 'Ministério atual'}
+                    disabled
+                  />
+                ) : (
+                  <Select
+                    value={formData.ministerio_id}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, ministerio_id: value, voluntarios_ids: [], funcao: '' });
+                      fetchVoluntariosByMinisterio(value);
+                      fetchFuncoesByMinisterio(value);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ministerios.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Responsável</Label>
