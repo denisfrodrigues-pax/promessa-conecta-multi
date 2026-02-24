@@ -41,6 +41,7 @@ export default function LeaderHub() {
       }
 
       const ids = vinculos.map((v) => v.ministerio_id);
+      console.log("IDS VINCULOS:", ids);
 
       // Step 2: Get ministry details
       const { data: mins, error: errMins } = await supabase
