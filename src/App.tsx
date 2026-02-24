@@ -330,6 +330,7 @@ const App = () => (
             <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
             <Route path="notificacoes" element={<LeaderNotificacoes />} />
             <Route path="relatorios" element={<LeaderRelatorios />} />
+            <Route path=":slug" element={<MinisterioHome />} />;
           </Route>
 
           {/* Voluntario Hub Routes */}
@@ -381,5 +382,3 @@ const App = () => (
 );
 
 export default App;
-
-<Route path=":slug" element={<MinisterioHome />} />;
