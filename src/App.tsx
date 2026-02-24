@@ -106,6 +106,7 @@ import MinisterioEscalas from "@/pages/ministerio/MinisterioEscalas";
 
 // Voluntario Pages
 import VoluntarioDashboard from "@/pages/voluntario/VoluntarioDashboard";
+import VolunteerMinisterioDashboard from "@/pages/voluntario/VolunteerMinisterioDashboard";
 
 // Route Guards
 import RequireMinistry from "@/components/routes/RequireMinistry";
@@ -369,8 +370,7 @@ const App = () => (
               </PrivateRoute>
             }
           >
-            <Route index element={<Navigate to="escalas" replace />} />
-            <Route path="escalas" element={<MinisterioEscalas />} />
+            <Route index element={<VolunteerMinisterioDashboard />} />
           </Route>
 
           {/* Kids Panel Routes - legacy, kept for backward compatibility */}

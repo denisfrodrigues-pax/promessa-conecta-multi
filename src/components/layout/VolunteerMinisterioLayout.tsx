@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { NavLink } from "@/components/NavLink";
-import { CalendarDays, Home, Loader2, ArrowLeft } from "lucide-react";
+import { Home, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import moduleRegistry from "@/config/moduleRegistry";
 
@@ -85,16 +85,8 @@ export default function VolunteerMinisterioLayout() {
 
   const basePath = `/volunteer/${slug}`;
 
-  // Build nav from module registry + escalas
-  const navItems = [
-    { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas`, end: false },
-  ];
-
-  // Add registered modules for this slug
-  const registeredModule = moduleRegistry[slug ?? ""];
-  if (registeredModule) {
-    // Module-specific items could be added here in the future
-  }
+  // Nav items (currently empty — tabs are inside the dashboard page)
+  const navItems: { icon: any; label: string; path: string; end: boolean }[] = [];
 
   return (
     <div className="min-h-screen bg-background">
