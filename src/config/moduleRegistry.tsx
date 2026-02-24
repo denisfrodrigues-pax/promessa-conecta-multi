@@ -1,9 +1,9 @@
 import { lazy, ComponentType } from "react";
-import { Baby, Music, BookOpen, Users, Heart, type LucideIcon } from "lucide-react";
+import { Baby, Music, BookOpen, Users, Heart, Calendar, type LucideIcon } from "lucide-react";
 
 // Lazy-loaded module components
 const KidsCheckinPanel = lazy(() => import("@/pages/kids/KidsCheckinPanel"));
-
+const RepertorioMusicas = lazy(() => import("@/pages/ministerio/RepertorioMusicas"));
 export interface ModuleDefinition {
   /** Component to render for this module */
   component: ComponentType;
@@ -22,6 +22,11 @@ const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
     component: KidsCheckinPanel,
     defaultIcon: Baby,
     defaultName: "Check-in",
+  },
+  "repertorio": {
+    component: RepertorioMusicas,
+    defaultIcon: Music,
+    defaultName: "Repertório",
   },
   // Future modules:
   // "escala": { component: lazy(() => import("...")), defaultIcon: Calendar, defaultName: "Escalas" },
