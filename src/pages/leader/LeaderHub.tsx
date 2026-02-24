@@ -20,6 +20,7 @@ export default function LeaderHub() {
 
     const fetchLedMinistries = async () => {
       setLoading(true);
+      console.log("USER ID:", user?.id);
       const { data, error } = await supabase
         .from("ministerio_usuarios")
         .select("ministerio_id, ministerios(nome, slug)")
