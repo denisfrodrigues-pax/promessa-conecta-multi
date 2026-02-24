@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -138,6 +138,7 @@ function KPICard({
 }
 
 export default function LeaderRelatorios() {
+  const { ministerioId } = useOutletContext<{ ministerioId: string }>();
   const { user, profile, isLider, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
