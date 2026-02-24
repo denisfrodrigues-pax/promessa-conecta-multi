@@ -208,9 +208,16 @@ export default function KidsSalas() {
           .eq('id', editingSala.id);
         if (error) throw error;
       } else {
+        // Buscar ministério Kids para associar a sala
+        const { data: ministerioKids } = await supabase
+          .from('ministerios')
+          .select('id')
+          .ilike('nome', '%kids%')
+          .maybeSingle();
+
         const { error } = await supabase
           .from('salas_kids')
-          .insert(payload);
+          .insert({ ...payload, ministerio_id: ministerioKids?.id ?? '' });
         if (error) throw error;
       }
 

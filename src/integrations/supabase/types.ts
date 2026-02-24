@@ -1675,6 +1675,7 @@ export type Database = {
           capacidade: number | null
           created_at: string
           id: string
+          ministerio_id: string
           nome: string
           observacao: string | null
           status: string | null
@@ -1684,6 +1685,7 @@ export type Database = {
           capacidade?: number | null
           created_at?: string
           id?: string
+          ministerio_id: string
           nome: string
           observacao?: string | null
           status?: string | null
@@ -1693,12 +1695,21 @@ export type Database = {
           capacidade?: number | null
           created_at?: string
           id?: string
+          ministerio_id?: string
           nome?: string
           observacao?: string | null
           status?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_salas_ministerio"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transacoes_financeiras: {
         Row: {
@@ -1972,6 +1983,14 @@ export type Database = {
         Returns: boolean
       }
       is_kids_team: { Args: { _user_id: string }; Returns: boolean }
+      is_ministerio_lider: {
+        Args: { p_ministerio_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_ministerio_member: {
+        Args: { p_ministerio_id: string; p_user_id: string }
+        Returns: boolean
+      }
       leader_add_member_to_base: {
         Args: { p_base_id: string; p_profile_id: string }
         Returns: undefined
