@@ -11,16 +11,19 @@ interface LedMinistry {
 
 export default function LeaderHub() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [ledMinistries, setLedMinistries] = useState<LedMinistry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     const fetchLedMinistries = async () => {
       setLoading(true);
-      console.log("USER OBJECT:", user);
       const { data, error } = await supabase
         .from("ministerio_usuarios")
         .select("ministerio_id, ministerios(nome, slug)")
@@ -44,7 +47,7 @@ export default function LeaderHub() {
     };
 
     fetchLedMinistries();
-  }, [user]);
+  }, [user, authLoading]);
 
   if (loading) {
     return <div className="p-6">Carregando...</div>;
