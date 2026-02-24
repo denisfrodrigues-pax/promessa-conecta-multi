@@ -24,7 +24,7 @@ export default function LeaderHub() {
 
     const fetchLedMinistries = async () => {
       setLoading(true);
-      console.log("USER ID REAL:", user?.id);
+      
       // Step 1: Get ministerio_ids where user is active leader
       const { data: vinculos, error: errVinculos } = await supabase
         .from("ministerio_usuarios")
@@ -41,7 +41,7 @@ export default function LeaderHub() {
       }
 
       const ids = vinculos.map((v) => v.ministerio_id);
-      console.log("IDS VINCULOS:", ids);
+
 
       // Step 2: Get ministry details
       const { data: mins, error: errMins } = await supabase
