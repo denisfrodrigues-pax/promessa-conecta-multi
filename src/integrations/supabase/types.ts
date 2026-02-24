@@ -1288,6 +1288,7 @@ export type Database = {
           slug: string | null
           tipo_ministerio: string | null
           updated_at: string | null
+          visao: string | null
         }
         Insert: {
           ativo?: boolean | null
@@ -1300,6 +1301,7 @@ export type Database = {
           slug?: string | null
           tipo_ministerio?: string | null
           updated_at?: string | null
+          visao?: string | null
         }
         Update: {
           ativo?: boolean | null
@@ -1312,6 +1314,7 @@ export type Database = {
           slug?: string | null
           tipo_ministerio?: string | null
           updated_at?: string | null
+          visao?: string | null
         }
         Relationships: [
           {
