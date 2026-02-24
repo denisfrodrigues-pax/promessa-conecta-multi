@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // ajuste se necessário
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Ministerio {
   id: string;
