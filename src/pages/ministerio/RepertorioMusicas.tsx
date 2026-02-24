@@ -46,6 +46,14 @@ export default function RepertorioMusicas() {
       });
   }, [ministerioId]);
 
+  if (!ministerioId) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground">
+        Carregando ministério...
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
