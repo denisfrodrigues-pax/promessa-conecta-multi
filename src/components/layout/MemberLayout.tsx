@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
 import { Logo } from '@/components/Logo';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
-import { Home, Users, Calendar, Bell, User, Menu, CalendarCheck, Loader2, Baby, ClipboardCheck } from 'lucide-react';
+import { Home, Users, Calendar, Bell, User, Menu, Loader2, Baby, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,6 @@ import { useKidsVolunteer } from '@/hooks/useKidsVolunteer';
 
 const navItems = [
   { icon: Home, label: 'Início', path: '/app' },
-  { icon: CalendarCheck, label: 'Escalas', path: '/app/escalas' },
   { icon: Users, label: 'Bases', path: '/app/bases' },
   { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
   { icon: User, label: 'Perfil', path: '/app/perfil' },
