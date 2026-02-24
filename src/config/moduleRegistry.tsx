@@ -4,6 +4,7 @@ import { Baby, Music, BookOpen, Users, Heart, Calendar, type LucideIcon } from "
 // Lazy-loaded module components
 const KidsCheckinPanel = lazy(() => import("@/pages/kids/KidsCheckinPanel"));
 const RepertorioMusicas = lazy(() => import("@/pages/ministerio/RepertorioMusicas"));
+const MinisterioEscalas = lazy(() => import("@/pages/ministerio/MinisterioEscalas"));
 export interface ModuleDefinition {
   /** Component to render for this module */
   component: ComponentType;
@@ -28,8 +29,11 @@ const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
     defaultIcon: Music,
     defaultName: "Repertório",
   },
-  // Future modules:
-  // "escala": { component: lazy(() => import("...")), defaultIcon: Calendar, defaultName: "Escalas" },
+  "escalas": {
+    component: MinisterioEscalas,
+    defaultIcon: Calendar,
+    defaultName: "Escalas",
+  },
 };
 
 /**
@@ -41,6 +45,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   BookOpen,
   Users,
   Heart,
+  Calendar,
 };
 
 export function getModuleDefinition(moduloSlug: string): ModuleDefinition | null {
