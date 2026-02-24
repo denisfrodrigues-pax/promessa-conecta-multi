@@ -1286,6 +1286,7 @@ export type Database = {
           lider_id: string | null
           nome: string
           slug: string | null
+          tipo_ministerio: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1297,6 +1298,7 @@ export type Database = {
           lider_id?: string | null
           nome: string
           slug?: string | null
+          tipo_ministerio?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1308,6 +1310,7 @@ export type Database = {
           lider_id?: string | null
           nome?: string
           slug?: string | null
+          tipo_ministerio?: string | null
           updated_at?: string | null
         }
         Relationships: [
