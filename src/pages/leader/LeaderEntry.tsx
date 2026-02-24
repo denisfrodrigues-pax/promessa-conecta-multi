@@ -1,43 +1,59 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; // ajuste se necessário
 
-export default function LeaderEntry() {
-  const { myMinistries, myMinistriesLoading, loading } = useAuth();
+interface Ministerio {
+  id: string;
+  nome: string;
+  slug: string;
+  papel: string;
+}
 
-  if (loading || myMinistriesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
+export default function LeaderHub() {
+  const navigate = useNavigate();
+  const { user, myMinistries, loading } = useAuth();
+
+  const [ledMinistries, setLedMinistries] = useState<Ministerio[]>([]);
+
+  useEffect(() => {
+    if (!myMinistries) return;
+
+    const onlyLeaders = myMinistries.filter((m: any) => m.papel?.toLowerCase().includes("lider"));
+
+    setLedMinistries(onlyLeaders);
+  }, [myMinistries]);
+
+  if (loading) {
+    return <div>Carregando...</div>;
   }
 
-  const liderMinistries = myMinistries.filter((m) => m.papel?.toLowerCase() === "lider");
-
-  if (liderMinistries.length === 0) {
-    return (
-      <div className="p-8">
-        <h2 className="text-xl font-semibold">Você não lidera nenhum ministério.</h2>
-      </div>
-    );
+  if (!user) {
+    return <div>Usuário não autenticado.</div>;
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <h1 className="text-2xl font-bold">Selecione o ministério que deseja gerenciar</h1>
+    <div style={{ padding: 24 }}>
+      <h1>Painel do Líder</h1>
+      <p>Escolha o ministério que deseja gerenciar:</p>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        {liderMinistries.map((min) => (
-          <Link key={min.ministerio_id} to={`/leader/${min.slug}`}>
-            <Card className="hover:shadow-lg transition cursor-pointer">
-              <CardContent className="p-6">
-                <h2 className="text-lg font-semibold">{min.nome}</h2>
-                <p className="text-sm text-muted-foreground mt-2">Gerenciar ministério</p>
-              </CardContent>
-            </Card>
-          </Link>
+      {ledMinistries.length === 0 && <p>Você não está vinculado como líder em nenhum ministério.</p>}
+
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        {ledMinistries.map((ministerio) => (
+          <button
+            key={ministerio.id}
+            onClick={() => navigate(`/leader/${ministerio.slug}`)}
+            style={{
+              padding: 20,
+              borderRadius: 12,
+              border: "1px solid #ccc",
+              cursor: "pointer",
+              minWidth: 200,
+            }}
+          >
+            <h3>{ministerio.nome}</h3>
+            <p>Acessar</p>
+          </button>
         ))}
       </div>
     </div>
