@@ -12,6 +12,7 @@ import PrivateRoute from "@/components/routes/PrivateRoute";
 // Layouts
 import AdminLayout from "@/components/layout/AdminLayout";
 import LeaderLayout from "@/components/layout/LeaderLayout";
+import LeaderMinisterioLayout from "@/components/layout/LeaderMinisterioLayout";
 import KidsLayout from "@/components/layout/KidsLayout";
 import MinisterioLayout from "@/components/layout/MinisterioLayout";
 import VoluntarioLayout from "@/components/layout/VoluntarioLayout";
@@ -313,7 +314,7 @@ const App = () => (
             <Route path="auditoria" element={<FinanceiroAuditoria />} />
           </Route>
 
-          {/* Leader Routes - only lider */}
+          {/* Leader Routes - Hub (no ministry context) */}
           <Route
             path="/leader"
             element={
@@ -324,15 +325,25 @@ const App = () => (
           >
             <Route index element={<LeaderEntry />} />
             <Route path="hub" element={<LeaderHub />} />
-            <Route path="dashboard" element={<LeaderDashboard />} />
-            <Route path="bases" element={<LeaderBases />} />
-            <Route path="bases/:id" element={<LeaderBaseDetalhes />} />
-            <Route path="escalas" element={<LeaderEscalas />} />
+          </Route>
+
+          {/* Leader Ministry Routes - with ministry context */}
+          <Route
+            path="/leader/:slug"
+            element={
+              <PrivateRoute allowedRoles={["lider", "admin"]}>
+                <LeaderMinisterioLayout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<LeaderDashboard />} />
             <Route path="equipe" element={<LeaderMinhaEquipe />} />
             <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
+            <Route path="escalas" element={<LeaderEscalas />} />
+            <Route path="bases" element={<LeaderBases />} />
+            <Route path="bases/:id" element={<LeaderBaseDetalhes />} />
             <Route path="notificacoes" element={<LeaderNotificacoes />} />
             <Route path="relatorios" element={<LeaderRelatorios />} />
-            <Route path=":slug" element={<MinisterioHome />} />;
           </Route>
 
           {/* Voluntario Hub Routes */}

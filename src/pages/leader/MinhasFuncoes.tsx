@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,13 +10,12 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, ListChecks, Search, AlertCircle } from 'lucide-react';
 
-interface Ministerio {
-  id: string;
-  nome: string;
+interface LeaderMinisterioContext {
+  ministerioId: string;
+  ministerioNome: string;
 }
 
 interface Funcao {
@@ -39,8 +39,7 @@ const initialFormData: FuncaoFormData = {
 };
 
 export default function MinhasFuncoes() {
-  const { profile } = useAuth();
-  const [ministerio, setMinisterio] = useState<Ministerio | null>(null);
+  const { ministerioId, ministerioNome } = useOutletContext<LeaderMinisterioContext>();
   const [funcoes, setFuncoes] = useState<Funcao[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -51,43 +50,19 @@ export default function MinhasFuncoes() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (profile?.id) {
-      fetchMinisterio();
-    }
-  }, [profile?.id]);
-
-  useEffect(() => {
-    if (ministerio?.id) {
+    if (ministerioId) {
       fetchFuncoes();
     }
-  }, [ministerio?.id]);
-
-  const fetchMinisterio = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('ministerios')
-        .select('id, nome')
-        .eq('lider_id', profile?.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      setMinisterio(data);
-    } catch (error) {
-      console.error('Error fetching ministerio:', error);
-      toast.error('Erro ao carregar ministério');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [ministerioId]);
 
   const fetchFuncoes = async () => {
-    if (!ministerio?.id) return;
+    if (!ministerioId) return;
     
     try {
       const { data, error } = await supabase
         .from('ministerio_funcoes')
         .select('*')
-        .eq('ministerio_id', ministerio.id)
+        .eq('ministerio_id', ministerioId)
         .order('nome');
 
       if (error) throw error;
@@ -95,6 +70,8 @@ export default function MinhasFuncoes() {
     } catch (error) {
       console.error('Error fetching funcoes:', error);
       toast.error('Erro ao carregar funções');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -136,7 +113,7 @@ export default function MinhasFuncoes() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.nome.trim() || !ministerio?.id) {
+    if (!formData.nome.trim() || !ministerioId) {
       toast.error('Nome é obrigatório');
       return;
     }
@@ -158,7 +135,7 @@ export default function MinhasFuncoes() {
         const { error } = await supabase
           .from('ministerio_funcoes')
           .insert({
-            ministerio_id: ministerio.id,
+            ministerio_id: ministerioId,
             nome: formData.nome,
             descricao: formData.descricao || null,
             ativo: formData.ativo,
@@ -210,7 +187,7 @@ export default function MinhasFuncoes() {
     );
   }
 
-  if (!ministerio) {
+  if (!ministerioId) {
     return (
       <Card>
         <CardContent className="py-12">
@@ -231,7 +208,7 @@ export default function MinhasFuncoes() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold tracking-tight">Funções do Ministério</h1>
-          <p className="text-muted-foreground mt-1">Gerencie as funções de {ministerio.nome}</p>
+          <p className="text-muted-foreground mt-1">Gerencie as funções de {ministerioNome}</p>
         </div>
         <Button onClick={handleCreate} className="shadow-sm">
           <Plus className="w-4 h-4 mr-2" />
@@ -241,7 +218,7 @@ export default function MinhasFuncoes() {
 
       <Card className="shadow-card">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg">{ministerio.nome}</CardTitle>
+          <CardTitle className="text-lg">{ministerioNome}</CardTitle>
           <p className="text-sm text-muted-foreground">
             {funcoes.length} função(ões) cadastrada(s)
           </p>

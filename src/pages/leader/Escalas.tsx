@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -94,6 +95,7 @@ const initialFormData: EscalaFormData = {
 };
 
 export default function LeaderEscalas() {
+  const { ministerioId } = useOutletContext<{ ministerioId: string }>();
   const { profile, isLider } = useAuth();
   const [minhasEscalas, setMinhasEscalas] = useState<Escala[]>([]);
   const [escalasGerenciadas, setEscalasGerenciadas] = useState<EscalaGroup[]>([]);
@@ -138,6 +140,7 @@ export default function LeaderEscalas() {
         .from('escalas')
         .select('*, ministerios(nome), voluntario:profiles!escalas_voluntario_id_fkey(nome)')
         .eq('voluntario_id', profile?.id)
+        .eq('ministerio_id', ministerioId)
         .order('data', { ascending: true });
 
       if (error) throw error;
@@ -148,34 +151,17 @@ export default function LeaderEscalas() {
   };
 
   const fetchEscalasGerenciadas = async () => {
-    if (!isLider) return;
+    if (!isLider || !ministerioId) return;
     
     try {
-      // Primeiro buscar os ministérios onde o usuário é líder
-      const { data: meusMinisterios, error: minError } = await supabase
-        .from('ministerios')
-        .select('id')
-        .eq('lider_id', profile?.id);
-      
-      if (minError) throw minError;
-      
-      const ministerioIds = meusMinisterios?.map(m => m.id) || [];
-      
-      if (ministerioIds.length === 0) {
-        setEscalasGerenciadas([]);
-        return;
-      }
-      
-      // Buscar escalas dos ministérios onde sou líder
       const { data, error } = await supabase
         .from('escalas')
         .select('*, ministerios(nome), voluntario:profiles!escalas_voluntario_id_fkey(nome)')
-        .in('ministerio_id', ministerioIds)
+        .eq('ministerio_id', ministerioId)
         .order('data', { ascending: true });
 
       if (error) throw error;
       
-      // Group escalas
       const groups = groupEscalas(data || []);
       setEscalasGerenciadas(groups);
     } catch (error: any) {
@@ -254,10 +240,11 @@ export default function LeaderEscalas() {
   };
 
   const handleOpenCreateDialog = () => {
-    setFormData(initialFormData);
+    setFormData({ ...initialFormData, ministerio_id: ministerioId });
     setFuncoes([]);
     setVoluntarios([]);
-    fetchMeusMinisterios();
+    fetchFuncoesByMinisterio(ministerioId);
+    fetchVoluntariosByMinisterio(ministerioId);
     setIsCreateDialogOpen(true);
   };
 

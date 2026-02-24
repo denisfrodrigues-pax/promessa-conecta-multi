@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,9 +15,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Plus, Trash2, Users, Building2, Search, Pencil } from 'lucide-react';
 
-interface Ministerio {
-  id: string;
-  nome: string;
+interface LeaderMinisterioContext {
+  ministerioId: string;
+  ministerioNome: string;
 }
 
 interface Funcao {
@@ -43,8 +44,8 @@ interface MinisterioVoluntario {
 }
 
 export default function LeaderMinhaEquipe() {
+  const { ministerioId, ministerioNome } = useOutletContext<LeaderMinisterioContext>();
   const { profile } = useAuth();
-  const [ministerio, setMinisterio] = useState<Ministerio | null>(null);
   const [voluntarios, setVoluntarios] = useState<MinisterioVoluntario[]>([]);
   const [availableProfiles, setAvailableProfiles] = useState<Profile[]>([]);
   const [funcoes, setFuncoes] = useState<Funcao[]>([]);
@@ -62,40 +63,15 @@ export default function LeaderMinhaEquipe() {
   const [selectedFuncaoIds, setSelectedFuncaoIds] = useState<string[]>([]);
 
   useEffect(() => {
-    if (profile?.id) {
-      fetchMinisterio();
-    }
-  }, [profile?.id]);
-
-  useEffect(() => {
-    if (ministerio) {
+    if (ministerioId) {
       fetchVoluntarios();
       fetchFuncoes();
-    }
-  }, [ministerio]);
-
-  const fetchMinisterio = async () => {
-    if (!profile?.id) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('ministerios')
-        .select('id, nome')
-        .eq('lider_id', profile.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      setMinisterio(data);
-      setLoading(false);
-    } catch (error: any) {
-      console.error('Error fetching ministerio:', error);
-      toast.error(error.message || 'Erro ao carregar ministério');
       setLoading(false);
     }
-  };
+  }, [ministerioId]);
 
   const fetchVoluntarios = async () => {
-    if (!ministerio) return;
+    if (!ministerioId) return;
 
     try {
       const { data, error } = await supabase
@@ -108,7 +84,7 @@ export default function LeaderMinhaEquipe() {
           funcao_principal_id,
           profile:profiles!ministerio_voluntarios_user_id_fkey(nome, email)
         `)
-        .eq('ministerio_id', ministerio.id)
+        .eq('ministerio_id', ministerioId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -139,13 +115,13 @@ export default function LeaderMinhaEquipe() {
   };
 
   const fetchFuncoes = async () => {
-    if (!ministerio) return;
+    if (!ministerioId) return;
 
     try {
       const { data, error } = await supabase
         .from('ministerio_funcoes')
         .select('id, nome, ativo')
-        .eq('ministerio_id', ministerio.id)
+        .eq('ministerio_id', ministerioId)
         .eq('ativo', true)
         .order('nome');
 
@@ -157,13 +133,13 @@ export default function LeaderMinhaEquipe() {
   };
 
   const fetchAvailableProfiles = async (search: string = '') => {
-    if (!ministerio) return;
+    if (!ministerioId) return;
 
     try {
       // Use secure RPC function to fetch eligible volunteers
       const { data, error } = await supabase
         .rpc('get_eligible_volunteers_for_ministry', {
-          p_ministerio_id: ministerio.id,
+          p_ministerio_id: ministerioId,
           p_search_term: search
         });
 
@@ -187,7 +163,7 @@ export default function LeaderMinhaEquipe() {
     setIsAddDialogOpen(true);
     
     // Load initial list immediately when opening dialog
-    if (ministerio) {
+    if (ministerioId) {
       setIsSearching(true);
       await fetchAvailableProfiles('');
       setIsSearching(false);
@@ -196,7 +172,7 @@ export default function LeaderMinhaEquipe() {
 
   // Debounced search for profiles
   useEffect(() => {
-    if (!isAddDialogOpen || !ministerio) return;
+    if (!isAddDialogOpen || !ministerioId) return;
     
     const timer = setTimeout(async () => {
       setIsSearching(true);
@@ -205,10 +181,10 @@ export default function LeaderMinhaEquipe() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [profileSearchTerm, isAddDialogOpen, ministerio]);
+  }, [profileSearchTerm, isAddDialogOpen, ministerioId]);
 
   const handleAddVoluntario = async () => {
-    if (!ministerio || !selectedProfileId) {
+    if (!ministerioId || !selectedProfileId) {
       toast.error('Selecione um voluntário');
       return;
     }
@@ -229,7 +205,7 @@ export default function LeaderMinhaEquipe() {
       const { data: newVol, error } = await supabase
         .from('ministerio_usuarios')
         .insert({
-          ministerio_id: ministerio.id,
+          ministerio_id: ministerioId,
           user_id: profileToAdd.user_id,
           ativo: true,
           funcao_principal_id: selectedFuncaoIds[0] || null,
@@ -373,7 +349,7 @@ export default function LeaderMinhaEquipe() {
     );
   }
 
-  if (!ministerio) {
+  if (!ministerioId) {
     return (
       <div className="p-8">
         <Card>
@@ -393,7 +369,7 @@ export default function LeaderMinhaEquipe() {
     <div className="p-8 space-y-8">
       <div>
         <h1 className="text-3xl font-display font-bold tracking-tight">Minha Equipe</h1>
-        <p className="text-muted-foreground mt-1">Gerencie os voluntários do ministério {ministerio.nome}</p>
+        <p className="text-muted-foreground mt-1">Gerencie os voluntários do ministério {ministerioNome}</p>
       </div>
 
       <Card className="shadow-card">
@@ -403,7 +379,7 @@ export default function LeaderMinhaEquipe() {
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Users className="h-5 w-5 text-primary" />
               </div>
-              Voluntários - {ministerio.nome}
+              Voluntários - {ministerioNome}
             </CardTitle>
             <Button onClick={handleOpenAddDialog} className="shadow-sm">
               <Plus className="h-4 w-4 mr-2" />
@@ -509,7 +485,7 @@ export default function LeaderMinhaEquipe() {
           <DialogHeader>
             <DialogTitle>Adicionar Voluntário</DialogTitle>
             <DialogDescription>
-              Busque e selecione um usuário para adicionar ao ministério {ministerio.nome}
+              Busque e selecione um usuário para adicionar ao ministério {ministerioNome}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -9,11 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Bell, Calendar, AlertCircle, Clock, Search, Send, Users, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+interface LeaderMinisterioContext {
+  ministerioId: string;
+  ministerioNome: string;
+}
 
 interface Notification {
   id: string;
@@ -39,7 +44,7 @@ interface MinistryMember {
 }
 
 export default function LeaderNotificacoes() {
-  const { profile } = useAuth();
+  const { ministerioId } = useOutletContext<LeaderMinisterioContext>();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [members, setMembers] = useState<MinistryMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,47 +52,22 @@ export default function LeaderNotificacoes() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTipo, setFilterTipo] = useState<string>('all');
-  const [myMinisterioId, setMyMinisterioId] = useState<string | null>(null);
   
   // Form state
   const [titulo, setTitulo] = useState('');
   const [mensagem, setMensagem] = useState('');
 
   useEffect(() => {
-    if (profile?.id) {
-      fetchMyMinisterio();
-    }
-  }, [profile?.id]);
-
-  useEffect(() => {
-    if (myMinisterioId) {
+    if (ministerioId) {
       fetchNotifications();
       fetchMembers();
-    }
-  }, [myMinisterioId]);
-
-  const fetchMyMinisterio = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('ministerios')
-        .select('id')
-        .eq('lider_id', profile?.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      setMyMinisterioId(data?.id || null);
-      
-      if (!data?.id) {
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error('Error fetching ministerio:', error);
+    } else {
       setLoading(false);
     }
-  };
+  }, [ministerioId]);
 
   const fetchMembers = async () => {
-    if (!myMinisterioId) return;
+    if (!ministerioId) return;
 
     try {
       const { data, error } = await supabase
@@ -97,7 +77,7 @@ export default function LeaderNotificacoes() {
           user_id,
           profile:profiles!ministerio_voluntarios_user_id_fkey(id, nome)
         `)
-        .eq('ministerio_id', myMinisterioId)
+        .eq('ministerio_id', ministerioId)
         .eq('ativo', true);
 
       if (error) throw error;
@@ -108,14 +88,14 @@ export default function LeaderNotificacoes() {
   };
 
   const fetchNotifications = async () => {
-    if (!myMinisterioId) return;
+    if (!ministerioId) return;
 
     setLoading(true);
     try {
       const { data: volunteers } = await supabase
         .from('ministerio_usuarios')
         .select('user_id')
-        .eq('ministerio_id', myMinisterioId);
+        .eq('ministerio_id', ministerioId);
 
       if (!volunteers || volunteers.length === 0) {
         setNotifications([]);
@@ -186,7 +166,7 @@ export default function LeaderNotificacoes() {
           titulo,
           mensagem,
           tipo: 'ministerio',
-          ministerio_id: myMinisterioId
+          ministerio_id: ministerioId
         }
       });
 
@@ -281,12 +261,12 @@ export default function LeaderNotificacoes() {
     );
   }
 
-  if (!myMinisterioId) {
+  if (!ministerioId) {
     return (
       <div className="text-center py-12">
-        <Bell className="w-16 h-16 mx-auto text-neutral-300 mb-4" />
-        <h2 className="text-xl font-semibold mb-2 text-neutral-800">Nenhum ministério encontrado</h2>
-        <p className="text-neutral-500">
+        <Bell className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
+        <h2 className="text-xl font-semibold mb-2">Nenhum ministério encontrado</h2>
+        <p className="text-muted-foreground">
           Você precisa ser líder de um ministério para ver notificações.
         </p>
       </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +25,7 @@ interface Escala {
 }
 
 export default function LeaderDashboard() {
+  const { ministerioId } = useOutletContext<{ ministerioId: string }>();
   const { profile } = useAuth();
   const { config } = useChurchConfig();
   const [bases, setBases] = useState<Base[]>([]);
@@ -32,10 +33,10 @@ export default function LeaderDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (profile) {
+    if (profile && ministerioId) {
       fetchData();
     }
-  }, [profile]);
+  }, [profile, ministerioId]);
 
   const fetchData = async () => {
     try {
@@ -44,7 +45,7 @@ export default function LeaderDashboard() {
         supabase
           .from('escalas')
           .select('*, ministerios(nome)')
-          .eq('voluntario_id', profile?.id)
+          .eq('ministerio_id', ministerioId)
           .gte('data', new Date().toISOString().split('T')[0])
           .order('data', { ascending: true })
           .limit(5),
