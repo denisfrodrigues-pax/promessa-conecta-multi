@@ -97,24 +97,69 @@ export default function AdminMinisterios() {
       const userIds = data.map(r => r.user_id);
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, nome, email')
+        .select('id, nome, email, user_id')
         .in('user_id', userIds);
       if (profilesError) throw profilesError;
       
-      return profiles as Profile[];
+      return profiles as (Profile & { user_id: string })[];
     },
   });
+
+  // Helper: sync ministerio_usuarios leader for a given ministry
+  const syncMinisterioLider = async (ministerioId: string, newLiderProfileId: string | null) => {
+    // Step 1: Deactivate ALL current leaders for this ministry
+    const { error: deactivateError } = await supabase
+      .from('ministerio_usuarios')
+      .update({ ativo: false })
+      .eq('ministerio_id', ministerioId)
+      .eq('papel', 'lider');
+
+    if (deactivateError) throw deactivateError;
+
+    // Step 2: If a new leader is set, upsert them as active leader
+    if (newLiderProfileId) {
+      const leader = leaders.find(l => l.id === newLiderProfileId);
+      if (!leader) return;
+
+      // Check if a record already exists for this user+ministry
+      const { data: existing } = await supabase
+        .from('ministerio_usuarios')
+        .select('id')
+        .eq('ministerio_id', ministerioId)
+        .eq('user_id', leader.user_id)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from('ministerio_usuarios')
+          .update({ papel: 'lider', ativo: true })
+          .eq('id', existing.id);
+      } else {
+        await supabase
+          .from('ministerio_usuarios')
+          .insert({
+            ministerio_id: ministerioId,
+            user_id: leader.user_id,
+            papel: 'lider',
+            ativo: true,
+          });
+      }
+    }
+  };
 
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const { error } = await supabase.from('ministerios').insert({
+      const { data: created, error } = await supabase.from('ministerios').insert({
         nome: data.nome,
         descricao: data.descricao || null,
         lider_id: data.lider_id || null,
         ativo: data.ativo,
-      });
+      }).select('id').single();
       if (error) throw error;
+
+      // Sync ministerio_usuarios
+      await syncMinisterioLider(created.id, data.lider_id || null);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ministerios'] });
@@ -139,6 +184,9 @@ export default function AdminMinisterios() {
         })
         .eq('id', id);
       if (error) throw error;
+
+      // Sync ministerio_usuarios
+      await syncMinisterioLider(id, data.lider_id || null);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ministerios'] });
