@@ -1211,6 +1211,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "ministerio_usuarios_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ministerio_voluntarios_funcao_principal_id_fkey"
             columns: ["funcao_principal_id"]
             isOneToOne: false
