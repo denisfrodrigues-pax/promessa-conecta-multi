@@ -151,16 +151,23 @@ const App = () => (
           {/* ==================== PUBLIC ROUTES ==================== */}
           {/* Home - accessible to all (shows different content based on auth state) */}
           <Route path="/" element={<Index />} />
-          
+
           {/* Auth - for unauthenticated users */}
-          <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-          
+          <Route
+            path="/auth"
+            element={
+              <PublicRoute>
+                <Auth />
+              </PublicRoute>
+            }
+          />
+
           {/* Semi-public Routes - accessible to all */}
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/install" element={<InstallPWA />} />
           <Route path="/sou-novo" element={<SouNovo />} />
           <Route path="/contribuicoes" element={<Contribuicoes />} />
-          
+
           {/* Institutional Pages - public */}
           <Route path="/quem-somos" element={<QuemSomos />} />
           <Route path="/quem-somos/teologia" element={<Teologia />} />
@@ -177,13 +184,16 @@ const App = () => (
           <Route path="/contato/:section" element={<Contato />} />
 
           {/* ==================== AUTHENTICATED ROUTES ==================== */}
-          
+
           {/* App Routes - All authenticated member pages under /app */}
-          <Route path="/app" element={
-            <PrivateRoute>
-              <AppLayout />
-            </PrivateRoute>
-          }>
+          <Route
+            path="/app"
+            element={
+              <PrivateRoute>
+                <AppLayout />
+              </PrivateRoute>
+            }
+          >
             <Route index element={<AppHome />} />
             <Route path="home" element={<MemberHome />} />
             <Route path="minha-base" element={<MinhaBase />} />
@@ -199,11 +209,14 @@ const App = () => (
             <Route path="notificacoes" element={<MemberNotificacoes />} />
             <Route path="contribuicoes" element={<MinhasContribuicoes />} />
             <Route path="contribuir" element={<Contribuir />} />
-            <Route path="voluntarios-do-dia" element={
-              <PrivateRoute allowedRoles={['admin', 'lider', 'voluntario']}>
-                <VoluntariosDoDia />
-              </PrivateRoute>
-            } />
+            <Route
+              path="voluntarios-do-dia"
+              element={
+                <PrivateRoute allowedRoles={["admin", "lider", "voluntario"]}>
+                  <VoluntariosDoDia />
+                </PrivateRoute>
+              }
+            />
           </Route>
 
           {/* Legacy redirects - redirect old paths to new /app/* paths */}
@@ -223,11 +236,14 @@ const App = () => (
           <Route path="/app/minhas-contribuicoes" element={<Navigate to="/app/contribuicoes" replace />} />
 
           {/* Admin Routes - only admin */}
-          <Route path="/admin" element={
-            <PrivateRoute allowedRoles={['admin']}>
-              <AdminLayout />
-            </PrivateRoute>
-          }>
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute allowedRoles={["admin"]}>
+                <AdminLayout />
+              </PrivateRoute>
+            }
+          >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="usuarios" element={<AdminUsuarios />} />
@@ -278,11 +294,14 @@ const App = () => (
           </Route>
 
           {/* Financeiro Routes - only financeiro role (non-admin) */}
-          <Route path="/financeiro" element={
-            <PrivateRoute allowedRoles={['financeiro']}>
-              <FinanceiroLayout />
-            </PrivateRoute>
-          }>
+          <Route
+            path="/financeiro"
+            element={
+              <PrivateRoute allowedRoles={["financeiro"]}>
+                <FinanceiroLayout />
+              </PrivateRoute>
+            }
+          >
             <Route index element={<FinanceiroDashboard />} />
             <Route path="transacoes" element={<Transacoes />} />
             <Route path="transacoes/novo" element={<TransacaoForm />} />
@@ -294,11 +313,14 @@ const App = () => (
           </Route>
 
           {/* Leader Routes - only lider */}
-          <Route path="/leader" element={
-            <PrivateRoute allowedRoles={['lider', 'admin']}>
-              <LeaderLayout />
-            </PrivateRoute>
-          }>
+          <Route
+            path="/leader"
+            element={
+              <PrivateRoute allowedRoles={["lider", "admin"]}>
+                <LeaderLayout />
+              </PrivateRoute>
+            }
+          >
             <Route index element={<LeaderEntry />} />
             <Route path="dashboard" element={<LeaderDashboard />} />
             <Route path="bases" element={<LeaderBases />} />
@@ -311,32 +333,41 @@ const App = () => (
           </Route>
 
           {/* Voluntario Hub Routes */}
-          <Route path="/voluntario" element={
-            <PrivateRoute allowedRoles={['voluntario', 'admin', 'lider']}>
-              <VoluntarioLayout />
-            </PrivateRoute>
-          }>
+          <Route
+            path="/voluntario"
+            element={
+              <PrivateRoute allowedRoles={["voluntario", "admin", "lider"]}>
+                <VoluntarioLayout />
+              </PrivateRoute>
+            }
+          >
             <Route index element={<VoluntarioDashboard />} />
           </Route>
 
           {/* Kids Panel Routes - legacy, kept for backward compatibility */}
-          <Route path="/kids" element={
-            <PrivateRoute allowedRoles={['admin', 'lider', 'voluntario']}>
-              <RequireMinistry slug="kids">
-                <KidsLayout />
-              </RequireMinistry>
-            </PrivateRoute>
-          }>
+          <Route
+            path="/kids"
+            element={
+              <PrivateRoute allowedRoles={["admin", "lider", "voluntario"]}>
+                <RequireMinistry slug="kids">
+                  <KidsLayout />
+                </RequireMinistry>
+              </PrivateRoute>
+            }
+          >
             <Route index element={<Navigate to="/kids/check-in" replace />} />
             <Route path="check-in" element={<KidsCheckinPanel />} />
           </Route>
 
           {/* Dynamic Ministry Routes - modular access */}
-          <Route path="/ministerio/:slug" element={
-            <PrivateRoute allowedRoles={['admin', 'lider', 'voluntario']}>
-              <MinisterioLayout />
-            </PrivateRoute>
-          }>
+          <Route
+            path="/ministerio/:slug"
+            element={
+              <PrivateRoute allowedRoles={["admin", "lider", "voluntario"]}>
+                <MinisterioLayout />
+              </PrivateRoute>
+            }
+          >
             <Route index element={<MinisterioHome />} />
             <Route path=":modulo" element={<MinisterioModulo />} />
           </Route>
@@ -350,3 +381,5 @@ const App = () => (
 );
 
 export default App;
+
+<Route path=":slug" element={<MinisterioHome />} />;
