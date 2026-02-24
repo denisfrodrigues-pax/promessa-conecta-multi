@@ -67,6 +67,7 @@ export default function AdminMinisterios() {
     descricao: '',
     lider_id: '',
     ativo: true,
+    tipo_ministerio: '',
   });
 
   // Fetch ministérios
@@ -155,6 +156,7 @@ export default function AdminMinisterios() {
         descricao: data.descricao || null,
         lider_id: data.lider_id || null,
         ativo: data.ativo,
+        tipo_ministerio: data.tipo_ministerio,
       }).select('id').single();
       if (error) throw error;
 
@@ -217,7 +219,7 @@ export default function AdminMinisterios() {
 
   const handleOpenCreate = () => {
     setSelectedMinisterio(null);
-    setFormData({ nome: '', descricao: '', lider_id: '', ativo: true });
+    setFormData({ nome: '', descricao: '', lider_id: '', ativo: true, tipo_ministerio: '' });
     setIsDialogOpen(true);
   };
 
@@ -228,6 +230,7 @@ export default function AdminMinisterios() {
       descricao: ministerio.descricao || '',
       lider_id: ministerio.lider_id || '',
       ativo: ministerio.ativo ?? true,
+      tipo_ministerio: (ministerio as any).tipo_ministerio || '',
     });
     setIsDialogOpen(true);
   };
@@ -235,12 +238,16 @@ export default function AdminMinisterios() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedMinisterio(null);
-    setFormData({ nome: '', descricao: '', lider_id: '', ativo: true });
+    setFormData({ nome: '', descricao: '', lider_id: '', ativo: true, tipo_ministerio: '' });
   };
 
   const handleSubmit = () => {
     if (!formData.nome.trim()) {
       toast({ title: 'Nome é obrigatório', variant: 'destructive' });
+      return;
+    }
+    if (!selectedMinisterio && !formData.tipo_ministerio) {
+      toast({ title: 'Tipo de Ministério é obrigatório', variant: 'destructive' });
       return;
     }
     
@@ -369,6 +376,28 @@ export default function AdminMinisterios() {
                 rows={3}
               />
             </div>
+            {!selectedMinisterio && (
+              <div className="space-y-2">
+                <Label htmlFor="tipo_ministerio">Tipo de Ministério *</Label>
+                <Select
+                  value={formData.tipo_ministerio || '__none__'}
+                  onValueChange={(value) => setFormData({ ...formData, tipo_ministerio: value === '__none__' ? '' : value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__" disabled>Selecione...</SelectItem>
+                    <SelectItem value="padrao">Padrão</SelectItem>
+                    <SelectItem value="kids">Kids</SelectItem>
+                    <SelectItem value="musica">Música</SelectItem>
+                    <SelectItem value="midia">Mídia</SelectItem>
+                    <SelectItem value="ensino">Ensino</SelectItem>
+                    <SelectItem value="recepcao">Recepção</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="lider">Líder</Label>
               <Select
