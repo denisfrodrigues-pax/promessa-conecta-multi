@@ -202,11 +202,18 @@ export default function VolunteerMinisterioDashboard() {
         {/* FILOSOFIA */}
         <TabsContent value="filosofia">
           {filosofiaPdf ? (
-            <iframe
-              src={filosofiaPdf}
+            <object
+              data={filosofiaPdf}
+              type="application/pdf"
               className="w-full h-[80vh] rounded-xl border border-border"
-              title="Filosofia do Ministério"
-            />
+            >
+              <p className="p-4 text-muted-foreground">
+                Seu navegador não suporta visualização de PDF.{" "}
+                <a href={filosofiaPdf} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                  Clique aqui para abrir o PDF.
+                </a>
+              </p>
+            </object>
           ) : (
             <Card>
               <CardContent className="py-8">
