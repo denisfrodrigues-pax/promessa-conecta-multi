@@ -13,6 +13,7 @@ interface MinisterioInfo {
   id: string;
   nome: string;
   papel: string;
+  filosofia_pdf: string | null;
 }
 
 export default function VolunteerMinisterioLayout() {
@@ -34,7 +35,7 @@ export default function VolunteerMinisterioLayout() {
       // Get user's active ministry links
       const { data: vinculos, error: errV } = await supabase
         .from("ministerio_usuarios")
-        .select("ministerio_id, papel, ministerios!ministerio_voluntarios_ministerio_id_fkey(id, nome, slug)")
+        .select("ministerio_id, papel, ministerios!ministerio_voluntarios_ministerio_id_fkey(id, nome, slug, filosofia_pdf)")
         .eq("user_id", user.id)
         .eq("ativo", true);
 
@@ -42,7 +43,7 @@ export default function VolunteerMinisterioLayout() {
         const match = vinculos.find((v: any) => v.ministerios?.slug === slug);
         if (match) {
           const m = (match as any).ministerios;
-          setMinisterio({ id: m.id, nome: m.nome, papel: (match as any).papel });
+          setMinisterio({ id: m.id, nome: m.nome, papel: (match as any).papel, filosofia_pdf: m.filosofia_pdf ?? null });
           setLoadingMin(false);
           return;
         }
@@ -52,13 +53,13 @@ export default function VolunteerMinisterioLayout() {
       if (isAdmin) {
         const { data: adm } = await supabase
           .from("ministerios")
-          .select("id, nome")
+          .select("id, nome, filosofia_pdf")
           .eq("slug", slug)
           .eq("ativo", true)
           .maybeSingle();
 
         if (adm) {
-          setMinisterio({ id: adm.id, nome: adm.nome, papel: "admin" });
+          setMinisterio({ id: adm.id, nome: adm.nome, papel: "admin", filosofia_pdf: adm.filosofia_pdf ?? null });
           setLoadingMin(false);
           return;
         }
@@ -140,7 +141,7 @@ export default function VolunteerMinisterioLayout() {
       </header>
 
       <main className="container mx-auto px-4 py-6">
-        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, papel: ministerio.papel }} />
+        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, papel: ministerio.papel, filosofiaPdf: ministerio.filosofia_pdf }} />
       </main>
     </div>
   );

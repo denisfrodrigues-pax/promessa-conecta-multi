@@ -1282,6 +1282,7 @@ export type Database = {
           contato: string | null
           created_at: string | null
           descricao: string | null
+          filosofia_pdf: string | null
           id: string
           lider_id: string | null
           nome: string
@@ -1295,6 +1296,7 @@ export type Database = {
           contato?: string | null
           created_at?: string | null
           descricao?: string | null
+          filosofia_pdf?: string | null
           id?: string
           lider_id?: string | null
           nome: string
@@ -1308,6 +1310,7 @@ export type Database = {
           contato?: string | null
           created_at?: string | null
           descricao?: string | null
+          filosofia_pdf?: string | null
           id?: string
           lider_id?: string | null
           nome?: string
