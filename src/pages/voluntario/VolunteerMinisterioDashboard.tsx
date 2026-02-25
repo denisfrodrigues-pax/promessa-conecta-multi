@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, Eye, Users, LayoutDashboard, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { CalendarDays, Users, LayoutDashboard, Clock, CheckCircle2, AlertCircle, BookOpen } from "lucide-react";
 import { parseLocalDate } from "@/lib/dateUtils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -17,10 +17,11 @@ interface OutletCtx {
   ministerioId: string;
   ministerioNome: string;
   papel: string;
+  filosofiaPdf: string | null;
 }
 
 export default function VolunteerMinisterioDashboard() {
-  const { ministerioId, ministerioNome, papel } = useOutletContext<OutletCtx>();
+  const { ministerioId, ministerioNome, papel, filosofiaPdf } = useOutletContext<OutletCtx>();
   const { profile } = useAuth();
   const [tab, setTab] = useState("resumo");
 
@@ -43,19 +44,6 @@ export default function VolunteerMinisterioDashboard() {
     enabled: !!profile?.id && !!ministerioId,
   });
 
-  // Visão do ministério
-  const { data: visao, isLoading: loadingVisao } = useQuery({
-    queryKey: ["ministerio-visao", ministerioId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("ministerios")
-        .select("visao")
-        .eq("id", ministerioId)
-        .maybeSingle();
-      return data?.visao ?? null;
-    },
-    enabled: !!ministerioId,
-  });
 
   // Equipe do ministério
   const { data: equipe, isLoading: loadingEquipe } = useQuery({
@@ -95,13 +83,13 @@ export default function VolunteerMinisterioDashboard() {
             <CalendarDays className="w-4 h-4 hidden sm:block" />
             Escalas
           </TabsTrigger>
-          <TabsTrigger value="visao" className="gap-1.5">
-            <Eye className="w-4 h-4 hidden sm:block" />
-            Visão
-          </TabsTrigger>
           <TabsTrigger value="equipe" className="gap-1.5">
             <Users className="w-4 h-4 hidden sm:block" />
             Equipe
+          </TabsTrigger>
+          <TabsTrigger value="filosofia" className="gap-1.5">
+            <BookOpen className="w-4 h-4 hidden sm:block" />
+            Filosofia
           </TabsTrigger>
         </TabsList>
 
@@ -161,26 +149,6 @@ export default function VolunteerMinisterioDashboard() {
           <AdminEscalas ministerioId={ministerioId} />
         </TabsContent>
 
-        {/* VISÃO */}
-        <TabsContent value="visao">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Visão do Ministério</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingVisao ? (
-                <Skeleton className="h-20 w-full" />
-              ) : visao ? (
-                <p className="text-foreground whitespace-pre-wrap leading-relaxed">{visao}</p>
-              ) : (
-                <p className="text-muted-foreground">
-                  Nenhuma visão cadastrada para este ministério.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* EQUIPE */}
         <TabsContent value="equipe">
           <Card>
@@ -230,6 +198,24 @@ export default function VolunteerMinisterioDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+        {/* FILOSOFIA */}
+        <TabsContent value="filosofia">
+          {filosofiaPdf ? (
+            <iframe
+              src={filosofiaPdf}
+              className="w-full h-[80vh] rounded-xl border border-border"
+              title="Filosofia do Ministério"
+            />
+          ) : (
+            <Card>
+              <CardContent className="py-8">
+                <p className="text-muted-foreground text-center">
+                  Filosofia ministerial ainda não cadastrada.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
