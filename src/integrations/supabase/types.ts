@@ -1607,6 +1607,7 @@ export type Database = {
           pcd: string | null
           preferencias_notificacao: Json | null
           profissao: string | null
+          role: string | null
           sexo: string | null
           status: Database["public"]["Enums"]["user_status"] | null
           telefone: string | null
@@ -1640,6 +1641,7 @@ export type Database = {
           pcd?: string | null
           preferencias_notificacao?: Json | null
           profissao?: string | null
+          role?: string | null
           sexo?: string | null
           status?: Database["public"]["Enums"]["user_status"] | null
           telefone?: string | null
@@ -1673,6 +1675,7 @@ export type Database = {
           pcd?: string | null
           preferencias_notificacao?: Json | null
           profissao?: string | null
+          role?: string | null
           sexo?: string | null
           status?: Database["public"]["Enums"]["user_status"] | null
           telefone?: string | null

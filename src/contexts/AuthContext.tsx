@@ -20,6 +20,7 @@ interface Profile {
   telefone?: string;
   foto_url?: string;
   status: string;
+  role?: string | null;
 }
 
 interface AuthContextType {
@@ -101,11 +102,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, user_id, nome, email, telefone, foto_url, status, role')
         .eq('user_id', userId)
         .maybeSingle();
 
       if (profileError) throw profileError;
+      console.log("PROFILE LOADED:", profileData);
       setProfile(profileData as Profile);
 
       const { data: rolesData, error: rolesError } = await supabase
