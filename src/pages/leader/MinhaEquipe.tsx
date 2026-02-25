@@ -204,12 +204,12 @@ export default function LeaderMinhaEquipe() {
       // Insert voluntario
       const { data: newVol, error } = await supabase
         .from('ministerio_usuarios')
-        .insert({
+        .upsert({
           ministerio_id: ministerioId,
           user_id: profileToAdd.user_id,
           ativo: true,
           funcao_principal_id: selectedFuncaoIds[0] || null,
-        })
+        }, { onConflict: 'ministerio_id,user_id' })
         .select('id')
         .single();
 

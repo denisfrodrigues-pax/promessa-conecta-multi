@@ -207,12 +207,12 @@ export default function AdminVoluntariosMinisterios() {
       // Insert voluntario
       const { data: newVol, error } = await supabase
         .from('ministerio_usuarios')
-        .insert({
+        .upsert({
           ministerio_id: selectedMinisterio.id,
           user_id: profile.user_id,
           ativo: true,
-          funcao_principal_id: selectedFuncaoIds[0] || null, // Keep first as principal for compatibility
-        })
+          funcao_principal_id: selectedFuncaoIds[0] || null,
+        }, { onConflict: 'ministerio_id,user_id' })
         .select('id')
         .single();
 
