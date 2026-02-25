@@ -202,18 +202,19 @@ export default function VolunteerMinisterioDashboard() {
         {/* FILOSOFIA */}
         <TabsContent value="filosofia">
           {filosofiaPdf ? (
-            <object
-              data={filosofiaPdf}
-              type="application/pdf"
-              className="w-full h-[80vh] rounded-xl border border-border"
-            >
-              <p className="p-4 text-muted-foreground">
-                Seu navegador não suporta visualização de PDF.{" "}
-                <a href={filosofiaPdf} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                  Clique aqui para abrir o PDF.
+            <Card>
+              <CardContent className="py-12 flex flex-col items-center gap-4">
+                <BookOpen className="w-10 h-10 text-primary" />
+                <a
+                  href={filosofiaPdf}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground px-6 py-3 font-medium shadow hover:bg-primary/90 transition-colors"
+                >
+                  Abrir Filosofia Ministerial
                 </a>
-              </p>
-            </object>
+              </CardContent>
+            </Card>
           ) : (
             <Card>
               <CardContent className="py-8">
