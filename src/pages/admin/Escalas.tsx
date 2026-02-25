@@ -94,9 +94,10 @@ const initialFormData: EscalaFormData = {
 
 interface AdminEscalasProps {
   ministerioId?: string;
+  canManage?: boolean;
 }
 
-export default function AdminEscalas({ ministerioId: propMinisterioId }: AdminEscalasProps = {}) {
+export default function AdminEscalas({ ministerioId: propMinisterioId, canManage = true }: AdminEscalasProps = {}) {
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [escalaGroups, setEscalaGroups] = useState<EscalaGroup[]>([]);
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
@@ -823,7 +824,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId }: AdminEs
           <h1 className="text-2xl font-display font-bold">Escalas</h1>
           <p className="text-muted-foreground">Gerencie as escalas de ministérios e voluntários</p>
         </div>
-        <Button onClick={handleCreate}>
+        <Button onClick={handleCreate} className={canManage ? '' : 'hidden'}>
           <Plus className="w-4 h-4 mr-2" />
           Nova Escala
         </Button>
@@ -950,20 +951,24 @@ export default function AdminEscalas({ ministerioId: propMinisterioId }: AdminEs
                               <Button variant="ghost" size="icon" onClick={() => handleView(group)}>
                                 <Eye className="w-4 h-4" />
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleEdit(group)}>
-                                <Pencil className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-destructive hover:text-destructive"
-                                onClick={() => {
-                                  setDeletingGroup(group);
-                                  setIsDeleteDialogOpen(true);
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              {canManage && (
+                                <Button variant="ghost" size="icon" onClick={() => handleEdit(group)}>
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                              )}
+                              {canManage && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-destructive hover:text-destructive"
+                                  onClick={() => {
+                                    setDeletingGroup(group);
+                                    setIsDeleteDialogOpen(true);
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>

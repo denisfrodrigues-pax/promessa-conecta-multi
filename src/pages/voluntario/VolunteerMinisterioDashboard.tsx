@@ -146,7 +146,7 @@ export default function VolunteerMinisterioDashboard() {
 
         {/* ESCALAS */}
         <TabsContent value="escalas">
-          <AdminEscalas ministerioId={ministerioId} />
+          <AdminEscalas ministerioId={ministerioId} canManage={papel === "lider" || papel === "admin"} />
         </TabsContent>
 
         {/* EQUIPE */}
