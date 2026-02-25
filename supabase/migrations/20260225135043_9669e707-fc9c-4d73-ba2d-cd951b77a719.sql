@@ -1,0 +1,1 @@
+ALTER TABLE public.ministerio_usuarios ADD CONSTRAINT ministerio_usuarios_ministerio_id_user_id_key UNIQUE (ministerio_id, user_id);

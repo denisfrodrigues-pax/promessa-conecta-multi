@@ -123,28 +123,14 @@ export default function AdminMinisterios() {
       if (!leader) return;
 
       // Check if a record already exists for this user+ministry
-      const { data: existing } = await supabase
+      await supabase
         .from('ministerio_usuarios')
-        .select('id')
-        .eq('ministerio_id', ministerioId)
-        .eq('user_id', leader.user_id)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
-          .from('ministerio_usuarios')
-          .update({ papel: 'lider', ativo: true })
-          .eq('id', existing.id);
-      } else {
-        await supabase
-          .from('ministerio_usuarios')
-          .insert({
-            ministerio_id: ministerioId,
-            user_id: leader.user_id,
-            papel: 'lider',
-            ativo: true,
-          });
-      }
+        .upsert({
+          ministerio_id: ministerioId,
+          user_id: leader.user_id,
+          papel: 'lider',
+          ativo: true,
+        }, { onConflict: 'ministerio_id,user_id' });
     }
   };
 
