@@ -20,7 +20,6 @@ interface Crianca {
   nome: string;
   data_nascimento: string | null;
   observacoes: string | null;
-  alergias: string | null;
   sala_id: string | null;
   responsaveis_count?: number;
   sala_nome?: string;
@@ -59,7 +58,6 @@ export default function KidsCriancas() {
     nome: "",
     data_nascimento: "",
     observacoes: "",
-    alergias: "",
     sala_id: "",
     responsaveis_ids: [] as string[],
   });
@@ -156,7 +154,6 @@ export default function KidsCriancas() {
       nome: crianca.nome,
       data_nascimento: crianca.data_nascimento || "",
       observacoes: crianca.observacoes || "",
-      alergias: crianca.alergias || "",
       sala_id: crianca.sala_id || "",
       responsaveis_ids: links?.map((l) => l.responsavel_id) || [],
     });
@@ -181,7 +178,6 @@ export default function KidsCriancas() {
             nome: formData.nome,
             data_nascimento: formData.data_nascimento || null,
             observacoes: formData.observacoes || null,
-            alergias: formData.alergias || null,
             sala_id: formData.sala_id || null,
           })
           .eq("id", editingCrianca.id);
@@ -195,7 +191,6 @@ export default function KidsCriancas() {
             nome: formData.nome,
             data_nascimento: formData.data_nascimento || null,
             observacoes: formData.observacoes || null,
-            alergias: formData.alergias || null,
             sala_id: formData.sala_id || null,
           })
           .select()
