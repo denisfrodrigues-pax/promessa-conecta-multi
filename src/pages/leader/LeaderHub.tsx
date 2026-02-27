@@ -24,7 +24,7 @@ export default function LeaderHub() {
 
     const fetchLedMinistries = async () => {
       setLoading(true);
-      
+
       // Step 1: Get ministerio_ids where user is active leader
       const { data: vinculos, error: errVinculos } = await supabase
         .from("ministerio_usuarios")
@@ -42,12 +42,8 @@ export default function LeaderHub() {
 
       const ids = vinculos.map((v) => v.ministerio_id);
 
-
       // Step 2: Get ministry details
-      const { data: mins, error: errMins } = await supabase
-        .from("ministerios")
-        .select("id, nome, slug")
-        .in("id", ids);
+      const { data: mins, error: errMins } = await supabase.from("ministerios").select("id, nome, slug").in("id", ids);
 
       if (errMins) {
         console.error("Error fetching ministerios:", errMins);
@@ -58,7 +54,7 @@ export default function LeaderHub() {
             ministerio_id: m.id,
             nome: m.nome,
             slug: m.slug,
-          }))
+          })),
         );
       }
       setLoading(false);
@@ -75,9 +71,7 @@ export default function LeaderHub() {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">Hub do Líder</h1>
-        <p className="text-muted-foreground">
-          Você não está vinculado como líder em nenhum ministério.
-        </p>
+        <p className="text-muted-foreground">Você não está vinculado como líder em nenhum ministério.</p>
       </div>
     );
   }
@@ -89,7 +83,7 @@ export default function LeaderHub() {
         {ledMinistries.map((m) => (
           <button
             key={m.ministerio_id}
-            onClick={() => navigate(`/leader/${m.slug}`)}
+            onClick={() => navigate(`/ministerio/${m.slug}`)}
             className="rounded-xl border border-border bg-card p-5 min-w-[200px] text-left hover:shadow-md transition-shadow cursor-pointer"
           >
             <h3 className="font-semibold text-lg">{m.nome}</h3>
