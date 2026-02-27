@@ -5,6 +5,10 @@ import { Baby, Music, BookOpen, Users, Heart, Calendar, type LucideIcon } from "
 const KidsCheckinPanel = lazy(() => import("@/pages/kids/KidsCheckinPanel"));
 const RepertorioMusicas = lazy(() => import("@/pages/ministerio/RepertorioMusicas"));
 const MinisterioEscalas = lazy(() => import("@/pages/ministerio/MinisterioEscalas"));
+const KidsCriancas = lazy(() => import("@/pages/admin/kids/KidsCriancas"));
+const KidsSalas = lazy(() => import("@/pages/admin/kids/KidsSalas"));
+const KidsResponsaveis = lazy(() => import("@/pages/admin/kids/KidsResponsaveis"));
+const KidsRelatorio = lazy(() => import("@/pages/admin/kids/KidsRelatorio"));
 export interface ModuleDefinition {
   /** Component to render for this module */
   component: ComponentType;
@@ -24,12 +28,38 @@ const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
     defaultIcon: Baby,
     defaultName: "Check-in",
   },
-  "repertorio": {
+
+  criancas: {
+    component: KidsCriancas,
+    defaultIcon: Baby,
+    defaultName: "Crianças",
+  },
+
+  salas: {
+    component: KidsSalas,
+    defaultIcon: Users,
+    defaultName: "Salas",
+  },
+
+  responsaveis: {
+    component: KidsResponsaveis,
+    defaultIcon: Heart,
+    defaultName: "Responsáveis",
+  },
+
+  "relatorio-kids": {
+    component: KidsRelatorio,
+    defaultIcon: BookOpen,
+    defaultName: "Relatório",
+  },
+
+  repertorio: {
     component: RepertorioMusicas,
     defaultIcon: Music,
     defaultName: "Repertório",
   },
-  "escalas": {
+
+  escalas: {
     component: MinisterioEscalas,
     defaultIcon: Calendar,
     defaultName: "Escalas",
