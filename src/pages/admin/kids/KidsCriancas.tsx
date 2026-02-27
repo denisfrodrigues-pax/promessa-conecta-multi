@@ -170,6 +170,7 @@ export default function KidsCriancas() {
     }
 
     setSaving(true);
+
     try {
       let criancaId = editingCrianca?.id;
 
@@ -204,7 +205,6 @@ export default function KidsCriancas() {
         criancaId = data.id;
       }
 
-      // Atualizar vínculos responsáveis
       if (criancaId) {
         await supabase.from("crianca_responsavel").delete().eq("crianca_id", criancaId);
 
@@ -217,24 +217,24 @@ export default function KidsCriancas() {
 
           const { error: linkError } = await supabase.from("crianca_responsavel").insert(links);
 
-          if (linkError) {
-            console.warn("Erro ao vincular responsáveis:", linkError);
-          }
+          if (linkError) throw linkError;
         }
       }
 
-      toast({ title: editingCrianca ? "Criança atualizada!" : "Criança cadastrada!" });
+      toast({
+        title: editingCrianca ? "Criança atualizada!" : "Criança cadastrada!",
+      });
+
       setShowModal(false);
       fetchData();
     } catch (error: any) {
-  console.error("Erro ao salvar criança:", error);
+      console.error("Erro ao salvar criança:", error);
 
-  toast({
-    title: "Erro ao salvar criança",
-    description: error?.message || JSON.stringify(error),
-    variant: "destructive",
-  });
-}
+      toast({
+        title: "Erro ao salvar criança",
+        description: error?.message || JSON.stringify(error),
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
