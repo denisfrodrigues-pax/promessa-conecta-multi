@@ -11,16 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import {
-  Search,
-  Plus,
-  Baby,
-  Clock,
-  LogOut as LogOutIcon,
-  CheckCircle2,
-  UserPlus,
-  Phone,
-} from "lucide-react";
+import { Search, Plus, Baby, Clock, LogOut as LogOutIcon, CheckCircle2, UserPlus, Phone } from "lucide-react";
 import { format, differenceInYears, isToday, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -145,11 +136,11 @@ export default function KidsCheckinPanel() {
         .from("checkins_kids")
         .select(
           `
-          *,
-          crianca:criancas(id, nome, data_nascimento),
-          responsavel:responsaveis!checkins_kids_responsavel_id_fkey(id, nome, telefone),
-          sala:salas_kids(id, nome)
-        `
+  *,
+  crianca:criancas(id, nome, data_nascimento),
+  responsavel:responsaveis!checkins_kids_responsavel_id_fkey(id, nome, telefone),
+  sala:salas_kids!checkins_kids_sala_id_fkey(id, nome)
+`,
         )
         .gte("checkin_at", todayStart.toISOString())
         .order("checkin_at", { ascending: false });
@@ -165,18 +156,11 @@ export default function KidsCheckinPanel() {
       setCriancas(criancasData || []);
 
       // Fetch responsaveis
-      const { data: responsaveisData } = await supabase
-        .from("responsaveis")
-        .select("id, nome, telefone")
-        .order("nome");
+      const { data: responsaveisData } = await supabase.from("responsaveis").select("id, nome, telefone").order("nome");
       setResponsaveis(responsaveisData || []);
 
       // Fetch salas
-      const { data: salasData } = await supabase
-        .from("salas_kids")
-        .select("*")
-        .eq("status", "ativa")
-        .order("nome");
+      const { data: salasData } = await supabase.from("salas_kids").select("*").eq("status", "ativa").order("nome");
       setSalas(salasData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -212,10 +196,7 @@ export default function KidsCheckinPanel() {
 
       // Optionally update fixed room
       if (newCheckin.updateFixedRoom && newCheckin.sala_id) {
-        await supabase
-          .from("criancas")
-          .update({ sala_id: newCheckin.sala_id })
-          .eq("id", newCheckin.crianca_id);
+        await supabase.from("criancas").update({ sala_id: newCheckin.sala_id }).eq("id", newCheckin.crianca_id);
       }
 
       toast({ title: "Check-in realizado com sucesso!" });
@@ -296,7 +277,9 @@ export default function KidsCheckinPanel() {
     setSaving(true);
     try {
       // Buscar o profile_id do usuário logado (necessário para criancas.responsavel_id)
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
       const { data: profileData, error: profileError } = await supabase
@@ -337,13 +320,11 @@ export default function KidsCheckinPanel() {
       if (criancaError) throw criancaError;
 
       // 3. Criar relacionamento na tabela criancas_responsaveis
-      const { error: relError } = await supabase
-        .from("criancas_responsaveis")
-        .insert({
-          crianca_id: criancaData.id,
-          responsavel_id: responsavelData.id,
-          tipo_relacao: "responsável",
-        });
+      const { error: relError } = await supabase.from("criancas_responsaveis").insert({
+        crianca_id: criancaData.id,
+        responsavel_id: responsavelData.id,
+        tipo_relacao: "responsável",
+      });
 
       if (relError) {
         console.warn("Erro ao criar relacionamento:", relError);
@@ -393,9 +374,7 @@ export default function KidsCheckinPanel() {
   };
 
   // Filter criancas by search
-  const filteredCriancas = criancas.filter(
-    (c) => search === "" || c.nome.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredCriancas = criancas.filter((c) => search === "" || c.nome.toLowerCase().includes(search.toLowerCase()));
 
   // Today's checkins
   const todayCheckins = checkins.filter((c) => isToday(parseISO(c.checkin_at)));
@@ -460,23 +439,24 @@ export default function KidsCheckinPanel() {
                     className="w-full text-left p-2 rounded-md hover:bg-muted flex items-center justify-between"
                     onClick={() => {
                       const preselectedSala = crianca.sala_id || "";
-                      setNewCheckin({ ...newCheckin, crianca_id: crianca.id, sala_id: preselectedSala, updateFixedRoom: false });
+                      setNewCheckin({
+                        ...newCheckin,
+                        crianca_id: crianca.id,
+                        sala_id: preselectedSala,
+                        updateFixedRoom: false,
+                      });
                       setSearch("");
                       setShowCheckinModal(true);
                     }}
                   >
                     <span className="font-medium">{crianca.nome}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {calculateAge(crianca.data_nascimento)}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{calculateAge(crianca.data_nascimento)}</span>
                   </button>
                 ))}
               </div>
             )}
             {search && filteredCriancas.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-2">
-                Nenhuma criança encontrada
-              </p>
+              <p className="text-sm text-muted-foreground text-center py-2">Nenhuma criança encontrada</p>
             )}
           </CardContent>
         </Card>
@@ -493,10 +473,7 @@ export default function KidsCheckinPanel() {
             <p className="text-sm text-muted-foreground">
               Primeira vez? Cadastre a criança e faça o check-in ao mesmo tempo.
             </p>
-            <Button
-              className="w-full"
-              onClick={() => setShowCadastroRapidoModal(true)}
-            >
+            <Button className="w-full" onClick={() => setShowCadastroRapidoModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Novo cadastro + Check-in
             </Button>
@@ -571,8 +548,13 @@ export default function KidsCheckinPanel() {
               <Select
                 value={newCheckin.crianca_id}
                 onValueChange={(v) => {
-                  const selected = criancas.find(c => c.id === v);
-                  setNewCheckin({ ...newCheckin, crianca_id: v, sala_id: selected?.sala_id || newCheckin.sala_id, updateFixedRoom: false });
+                  const selected = criancas.find((c) => c.id === v);
+                  setNewCheckin({
+                    ...newCheckin,
+                    crianca_id: v,
+                    sala_id: selected?.sala_id || newCheckin.sala_id,
+                    updateFixedRoom: false,
+                  });
                 }}
               >
                 <SelectTrigger>
@@ -607,10 +589,7 @@ export default function KidsCheckinPanel() {
             </div>
             <div className="space-y-2">
               <Label>Sala *</Label>
-              <Select
-                value={newCheckin.sala_id}
-                onValueChange={(v) => setNewCheckin({ ...newCheckin, sala_id: v })}
-              >
+              <Select value={newCheckin.sala_id} onValueChange={(v) => setNewCheckin({ ...newCheckin, sala_id: v })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a sala" />
                 </SelectTrigger>
@@ -631,23 +610,22 @@ export default function KidsCheckinPanel() {
                 onChange={(e) => setNewCheckin({ ...newCheckin, observacao: e.target.value })}
               />
             </div>
-            {newCheckin.crianca_id && (() => {
-              const selected = criancas.find(c => c.id === newCheckin.crianca_id);
-              return selected && newCheckin.sala_id && selected.sala_id !== newCheckin.sala_id;
-            })() && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="updateFixedRoom"
-                  checked={newCheckin.updateFixedRoom}
-                  onCheckedChange={(checked) =>
-                    setNewCheckin({ ...newCheckin, updateFixedRoom: !!checked })
-                  }
-                />
-                <Label htmlFor="updateFixedRoom" className="text-sm font-normal cursor-pointer">
-                  Atualizar sala principal desta criança
-                </Label>
-              </div>
-            )}
+            {newCheckin.crianca_id &&
+              (() => {
+                const selected = criancas.find((c) => c.id === newCheckin.crianca_id);
+                return selected && newCheckin.sala_id && selected.sala_id !== newCheckin.sala_id;
+              })() && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="updateFixedRoom"
+                    checked={newCheckin.updateFixedRoom}
+                    onCheckedChange={(checked) => setNewCheckin({ ...newCheckin, updateFixedRoom: !!checked })}
+                  />
+                  <Label htmlFor="updateFixedRoom" className="text-sm font-normal cursor-pointer">
+                    Atualizar sala principal desta criança
+                  </Label>
+                </div>
+              )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCheckinModal(false)}>
@@ -724,9 +702,7 @@ export default function KidsCheckinPanel() {
                   <Input
                     placeholder="Nome completo"
                     value={cadastroRapido.responsavel_nome}
-                    onChange={(e) =>
-                      setCadastroRapido({ ...cadastroRapido, responsavel_nome: e.target.value })
-                    }
+                    onChange={(e) => setCadastroRapido({ ...cadastroRapido, responsavel_nome: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -734,9 +710,7 @@ export default function KidsCheckinPanel() {
                   <Input
                     placeholder="(00) 00000-0000"
                     value={cadastroRapido.responsavel_telefone}
-                    onChange={(e) =>
-                      setCadastroRapido({ ...cadastroRapido, responsavel_telefone: e.target.value })
-                    }
+                    onChange={(e) => setCadastroRapido({ ...cadastroRapido, responsavel_telefone: e.target.value })}
                   />
                 </div>
               </div>
@@ -754,9 +728,7 @@ export default function KidsCheckinPanel() {
                   <Input
                     placeholder="Nome completo"
                     value={cadastroRapido.crianca_nome}
-                    onChange={(e) =>
-                      setCadastroRapido({ ...cadastroRapido, crianca_nome: e.target.value })
-                    }
+                    onChange={(e) => setCadastroRapido({ ...cadastroRapido, crianca_nome: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -764,9 +736,7 @@ export default function KidsCheckinPanel() {
                   <Input
                     type="date"
                     value={cadastroRapido.crianca_data_nascimento}
-                    onChange={(e) =>
-                      setCadastroRapido({ ...cadastroRapido, crianca_data_nascimento: e.target.value })
-                    }
+                    onChange={(e) => setCadastroRapido({ ...cadastroRapido, crianca_data_nascimento: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -774,9 +744,7 @@ export default function KidsCheckinPanel() {
                   <Input
                     placeholder="Ex: amendoim, lactose..."
                     value={cadastroRapido.crianca_alergias}
-                    onChange={(e) =>
-                      setCadastroRapido({ ...cadastroRapido, crianca_alergias: e.target.value })
-                    }
+                    onChange={(e) => setCadastroRapido({ ...cadastroRapido, crianca_alergias: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -784,9 +752,7 @@ export default function KidsCheckinPanel() {
                   <Textarea
                     placeholder="Informações relevantes..."
                     value={cadastroRapido.crianca_observacoes}
-                    onChange={(e) =>
-                      setCadastroRapido({ ...cadastroRapido, crianca_observacoes: e.target.value })
-                    }
+                    onChange={(e) => setCadastroRapido({ ...cadastroRapido, crianca_observacoes: e.target.value })}
                     rows={2}
                   />
                 </div>
@@ -794,9 +760,7 @@ export default function KidsCheckinPanel() {
                   <Checkbox
                     id="autorizacao_foto"
                     checked={cadastroRapido.autorizacao_foto}
-                    onCheckedChange={(checked) =>
-                      setCadastroRapido({ ...cadastroRapido, autorizacao_foto: !!checked })
-                    }
+                    onCheckedChange={(checked) => setCadastroRapido({ ...cadastroRapido, autorizacao_foto: !!checked })}
                   />
                   <Label htmlFor="autorizacao_foto" className="text-sm font-normal cursor-pointer">
                     Autorizo uso de fotos para divulgação
@@ -835,9 +799,7 @@ export default function KidsCheckinPanel() {
                   <Textarea
                     placeholder="Alguma informação para hoje?"
                     value={cadastroRapido.checkin_observacao}
-                    onChange={(e) =>
-                      setCadastroRapido({ ...cadastroRapido, checkin_observacao: e.target.value })
-                    }
+                    onChange={(e) => setCadastroRapido({ ...cadastroRapido, checkin_observacao: e.target.value })}
                     rows={2}
                   />
                 </div>
