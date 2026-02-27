@@ -1,27 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from '@/hooks/use-toast';
-import { 
-  Search, 
-  Plus, 
-  Baby, 
-  Eye,
-  Calendar,
-  Edit,
-  Trash2
-} from 'lucide-react';
-import { format, differenceInYears } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "@/hooks/use-toast";
+import { Search, Plus, Baby, Eye, Calendar, Edit, Trash2 } from "lucide-react";
+import { format, differenceInYears } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface Crianca {
   id: string;
@@ -46,7 +38,7 @@ interface SalaOption {
 }
 
 const calculateAge = (birthDate: string | null): string => {
-  if (!birthDate) return '–';
+  if (!birthDate) return "–";
   const age = differenceInYears(new Date(), new Date(birthDate));
   return `${age} anos`;
 };
@@ -57,24 +49,24 @@ export default function KidsCriancas() {
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
   const [salas, setSalas] = useState<SalaOption[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  
+  const [search, setSearch] = useState("");
+
   // Modal states
   const [showModal, setShowModal] = useState(false);
   const [showResponsavelModal, setShowResponsavelModal] = useState(false);
   const [editingCrianca, setEditingCrianca] = useState<Crianca | null>(null);
   const [formData, setFormData] = useState({
-    nome: '',
-    data_nascimento: '',
-    observacoes: '',
-    alergias: '',
-    sala_id: '',
-    responsaveis_ids: [] as string[]
+    nome: "",
+    data_nascimento: "",
+    observacoes: "",
+    alergias: "",
+    sala_id: "",
+    responsaveis_ids: [] as string[],
   });
   const [newResponsavel, setNewResponsavel] = useState({
-    nome: '',
-    telefone: '',
-    observacoes: ''
+    nome: "",
+    telefone: "",
+    observacoes: "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -82,47 +74,57 @@ export default function KidsCriancas() {
     fetchData();
   }, []);
 
+  const IGREJA_ID = "6326bd8b-ee1c-4b42-acb8-9cb597a8e61c";
+  const MINISTERIO_ID = "41ee4d7b-9eae-46b7-95c7-33831ccce854";
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch criancas with sala name
+      // 1️⃣ Buscar crianças da igreja
       const { data: criancasData, error } = await supabase
-        .from('criancas')
-        .select('*, sala:salas_kids(nome)')
-        .order('nome');
+        .from("criancas")
+        .select("*")
+        .eq("igreja_id", IGREJA_ID)
+        .order("nome");
 
       if (error) throw error;
 
-      // Get count of responsaveis for each crianca
-      const criancasWithCount = await Promise.all(
-        (criancasData || []).map(async (crianca: any) => {
-          const { count } = await supabase
-            .from('criancas_responsaveis')
-            .select('*', { count: 'exact', head: true })
-            .eq('crianca_id', crianca.id);
-          return { ...crianca, responsaveis_count: count || 0, sala_nome: crianca.sala?.nome || null };
-        })
-      );
+      // 2️⃣ Buscar vínculos criança ↔ responsável
+      const { data: vinculos } = await supabase.from("crianca_responsavel").select("crianca_id, profile_id");
 
-      setCriancas(criancasWithCount);
+      // 3️⃣ Buscar salas do ministério
+      const { data: salasData } = await supabase.from("salas").select("id, nome").eq("ministerio_id", MINISTERIO_ID);
 
-      // Fetch responsaveis
+      // Mapear sala por id
+      const salasMap = new Map((salasData || []).map((s) => [s.id, s.nome]));
+
+      // 4️⃣ Contar responsáveis por criança
+      const criancasComExtras = (criancasData || []).map((crianca: any) => {
+        const responsaveisCount = (vinculos || []).filter((v) => v.crianca_id === crianca.id).length;
+
+        return {
+          ...crianca,
+          responsaveis_count: responsaveisCount,
+          sala_nome: crianca.sala_id ? salasMap.get(crianca.sala_id) : null,
+        };
+      });
+
+      setCriancas(criancasComExtras);
+
+      // 5️⃣ Buscar profiles (responsáveis)
       const { data: responsaveisData } = await supabase
-        .from('responsaveis')
-        .select('id, nome, telefone')
-        .order('nome');
+        .from("profiles")
+        .select("id, nome, telefone")
+        .eq("igreja_id", IGREJA_ID)
+        .order("nome");
+
       setResponsaveis(responsaveisData || []);
 
-      // Fetch salas
-      const { data: salasData } = await supabase
-        .from('salas_kids')
-        .select('id, nome')
-        .eq('status', 'ativa')
-        .order('nome');
+      // 6️⃣ Setar salas
       setSalas(salasData || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
-      toast({ title: 'Erro ao carregar dados', variant: 'destructive' });
+      console.error("Error fetching data:", error);
+      toast({ title: "Erro ao carregar dados", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -131,83 +133,85 @@ export default function KidsCriancas() {
   const openNewModal = () => {
     setEditingCrianca(null);
     setFormData({
-      nome: '',
-      data_nascimento: '',
-      observacoes: '',
-      alergias: '',
-      sala_id: '',
-      responsaveis_ids: []
+      nome: "",
+      data_nascimento: "",
+      observacoes: "",
+      alergias: "",
+      sala_id: "",
+      responsaveis_ids: [],
     });
     setShowModal(true);
   };
 
   const openEditModal = async (crianca: Crianca) => {
     setEditingCrianca(crianca);
-    
+
     // Fetch linked responsaveis
     const { data: links } = await supabase
-      .from('criancas_responsaveis')
-      .select('responsavel_id')
-      .eq('crianca_id', crianca.id);
+      .from("criancas_responsaveis")
+      .select("responsavel_id")
+      .eq("crianca_id", crianca.id);
 
     setFormData({
       nome: crianca.nome,
-      data_nascimento: crianca.data_nascimento || '',
-      observacoes: crianca.observacoes || '',
-      alergias: crianca.alergias || '',
-      sala_id: crianca.sala_id || '',
-      responsaveis_ids: links?.map(l => l.responsavel_id) || []
+      data_nascimento: crianca.data_nascimento || "",
+      observacoes: crianca.observacoes || "",
+      alergias: crianca.alergias || "",
+      sala_id: crianca.sala_id || "",
+      responsaveis_ids: links?.map((l) => l.responsavel_id) || [],
     });
     setShowModal(true);
   };
 
   const handleSave = async () => {
     if (!formData.nome.trim()) {
-      toast({ title: 'Nome é obrigatório', variant: 'destructive' });
+      toast({ title: "Nome é obrigatório", variant: "destructive" });
       return;
     }
 
     setSaving(true);
     try {
       // Get the logged-in user's profile_id (criancas.responsavel_id references profiles.id)
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
 
       const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user.id)
         .single();
 
-      if (profileError || !profileData) throw new Error('Profile não encontrado');
+      if (profileError || !profileData) throw new Error("Profile não encontrado");
 
       let criancaId = editingCrianca?.id;
 
       if (editingCrianca) {
         // Update existing
         const { error } = await supabase
-          .from('criancas')
+          .from("criancas")
           .update({
             nome: formData.nome,
             data_nascimento: formData.data_nascimento || null,
             observacoes: formData.observacoes || null,
             alergias: formData.alergias || null,
-            sala_id: formData.sala_id || null
+            sala_id: formData.sala_id || null,
           })
-          .eq('id', editingCrianca.id);
+          .eq("id", editingCrianca.id);
 
         if (error) throw error;
       } else {
         // Create new - responsavel_id must reference profiles.id (NOT responsaveis.id)
         const { data, error } = await supabase
-          .from('criancas')
+          .from("criancas")
           .insert({
             nome: formData.nome,
             data_nascimento: formData.data_nascimento || null,
             observacoes: formData.observacoes || null,
             alergias: formData.alergias || null,
             sala_id: formData.sala_id || null,
-            responsavel_id: profileData.id
+            responsavel_id: profileData.id,
           })
           .select()
           .single();
@@ -219,36 +223,31 @@ export default function KidsCriancas() {
       // Update responsaveis links (criancas_responsaveis references responsaveis.id)
       if (criancaId) {
         // Delete existing links
-        await supabase
-          .from('criancas_responsaveis')
-          .delete()
-          .eq('crianca_id', criancaId);
+        await supabase.from("criancas_responsaveis").delete().eq("crianca_id", criancaId);
 
         // Insert new links
         if (formData.responsaveis_ids.length > 0) {
-          const links = formData.responsaveis_ids.map(respId => ({
+          const links = formData.responsaveis_ids.map((respId) => ({
             crianca_id: criancaId,
             responsavel_id: respId,
-            tipo_relacao: 'responsável'
+            tipo_relacao: "responsável",
           }));
 
-          const { error: linkError } = await supabase
-            .from('criancas_responsaveis')
-            .insert(links);
+          const { error: linkError } = await supabase.from("criancas_responsaveis").insert(links);
 
           if (linkError) {
-            console.warn('Erro ao vincular responsáveis:', linkError);
+            console.warn("Erro ao vincular responsáveis:", linkError);
           }
         }
       }
 
-      toast({ title: editingCrianca ? 'Criança atualizada!' : 'Criança cadastrada!' });
+      toast({ title: editingCrianca ? "Criança atualizada!" : "Criança cadastrada!" });
       setShowModal(false);
       fetchData();
     } catch (error: any) {
-      console.error('Erro ao salvar criança:', error);
-      const msg = error?.message || 'Erro desconhecido';
-      toast({ title: 'Erro ao salvar criança', description: msg, variant: 'destructive' });
+      console.error("Erro ao salvar criança:", error);
+      const msg = error?.message || "Erro desconhecido";
+      toast({ title: "Erro ao salvar criança", description: msg, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -258,53 +257,50 @@ export default function KidsCriancas() {
     if (!confirm(`Tem certeza que deseja excluir ${crianca.nome}?`)) return;
 
     try {
-      const { error } = await supabase
-        .from('criancas')
-        .delete()
-        .eq('id', crianca.id);
+      const { error } = await supabase.from("criancas").delete().eq("id", crianca.id);
 
       if (error) throw error;
 
-      toast({ title: 'Criança excluída!' });
+      toast({ title: "Criança excluída!" });
       fetchData();
     } catch (error) {
-      console.error('Error deleting:', error);
-      toast({ title: 'Erro ao excluir', variant: 'destructive' });
+      console.error("Error deleting:", error);
+      toast({ title: "Erro ao excluir", variant: "destructive" });
     }
   };
 
   const handleSaveResponsavel = async () => {
     if (!newResponsavel.nome.trim()) {
-      toast({ title: 'Nome é obrigatório', variant: 'destructive' });
+      toast({ title: "Nome é obrigatório", variant: "destructive" });
       return;
     }
 
     setSaving(true);
     try {
       const { data, error } = await supabase
-        .from('responsaveis')
+        .from("responsaveis")
         .insert({
           nome: newResponsavel.nome,
           telefone: newResponsavel.telefone || null,
-          observacoes: newResponsavel.observacoes || null
+          observacoes: newResponsavel.observacoes || null,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      toast({ title: 'Responsável cadastrado!' });
+      toast({ title: "Responsável cadastrado!" });
       setResponsaveis([...responsaveis, data]);
       setFormData({
         ...formData,
-        responsaveis_ids: [...formData.responsaveis_ids, data.id]
+        responsaveis_ids: [...formData.responsaveis_ids, data.id],
       });
       setShowResponsavelModal(false);
-      setNewResponsavel({ nome: '', telefone: '', observacoes: '' });
+      setNewResponsavel({ nome: "", telefone: "", observacoes: "" });
     } catch (error: any) {
-      console.error('Erro ao salvar responsável:', error);
-      const msg = error?.message || 'Erro desconhecido';
-      toast({ title: 'Erro ao salvar responsável', description: msg, variant: 'destructive' });
+      console.error("Erro ao salvar responsável:", error);
+      const msg = error?.message || "Erro desconhecido";
+      toast({ title: "Erro ao salvar responsável", description: msg, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -314,19 +310,17 @@ export default function KidsCriancas() {
     if (formData.responsaveis_ids.includes(respId)) {
       setFormData({
         ...formData,
-        responsaveis_ids: formData.responsaveis_ids.filter(id => id !== respId)
+        responsaveis_ids: formData.responsaveis_ids.filter((id) => id !== respId),
       });
     } else {
       setFormData({
         ...formData,
-        responsaveis_ids: [...formData.responsaveis_ids, respId]
+        responsaveis_ids: [...formData.responsaveis_ids, respId],
       });
     }
   };
 
-  const filtered = criancas.filter(c => 
-    search === '' || c.nome.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = criancas.filter((c) => search === "" || c.nome.toLowerCase().includes(search.toLowerCase()));
 
   if (loading) {
     return (
@@ -336,7 +330,7 @@ export default function KidsCriancas() {
           <Skeleton className="h-10 w-32" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Skeleton key={i} className="h-32" />
           ))}
         </div>
@@ -379,7 +373,7 @@ export default function KidsCriancas() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map(crianca => (
+          {filtered.map((crianca) => (
             <Card key={crianca.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-start justify-between">
@@ -389,9 +383,7 @@ export default function KidsCriancas() {
                     </div>
                     <div>
                       <p className="font-semibold">{crianca.nome}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {calculateAge(crianca.data_nascimento)}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{calculateAge(crianca.data_nascimento)}</p>
                     </div>
                   </div>
                 </div>
@@ -400,13 +392,11 @@ export default function KidsCriancas() {
                   {crianca.data_nascimento && (
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      <span>{format(new Date(crianca.data_nascimento), 'dd/MM/yyyy')}</span>
+                      <span>{format(new Date(crianca.data_nascimento), "dd/MM/yyyy")}</span>
                     </div>
                   )}
                   <p>{crianca.responsaveis_count} responsável(is)</p>
-                  {crianca.sala_nome && (
-                    <p className="text-xs">🏠 Sala: {crianca.sala_nome}</p>
-                  )}
+                  {crianca.sala_nome && <p className="text-xs">🏠 Sala: {crianca.sala_nome}</p>}
                 </div>
 
                 {crianca.alergias && (
@@ -416,12 +406,7 @@ export default function KidsCriancas() {
                 )}
 
                 <div className="flex gap-2 pt-2 border-t">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => openEditModal(crianca)}
-                  >
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => openEditModal(crianca)}>
                     <Edit className="w-4 h-4 mr-1" />
                     Editar
                   </Button>
@@ -444,16 +429,14 @@ export default function KidsCriancas() {
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {editingCrianca ? 'Editar Criança' : 'Nova Criança'}
-            </DialogTitle>
+            <DialogTitle>{editingCrianca ? "Editar Criança" : "Nova Criança"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="space-y-2">
               <Label>Nome *</Label>
               <Input
                 value={formData.nome}
-                onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                 placeholder="Nome da criança"
               />
             </div>
@@ -462,30 +445,29 @@ export default function KidsCriancas() {
               <Input
                 type="date"
                 value={formData.data_nascimento}
-                onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
               />
             </div>
             <div className="space-y-2">
               <Label>Alergias</Label>
               <Input
                 value={formData.alergias}
-                onChange={(e) => setFormData({...formData, alergias: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, alergias: e.target.value })}
                 placeholder="Alergias conhecidas"
               />
             </div>
             <div className="space-y-2">
               <Label>Sala principal</Label>
-              <Select 
-                value={formData.sala_id} 
-                onValueChange={(v) => setFormData({...formData, sala_id: v})}
-              >
+              <Select value={formData.sala_id} onValueChange={(v) => setFormData({ ...formData, sala_id: v })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a sala" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Nenhuma</SelectItem>
-                  {salas.map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                  {salas.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.nome}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -494,19 +476,14 @@ export default function KidsCriancas() {
               <Label>Observações</Label>
               <Textarea
                 value={formData.observacoes}
-                onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
                 placeholder="Observações importantes"
               />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Responsáveis</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowResponsavelModal(true)}
-                >
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowResponsavelModal(true)}>
                   <Plus className="w-4 h-4 mr-1" />
                   Novo
                 </Button>
@@ -515,7 +492,7 @@ export default function KidsCriancas() {
                 {responsaveis.length === 0 ? (
                   <p className="text-sm text-muted-foreground">Nenhum responsável cadastrado</p>
                 ) : (
-                  responsaveis.map(resp => (
+                  responsaveis.map((resp) => (
                     <div key={resp.id} className="flex items-center gap-2">
                       <Checkbox
                         checked={formData.responsaveis_ids.includes(resp.id)}
@@ -533,7 +510,7 @@ export default function KidsCriancas() {
               Cancelar
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Salvando...' : 'Salvar'}
+              {saving ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -550,7 +527,7 @@ export default function KidsCriancas() {
               <Label>Nome *</Label>
               <Input
                 value={newResponsavel.nome}
-                onChange={(e) => setNewResponsavel({...newResponsavel, nome: e.target.value})}
+                onChange={(e) => setNewResponsavel({ ...newResponsavel, nome: e.target.value })}
                 placeholder="Nome do responsável"
               />
             </div>
@@ -558,7 +535,7 @@ export default function KidsCriancas() {
               <Label>Telefone</Label>
               <Input
                 value={newResponsavel.telefone}
-                onChange={(e) => setNewResponsavel({...newResponsavel, telefone: e.target.value})}
+                onChange={(e) => setNewResponsavel({ ...newResponsavel, telefone: e.target.value })}
                 placeholder="(00) 00000-0000"
               />
             </div>
@@ -566,7 +543,7 @@ export default function KidsCriancas() {
               <Label>Observações</Label>
               <Textarea
                 value={newResponsavel.observacoes}
-                onChange={(e) => setNewResponsavel({...newResponsavel, observacoes: e.target.value})}
+                onChange={(e) => setNewResponsavel({ ...newResponsavel, observacoes: e.target.value })}
                 placeholder="Observações"
               />
             </div>
@@ -576,7 +553,7 @@ export default function KidsCriancas() {
               Cancelar
             </Button>
             <Button onClick={handleSaveResponsavel} disabled={saving}>
-              {saving ? 'Salvando...' : 'Salvar'}
+              {saving ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>
         </DialogContent>
