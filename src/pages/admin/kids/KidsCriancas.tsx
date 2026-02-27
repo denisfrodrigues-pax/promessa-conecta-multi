@@ -278,10 +278,10 @@ export default function KidsCriancas() {
 
       setResponsaveis([...responsaveis, data]);
 
-      setFormData(prev => ({
-  ...prev,
-  responsaveis_ids: [...prev.responsaveis_ids, data.id],
-      });
+      setFormData((prev) => ({
+        ...prev,
+        responsaveis_ids: [...prev.responsaveis_ids, data.id],
+      }));
 
       setShowResponsavelModal(false);
       setNewResponsavel({ nome: "", telefone: "", observacoes: "" });
