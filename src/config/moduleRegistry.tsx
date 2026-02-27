@@ -1,5 +1,5 @@
 import { lazy, ComponentType } from "react";
-import { Baby, Music, BookOpen, Users, Heart, Calendar, type LucideIcon } from "lucide-react";
+import { Baby, Music, BookOpen, Users, Heart, Calendar, Home } from "lucide-react";
 
 // Lazy-loaded module components
 const KidsCheckinPanel = lazy(() => import("@/pages/kids/KidsCheckinPanel"));
