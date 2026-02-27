@@ -258,13 +258,16 @@ export default function KidsCriancas() {
     }
 
     setSaving(true);
+
     try {
       const { data, error } = await supabase
-        .from("responsaveis")
+        .from("profiles")
         .insert({
+          igreja_id: IGREJA_ID,
           nome: newResponsavel.nome,
           telefone: newResponsavel.telefone || null,
-          observacoes: newResponsavel.observacoes || null,
+          status: "ativo",
+          role: "membro",
         })
         .select()
         .single();
@@ -272,17 +275,24 @@ export default function KidsCriancas() {
       if (error) throw error;
 
       toast({ title: "Responsável cadastrado!" });
+
       setResponsaveis([...responsaveis, data]);
+
       setFormData({
         ...formData,
         responsaveis_ids: [...formData.responsaveis_ids, data.id],
       });
+
       setShowResponsavelModal(false);
       setNewResponsavel({ nome: "", telefone: "", observacoes: "" });
     } catch (error: any) {
       console.error("Erro ao salvar responsável:", error);
-      const msg = error?.message || "Erro desconhecido";
-      toast({ title: "Erro ao salvar responsável", description: msg, variant: "destructive" });
+
+      toast({
+        title: "Erro ao salvar responsável",
+        description: error?.message,
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
