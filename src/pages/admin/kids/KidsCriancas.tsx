@@ -201,6 +201,8 @@ export default function KidsCriancas() {
       }
 
       if (criancaId) {
+        console.log("Responsáveis a vincular:", formData.responsaveis_ids);
+
         await supabase.from("crianca_responsavel").delete().eq("crianca_id", criancaId);
 
         if (formData.responsaveis_ids.length > 0) {
