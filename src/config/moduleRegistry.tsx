@@ -61,6 +61,12 @@ const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
     defaultName: "Equipe",
   },
 
+  dashboard: {
+    component: LeaderDashboard,
+    defaultIcon: Home,
+    defaultName: "Dashboard",
+  },
+
   repertorio: {
     component: RepertorioMusicas,
     defaultIcon: Music,
