@@ -9,6 +9,7 @@ const KidsCriancas = lazy(() => import("@/pages/admin/kids/KidsCriancas"));
 const KidsSalas = lazy(() => import("@/pages/admin/kids/KidsSalas"));
 const KidsResponsaveis = lazy(() => import("@/pages/admin/kids/KidsResponsaveis"));
 const KidsRelatorio = lazy(() => import("@/pages/admin/kids/KidsRelatorio"));
+const LeaderMinhaEquipe = lazy(() => import("@/pages/leader/MinhaEquipe"));
 export interface ModuleDefinition {
   /** Component to render for this module */
   component: ComponentType;
