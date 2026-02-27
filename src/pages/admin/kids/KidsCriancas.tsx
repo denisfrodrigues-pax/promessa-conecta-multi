@@ -171,24 +171,9 @@ export default function KidsCriancas() {
 
     setSaving(true);
     try {
-      // Get the logged-in user's profile_id (criancas.responsavel_id references profiles.id)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (profileError || !profileData) throw new Error("Profile não encontrado");
-
       let criancaId = editingCrianca?.id;
 
       if (editingCrianca) {
-        // Update existing
         const { error } = await supabase
           .from("criancas")
           .update({
@@ -202,16 +187,15 @@ export default function KidsCriancas() {
 
         if (error) throw error;
       } else {
-        // Create new - responsavel_id must reference profiles.id (NOT responsaveis.id)
         const { data, error } = await supabase
           .from("criancas")
           .insert({
+            igreja_id: IGREJA_ID,
             nome: formData.nome,
             data_nascimento: formData.data_nascimento || null,
             observacoes: formData.observacoes || null,
             alergias: formData.alergias || null,
             sala_id: formData.sala_id || null,
-            responsavel_id: profileData.id,
           })
           .select()
           .single();
@@ -220,20 +204,18 @@ export default function KidsCriancas() {
         criancaId = data.id;
       }
 
-      // Update responsaveis links (criancas_responsaveis references responsaveis.id)
+      // Atualizar vínculos responsáveis
       if (criancaId) {
-        // Delete existing links
-        await supabase.from("criancas_responsaveis").delete().eq("crianca_id", criancaId);
+        await supabase.from("crianca_responsavel").delete().eq("crianca_id", criancaId);
 
-        // Insert new links
         if (formData.responsaveis_ids.length > 0) {
-          const links = formData.responsaveis_ids.map((respId) => ({
+          const links = formData.responsaveis_ids.map((profileId) => ({
             crianca_id: criancaId,
-            responsavel_id: respId,
-            tipo_relacao: "responsável",
+            profile_id: profileId,
+            parentesco: "responsável",
           }));
 
-          const { error: linkError } = await supabase.from("criancas_responsaveis").insert(links);
+          const { error: linkError } = await supabase.from("crianca_responsavel").insert(links);
 
           if (linkError) {
             console.warn("Erro ao vincular responsáveis:", linkError);
@@ -246,8 +228,7 @@ export default function KidsCriancas() {
       fetchData();
     } catch (error: any) {
       console.error("Erro ao salvar criança:", error);
-      const msg = error?.message || "Erro desconhecido";
-      toast({ title: "Erro ao salvar criança", description: msg, variant: "destructive" });
+      toast({ title: "Erro ao salvar criança", variant: "destructive" });
     } finally {
       setSaving(false);
     }
