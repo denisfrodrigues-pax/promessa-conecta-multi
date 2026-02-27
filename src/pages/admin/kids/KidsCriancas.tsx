@@ -439,12 +439,20 @@ export default function KidsCriancas() {
             </div>
             <div className="space-y-2">
               <Label>Sala principal</Label>
-              <Select value={formData.sala_id} onValueChange={(v) => setFormData({ ...formData, sala_id: v })}>
+              <Select
+                value={formData.sala_id}
+                onValueChange={(v) =>
+                  setFormData({
+                    ...formData,
+                    sala_id: v === "none" ? "" : v,
+                  })
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a sala" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
+                  <SelectItem value="none">Nenhuma</SelectItem>
                   {salas.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.nome}
