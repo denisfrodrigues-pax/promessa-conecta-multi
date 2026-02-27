@@ -145,11 +145,7 @@ const MinisterioLayout = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              {profile && (
-                <span className="text-sm text-muted-foreground hidden sm:inline">
-                  {profile.nome}
-                </span>
-              )}
+              {profile && <span className="text-sm text-muted-foreground hidden sm:inline">{profile.nome}</span>}
 
               {/* Module navigation tabs (when multiple modules) */}
               {registeredModulos.length > 1 && (
@@ -169,7 +165,7 @@ const MinisterioLayout = () => {
               )}
 
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/voluntario">
+                <Link to={roles.includes("lider") ? "/leader" : "/voluntario"}>
                   <Home className="w-4 h-4 mr-1" />
                   <span className="hidden sm:inline">Hub</span>
                 </Link>
