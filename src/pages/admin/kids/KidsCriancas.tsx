@@ -227,8 +227,14 @@ export default function KidsCriancas() {
       setShowModal(false);
       fetchData();
     } catch (error: any) {
-      console.error("Erro ao salvar criança:", error);
-      toast({ title: "Erro ao salvar criança", variant: "destructive" });
+  console.error("Erro ao salvar criança:", error);
+
+  toast({
+    title: "Erro ao salvar criança",
+    description: error?.message || JSON.stringify(error),
+    variant: "destructive",
+  });
+}
     } finally {
       setSaving(false);
     }
