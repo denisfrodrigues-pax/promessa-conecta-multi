@@ -139,7 +139,7 @@ export default function KidsCheckinPanel() {
   *,
   crianca:criancas(id, nome, data_nascimento),
   responsavel:responsaveis!checkins_kids_responsavel_id_fkey(id, nome, telefone),
-  sala:salas_kids!checkins_kids_sala_id_fkey(id, nome)
+  sala:salas!checkins_kids_sala_id_fkey(id, nome)
 `,
         )
         .gte("checkin_at", todayStart.toISOString())
@@ -160,7 +160,7 @@ export default function KidsCheckinPanel() {
       setResponsaveis(responsaveisData || []);
 
       // Fetch salas
-      const { data: salasData } = await supabase.from("salas_kids").select("*").eq("status", "ativa").order("nome");
+      const { data: salasData } = await supabase.from("salas").select("*").eq("status", "ativa").order("nome");
       setSalas(salasData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
