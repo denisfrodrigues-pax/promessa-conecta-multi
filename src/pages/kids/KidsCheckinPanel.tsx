@@ -115,7 +115,7 @@ export default function KidsCheckinPanel() {
     crianca_data_nascimento: "",
     crianca_alergias: "",
     crianca_observacoes: "",
-    autorizacao_foto: false,
+    autoriza_foto: false,
     // Check-in
     sala_id: "",
     checkin_observacao: "",
@@ -310,7 +310,7 @@ export default function KidsCheckinPanel() {
           data_nascimento: cadastroRapido.crianca_data_nascimento || null,
           alergias: cadastroRapido.crianca_alergias.trim() || null,
           observacoes: cadastroRapido.crianca_observacoes.trim() || null,
-          autorizacao_foto: cadastroRapido.autorizacao_foto,
+          autoriza_foto: cadastroRapido.autoriza_foto,
           sala_id: cadastroRapido.sala_id || null,
           responsavel_id: profileData.id, // Referência ao profile do usuário logado
         })
@@ -355,7 +355,7 @@ export default function KidsCheckinPanel() {
         crianca_data_nascimento: "",
         crianca_alergias: "",
         crianca_observacoes: "",
-        autorizacao_foto: false,
+        autoriza_foto: false,
         sala_id: "",
         checkin_observacao: "",
       });
@@ -758,11 +758,11 @@ export default function KidsCheckinPanel() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
-                    id="autorizacao_foto"
-                    checked={cadastroRapido.autorizacao_foto}
-                    onCheckedChange={(checked) => setCadastroRapido({ ...cadastroRapido, autorizacao_foto: !!checked })}
+                    id="autoriza_foto"
+                    checked={cadastroRapido.autoriza_foto}
+                    onCheckedChange={(checked) => setCadastroRapido({ ...cadastroRapido, autoriza_foto: !!checked })}
                   />
-                  <Label htmlFor="autorizacao_foto" className="text-sm font-normal cursor-pointer">
+                  <Label htmlFor="autoriza_foto" className="text-sm font-normal cursor-pointer">
                     Autorizo uso de fotos para divulgação
                   </Label>
                 </div>
