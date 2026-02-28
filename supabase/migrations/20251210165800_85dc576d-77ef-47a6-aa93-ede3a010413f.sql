@@ -18,8 +18,8 @@ CREATE TABLE public.criancas_responsaveis (
   UNIQUE(crianca_id, responsavel_id)
 );
 
--- Create salas_kids table for rooms
-CREATE TABLE public.salas_kids (
+-- Create salas table for rooms
+CREATE TABLE public.salas (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   nome TEXT NOT NULL,
   capacidade INTEGER DEFAULT 20,
@@ -34,7 +34,7 @@ CREATE TABLE public.checkins_kids (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   crianca_id UUID NOT NULL REFERENCES public.criancas(id) ON DELETE CASCADE,
   responsavel_id UUID NOT NULL REFERENCES public.responsaveis(id),
-  sala_id UUID NOT NULL REFERENCES public.salas_kids(id),
+  sala_id UUID NOT NULL REFERENCES public.salas(id),
   checkin_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   checkout_at TIMESTAMP WITH TIME ZONE,
   checkout_responsavel_id UUID REFERENCES public.responsaveis(id),
@@ -47,7 +47,7 @@ CREATE TABLE public.checkins_kids (
 -- Enable RLS on all tables
 ALTER TABLE public.responsaveis ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.criancas_responsaveis ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.salas_kids ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.salas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.checkins_kids ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies for responsaveis
@@ -64,11 +64,11 @@ CREATE POLICY "Admins can manage criancas_responsaveis" ON public.criancas_respo
 CREATE POLICY "Authenticated can view criancas_responsaveis" ON public.criancas_responsaveis
   FOR SELECT USING (true);
 
--- RLS policies for salas_kids
-CREATE POLICY "Admins can manage salas_kids" ON public.salas_kids
+-- RLS policies for salas
+CREATE POLICY "Admins can manage salas" ON public.salas
   FOR ALL USING (has_role(auth.uid(), 'admin'::app_role));
 
-CREATE POLICY "Authenticated can view salas_kids" ON public.salas_kids
+CREATE POLICY "Authenticated can view salas" ON public.salas
   FOR SELECT USING (true);
 
 -- RLS policies for checkins_kids
@@ -84,8 +84,8 @@ CREATE TRIGGER update_responsaveis_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_salas_kids_updated_at
-  BEFORE UPDATE ON public.salas_kids
+CREATE TRIGGER update_salas_updated_at
+  BEFORE UPDATE ON public.salas
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
