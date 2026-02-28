@@ -276,8 +276,6 @@ export default function KidsCheckinPanel() {
 
     setSaving(true);
     try {
-      if (profileError || !profileData) throw new Error("Profile não encontrado");
-
       // 1. Criar responsável na tabela responsaveis (para o check-in)
       const { data: responsavelData, error: responsavelError } = await supabase
         .from("responsaveis")
