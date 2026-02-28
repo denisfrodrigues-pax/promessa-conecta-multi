@@ -160,7 +160,7 @@ export default function KidsCheckinPanel() {
       setResponsaveis(responsaveisData || []);
 
       // Fetch salas
-      const { data: salasData } = await supabase.from("salas").select("*").eq("status", "ativa").order("nome");
+      const { data: salasData } = await supabase.from("salas").select("*").order("nome");
       setSalas(salasData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
