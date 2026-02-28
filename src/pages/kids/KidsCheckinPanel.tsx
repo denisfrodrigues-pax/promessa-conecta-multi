@@ -311,6 +311,7 @@ export default function KidsCheckinPanel() {
           observacoes: cadastroRapido.crianca_observacoes.trim() || null,
           autoriza_foto: cadastroRapido.autoriza_foto,
           sala_id: cadastroRapido.sala_id || null,
+          igreja_id: profile.igreja_id, // 👈 ESSENCIAL
         })
         .select()
         .single();
