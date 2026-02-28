@@ -1,13 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -19,225 +15,162 @@ interface Crianca {
   sala_id: string | null;
 }
 
-interface Responsavel {
+interface Presente {
   id: string;
-  nome: string;
-  telefone: string | null;
-}
-
-interface Sala {
-  id: string;
-  nome: string;
-}
-
-interface Checkin {
-  id: string;
-  crianca_id: string;
-  responsavel_id: string;
-  sala_id: string;
   checkin_at: string;
-  status: string;
+  crianca: { nome: string };
+  sala: { nome: string };
+  responsavel: { nome: string };
 }
 
 export default function KidsCheckinPanel() {
-  const [loading, setLoading] = useState(true);
-  const [checkins, setCheckins] = useState<Checkin[]>([]);
   const [criancas, setCriancas] = useState<Crianca[]>([]);
-  const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
-  const [salas, setSalas] = useState<Sala[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const [cadastro, setCadastro] = useState({
-    responsavel_nome: "",
-    responsavel_telefone: "",
-    crianca_nome: "",
-    crianca_data_nascimento: "",
-    crianca_alergias: "",
-    crianca_observacoes: "",
-    autoriza_foto: false,
-    sala_id: "",
-  });
+  const [presentes, setPresentes] = useState<Presente[]>([]);
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<Crianca | null>(null);
+  const [showVisitante, setShowVisitante] = useState(false);
+  const [igrejaId, setIgrejaId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
-    setLoading(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    try {
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
+    if (!user) return;
 
-      const { data: checkinsData } = await supabase
-        .from("checkins_kids")
-        .select("*")
-        .gte("checkin_at", todayStart.toISOString());
+    const { data: profile } = await supabase.from("profiles").select("igreja_id").eq("user_id", user.id).single();
 
-      const { data: criancasData } = await supabase.from("criancas").select("id, nome, data_nascimento, sala_id");
+    if (!profile?.igreja_id) return;
 
-      const { data: responsaveisData } = await supabase.from("responsaveis").select("id, nome, telefone");
+    setIgrejaId(profile.igreja_id);
 
-      const { data: salasData } = await supabase.from("salas").select("id, nome");
+    // Crianças
+    const { data: criancasData } = await supabase
+      .from("criancas")
+      .select("id, nome, data_nascimento, sala_id")
+      .eq("igreja_id", profile.igreja_id)
+      .order("nome");
 
-      setCheckins(checkinsData || []);
-      setCriancas(criancasData || []);
-      setResponsaveis(responsaveisData || []);
-      setSalas(salasData || []);
-    } catch (error: any) {
-      toast({
-        title: "Erro ao carregar dados",
-        description: error?.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+    setCriancas(criancasData || []);
+
+    // Presentes hoje
+    const inicioDia = new Date();
+    inicioDia.setHours(0, 0, 0, 0);
+
+    const { data: presentesData } = await supabase
+      .from("checkins_kids")
+      .select(
+        `
+        id,
+        checkin_at,
+        crianca:criancas(nome),
+        sala:salas(nome),
+        responsavel:responsaveis(nome)
+      `,
+      )
+      .eq("igreja_id", profile.igreja_id)
+      .eq("status", "presente")
+      .gte("checkin_at", inicioDia.toISOString())
+      .order("checkin_at", { ascending: false });
+
+    setPresentes(presentesData || []);
   };
 
-  const handleCadastro = async () => {
-    if (!cadastro.responsavel_nome || !cadastro.crianca_nome || !cadastro.sala_id) {
-      toast({
-        title: "Preencha todos os campos obrigatórios",
-        variant: "destructive",
-      });
+  const registrarPresenca = async () => {
+    if (!selected || !igrejaId) return;
+
+    const { error } = await supabase.from("checkins_kids").insert({
+      crianca_id: selected.id,
+      sala_id: selected.sala_id,
+      status: "presente",
+      igreja_id: igrejaId,
+      checkin_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      toast({ title: "Erro ao registrar presença", variant: "destructive" });
       return;
     }
 
-    setSaving(true);
-
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      const { data: profile } = await supabase.from("profiles").select("igreja_id").eq("user_id", user?.id).single();
-
-      const { data: responsavel } = await supabase
-        .from("responsaveis")
-        .insert({
-          nome: cadastro.responsavel_nome,
-          telefone: cadastro.responsavel_telefone || null,
-        })
-        .select()
-        .single();
-
-      const { data: crianca } = await supabase
-        .from("criancas")
-        .insert({
-          nome: cadastro.crianca_nome,
-          data_nascimento: cadastro.crianca_data_nascimento || null,
-          alergias: cadastro.crianca_alergias || null,
-          observacoes: cadastro.crianca_observacoes || null,
-          autoriza_foto: cadastro.autoriza_foto,
-          sala_id: cadastro.sala_id,
-          igreja_id: profile?.igreja_id,
-        })
-        .select()
-        .single();
-
-      await supabase.from("criancas_responsaveis").insert({
-        crianca_id: crianca.id,
-        responsavel_id: responsavel.id,
-        tipo_relacao: "responsável",
-      });
-
-      await supabase.from("checkins_kids").insert({
-        crianca_id: crianca.id,
-        responsavel_id: responsavel.id,
-        sala_id: cadastro.sala_id,
-        status: "presente",
-      });
-
-      toast({ title: "Cadastro e check-in realizados!" });
-
-      setShowModal(false);
-      fetchData();
-    } catch (error: any) {
-      toast({
-        title: "Erro ao cadastrar",
-        description: error?.message,
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
+    toast({ title: "Presença registrada com sucesso!" });
+    setSelected(null);
+    fetchData();
   };
 
-  if (loading) return <p>Carregando...</p>;
+  const filtered = criancas.filter((c) => c.nome.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
+      {/* BUSCA PRINCIPAL */}
       <Card>
-        <CardHeader>
-          <CardTitle>Crianças presentes hoje</CardTitle>
-        </CardHeader>
-        <CardContent>{checkins.length}</CardContent>
+        <CardContent className="p-6 space-y-4">
+          <Input
+            placeholder="Digite o nome da criança..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoFocus
+          />
+
+          {search && filtered.length > 0 && (
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {filtered.map((c) => (
+                <button
+                  key={c.id}
+                  className="w-full text-left p-2 rounded hover:bg-muted"
+                  onClick={() => {
+                    setSelected(c);
+                    setSearch("");
+                  }}
+                >
+                  {c.nome}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {selected && (
+            <div className="border rounded p-4 space-y-2">
+              <p className="font-semibold">{selected.nome}</p>
+              <Button onClick={registrarPresenca}>Registrar Presença</Button>
+            </div>
+          )}
+
+          <Button variant="outline" onClick={() => setShowVisitante(true)}>
+            Primeira vez? Cadastrar visitante
+          </Button>
+        </CardContent>
       </Card>
 
-      <Button onClick={() => setShowModal(true)}>Novo cadastro + Check-in</Button>
+      {/* PRESENTES HOJE */}
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <h2 className="font-semibold text-lg">Crianças presentes hoje ({presentes.length})</h2>
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
+          {presentes.length === 0 && <p className="text-muted-foreground">Nenhuma criança registrada hoje.</p>}
+
+          {presentes.map((p) => (
+            <div key={p.id} className="border rounded p-3">
+              <p className="font-medium">{p.crianca?.nome}</p>
+              <p className="text-sm text-muted-foreground">
+                {p.sala?.nome} • {format(new Date(p.checkin_at), "HH:mm", { locale: ptBR })}
+              </p>
+              <p className="text-sm text-muted-foreground">Responsável: {p.responsavel?.nome}</p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* MODAL VISITANTE */}
+      <Dialog open={showVisitante} onOpenChange={setShowVisitante}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Cadastro Rápido</DialogTitle>
+            <DialogTitle>Cadastro de Visitante</DialogTitle>
           </DialogHeader>
-
-          <div className="space-y-4">
-            <Label>Nome do responsável *</Label>
-            <Input
-              value={cadastro.responsavel_nome}
-              onChange={(e) => setCadastro({ ...cadastro, responsavel_nome: e.target.value })}
-            />
-
-            <Label>Telefone</Label>
-            <Input
-              value={cadastro.responsavel_telefone}
-              onChange={(e) => setCadastro({ ...cadastro, responsavel_telefone: e.target.value })}
-            />
-
-            <Label>Nome da criança *</Label>
-            <Input
-              value={cadastro.crianca_nome}
-              onChange={(e) => setCadastro({ ...cadastro, crianca_nome: e.target.value })}
-            />
-
-            <Label>Data de nascimento</Label>
-            <Input
-              type="date"
-              value={cadastro.crianca_data_nascimento}
-              onChange={(e) =>
-                setCadastro({
-                  ...cadastro,
-                  crianca_data_nascimento: e.target.value,
-                })
-              }
-            />
-
-            <Label>Sala *</Label>
-            <Select value={cadastro.sala_id} onValueChange={(v) => setCadastro({ ...cadastro, sala_id: v })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a sala" />
-              </SelectTrigger>
-              <SelectContent>
-                {salas.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowModal(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCadastro} disabled={saving}>
-              {saving ? "Salvando..." : "Cadastrar"}
-            </Button>
-          </DialogFooter>
+          <p className="text-sm text-muted-foreground">(Implementaremos na próxima etapa)</p>
         </DialogContent>
       </Dialog>
     </div>
