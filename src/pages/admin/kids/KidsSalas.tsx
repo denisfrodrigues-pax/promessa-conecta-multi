@@ -198,14 +198,43 @@ export default function KidsSalas() {
         const { error } = await supabase.from("salas").update(payload).eq("id", editingSala.id);
         if (error) throw error;
       } else {
-        // Buscar ministério Kids para associar a sala
-        const { data: ministerioKids } = await supabase
+        // Buscar usuário logado
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) throw new Error("Usuário não autenticado");
+
+        // Buscar igreja do usuário
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("igreja_id")
+          .eq("user_id", user.id)
+          .single();
+
+        if (profileError || !profile?.igreja_id) {
+          throw new Error("Igreja não encontrada para o usuário");
+        }
+
+        // Buscar ministério Kids
+        const { data: ministerioKids, error: ministerioError } = await supabase
           .from("ministerios")
           .select("id")
           .ilike("nome", "%kids%")
+          .eq("igreja_id", profile.igreja_id)
           .maybeSingle();
 
-        const { error } = await supabase.from("salas").insert({ ...payload, ministerio_id: ministerioKids?.id ?? "" });
+        if (ministerioError || !ministerioKids?.id) {
+          throw new Error("Ministério Kids não encontrado");
+        }
+
+        // Inserir sala corretamente
+        const { error } = await supabase.from("salas").insert({
+          ...payload,
+          igreja_id: profile.igreja_id,
+          ministerio_id: ministerioKids.id,
+        });
+
         if (error) throw error;
       }
 
