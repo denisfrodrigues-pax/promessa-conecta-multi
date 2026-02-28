@@ -1,23 +1,13 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Baby, 
-  MapPin, 
-  CheckSquare, 
-  Users,
-  Download,
-  Clock,
-  User,
-  MessageCircle,
-  FileText
-} from 'lucide-react';
-import { format, startOfDay, endOfDay } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
+import { Baby, MapPin, CheckSquare, Users, Download, Clock, User, MessageCircle, FileText } from "lucide-react";
+import { format, startOfDay, endOfDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface Sala {
   id: string;
@@ -53,8 +43,8 @@ interface Stats {
 }
 
 const cleanPhone = (phone: string | null): string => {
-  if (!phone) return '';
-  return phone.replace(/\D/g, '');
+  if (!phone) return "";
+  return phone.replace(/\D/g, "");
 };
 
 const hasValidPhone = (phone: string | null): boolean => {
@@ -71,28 +61,28 @@ const formatDateTime = (date: string) => {
 };
 
 const getOcupacaoStatus = (percent: number): { label: string; color: string } => {
-  if (percent > 90) return { label: 'Lotada', color: 'bg-red-100 text-red-800 border-red-200' };
-  if (percent > 70) return { label: 'Atenção', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
-  return { label: 'Normal', color: 'bg-green-100 text-green-800 border-green-200' };
+  if (percent > 90) return { label: "Lotada", color: "bg-red-100 text-red-800 border-red-200" };
+  if (percent > 70) return { label: "Atenção", color: "bg-yellow-100 text-yellow-800 border-yellow-200" };
+  return { label: "Normal", color: "bg-green-100 text-green-800 border-green-200" };
 };
 
 const exportToCSV = (checkins: CheckinRecente[]) => {
-  const headers = ['Nome Criança', 'Sala', 'Horário Check-in', 'Horário Checkout', 'Responsável', 'Observação'];
-  const rows = checkins.map(c => [
-    c.crianca?.nome || '',
-    c.sala?.nome || '',
-    c.checkin_at ? formatDateTime(c.checkin_at) : '',
-    c.checkout_at ? formatDateTime(c.checkout_at) : '',
-    c.responsavel?.nome || '',
-    c.observacao || '',
+  const headers = ["Nome Criança", "Sala", "Horário Check-in", "Horário Checkout", "Responsável", "Observação"];
+  const rows = checkins.map((c) => [
+    c.crianca?.nome || "",
+    c.sala?.nome || "",
+    c.checkin_at ? formatDateTime(c.checkin_at) : "",
+    c.checkout_at ? formatDateTime(c.checkout_at) : "",
+    c.responsavel?.nome || "",
+    c.observacao || "",
   ]);
-  
-  const csvContent = [headers.join(','), ...rows.map(r => r.map(cell => `"${cell}"`).join(','))].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+  const csvContent = [headers.join(","), ...rows.map((r) => r.map((cell) => `"${cell}"`).join(","))].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
-  link.download = `relatorio_kids_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+  link.download = `relatorio_kids_${format(new Date(), "yyyy-MM-dd")}.csv`;
   link.click();
 };
 
@@ -102,7 +92,7 @@ export default function KidsRelatorio() {
     presentesHoje: 0,
     checkinsTotais: 0,
     criancasCadastradas: 0,
-    salasAtivas: 0
+    salasAtivas: 0,
   });
   const [salas, setSalas] = useState<Sala[]>([]);
   const [checkinsRecentes, setCheckinsRecentes] = useState<CheckinRecente[]>([]);
@@ -120,30 +110,30 @@ export default function KidsRelatorio() {
 
       // Fetch presentes hoje
       const { count: presentesHoje } = await supabase
-        .from('checkins_kids')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'presente')
-        .gte('checkin_at', inicioDia)
-        .lte('checkin_at', fimDia);
+        .from("checkins_kids")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "presente")
+        .gte("checkin_at", inicioDia)
+        .lte("checkin_at", fimDia);
 
       // Fetch total checkins hoje
       const { count: checkinsTotais } = await supabase
-        .from('checkins_kids')
-        .select('*', { count: 'exact', head: true })
-        .gte('checkin_at', inicioDia)
-        .lte('checkin_at', fimDia);
+        .from("checkins_kids")
+        .select("*", { count: "exact", head: true })
+        .gte("checkin_at", inicioDia)
+        .lte("checkin_at", fimDia);
 
       // Fetch total crianças cadastradas
       const { count: criancasCadastradas } = await supabase
-        .from('criancas')
-        .select('*', { count: 'exact', head: true });
+        .from("criancas")
+        .select("*", { count: "exact", head: true });
 
       // Fetch salas ativas
       const { data: salasData, error: salasError } = await supabase
-        .from('salas_kids')
-        .select('*')
-        .eq('status', 'ativa')
-        .order('nome');
+        .from("salas")
+        .select("*")
+        .eq("status", "ativa")
+        .order("nome");
 
       if (salasError) throw salasError;
 
@@ -151,12 +141,12 @@ export default function KidsRelatorio() {
       const salasWithCount = await Promise.all(
         (salasData || []).map(async (sala) => {
           const { count } = await supabase
-            .from('checkins_kids')
-            .select('*', { count: 'exact', head: true })
-            .eq('sala_id', sala.id)
-            .eq('status', 'presente');
+            .from("checkins_kids")
+            .select("*", { count: "exact", head: true })
+            .eq("sala_id", sala.id)
+            .eq("status", "presente");
           return { ...sala, presentes_count: count || 0 };
-        })
+        }),
       );
 
       setSalas(salasWithCount);
@@ -165,13 +155,14 @@ export default function KidsRelatorio() {
         presentesHoje: presentesHoje || 0,
         checkinsTotais: checkinsTotais || 0,
         criancasCadastradas: criancasCadastradas || 0,
-        salasAtivas: salasData?.length || 0
+        salasAtivas: salasData?.length || 0,
       });
 
       // Fetch checkins recentes
       const { data: checkinsData, error: checkinsError } = await supabase
-        .from('checkins_kids')
-        .select(`
+        .from("checkins_kids")
+        .select(
+          `
           id,
           checkin_at,
           checkout_at,
@@ -179,16 +170,16 @@ export default function KidsRelatorio() {
           observacao,
           crianca:criancas(nome),
           responsavel:responsaveis!checkins_kids_responsavel_id_fkey(nome, telefone),
-          sala:salas_kids(nome)
-        `)
-        .order('checkin_at', { ascending: false })
+          sala:salas(nome)
+        `,
+        )
+        .order("checkin_at", { ascending: false })
         .limit(20);
 
       if (checkinsError) throw checkinsError;
       setCheckinsRecentes(checkinsData || []);
-
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
@@ -202,7 +193,7 @@ export default function KidsRelatorio() {
           <Skeleton className="h-10 w-32" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map(i => (
+          {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-28" />
           ))}
         </div>
@@ -298,10 +289,8 @@ export default function KidsRelatorio() {
             <p className="text-muted-foreground text-center py-8">Nenhuma sala ativa cadastrada</p>
           ) : (
             <div className="space-y-4">
-              {salas.map(sala => {
-                const percent = sala.capacidade > 0 
-                  ? Math.round((sala.presentes_count / sala.capacidade) * 100) 
-                  : 0;
+              {salas.map((sala) => {
+                const percent = sala.capacidade > 0 ? Math.round((sala.presentes_count / sala.capacidade) * 100) : 0;
                 const status = getOcupacaoStatus(percent);
 
                 return (
@@ -337,9 +326,9 @@ export default function KidsRelatorio() {
             <p className="text-muted-foreground text-center py-8">Nenhum check-in registrado</p>
           ) : (
             <div className="space-y-3">
-              {checkinsRecentes.map(checkin => (
-                <div 
-                  key={checkin.id} 
+              {checkinsRecentes.map((checkin) => (
+                <div
+                  key={checkin.id}
                   className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-muted/50 rounded-lg"
                 >
                   <div className="flex items-center gap-3 flex-1">
@@ -376,21 +365,17 @@ export default function KidsRelatorio() {
                       )}
                     </div>
 
-                    <Badge 
+                    <Badge
                       className={
-                        checkin.status === 'presente' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-blue-100 text-blue-800'
+                        checkin.status === "presente" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"
                       }
                     >
-                      {checkin.status === 'presente' ? 'Presente' : 'Checkout'}
+                      {checkin.status === "presente" ? "Presente" : "Checkout"}
                     </Badge>
                   </div>
 
                   {checkin.observacao && (
-                    <p className="text-xs text-muted-foreground italic w-full sm:w-auto">
-                      "{checkin.observacao}"
-                    </p>
+                    <p className="text-xs text-muted-foreground italic w-full sm:w-auto">"{checkin.observacao}"</p>
                   )}
                 </div>
               ))}
