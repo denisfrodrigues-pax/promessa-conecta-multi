@@ -1,29 +1,19 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Progress } from '@/components/ui/progress';
-import { toast } from '@/hooks/use-toast';
-import { 
-  Search, 
-  Plus, 
-  MapPin, 
-  Edit,
-  Trash2,
-  Baby,
-  Clock,
-  UserMinus,
-  UserPlus
-} from 'lucide-react';
-import { format, isToday, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "@/hooks/use-toast";
+import { Search, Plus, MapPin, Edit, Trash2, Baby, Clock, UserMinus, UserPlus } from "lucide-react";
+import { format, isToday, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface Sala {
   id: string;
@@ -54,28 +44,28 @@ interface CriancaDisponivel {
 }
 
 const statusLabels: Record<string, string> = {
-  ativa: 'Ativa',
-  inativa: 'Inativa',
+  ativa: "Ativa",
+  inativa: "Inativa",
 };
 
 const statusColors: Record<string, string> = {
-  ativa: 'bg-green-100 text-green-800 border-green-200',
-  inativa: 'bg-gray-100 text-gray-800 border-gray-200',
+  ativa: "bg-green-100 text-green-800 border-green-200",
+  inativa: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
 export default function KidsSalas() {
   const [salas, setSalas] = useState<Sala[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  
+  const [search, setSearch] = useState("");
+
   // Modal states
   const [showModal, setShowModal] = useState(false);
   const [editingSala, setEditingSala] = useState<Sala | null>(null);
   const [formData, setFormData] = useState({
-    nome: '',
-    capacidade: '20',
-    observacao: '',
-    status: 'ativa'
+    nome: "",
+    capacidade: "20",
+    observacao: "",
+    status: "ativa",
   });
   const [saving, setSaving] = useState(false);
 
@@ -88,7 +78,7 @@ export default function KidsSalas() {
   // Add child to room
   const [showAddChildModal, setShowAddChildModal] = useState(false);
   const [criancasDisponiveis, setCriancasDisponiveis] = useState<CriancaDisponivel[]>([]);
-  const [childSearch, setChildSearch] = useState('');
+  const [childSearch, setChildSearch] = useState("");
   const [todayCheckinCounts, setTodayCheckinCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -98,10 +88,7 @@ export default function KidsSalas() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('salas_kids')
-        .select('*')
-        .order('nome');
+      const { data, error } = await supabase.from("salas").select("*").order("nome");
 
       if (error) throw error;
       setSalas(data || []);
@@ -111,19 +98,19 @@ export default function KidsSalas() {
       todayStart.setHours(0, 0, 0, 0);
 
       const { data: checkins } = await supabase
-        .from('checkins_kids')
-        .select('sala_id')
-        .gte('checkin_at', todayStart.toISOString())
-        .eq('status', 'presente');
+        .from("checkins_kids")
+        .select("sala_id")
+        .gte("checkin_at", todayStart.toISOString())
+        .eq("status", "presente");
 
       const counts: Record<string, number> = {};
-      (checkins || []).forEach(c => {
+      (checkins || []).forEach((c) => {
         counts[c.sala_id] = (counts[c.sala_id] || 0) + 1;
       });
       setTodayCheckinCounts(counts);
     } catch (error: any) {
-      console.error('Error fetching data:', error);
-      toast({ title: 'Erro ao carregar dados', description: error?.message || String(error), variant: 'destructive' });
+      console.error("Error fetching data:", error);
+      toast({ title: "Erro ao carregar dados", description: error?.message || String(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -135,10 +122,10 @@ export default function KidsSalas() {
     try {
       // Fetch fixed children (sala_id on criancas)
       const { data: criancas, error: criancasError } = await supabase
-        .from('criancas')
-        .select('id, nome, data_nascimento')
-        .eq('sala_id', sala.id)
-        .order('nome');
+        .from("criancas")
+        .select("id, nome, data_nascimento")
+        .eq("sala_id", sala.id)
+        .order("nome");
 
       if (criancasError) throw criancasError;
       setCriancasVinculadas(criancas || []);
@@ -148,22 +135,28 @@ export default function KidsSalas() {
       todayStart.setHours(0, 0, 0, 0);
 
       const { data: checkins, error: checkinsError } = await supabase
-        .from('checkins_kids')
-        .select('id, checkin_at, status, crianca:criancas(nome)')
-        .eq('sala_id', sala.id)
-        .gte('checkin_at', todayStart.toISOString())
-        .order('checkin_at', { ascending: false });
+        .from("checkins_kids")
+        .select("id, checkin_at, status, crianca:criancas(nome)")
+        .eq("sala_id", sala.id)
+        .gte("checkin_at", todayStart.toISOString())
+        .order("checkin_at", { ascending: false });
 
       if (checkinsError) throw checkinsError;
-      setCheckinsHoje((checkins || []).map((c: any) => ({
-        id: c.id,
-        crianca_nome: c.crianca?.nome || 'Desconhecida',
-        checkin_at: c.checkin_at,
-        status: c.status,
-      })));
+      setCheckinsHoje(
+        (checkins || []).map((c: any) => ({
+          id: c.id,
+          crianca_nome: c.crianca?.nome || "Desconhecida",
+          checkin_at: c.checkin_at,
+          status: c.status,
+        })),
+      );
     } catch (error) {
-      console.error('Error fetching sala detail:', error);
-      toast({ title: 'Erro ao carregar detalhes', description: (error as any)?.message || String(error), variant: 'destructive' });
+      console.error("Error fetching sala detail:", error);
+      toast({
+        title: "Erro ao carregar detalhes",
+        description: (error as any)?.message || String(error),
+        variant: "destructive",
+      });
     } finally {
       setLoadingDetail(false);
     }
@@ -171,7 +164,7 @@ export default function KidsSalas() {
 
   const openNewModal = () => {
     setEditingSala(null);
-    setFormData({ nome: '', capacidade: '20', observacao: '', status: 'ativa' });
+    setFormData({ nome: "", capacidade: "20", observacao: "", status: "ativa" });
     setShowModal(true);
   };
 
@@ -180,15 +173,15 @@ export default function KidsSalas() {
     setFormData({
       nome: sala.nome,
       capacidade: sala.capacidade.toString(),
-      observacao: sala.observacao || '',
-      status: sala.status
+      observacao: sala.observacao || "",
+      status: sala.status,
     });
     setShowModal(true);
   };
 
   const handleSave = async () => {
     if (!formData.nome.trim()) {
-      toast({ title: 'Nome é obrigatório', variant: 'destructive' });
+      toast({ title: "Nome é obrigatório", variant: "destructive" });
       return;
     }
 
@@ -198,38 +191,33 @@ export default function KidsSalas() {
         nome: formData.nome,
         capacidade: parseInt(formData.capacidade) || 20,
         observacao: formData.observacao || null,
-        status: formData.status
+        status: formData.status,
       };
 
       if (editingSala) {
-        const { error } = await supabase
-          .from('salas_kids')
-          .update(payload)
-          .eq('id', editingSala.id);
+        const { error } = await supabase.from("salas").update(payload).eq("id", editingSala.id);
         if (error) throw error;
       } else {
         // Buscar ministério Kids para associar a sala
         const { data: ministerioKids } = await supabase
-          .from('ministerios')
-          .select('id')
-          .ilike('nome', '%kids%')
+          .from("ministerios")
+          .select("id")
+          .ilike("nome", "%kids%")
           .maybeSingle();
 
-        const { error } = await supabase
-          .from('salas_kids')
-          .insert({ ...payload, ministerio_id: ministerioKids?.id ?? '' });
+        const { error } = await supabase.from("salas").insert({ ...payload, ministerio_id: ministerioKids?.id ?? "" });
         if (error) throw error;
       }
 
-      toast({ title: editingSala ? 'Sala atualizada!' : 'Sala cadastrada!' });
+      toast({ title: editingSala ? "Sala atualizada!" : "Sala cadastrada!" });
       setShowModal(false);
       fetchData();
       if (selectedSala && editingSala?.id === selectedSala.id) {
         fetchSalaDetail({ ...selectedSala, ...payload });
       }
     } catch (error: any) {
-      console.error('Error saving:', error);
-      toast({ title: 'Erro ao salvar', description: error?.message, variant: 'destructive' });
+      console.error("Error saving:", error);
+      toast({ title: "Erro ao salvar", description: error?.message, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -239,33 +227,34 @@ export default function KidsSalas() {
     if (!confirm(`Tem certeza que deseja excluir a sala ${sala.nome}?`)) return;
 
     try {
-      const { error } = await supabase
-        .from('salas_kids')
-        .delete()
-        .eq('id', sala.id);
+      const { error } = await supabase.from("salas").delete().eq("id", sala.id);
 
       if (error) throw error;
 
-      toast({ title: 'Sala excluída!' });
+      toast({ title: "Sala excluída!" });
       if (selectedSala?.id === sala.id) setSelectedSala(null);
       fetchData();
     } catch (error: any) {
-      console.error('Error deleting:', error);
-      toast({ title: 'Erro ao excluir. A sala pode estar vinculada a check-ins.', description: error?.message, variant: 'destructive' });
+      console.error("Error deleting:", error);
+      toast({
+        title: "Erro ao excluir. A sala pode estar vinculada a check-ins.",
+        description: error?.message,
+        variant: "destructive",
+      });
     }
   };
 
   const openAddChildModal = async () => {
     if (!selectedSala) return;
-    setChildSearch('');
+    setChildSearch("");
     setShowAddChildModal(true);
 
     // Fetch children not assigned to this room
     const { data, error } = await supabase
-      .from('criancas')
-      .select('id, nome, data_nascimento, sala_id')
+      .from("criancas")
+      .select("id, nome, data_nascimento, sala_id")
       .or(`sala_id.is.null,sala_id.neq.${selectedSala.id}`)
-      .order('nome');
+      .order("nome");
 
     if (!error) {
       setCriancasDisponiveis(data || []);
@@ -275,35 +264,33 @@ export default function KidsSalas() {
   const assignChildToRoom = async (criancaId: string) => {
     if (!selectedSala) return;
     try {
-      const { error } = await supabase
-        .from('criancas')
-        .update({ sala_id: selectedSala.id })
-        .eq('id', criancaId);
+      const { error } = await supabase.from("criancas").update({ sala_id: selectedSala.id }).eq("id", criancaId);
 
       if (error) throw error;
-      toast({ title: 'Criança vinculada à sala!' });
+      toast({ title: "Criança vinculada à sala!" });
       fetchSalaDetail(selectedSala);
-      setCriancasDisponiveis(prev => prev.filter(c => c.id !== criancaId));
+      setCriancasDisponiveis((prev) => prev.filter((c) => c.id !== criancaId));
     } catch (error: any) {
-      console.error('Error assigning child:', error);
-      toast({ title: 'Erro ao vincular criança', description: error?.message || String(error), variant: 'destructive' });
+      console.error("Error assigning child:", error);
+      toast({
+        title: "Erro ao vincular criança",
+        description: error?.message || String(error),
+        variant: "destructive",
+      });
     }
   };
 
   const removeChildFromRoom = async (criancaId: string) => {
     if (!selectedSala) return;
     try {
-      const { error } = await supabase
-        .from('criancas')
-        .update({ sala_id: null })
-        .eq('id', criancaId);
+      const { error } = await supabase.from("criancas").update({ sala_id: null }).eq("id", criancaId);
 
       if (error) throw error;
-      toast({ title: 'Criança removida da sala!' });
+      toast({ title: "Criança removida da sala!" });
       fetchSalaDetail(selectedSala);
     } catch (error: any) {
-      console.error('Error removing child:', error);
-      toast({ title: 'Erro ao remover criança', description: error?.message || String(error), variant: 'destructive' });
+      console.error("Error removing child:", error);
+      toast({ title: "Erro ao remover criança", description: error?.message || String(error), variant: "destructive" });
     }
   };
 
@@ -316,12 +303,10 @@ export default function KidsSalas() {
     return Math.min(100, (getOcupacaoHoje(sala.id) / sala.capacidade) * 100);
   };
 
-  const filtered = salas.filter(s => 
-    search === '' || s.nome.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = salas.filter((s) => search === "" || s.nome.toLowerCase().includes(search.toLowerCase()));
 
-  const filteredDisponiveis = criancasDisponiveis.filter(c =>
-    childSearch === '' || c.nome.toLowerCase().includes(childSearch.toLowerCase())
+  const filteredDisponiveis = criancasDisponiveis.filter(
+    (c) => childSearch === "" || c.nome.toLowerCase().includes(childSearch.toLowerCase()),
   );
 
   if (loading) {
@@ -332,7 +317,7 @@ export default function KidsSalas() {
           <Skeleton className="h-10 w-32" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-40" />
           ))}
         </div>
@@ -367,7 +352,7 @@ export default function KidsSalas() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Cards Grid */}
-        <div className={selectedSala ? 'lg:col-span-1' : 'lg:col-span-3'}>
+        <div className={selectedSala ? "lg:col-span-1" : "lg:col-span-3"}>
           {filtered.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
@@ -376,11 +361,11 @@ export default function KidsSalas() {
               </CardContent>
             </Card>
           ) : (
-            <div className={`grid gap-4 ${selectedSala ? '' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
-              {filtered.map(sala => (
-                <Card 
-                  key={sala.id} 
-                  className={`hover:shadow-md transition-shadow cursor-pointer ${selectedSala?.id === sala.id ? 'ring-2 ring-primary' : ''}`}
+            <div className={`grid gap-4 ${selectedSala ? "" : "md:grid-cols-2 lg:grid-cols-3"}`}>
+              {filtered.map((sala) => (
+                <Card
+                  key={sala.id}
+                  className={`hover:shadow-md transition-shadow cursor-pointer ${selectedSala?.id === sala.id ? "ring-2 ring-primary" : ""}`}
                   onClick={() => fetchSalaDetail(sala)}
                 >
                   <CardContent className="p-4 space-y-3">
@@ -393,9 +378,7 @@ export default function KidsSalas() {
                           <p className="font-semibold">{sala.nome}</p>
                         </div>
                       </div>
-                      <Badge className={statusColors[sala.status]}>
-                        {statusLabels[sala.status]}
-                      </Badge>
+                      <Badge className={statusColors[sala.status]}>{statusLabels[sala.status]}</Badge>
                     </div>
 
                     <div className="space-y-2">
@@ -411,12 +394,17 @@ export default function KidsSalas() {
                       <Progress value={getOcupacaoPercent(sala)} className="h-2" />
                     </div>
 
-                    <div className="flex gap-2 pt-2 border-t" onClick={e => e.stopPropagation()}>
+                    <div className="flex gap-2 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
                       <Button variant="outline" size="sm" className="flex-1" onClick={() => openEditModal(sala)}>
                         <Edit className="w-4 h-4 mr-1" />
                         Editar
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(sala)} className="text-destructive hover:text-destructive">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(sala)}
+                        className="text-destructive hover:text-destructive"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -434,7 +422,9 @@ export default function KidsSalas() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{selectedSala.nome}</CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedSala(null)}>✕</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedSala(null)}>
+                    ✕
+                  </Button>
                 </div>
               </CardHeader>
             </Card>
@@ -467,14 +457,14 @@ export default function KidsSalas() {
                       </p>
                     ) : (
                       <div className="space-y-2">
-                        {criancasVinculadas.map(c => (
+                        {criancasVinculadas.map((c) => (
                           <div key={c.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                             <div className="flex items-center gap-2">
                               <Baby className="w-4 h-4 text-primary" />
                               <span className="text-sm font-medium">{c.nome}</span>
                               {c.data_nascimento && (
                                 <span className="text-xs text-muted-foreground">
-                                  ({format(new Date(c.data_nascimento), 'dd/MM/yyyy')})
+                                  ({format(new Date(c.data_nascimento), "dd/MM/yyyy")})
                                 </span>
                               )}
                             </div>
@@ -503,12 +493,10 @@ export default function KidsSalas() {
                   </CardHeader>
                   <CardContent>
                     {checkinsHoje.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        Nenhum check-in hoje nesta sala
-                      </p>
+                      <p className="text-sm text-muted-foreground text-center py-4">Nenhum check-in hoje nesta sala</p>
                     ) : (
                       <div className="space-y-2">
-                        {checkinsHoje.map(c => (
+                        {checkinsHoje.map((c) => (
                           <div key={c.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                             <div className="flex items-center gap-2">
                               <Baby className="w-4 h-4 text-primary" />
@@ -516,10 +504,10 @@ export default function KidsSalas() {
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-muted-foreground">
-                                {format(new Date(c.checkin_at), 'HH:mm')}
+                                {format(new Date(c.checkin_at), "HH:mm")}
                               </span>
                               <Badge variant="secondary" className="text-xs">
-                                {c.status === 'presente' ? 'Presente' : c.status === 'checkout' ? 'Checkout' : c.status}
+                                {c.status === "presente" ? "Presente" : c.status === "checkout" ? "Checkout" : c.status}
                               </Badge>
                             </div>
                           </div>
@@ -538,16 +526,14 @@ export default function KidsSalas() {
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {editingSala ? 'Editar Sala' : 'Nova Sala'}
-            </DialogTitle>
+            <DialogTitle>{editingSala ? "Editar Sala" : "Nova Sala"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Nome *</Label>
               <Input
                 value={formData.nome}
-                onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                 placeholder="Ex: Berçário, 3-5 anos"
               />
             </div>
@@ -556,16 +542,13 @@ export default function KidsSalas() {
               <Input
                 type="number"
                 value={formData.capacidade}
-                onChange={(e) => setFormData({...formData, capacidade: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, capacidade: e.target.value })}
                 placeholder="20"
               />
             </div>
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select 
-                value={formData.status} 
-                onValueChange={(v) => setFormData({...formData, status: v})}
-              >
+              <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o status" />
                 </SelectTrigger>
@@ -579,7 +562,7 @@ export default function KidsSalas() {
               <Label>Observação</Label>
               <Textarea
                 value={formData.observacao}
-                onChange={(e) => setFormData({...formData, observacao: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, observacao: e.target.value })}
                 placeholder="Observações sobre a sala"
               />
             </div>
@@ -589,7 +572,7 @@ export default function KidsSalas() {
               Cancelar
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Salvando...' : 'Salvar'}
+              {saving ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -609,11 +592,9 @@ export default function KidsSalas() {
             />
             <div className="max-h-64 overflow-y-auto space-y-1">
               {filteredDisponiveis.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Nenhuma criança disponível
-                </p>
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma criança disponível</p>
               ) : (
-                filteredDisponiveis.map(c => (
+                filteredDisponiveis.map((c) => (
                   <button
                     key={c.id}
                     className="w-full text-left p-2 rounded-md hover:bg-muted flex items-center justify-between"
@@ -621,9 +602,7 @@ export default function KidsSalas() {
                   >
                     <div>
                       <span className="font-medium text-sm">{c.nome}</span>
-                      {c.sala_id && (
-                        <span className="text-xs text-muted-foreground ml-2">(já em outra sala)</span>
-                      )}
+                      {c.sala_id && <span className="text-xs text-muted-foreground ml-2">(já em outra sala)</span>}
                     </div>
                     <Plus className="w-4 h-4 text-primary" />
                   </button>
