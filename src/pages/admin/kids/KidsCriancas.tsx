@@ -45,7 +45,12 @@ export default function KidsCriancas() {
   const [search, setSearch] = useState("");
 
   const [showModal, setShowModal] = useState(false);
+  const [showFicha, setShowFicha] = useState(false);
   const [editing, setEditing] = useState<Crianca | null>(null);
+  const [criancaSelecionada, setCriancaSelecionada] = useState<Crianca | null>(null);
+
+  const [historico, setHistorico] = useState<any[]>([]);
+  const [responsaveisFicha, setResponsaveisFicha] = useState<any[]>([]);
 
   const [form, setForm] = useState({
     nome: "",
@@ -71,13 +76,14 @@ export default function KidsCriancas() {
   const fetchData = async () => {
     setLoading(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) return;
 
-    if (!user) return;
-
-    const { data: profile } = await supabase.from("profiles").select("igreja_id").eq("user_id", user.id).single();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("igreja_id")
+      .eq("user_id", userData.user.id)
+      .single();
 
     if (!profile?.igreja_id) return;
 
@@ -112,6 +118,26 @@ export default function KidsCriancas() {
     setResponsaveisFiltrados(data || []);
   };
 
+  const openFicha = async (crianca: Crianca) => {
+    setCriancaSelecionada(crianca);
+
+    const { data: links } = await supabase
+      .from("criancas_responsaveis")
+      .select("responsavel:responsaveis(nome, telefone)")
+      .eq("crianca_id", crianca.id);
+
+    const { data: historicoData } = await supabase
+      .from("checkins_kids")
+      .select("checkin_at, status")
+      .eq("crianca_id", crianca.id)
+      .order("checkin_at", { ascending: false })
+      .limit(20);
+
+    setResponsaveisFicha(links || []);
+    setHistorico(historicoData || []);
+    setShowFicha(true);
+  };
+
   const openModal = (crianca?: Crianca) => {
     if (crianca) {
       setEditing(crianca);
@@ -137,6 +163,24 @@ export default function KidsCriancas() {
     setShowModal(true);
   };
 
+  const handleUpload = async (event: any) => {
+    if (!criancaSelecionada) return;
+
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const fileName = `${Date.now()}-${file.name}`;
+
+    await supabase.storage.from("criancas").upload(fileName, file);
+
+    const { data } = supabase.storage.from("criancas").getPublicUrl(fileName);
+
+    await supabase.from("criancas").update({ foto_url: data.publicUrl }).eq("id", criancaSelecionada.id);
+
+    fetchData();
+    toast({ title: "Foto atualizada!" });
+  };
+
   const handleSave = async () => {
     if (!form.nome.trim() || !igrejaId) {
       toast({ title: "Nome é obrigatório", variant: "destructive" });
@@ -149,27 +193,11 @@ export default function KidsCriancas() {
       let criancaId = editing?.id;
 
       if (editing) {
-        await supabase
-          .from("criancas")
-          .update({
-            nome: form.nome,
-            data_nascimento: form.data_nascimento || null,
-            alergias: form.alergias || null,
-            observacoes: form.observacoes || null,
-            sala_id: form.sala_id || null,
-          })
-          .eq("id", editing.id);
+        await supabase.from("criancas").update(form).eq("id", editing.id);
       } else {
         const { data } = await supabase
           .from("criancas")
-          .insert({
-            igreja_id: igrejaId,
-            nome: form.nome,
-            data_nascimento: form.data_nascimento || null,
-            alergias: form.alergias || null,
-            observacoes: form.observacoes || null,
-            sala_id: form.sala_id || null,
-          })
+          .insert({ ...form, igreja_id: igrejaId })
           .select()
           .single();
 
@@ -204,7 +232,6 @@ export default function KidsCriancas() {
 
   const handleDelete = async (crianca: Crianca) => {
     if (!confirm(`Excluir ${crianca.nome}?`)) return;
-
     await supabase.from("criancas").delete().eq("id", crianca.id);
     fetchData();
   };
@@ -235,115 +262,80 @@ export default function KidsCriancas() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filtered.map((crianca) => (
-          <Card key={crianca.id}>
+          <Card
+            key={crianca.id}
+            className="cursor-pointer hover:shadow-lg transition"
+            onClick={() => openFicha(crianca)}
+          >
             <CardContent className="p-4 space-y-2">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Baby className="w-5 h-5 text-primary" />
-                </div>
+                {crianca.foto_url ? (
+                  <img src={crianca.foto_url} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Baby className="w-5 h-5 text-primary" />
+                  </div>
+                )}
                 <div>
                   <p className="font-semibold">{crianca.nome}</p>
                   <p className="text-sm text-muted-foreground">{calculateAge(crianca.data_nascimento)}</p>
                 </div>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button size="sm" variant="outline" onClick={() => openModal(crianca)}>
-                  <Edit className="w-4 h-4 mr-1" />
-                  Editar
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => handleDelete(crianca)}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Editar Criança" : "Nova Criança"}</DialogTitle>
-          </DialogHeader>
+      {/* Modal Ficha */}
+      <Dialog open={showFicha} onOpenChange={setShowFicha}>
+        <DialogContent className="sm:max-w-xl">
+          {criancaSelecionada && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Ficha da Criança</DialogTitle>
+              </DialogHeader>
 
-          <div className="space-y-4">
-            <Input placeholder="Nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+              <div className="space-y-4">
+                <input type="file" accept="image/*" onChange={handleUpload} />
 
-            <Input
-              type="date"
-              value={form.data_nascimento}
-              onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })}
-            />
+                <p>
+                  <strong>Nome:</strong> {criancaSelecionada.nome}
+                </p>
+                <p>
+                  <strong>Idade:</strong> {calculateAge(criancaSelecionada.data_nascimento)}
+                </p>
+                <p>
+                  <strong>Alergias:</strong> {criancaSelecionada.alergias || "Nenhuma"}
+                </p>
+                <p>
+                  <strong>Observações:</strong> {criancaSelecionada.observacoes || "—"}
+                </p>
 
-            <Input
-              placeholder="Alergias"
-              value={form.alergias}
-              onChange={(e) => setForm({ ...form, alergias: e.target.value })}
-            />
-
-            <Textarea
-              placeholder="Observações"
-              value={form.observacoes}
-              onChange={(e) => setForm({ ...form, observacoes: e.target.value })}
-            />
-
-            <Select value={form.sala_id} onValueChange={(v) => setForm({ ...form, sala_id: v })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sala principal" />
-              </SelectTrigger>
-              <SelectContent>
-                {salas.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* AUTOCOMPLETE RESPONSÁVEL */}
-            <div className="space-y-2">
-              <Label>Responsáveis</Label>
-
-              <Input
-                placeholder="Digite o nome..."
-                value={buscaResponsavel}
-                onChange={(e) => setBuscaResponsavel(e.target.value)}
-              />
-
-              {responsaveisFiltrados.map((r) => (
-                <div
-                  key={r.id}
-                  className="p-2 border rounded cursor-pointer hover:bg-muted"
-                  onClick={() => {
-                    setResponsaveisSelecionados((prev) => [...prev, r]);
-                    setBuscaResponsavel("");
-                  }}
-                >
-                  {r.nome}
-                </div>
-              ))}
-
-              {responsaveisSelecionados.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {responsaveisSelecionados.map((r) => (
-                    <span key={r.id} className="px-2 py-1 bg-primary/10 text-primary rounded text-sm">
-                      {r.nome}
-                    </span>
+                <div>
+                  <strong>Responsáveis:</strong>
+                  {responsaveisFicha.map((r: any, i: number) => (
+                    <p key={i}>• {r.responsavel?.nome}</p>
                   ))}
                 </div>
-              )}
-            </div>
-          </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowModal(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Salvando..." : "Salvar"}
-            </Button>
-          </DialogFooter>
+                <div>
+                  <strong>Histórico:</strong>
+                  {historico.map((h, i) => (
+                    <p key={i}>• {new Date(h.checkin_at).toLocaleString()}</p>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={() => openModal(criancaSelecionada)}>
+                    <Edit className="w-4 h-4 mr-1" /> Editar
+                  </Button>
+                  <Button variant="outline" onClick={() => handleDelete(criancaSelecionada)}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
