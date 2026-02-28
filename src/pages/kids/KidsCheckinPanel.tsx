@@ -276,18 +276,6 @@ export default function KidsCheckinPanel() {
 
     setSaving(true);
     try {
-      // Buscar o profile_id do usuário logado (necessário para criancas.responsavel_id)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-
       if (profileError || !profileData) throw new Error("Profile não encontrado");
 
       // 1. Criar responsável na tabela responsaveis (para o check-in)
@@ -312,7 +300,6 @@ export default function KidsCheckinPanel() {
           observacoes: cadastroRapido.crianca_observacoes.trim() || null,
           autoriza_foto: cadastroRapido.autoriza_foto,
           sala_id: cadastroRapido.sala_id || null,
-          responsavel_id: profileData.id, // Referência ao profile do usuário logado
         })
         .select()
         .single();
