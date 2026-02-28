@@ -1,7 +1,7 @@
 
 -- 1) Add sala_id (fixed room assignment) to criancas table
 ALTER TABLE public.criancas
-ADD COLUMN sala_id uuid REFERENCES public.salas_kids(id) ON DELETE SET NULL;
+ADD COLUMN sala_id uuid REFERENCES public.salas(id) ON DELETE SET NULL;
 
 CREATE INDEX idx_criancas_sala_id ON public.criancas(sala_id);
 
