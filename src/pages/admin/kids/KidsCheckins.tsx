@@ -1,30 +1,30 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/hooks/use-toast';
-import { 
-  Search, 
-  Plus, 
-  Baby, 
-  Clock, 
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
+import {
+  Search,
+  Plus,
+  Baby,
+  Clock,
   LogOut as LogOutIcon,
   Eye,
   MessageCircle,
   User,
   MapPin,
-  Download
-} from 'lucide-react';
-import { format, differenceInYears } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+  Download,
+} from "lucide-react";
+import { format, differenceInYears } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface Checkin {
   id: string;
@@ -71,20 +71,20 @@ interface Sala {
 }
 
 const statusLabels: Record<string, string> = {
-  presente: 'Presente',
-  checkout: 'Checkout',
-  cancelado: 'Cancelado',
+  presente: "Presente",
+  checkout: "Checkout",
+  cancelado: "Cancelado",
 };
 
 const statusColors: Record<string, string> = {
-  presente: 'bg-green-100 text-green-800 border-green-200',
-  checkout: 'bg-blue-100 text-blue-800 border-blue-200',
-  cancelado: 'bg-red-100 text-red-800 border-red-200',
+  presente: "bg-green-100 text-green-800 border-green-200",
+  checkout: "bg-blue-100 text-blue-800 border-blue-200",
+  cancelado: "bg-red-100 text-red-800 border-red-200",
 };
 
 const cleanPhone = (phone: string | null): string => {
-  if (!phone) return '';
-  return phone.replace(/\D/g, '');
+  if (!phone) return "";
+  return phone.replace(/\D/g, "");
 };
 
 const hasValidPhone = (phone: string | null): boolean => {
@@ -101,30 +101,30 @@ const formatDateTime = (date: string) => {
 };
 
 const calculateAge = (birthDate: string | null): string => {
-  if (!birthDate) return '–';
+  if (!birthDate) return "–";
   const age = differenceInYears(new Date(), new Date(birthDate));
   return `${age} anos`;
 };
 
 const exportToCSV = (checkins: Checkin[]) => {
-  const headers = ['Criança', 'Idade', 'Sala', 'Responsável', 'Telefone', 'Check-in', 'Check-out', 'Status'];
-  const rows = checkins.map(c => [
-    c.crianca?.nome || '',
-    c.crianca?.data_nascimento ? calculateAge(c.crianca.data_nascimento) : '',
-    c.sala?.nome || '',
-    c.responsavel?.nome || '',
-    c.responsavel?.telefone || '',
-    c.checkin_at ? formatDateTime(c.checkin_at) : '',
-    c.checkout_at ? formatDateTime(c.checkout_at) : '',
+  const headers = ["Criança", "Idade", "Sala", "Responsável", "Telefone", "Check-in", "Check-out", "Status"];
+  const rows = checkins.map((c) => [
+    c.crianca?.nome || "",
+    c.crianca?.data_nascimento ? calculateAge(c.crianca.data_nascimento) : "",
+    c.sala?.nome || "",
+    c.responsavel?.nome || "",
+    c.responsavel?.telefone || "",
+    c.checkin_at ? formatDateTime(c.checkin_at) : "",
+    c.checkout_at ? formatDateTime(c.checkout_at) : "",
     statusLabels[c.status] || c.status,
   ]);
-  
-  const csvContent = [headers.join(','), ...rows.map(r => r.map(cell => `"${cell}"`).join(','))].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+  const csvContent = [headers.join(","), ...rows.map((r) => r.map((cell) => `"${cell}"`).join(","))].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
-  link.download = `checkins_kids_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+  link.download = `checkins_kids_${format(new Date(), "yyyy-MM-dd")}.csv`;
   link.click();
 };
 
@@ -135,21 +135,21 @@ export default function KidsCheckins() {
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
   const [salas, setSalas] = useState<Sala[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filterSala, setFilterSala] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  
+  const [search, setSearch] = useState("");
+  const [filterSala, setFilterSala] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+
   // Modal states
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [selectedCheckin, setSelectedCheckin] = useState<Checkin | null>(null);
   const [newCheckin, setNewCheckin] = useState({
-    crianca_id: '',
-    responsavel_id: '',
-    sala_id: '',
-    observacao: ''
+    crianca_id: "",
+    responsavel_id: "",
+    sala_id: "",
+    observacao: "",
   });
-  const [checkoutResponsavelId, setCheckoutResponsavelId] = useState('');
+  const [checkoutResponsavelId, setCheckoutResponsavelId] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -161,44 +161,36 @@ export default function KidsCheckins() {
     try {
       // Fetch checkins with related data
       const { data: checkinsData, error: checkinsError } = await supabase
-        .from('checkins_kids')
-        .select(`
+        .from("checkins_kids")
+        .select(
+          `
           *,
           crianca:criancas(id, nome, data_nascimento),
           responsavel:responsaveis!checkins_kids_responsavel_id_fkey(id, nome, telefone),
-          sala:salas_kids(id, nome)
-        `)
-        .order('checkin_at', { ascending: false });
+          sala:salas(id, nome)
+        `,
+        )
+        .order("checkin_at", { ascending: false });
 
       if (checkinsError) throw checkinsError;
       setCheckins(checkinsData || []);
 
       // Fetch criancas
-      const { data: criancasData } = await supabase
-        .from('criancas')
-        .select('id, nome, data_nascimento')
-        .order('nome');
+      const { data: criancasData } = await supabase.from("criancas").select("id, nome, data_nascimento").order("nome");
       setCriancas(criancasData || []);
 
       // Fetch responsaveis
-      const { data: responsaveisData } = await supabase
-        .from('responsaveis')
-        .select('id, nome, telefone')
-        .order('nome');
+      const { data: responsaveisData } = await supabase.from("responsaveis").select("id, nome, telefone").order("nome");
       setResponsaveis(responsaveisData || []);
 
       // Fetch salas
-      const { data: salasData } = await supabase
-        .from('salas_kids')
-        .select('*')
-        .eq('status', 'ativa')
-        .order('nome');
+      const { data: salasData } = await supabase.from("salas").select("*").eq("status", "ativa").order("nome");
       setSalas(salasData || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
       toast({
-        title: 'Erro ao carregar dados',
-        variant: 'destructive'
+        title: "Erro ao carregar dados",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -208,35 +200,33 @@ export default function KidsCheckins() {
   const handleCheckin = async () => {
     if (!newCheckin.crianca_id || !newCheckin.responsavel_id || !newCheckin.sala_id) {
       toast({
-        title: 'Preencha todos os campos obrigatórios',
-        variant: 'destructive'
+        title: "Preencha todos os campos obrigatórios",
+        variant: "destructive",
       });
       return;
     }
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('checkins_kids')
-        .insert({
-          crianca_id: newCheckin.crianca_id,
-          responsavel_id: newCheckin.responsavel_id,
-          sala_id: newCheckin.sala_id,
-          observacao: newCheckin.observacao || null,
-          status: 'presente'
-        });
+      const { error } = await supabase.from("checkins_kids").insert({
+        crianca_id: newCheckin.crianca_id,
+        responsavel_id: newCheckin.responsavel_id,
+        sala_id: newCheckin.sala_id,
+        observacao: newCheckin.observacao || null,
+        status: "presente",
+      });
 
       if (error) throw error;
 
-      toast({ title: 'Check-in realizado com sucesso!' });
+      toast({ title: "Check-in realizado com sucesso!" });
       setShowCheckinModal(false);
-      setNewCheckin({ crianca_id: '', responsavel_id: '', sala_id: '', observacao: '' });
+      setNewCheckin({ crianca_id: "", responsavel_id: "", sala_id: "", observacao: "" });
       fetchData();
     } catch (error) {
-      console.error('Error creating checkin:', error);
+      console.error("Error creating checkin:", error);
       toast({
-        title: 'Erro ao realizar check-in',
-        variant: 'destructive'
+        title: "Erro ao realizar check-in",
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -246,8 +236,8 @@ export default function KidsCheckins() {
   const handleCheckout = async () => {
     if (!selectedCheckin || !checkoutResponsavelId) {
       toast({
-        title: 'Selecione o responsável que está retirando',
-        variant: 'destructive'
+        title: "Selecione o responsável que está retirando",
+        variant: "destructive",
       });
       return;
     }
@@ -255,26 +245,26 @@ export default function KidsCheckins() {
     setSaving(true);
     try {
       const { error } = await supabase
-        .from('checkins_kids')
+        .from("checkins_kids")
         .update({
           checkout_at: new Date().toISOString(),
           checkout_responsavel_id: checkoutResponsavelId,
-          status: 'checkout'
+          status: "checkout",
         })
-        .eq('id', selectedCheckin.id);
+        .eq("id", selectedCheckin.id);
 
       if (error) throw error;
 
-      toast({ title: 'Checkout realizado com sucesso!' });
+      toast({ title: "Checkout realizado com sucesso!" });
       setShowCheckoutModal(false);
       setSelectedCheckin(null);
-      setCheckoutResponsavelId('');
+      setCheckoutResponsavelId("");
       fetchData();
     } catch (error) {
-      console.error('Error doing checkout:', error);
+      console.error("Error doing checkout:", error);
       toast({
-        title: 'Erro ao realizar checkout',
-        variant: 'destructive'
+        title: "Erro ao realizar checkout",
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -286,12 +276,13 @@ export default function KidsCheckins() {
     setShowCheckoutModal(true);
   };
 
-  const filtered = checkins.filter(c => {
-    const matchesSearch = search === '' || 
+  const filtered = checkins.filter((c) => {
+    const matchesSearch =
+      search === "" ||
       c.crianca?.nome?.toLowerCase().includes(search.toLowerCase()) ||
       c.responsavel?.nome?.toLowerCase().includes(search.toLowerCase());
-    const matchesSala = filterSala === 'all' || c.sala_id === filterSala;
-    const matchesStatus = filterStatus === 'all' || c.status === filterStatus;
+    const matchesSala = filterSala === "all" || c.sala_id === filterSala;
+    const matchesStatus = filterStatus === "all" || c.status === filterStatus;
     return matchesSearch && matchesSala && matchesStatus;
   });
 
@@ -303,7 +294,7 @@ export default function KidsCheckins() {
           <Skeleton className="h-10 w-32" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Skeleton key={i} className="h-48" />
           ))}
         </div>
@@ -348,8 +339,10 @@ export default function KidsCheckins() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas as salas</SelectItem>
-            {salas.map(sala => (
-              <SelectItem key={sala.id} value={sala.id}>{sala.nome}</SelectItem>
+            {salas.map((sala) => (
+              <SelectItem key={sala.id} value={sala.id}>
+                {sala.nome}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -375,7 +368,7 @@ export default function KidsCheckins() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map(checkin => (
+          {filtered.map((checkin) => (
             <Card key={checkin.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-4 space-y-3">
                 {/* Header */}
@@ -391,7 +384,7 @@ export default function KidsCheckins() {
                       </p>
                     </div>
                   </div>
-                  <Badge className={statusColors[checkin.status] || 'bg-gray-100'}>
+                  <Badge className={statusColors[checkin.status] || "bg-gray-100"}>
                     {statusLabels[checkin.status] || checkin.status}
                   </Badge>
                 </div>
@@ -433,12 +426,8 @@ export default function KidsCheckins() {
                     <Eye className="w-4 h-4 mr-1" />
                     Detalhes
                   </Button>
-                  {checkin.status === 'presente' && (
-                    <Button
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => openCheckoutModal(checkin)}
-                    >
+                  {checkin.status === "presente" && (
+                    <Button size="sm" className="flex-1" onClick={() => openCheckoutModal(checkin)}>
                       <LogOutIcon className="w-4 h-4 mr-1" />
                       Checkout
                     </Button>
@@ -459,15 +448,15 @@ export default function KidsCheckins() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Criança *</Label>
-              <Select 
-                value={newCheckin.crianca_id} 
-                onValueChange={(v) => setNewCheckin({...newCheckin, crianca_id: v})}
+              <Select
+                value={newCheckin.crianca_id}
+                onValueChange={(v) => setNewCheckin({ ...newCheckin, crianca_id: v })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a criança" />
                 </SelectTrigger>
                 <SelectContent>
-                  {criancas.map(c => (
+                  {criancas.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.nome} {c.data_nascimento && `(${calculateAge(c.data_nascimento)})`}
                     </SelectItem>
@@ -477,32 +466,33 @@ export default function KidsCheckins() {
             </div>
             <div className="space-y-2">
               <Label>Responsável *</Label>
-              <Select 
-                value={newCheckin.responsavel_id} 
-                onValueChange={(v) => setNewCheckin({...newCheckin, responsavel_id: v})}
+              <Select
+                value={newCheckin.responsavel_id}
+                onValueChange={(v) => setNewCheckin({ ...newCheckin, responsavel_id: v })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o responsável" />
                 </SelectTrigger>
                 <SelectContent>
-                  {responsaveis.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>
+                  {responsaveis.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.nome}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Sala *</Label>
-              <Select 
-                value={newCheckin.sala_id} 
-                onValueChange={(v) => setNewCheckin({...newCheckin, sala_id: v})}
-              >
+              <Select value={newCheckin.sala_id} onValueChange={(v) => setNewCheckin({ ...newCheckin, sala_id: v })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a sala" />
                 </SelectTrigger>
                 <SelectContent>
-                  {salas.map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                  {salas.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.nome}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -511,7 +501,7 @@ export default function KidsCheckins() {
               <Label>Observação</Label>
               <Textarea
                 value={newCheckin.observacao}
-                onChange={(e) => setNewCheckin({...newCheckin, observacao: e.target.value})}
+                onChange={(e) => setNewCheckin({ ...newCheckin, observacao: e.target.value })}
                 placeholder="Alguma observação importante?"
               />
             </div>
@@ -521,7 +511,7 @@ export default function KidsCheckins() {
               Cancelar
             </Button>
             <Button onClick={handleCheckin} disabled={saving}>
-              {saving ? 'Salvando...' : 'Confirmar Check-in'}
+              {saving ? "Salvando..." : "Confirmar Check-in"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -537,23 +527,20 @@ export default function KidsCheckins() {
             {selectedCheckin && (
               <div className="p-4 bg-muted rounded-lg">
                 <p className="font-semibold">{selectedCheckin.crianca?.nome}</p>
-                <p className="text-sm text-muted-foreground">
-                  Sala: {selectedCheckin.sala?.nome}
-                </p>
+                <p className="text-sm text-muted-foreground">Sala: {selectedCheckin.sala?.nome}</p>
               </div>
             )}
             <div className="space-y-2">
               <Label>Quem está retirando? *</Label>
-              <Select 
-                value={checkoutResponsavelId} 
-                onValueChange={setCheckoutResponsavelId}
-              >
+              <Select value={checkoutResponsavelId} onValueChange={setCheckoutResponsavelId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o responsável" />
                 </SelectTrigger>
                 <SelectContent>
-                  {responsaveis.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>
+                  {responsaveis.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.nome}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -564,7 +551,7 @@ export default function KidsCheckins() {
               Cancelar
             </Button>
             <Button onClick={handleCheckout} disabled={saving}>
-              {saving ? 'Salvando...' : 'Confirmar Checkout'}
+              {saving ? "Salvando..." : "Confirmar Checkout"}
             </Button>
           </DialogFooter>
         </DialogContent>
