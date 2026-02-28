@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { Plus, Baby, Edit, Trash2, Search } from "lucide-react";
 import { differenceInYears } from "date-fns";
+import { v4 as uuidv4 } from "uuid";
 
 interface Crianca {
   id: string;
@@ -19,6 +20,7 @@ interface Crianca {
   observacoes: string | null;
   sala_id: string | null;
   foto_url?: string | null;
+  qr_token?: string | null;
 }
 
 interface Responsavel {
@@ -163,24 +165,6 @@ export default function KidsCriancas() {
     setShowModal(true);
   };
 
-  const handleUpload = async (event: any) => {
-    if (!criancaSelecionada) return;
-
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const fileName = `${Date.now()}-${file.name}`;
-
-    await supabase.storage.from("criancas").upload(fileName, file);
-
-    const { data } = supabase.storage.from("criancas").getPublicUrl(fileName);
-
-    await supabase.from("criancas").update({ foto_url: data.publicUrl }).eq("id", criancaSelecionada.id);
-
-    fetchData();
-    toast({ title: "Foto atualizada!" });
-  };
-
   const handleSave = async () => {
     if (!form.nome.trim() || !igrejaId) {
       toast({ title: "Nome é obrigatório", variant: "destructive" });
@@ -193,11 +177,34 @@ export default function KidsCriancas() {
       let criancaId = editing?.id;
 
       if (editing) {
-        await supabase.from("criancas").update(form).eq("id", editing.id);
+        await supabase
+          .from("criancas")
+          .update({
+            nome: form.nome,
+            data_nascimento: form.data_nascimento || null,
+            alergias: form.alergias || null,
+            observacoes: form.observacoes || null,
+            sala_id: form.sala_id || null,
+          })
+          .eq("id", editing.id);
+
+        const { data: atual } = await supabase.from("criancas").select("qr_token").eq("id", editing.id).single();
+
+        if (!atual?.qr_token) {
+          await supabase.from("criancas").update({ qr_token: uuidv4() }).eq("id", editing.id);
+        }
       } else {
         const { data } = await supabase
           .from("criancas")
-          .insert({ ...form, igreja_id: igrejaId })
+          .insert({
+            igreja_id: igrejaId,
+            nome: form.nome,
+            data_nascimento: form.data_nascimento || null,
+            alergias: form.alergias || null,
+            observacoes: form.observacoes || null,
+            sala_id: form.sala_id || null,
+            qr_token: uuidv4(),
+          })
           .select()
           .single();
 
@@ -285,59 +292,6 @@ export default function KidsCriancas() {
           </Card>
         ))}
       </div>
-
-      {/* Modal Ficha */}
-      <Dialog open={showFicha} onOpenChange={setShowFicha}>
-        <DialogContent className="sm:max-w-xl">
-          {criancaSelecionada && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Ficha da Criança</DialogTitle>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <input type="file" accept="image/*" onChange={handleUpload} />
-
-                <p>
-                  <strong>Nome:</strong> {criancaSelecionada.nome}
-                </p>
-                <p>
-                  <strong>Idade:</strong> {calculateAge(criancaSelecionada.data_nascimento)}
-                </p>
-                <p>
-                  <strong>Alergias:</strong> {criancaSelecionada.alergias || "Nenhuma"}
-                </p>
-                <p>
-                  <strong>Observações:</strong> {criancaSelecionada.observacoes || "—"}
-                </p>
-
-                <div>
-                  <strong>Responsáveis:</strong>
-                  {responsaveisFicha.map((r: any, i: number) => (
-                    <p key={i}>• {r.responsavel?.nome}</p>
-                  ))}
-                </div>
-
-                <div>
-                  <strong>Histórico:</strong>
-                  {historico.map((h, i) => (
-                    <p key={i}>• {new Date(h.checkin_at).toLocaleString()}</p>
-                  ))}
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <Button onClick={() => openModal(criancaSelecionada)}>
-                    <Edit className="w-4 h-4 mr-1" /> Editar
-                  </Button>
-                  <Button variant="outline" onClick={() => handleDelete(criancaSelecionada)}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
