@@ -1,22 +1,41 @@
-import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Users, UserPlus, Network, Baby, Wallet, BarChart3, 
-  Download, FileText, TrendingUp, Loader2
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, BarChart, Bar, Legend
-} from 'recharts';
-import { exportToCSV, exportToPDF } from '@/utils/exportUtils';
+import { useState, useEffect, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Users,
+  UserPlus,
+  Network,
+  Baby,
+  Wallet,
+  BarChart3,
+  Download,
+  FileText,
+  TrendingUp,
+  Loader2,
+} from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  Legend,
+} from "recharts";
+import { exportToCSV, exportToPDF } from "@/utils/exportUtils";
 
-const COLORS = ['#5A9462', '#396939', '#73A97A', '#D9534F', '#85A89A', '#E6A327'];
+const COLORS = ["#5A9462", "#396939", "#73A97A", "#D9534F", "#85A89A", "#E6A327"];
 
 export default function RelatorioGeral() {
   const reportRef = useRef<HTMLDivElement>(null);
@@ -52,29 +71,34 @@ export default function RelatorioGeral() {
 
       // KPIs
       const [visitantes, bases, membros, checkins, transacoes] = await Promise.all([
-        supabase.from('visitantes').select('*', { count: 'exact', head: true })
-          .gte('created_at', inicioMes.toISOString())
-          .lte('created_at', fimMes.toISOString()),
-        supabase.from('bases').select('*', { count: 'exact', head: true }).eq('status', 'ativo'),
-        supabase.from('membros').select('*', { count: 'exact', head: true }).eq('status', 'ativo'),
-        supabase.from('checkins_kids').select('*', { count: 'exact', head: true })
-          .eq('status', 'presente')
-          .gte('checkin_at', format(new Date(), 'yyyy-MM-dd')),
-        supabase.from('transacoes_financeiras').select('tipo, valor')
-          .gte('data_operacao', format(inicioMes, 'yyyy-MM-dd'))
-          .lte('data_operacao', format(fimMes, 'yyyy-MM-dd'))
-          .eq('status', 'confirmado'),
+        supabase
+          .from("visitantes")
+          .select("*", { count: "exact", head: true })
+          .gte("created_at", inicioMes.toISOString())
+          .lte("created_at", fimMes.toISOString()),
+        supabase.from("bases").select("*", { count: "exact", head: true }).eq("status", "ativo"),
+        supabase.from("membros").select("*", { count: "exact", head: true }).eq("status", "ativo"),
+        supabase
+          .from("checkins_kids")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "presente")
+          .gte("checkin_at", format(new Date(), "yyyy-MM-dd")),
+        supabase
+          .from("transacoes_financeiras")
+          .select("tipo, valor")
+          .gte("data_operacao", format(inicioMes, "yyyy-MM-dd"))
+          .lte("data_operacao", format(fimMes, "yyyy-MM-dd"))
+          .eq("status", "confirmado"),
       ]);
 
       // Taxa conversão
-      const { count: acompCount } = await supabase.from('acompanhamentos').select('*', { count: 'exact', head: true });
-      const taxaConversao = visitantes.count && visitantes.count > 0 
-        ? Math.round(((acompCount || 0) / visitantes.count) * 100) 
-        : 0;
+      const { count: acompCount } = await supabase.from("acompanhamentos").select("*", { count: "exact", head: true });
+      const taxaConversao =
+        visitantes.count && visitantes.count > 0 ? Math.round(((acompCount || 0) / visitantes.count) * 100) : 0;
 
       // Saldo do mês
       const saldoMes = (transacoes.data || []).reduce((acc, t) => {
-        return acc + (t.tipo === 'receita' ? t.valor : -t.valor);
+        return acc + (t.tipo === "receita" ? t.valor : -t.valor);
       }, 0);
 
       setKpis({
@@ -90,7 +114,7 @@ export default function RelatorioGeral() {
       // Charts data
       await fetchChartData();
     } catch (error) {
-      console.error('Erro ao buscar dados:', error);
+      console.error("Erro ao buscar dados:", error);
     } finally {
       setLoading(false);
     }
@@ -101,49 +125,63 @@ export default function RelatorioGeral() {
     const visitantesMensal = [];
     for (let i = 5; i >= 0; i--) {
       const mes = subMonths(new Date(), i);
-      const { count } = await supabase.from('visitantes').select('*', { count: 'exact', head: true })
-        .gte('created_at', startOfMonth(mes).toISOString())
-        .lte('created_at', endOfMonth(mes).toISOString());
-      visitantesMensal.push({ mes: format(mes, 'MMM', { locale: ptBR }), visitantes: count || 0 });
+      const { count } = await supabase
+        .from("visitantes")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", startOfMonth(mes).toISOString())
+        .lte("created_at", endOfMonth(mes).toISOString());
+      visitantesMensal.push({ mes: format(mes, "MMM", { locale: ptBR }), visitantes: count || 0 });
     }
 
     // Acompanhamentos por status
-    const { data: acompData } = await supabase.from('acompanhamentos').select('status');
+    const { data: acompData } = await supabase.from("acompanhamentos").select("status");
     const acompStatus = Object.entries(
       (acompData || []).reduce((acc: Record<string, number>, a) => {
         acc[a.status] = (acc[a.status] || 0) + 1;
         return acc;
-      }, {})
+      }, {}),
     ).map(([name, value]) => ({ name, value }));
 
     // Membros ativos vs inativos
-    const { count: ativos } = await supabase.from('membros').select('*', { count: 'exact', head: true }).eq('status', 'ativo');
-    const { count: inativos } = await supabase.from('membros').select('*', { count: 'exact', head: true }).neq('status', 'ativo');
+    const { count: ativos } = await supabase
+      .from("membros")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "ativo");
+    const { count: inativos } = await supabase
+      .from("membros")
+      .select("*", { count: "exact", head: true })
+      .neq("status", "ativo");
     const membrosStatus = [
-      { name: 'Ativos', value: ativos || 0 },
-      { name: 'Inativos', value: inativos || 0 },
+      { name: "Ativos", value: ativos || 0 },
+      { name: "Inativos", value: inativos || 0 },
     ];
 
     // Check-ins por sala
-    const { data: salasData } = await supabase.from('salas_kids').select('id, nome');
-    const checkinsSalas = await Promise.all((salasData || []).map(async (sala) => {
-      const { count } = await supabase.from('checkins_kids').select('*', { count: 'exact', head: true })
-        .eq('sala_id', sala.id)
-        .gte('checkin_at', format(startOfMonth(new Date()), 'yyyy-MM-dd'));
-      return { sala: sala.nome, checkins: count || 0 };
-    }));
+    const { data: salasData } = await supabase.from("salas").select("id, nome");
+    const checkinsSalas = await Promise.all(
+      (salasData || []).map(async (sala) => {
+        const { count } = await supabase
+          .from("checkins_kids")
+          .select("*", { count: "exact", head: true })
+          .eq("sala_id", sala.id)
+          .gte("checkin_at", format(startOfMonth(new Date()), "yyyy-MM-dd"));
+        return { sala: sala.nome, checkins: count || 0 };
+      }),
+    );
 
     // Financeiro mensal
     const financeiroMensal = [];
     for (let i = 5; i >= 0; i--) {
       const mes = subMonths(new Date(), i);
-      const { data } = await supabase.from('transacoes_financeiras').select('tipo, valor')
-        .gte('data_operacao', format(startOfMonth(mes), 'yyyy-MM-dd'))
-        .lte('data_operacao', format(endOfMonth(mes), 'yyyy-MM-dd'))
-        .eq('status', 'confirmado');
-      const entradas = (data || []).filter(t => t.tipo === 'receita').reduce((s, t) => s + t.valor, 0);
-      const saidas = (data || []).filter(t => t.tipo === 'despesa').reduce((s, t) => s + t.valor, 0);
-      financeiroMensal.push({ mes: format(mes, 'MMM', { locale: ptBR }), entradas, saidas });
+      const { data } = await supabase
+        .from("transacoes_financeiras")
+        .select("tipo, valor")
+        .gte("data_operacao", format(startOfMonth(mes), "yyyy-MM-dd"))
+        .lte("data_operacao", format(endOfMonth(mes), "yyyy-MM-dd"))
+        .eq("status", "confirmado");
+      const entradas = (data || []).filter((t) => t.tipo === "receita").reduce((s, t) => s + t.valor, 0);
+      const saidas = (data || []).filter((t) => t.tipo === "despesa").reduce((s, t) => s + t.valor, 0);
+      financeiroMensal.push({ mes: format(mes, "MMM", { locale: ptBR }), entradas, saidas });
     }
 
     setChartData({ visitantesMensal, acompStatus, membrosStatus, checkinsSalas, financeiroMensal });
@@ -151,26 +189,26 @@ export default function RelatorioGeral() {
 
   const handleExportCSV = () => {
     const data = [
-      { metrica: 'Visitantes no Mês', valor: kpis.visitantesMes },
-      { metrica: 'Taxa de Conversão', valor: `${kpis.taxaConversao}%` },
-      { metrica: 'Bases Ativas', valor: kpis.basesAtivas },
-      { metrica: 'Membros Ativos', valor: kpis.membrosAtivos },
-      { metrica: 'Kids Presentes Hoje', valor: kpis.kidsPresentes },
-      { metrica: 'Transações do Mês', valor: kpis.transacoesMes },
-      { metrica: 'Saldo do Mês', valor: kpis.saldoMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) },
+      { metrica: "Visitantes no Mês", valor: kpis.visitantesMes },
+      { metrica: "Taxa de Conversão", valor: `${kpis.taxaConversao}%` },
+      { metrica: "Bases Ativas", valor: kpis.basesAtivas },
+      { metrica: "Membros Ativos", valor: kpis.membrosAtivos },
+      { metrica: "Kids Presentes Hoje", valor: kpis.kidsPresentes },
+      { metrica: "Transações do Mês", valor: kpis.transacoesMes },
+      { metrica: "Saldo do Mês", valor: kpis.saldoMes.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) },
     ];
-    exportToCSV(data, 'relatorio_geral');
+    exportToCSV(data, "relatorio_geral");
   };
 
   const handleExportPDF = async () => {
     if (!reportRef.current) return;
     setExportingPDF(true);
     try {
-      await exportToPDF(reportRef.current, 'relatorio_geral');
-      toast.success('PDF exportado com sucesso.');
+      await exportToPDF(reportRef.current, "relatorio_geral");
+      toast.success("PDF exportado com sucesso.");
     } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      toast.error('Não foi possível gerar o PDF.');
+      console.error("Erro ao exportar PDF:", error);
+      toast.error("Não foi possível gerar o PDF.");
     } finally {
       setExportingPDF(false);
     }
@@ -181,7 +219,9 @@ export default function RelatorioGeral() {
       <div className="space-y-6">
         <Skeleton className="h-8 w-64" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...Array(7)].map((_, i) => <Skeleton key={i} className="h-24" />)}
+          {[...Array(7)].map((_, i) => (
+            <Skeleton key={i} className="h-24" />
+          ))}
         </div>
       </div>
     );
@@ -201,7 +241,7 @@ export default function RelatorioGeral() {
           </Button>
           <Button variant="outline" onClick={handleExportPDF} disabled={exportingPDF}>
             {exportingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
-            {exportingPDF ? 'Gerando...' : 'PDF'}
+            {exportingPDF ? "Gerando..." : "PDF"}
           </Button>
         </div>
       </div>
@@ -277,10 +317,10 @@ export default function RelatorioGeral() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <BarChart3 className={`w-5 h-5 ${kpis.saldoMes >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+              <BarChart3 className={`w-5 h-5 ${kpis.saldoMes >= 0 ? "text-green-600" : "text-red-600"}`} />
               <div>
-                <p className={`text-xl font-bold ${kpis.saldoMes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {kpis.saldoMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                <p className={`text-xl font-bold ${kpis.saldoMes >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {kpis.saldoMes.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                 </p>
                 <p className="text-xs text-muted-foreground">Saldo/mês</p>
               </div>
@@ -315,7 +355,15 @@ export default function RelatorioGeral() {
           <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
-                <Pie data={chartData.membrosStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                <Pie
+                  data={chartData.membrosStatus}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  label
+                >
                   {chartData.membrosStatus.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
@@ -337,7 +385,9 @@ export default function RelatorioGeral() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="mes" />
                 <YAxis />
-                <Tooltip formatter={(value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
+                <Tooltip
+                  formatter={(value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                />
                 <Legend />
                 <Bar dataKey="entradas" name="Entradas" fill="#5A9462" />
                 <Bar dataKey="saidas" name="Saídas" fill="#D9534F" />
