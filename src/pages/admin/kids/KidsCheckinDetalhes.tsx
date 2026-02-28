@@ -1,29 +1,29 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/hooks/use-toast';
-import { 
-  ArrowLeft, 
-  Baby, 
-  Clock, 
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
+import {
+  ArrowLeft,
+  Baby,
+  Clock,
   LogOut as LogOutIcon,
   MessageCircle,
   User,
   MapPin,
   Calendar,
   FileText,
-  Save
-} from 'lucide-react';
-import { format, differenceInYears } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+  Save,
+} from "lucide-react";
+import { format, differenceInYears } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface Responsavel {
   id: string;
@@ -58,20 +58,20 @@ interface Checkin {
 }
 
 const statusLabels: Record<string, string> = {
-  presente: 'Presente',
-  checkout: 'Checkout',
-  cancelado: 'Cancelado',
+  presente: "Presente",
+  checkout: "Checkout",
+  cancelado: "Cancelado",
 };
 
 const statusColors: Record<string, string> = {
-  presente: 'bg-green-100 text-green-800 border-green-200',
-  checkout: 'bg-blue-100 text-blue-800 border-blue-200',
-  cancelado: 'bg-red-100 text-red-800 border-red-200',
+  presente: "bg-green-100 text-green-800 border-green-200",
+  checkout: "bg-blue-100 text-blue-800 border-blue-200",
+  cancelado: "bg-red-100 text-red-800 border-red-200",
 };
 
 const cleanPhone = (phone: string | null): string => {
-  if (!phone) return '';
-  return phone.replace(/\D/g, '');
+  if (!phone) return "";
+  return phone.replace(/\D/g, "");
 };
 
 const hasValidPhone = (phone: string | null): boolean => {
@@ -88,7 +88,7 @@ const formatDateTime = (date: string) => {
 };
 
 const calculateAge = (birthDate: string | null): string => {
-  if (!birthDate) return '–';
+  if (!birthDate) return "–";
   const age = differenceInYears(new Date(), new Date(birthDate));
   return `${age} anos`;
 };
@@ -100,9 +100,9 @@ export default function KidsCheckinDetalhes() {
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
   const [criancaResponsaveis, setCriancaResponsaveis] = useState<Responsavel[]>([]);
   const [loading, setLoading] = useState(true);
-  const [observacao, setObservacao] = useState('');
+  const [observacao, setObservacao] = useState("");
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
-  const [checkoutResponsavelId, setCheckoutResponsavelId] = useState('');
+  const [checkoutResponsavelId, setCheckoutResponsavelId] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -116,54 +116,55 @@ export default function KidsCheckinDetalhes() {
     try {
       // Fetch checkin with related data
       const { data: checkinData, error: checkinError } = await supabase
-        .from('checkins_kids')
-        .select(`
+        .from("checkins_kids")
+        .select(
+          `
           *,
           crianca:criancas(id, nome, data_nascimento, observacoes, alergias),
           responsavel:responsaveis!checkins_kids_responsavel_id_fkey(id, nome, telefone),
-          sala:salas_kids(id, nome),
+          sala:salas(id, nome),
           checkout_responsavel:responsaveis!checkins_kids_checkout_responsavel_id_fkey(id, nome, telefone)
-        `)
-        .eq('id', id)
+        `,
+        )
+        .eq("id", id)
         .maybeSingle();
 
       if (checkinError) throw checkinError;
       if (!checkinData) {
-        toast({ title: 'Check-in não encontrado', variant: 'destructive' });
-        navigate('/admin/kids');
+        toast({ title: "Check-in não encontrado", variant: "destructive" });
+        navigate("/admin/kids");
         return;
       }
 
       setCheckin(checkinData);
-      setObservacao(checkinData.observacao || '');
+      setObservacao(checkinData.observacao || "");
 
       // Fetch all responsaveis
-      const { data: responsaveisData } = await supabase
-        .from('responsaveis')
-        .select('id, nome, telefone')
-        .order('nome');
+      const { data: responsaveisData } = await supabase.from("responsaveis").select("id, nome, telefone").order("nome");
       setResponsaveis(responsaveisData || []);
 
       // Fetch crianca's linked responsaveis
       const { data: criancaResp } = await supabase
-        .from('criancas_responsaveis')
-        .select(`
+        .from("criancas_responsaveis")
+        .select(
+          `
           tipo_relacao,
           responsavel:responsaveis(id, nome, telefone)
-        `)
-        .eq('crianca_id', checkinData.crianca_id);
+        `,
+        )
+        .eq("crianca_id", checkinData.crianca_id);
 
       if (criancaResp) {
         setCriancaResponsaveis(
           criancaResp.map((cr: any) => ({
             ...cr.responsavel,
-            tipo_relacao: cr.tipo_relacao
-          }))
+            tipo_relacao: cr.tipo_relacao,
+          })),
         );
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
-      toast({ title: 'Erro ao carregar dados', variant: 'destructive' });
+      console.error("Error fetching data:", error);
+      toast({ title: "Erro ao carregar dados", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -174,18 +175,15 @@ export default function KidsCheckinDetalhes() {
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('checkins_kids')
-        .update({ observacao })
-        .eq('id', checkin.id);
+      const { error } = await supabase.from("checkins_kids").update({ observacao }).eq("id", checkin.id);
 
       if (error) throw error;
 
-      toast({ title: 'Observação salva!' });
+      toast({ title: "Observação salva!" });
       fetchData();
     } catch (error) {
-      console.error('Error saving:', error);
-      toast({ title: 'Erro ao salvar', variant: 'destructive' });
+      console.error("Error saving:", error);
+      toast({ title: "Erro ao salvar", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -194,8 +192,8 @@ export default function KidsCheckinDetalhes() {
   const handleCheckout = async () => {
     if (!checkin || !checkoutResponsavelId) {
       toast({
-        title: 'Selecione o responsável que está retirando',
-        variant: 'destructive'
+        title: "Selecione o responsável que está retirando",
+        variant: "destructive",
       });
       return;
     }
@@ -203,22 +201,22 @@ export default function KidsCheckinDetalhes() {
     setSaving(true);
     try {
       const { error } = await supabase
-        .from('checkins_kids')
+        .from("checkins_kids")
         .update({
           checkout_at: new Date().toISOString(),
           checkout_responsavel_id: checkoutResponsavelId,
-          status: 'checkout'
+          status: "checkout",
         })
-        .eq('id', checkin.id);
+        .eq("id", checkin.id);
 
       if (error) throw error;
 
-      toast({ title: 'Checkout realizado com sucesso!' });
+      toast({ title: "Checkout realizado com sucesso!" });
       setShowCheckoutModal(false);
       fetchData();
     } catch (error) {
-      console.error('Error doing checkout:', error);
-      toast({ title: 'Erro ao realizar checkout', variant: 'destructive' });
+      console.error("Error doing checkout:", error);
+      toast({ title: "Erro ao realizar checkout", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -242,19 +240,17 @@ export default function KidsCheckinDetalhes() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/kids')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/admin/kids")}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold">{checkin.crianca?.nome}</h1>
-            <Badge className={statusColors[checkin.status]}>
-              {statusLabels[checkin.status]}
-            </Badge>
+            <Badge className={statusColors[checkin.status]}>{statusLabels[checkin.status]}</Badge>
           </div>
           <p className="text-muted-foreground">Detalhes do check-in</p>
         </div>
-        {checkin.status === 'presente' && (
+        {checkin.status === "presente" && (
           <Button onClick={() => setShowCheckoutModal(true)}>
             <LogOutIcon className="w-4 h-4 mr-2" />
             Realizar Checkout
@@ -284,9 +280,7 @@ export default function KidsCheckinDetalhes() {
               {checkin.crianca?.data_nascimento && (
                 <div>
                   <p className="text-sm text-muted-foreground">Data de Nascimento</p>
-                  <p className="font-medium">
-                    {format(new Date(checkin.crianca.data_nascimento), 'dd/MM/yyyy')}
-                  </p>
+                  <p className="font-medium">{format(new Date(checkin.crianca.data_nascimento), "dd/MM/yyyy")}</p>
                 </div>
               )}
             </div>
@@ -312,7 +306,7 @@ export default function KidsCheckinDetalhes() {
                 {criancaResponsaveis.length === 0 ? (
                   <p className="text-sm text-muted-foreground italic">Nenhum responsável vinculado</p>
                 ) : (
-                  criancaResponsaveis.map(resp => (
+                  criancaResponsaveis.map((resp) => (
                     <div key={resp.id} className="flex items-center justify-between p-2 bg-muted rounded">
                       <div>
                         <p className="font-medium text-sm">{resp.nome}</p>
@@ -355,9 +349,7 @@ export default function KidsCheckinDetalhes() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Status</p>
-                <Badge className={statusColors[checkin.status]}>
-                  {statusLabels[checkin.status]}
-                </Badge>
+                <Badge className={statusColors[checkin.status]}>{statusLabels[checkin.status]}</Badge>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Check-in</p>
@@ -426,14 +418,9 @@ export default function KidsCheckinDetalhes() {
                 placeholder="Adicione uma observação..."
                 rows={3}
               />
-              <Button 
-                size="sm" 
-                onClick={handleSaveObservacao} 
-                disabled={saving}
-                className="w-full"
-              >
+              <Button size="sm" onClick={handleSaveObservacao} disabled={saving} className="w-full">
                 <Save className="w-4 h-4 mr-2" />
-                {saving ? 'Salvando...' : 'Salvar Observação'}
+                {saving ? "Salvando..." : "Salvar Observação"}
               </Button>
             </div>
           </CardContent>
@@ -449,22 +436,19 @@ export default function KidsCheckinDetalhes() {
           <div className="space-y-4 py-4">
             <div className="p-4 bg-muted rounded-lg">
               <p className="font-semibold">{checkin.crianca?.nome}</p>
-              <p className="text-sm text-muted-foreground">
-                Sala: {checkin.sala?.nome}
-              </p>
+              <p className="text-sm text-muted-foreground">Sala: {checkin.sala?.nome}</p>
             </div>
             <div className="space-y-2">
               <Label>Quem está retirando? *</Label>
-              <Select 
-                value={checkoutResponsavelId} 
-                onValueChange={setCheckoutResponsavelId}
-              >
+              <Select value={checkoutResponsavelId} onValueChange={setCheckoutResponsavelId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o responsável" />
                 </SelectTrigger>
                 <SelectContent>
-                  {responsaveis.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>
+                  {responsaveis.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.nome}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -475,7 +459,7 @@ export default function KidsCheckinDetalhes() {
               Cancelar
             </Button>
             <Button onClick={handleCheckout} disabled={saving}>
-              {saving ? 'Salvando...' : 'Confirmar Checkout'}
+              {saving ? "Salvando..." : "Confirmar Checkout"}
             </Button>
           </DialogFooter>
         </DialogContent>
