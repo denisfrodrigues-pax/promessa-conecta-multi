@@ -119,12 +119,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userRoles = (rolesData || []).map((r: { role: UserRole }) => r.role);
       setRoles(userRoles);
 
-      // Load ministries for non-admin users (admins bypass ministry checks)
-      if (!userRoles.includes('admin')) {
-        setTimeout(() => {
-          refreshMyMinistries();
-        }, 0);
-      }
+      // Load ministries for all users (admins get all ministries via RPC)
+      setTimeout(() => {
+        refreshMyMinistries();
+      }, 0);
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
