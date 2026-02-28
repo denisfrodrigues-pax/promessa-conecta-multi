@@ -260,6 +260,19 @@ export default function KidsCheckinPanel() {
   };
 
   const handleCadastroRapido = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) throw new Error("Usuário não autenticado");
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("igreja_id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (profileError || !profile) throw new Error("Igreja não encontrada para o usuário");
     // Validações
     if (!cadastroRapido.responsavel_nome.trim()) {
       toast({ title: "Informe o nome do responsável", variant: "destructive" });
