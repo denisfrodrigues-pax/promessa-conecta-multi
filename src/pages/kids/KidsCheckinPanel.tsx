@@ -13,6 +13,7 @@ interface Crianca {
   nome: string;
   data_nascimento: string | null;
   sala_id: string | null;
+  qr_token?: string | null;
 }
 
 interface Presente {
@@ -30,9 +31,21 @@ export default function KidsCheckinPanel() {
   const [selected, setSelected] = useState<Crianca | null>(null);
   const [showVisitante, setShowVisitante] = useState(false);
   const [igrejaId, setIgrejaId] = useState<string | null>(null);
+  const [loadingToken, setLoadingToken] = useState(true);
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+
+    if (token) {
+      processarToken(token);
+    } else {
+      setLoadingToken(false);
+    }
   }, []);
 
   const fetchData = async () => {
@@ -48,16 +61,14 @@ export default function KidsCheckinPanel() {
 
     setIgrejaId(profile.igreja_id);
 
-    // Crianças
     const { data: criancasData } = await supabase
       .from("criancas")
-      .select("id, nome, data_nascimento, sala_id")
+      .select("id, nome, data_nascimento, sala_id, qr_token")
       .eq("igreja_id", profile.igreja_id)
       .order("nome");
 
     setCriancas(criancasData || []);
 
-    // Presentes hoje
     const inicioDia = new Date();
     inicioDia.setHours(0, 0, 0, 0);
 
@@ -80,21 +91,60 @@ export default function KidsCheckinPanel() {
     setPresentes(presentesData || []);
   };
 
+  const processarToken = async (token: string) => {
+    const { data: crianca } = await supabase
+      .from("criancas")
+      .select("id, nome, sala_id, igreja_id")
+      .eq("qr_token", token)
+      .single();
+
+    if (!crianca) {
+      toast({ title: "Cartão inválido ou não encontrado", variant: "destructive" });
+      setLoadingToken(false);
+      return;
+    }
+
+    const inicioDia = new Date();
+    inicioDia.setHours(0, 0, 0, 0);
+
+    const { data: existente } = await supabase
+      .from("checkins_kids")
+      .select("id")
+      .eq("crianca_id", crianca.id)
+      .eq("status", "presente")
+      .gte("checkin_at", inicioDia.toISOString())
+      .maybeSingle();
+
+    if (existente) {
+      toast({ title: "Esta criança já está presente hoje." });
+      setLoadingToken(false);
+      return;
+    }
+
+    await supabase.from("checkins_kids").insert({
+      crianca_id: crianca.id,
+      sala_id: crianca.sala_id,
+      igreja_id: crianca.igreja_id,
+      status: "presente",
+      checkin_at: new Date().toISOString(),
+    });
+
+    toast({ title: `Presença registrada: ${crianca.nome}` });
+    window.history.replaceState({}, "", "/check-in-kids");
+    fetchData();
+    setLoadingToken(false);
+  };
+
   const registrarPresenca = async () => {
     if (!selected || !igrejaId) return;
 
-    const { error } = await supabase.from("checkins_kids").insert({
+    await supabase.from("checkins_kids").insert({
       crianca_id: selected.id,
       sala_id: selected.sala_id,
       status: "presente",
       igreja_id: igrejaId,
       checkin_at: new Date().toISOString(),
     });
-
-    if (error) {
-      toast({ title: "Erro ao registrar presença", variant: "destructive" });
-      return;
-    }
 
     toast({ title: "Presença registrada com sucesso!" });
     setSelected(null);
@@ -103,9 +153,12 @@ export default function KidsCheckinPanel() {
 
   const filtered = criancas.filter((c) => c.nome.toLowerCase().includes(search.toLowerCase()));
 
+  if (loadingToken) {
+    return <div className="text-center mt-10">Processando cartão...</div>;
+  }
+
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      {/* BUSCA PRINCIPAL */}
       <Card>
         <CardContent className="p-6 space-y-4">
           <Input
@@ -145,7 +198,6 @@ export default function KidsCheckinPanel() {
         </CardContent>
       </Card>
 
-      {/* PRESENTES HOJE */}
       <Card>
         <CardContent className="p-6 space-y-4">
           <h2 className="font-semibold text-lg">Crianças presentes hoje ({presentes.length})</h2>
@@ -156,7 +208,10 @@ export default function KidsCheckinPanel() {
             <div key={p.id} className="border rounded p-3">
               <p className="font-medium">{p.crianca?.nome}</p>
               <p className="text-sm text-muted-foreground">
-                {p.sala?.nome} • {format(new Date(p.checkin_at), "HH:mm", { locale: ptBR })}
+                {p.sala?.nome} •{" "}
+                {format(new Date(p.checkin_at), "HH:mm", {
+                  locale: ptBR,
+                })}
               </p>
               <p className="text-sm text-muted-foreground">Responsável: {p.responsavel?.nome}</p>
             </div>
@@ -164,7 +219,6 @@ export default function KidsCheckinPanel() {
         </CardContent>
       </Card>
 
-      {/* MODAL VISITANTE */}
       <Dialog open={showVisitante} onOpenChange={setShowVisitante}>
         <DialogContent>
           <DialogHeader>
