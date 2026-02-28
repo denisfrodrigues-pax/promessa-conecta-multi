@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { Plus, Baby, Edit, Trash2, Search } from "lucide-react";
 import { differenceInYears } from "date-fns";
-import { v4 as uuidv4 } from "uuid";
 
 interface Crianca {
   id: string;
@@ -191,7 +190,7 @@ export default function KidsCriancas() {
         const { data: atual } = await supabase.from("criancas").select("qr_token").eq("id", editing.id).single();
 
         if (!atual?.qr_token) {
-          await supabase.from("criancas").update({ qr_token: uuidv4() }).eq("id", editing.id);
+          await supabase.from("criancas").update({ qr_token: crypto.randomUUID() }).eq("id", editing.id);
         }
       } else {
         const { data } = await supabase
@@ -203,7 +202,7 @@ export default function KidsCriancas() {
             alergias: form.alergias || null,
             observacoes: form.observacoes || null,
             sala_id: form.sala_id || null,
-            qr_token: uuidv4(),
+            qr_token: crypto.randomUUID(),
           })
           .select()
           .single();
