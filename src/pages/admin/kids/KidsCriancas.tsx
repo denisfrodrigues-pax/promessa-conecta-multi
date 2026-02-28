@@ -112,7 +112,6 @@ export default function KidsCriancas() {
     const { data } = await supabase
       .from("responsaveis")
       .select("id, nome, telefone")
-      .eq("igreja_id", igrejaId)
       .ilike("nome", `%${buscaResponsavel}%`)
       .limit(5);
 

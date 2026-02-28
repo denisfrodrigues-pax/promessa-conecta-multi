@@ -1,4 +1,5 @@
 import { lazy, ComponentType } from "react";
+import type { LucideIcon } from "lucide-react";
 import { Baby, Music, BookOpen, Users, Heart, Calendar, Home } from "lucide-react";
 
 // Lazy-loaded module components
