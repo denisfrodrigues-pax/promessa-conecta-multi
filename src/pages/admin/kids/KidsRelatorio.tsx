@@ -1,388 +1,209 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
-import { Baby, MapPin, CheckSquare, Users, Download, Clock, User, MessageCircle, FileText } from "lucide-react";
+import { Download, Users, Baby, MapPin, Calendar } from "lucide-react";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-interface Sala {
-  id: string;
-  nome: string;
-  capacidade: number;
-  status: string;
-  presentes_count: number;
-}
-
-interface CheckinRecente {
+interface Checkin {
   id: string;
   checkin_at: string;
-  checkout_at: string | null;
   status: string;
-  observacao: string | null;
-  crianca: {
-    nome: string;
-  };
-  responsavel: {
-    nome: string;
-    telefone: string | null;
-  };
-  sala: {
-    nome: string;
-  };
+  crianca: { nome: string; tipo?: string | null };
+  responsavel: { nome: string };
+  sala: { nome: string };
 }
-
-interface Stats {
-  presentesHoje: number;
-  checkinsTotais: number;
-  criancasCadastradas: number;
-  salasAtivas: number;
-}
-
-const cleanPhone = (phone: string | null): string => {
-  if (!phone) return "";
-  return phone.replace(/\D/g, "");
-};
-
-const hasValidPhone = (phone: string | null): boolean => {
-  return cleanPhone(phone).length >= 10;
-};
-
-const getWhatsAppUrl = (phone: string | null): string => {
-  const cleaned = cleanPhone(phone);
-  return `https://wa.me/55${cleaned}`;
-};
-
-const formatDateTime = (date: string) => {
-  return format(new Date(date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
-};
-
-const getOcupacaoStatus = (percent: number): { label: string; color: string } => {
-  if (percent > 90) return { label: "Lotada", color: "bg-red-100 text-red-800 border-red-200" };
-  if (percent > 70) return { label: "Atenção", color: "bg-yellow-100 text-yellow-800 border-yellow-200" };
-  return { label: "Normal", color: "bg-green-100 text-green-800 border-green-200" };
-};
-
-const exportToCSV = (checkins: CheckinRecente[]) => {
-  const headers = ["Nome Criança", "Sala", "Horário Check-in", "Horário Checkout", "Responsável", "Observação"];
-  const rows = checkins.map((c) => [
-    c.crianca?.nome || "",
-    c.sala?.nome || "",
-    c.checkin_at ? formatDateTime(c.checkin_at) : "",
-    c.checkout_at ? formatDateTime(c.checkout_at) : "",
-    c.responsavel?.nome || "",
-    c.observacao || "",
-  ]);
-
-  const csvContent = [headers.join(","), ...rows.map((r) => r.map((cell) => `"${cell}"`).join(","))].join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `relatorio_kids_${format(new Date(), "yyyy-MM-dd")}.csv`;
-  link.click();
-};
 
 export default function KidsRelatorio() {
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<Stats>({
-    presentesHoje: 0,
-    checkinsTotais: 0,
-    criancasCadastradas: 0,
-    salasAtivas: 0,
+  const [dataSelecionada, setDataSelecionada] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [checkins, setCheckins] = useState<Checkin[]>([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    presentes: 0,
+    visitantes: 0,
+    membros: 0,
   });
-  const [salas, setSalas] = useState<Sala[]>([]);
-  const [checkinsRecentes, setCheckinsRecentes] = useState<CheckinRecente[]>([]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [dataSelecionada]);
 
   const fetchData = async () => {
     setLoading(true);
-    try {
-      const hoje = new Date();
-      const inicioDia = startOfDay(hoje).toISOString();
-      const fimDia = endOfDay(hoje).toISOString();
 
-      // Fetch presentes hoje
-      const { count: presentesHoje } = await supabase
-        .from("checkins_kids")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "presente")
-        .gte("checkin_at", inicioDia)
-        .lte("checkin_at", fimDia);
+    const inicio = startOfDay(new Date(dataSelecionada)).toISOString();
+    const fim = endOfDay(new Date(dataSelecionada)).toISOString();
 
-      // Fetch total checkins hoje
-      const { count: checkinsTotais } = await supabase
-        .from("checkins_kids")
-        .select("*", { count: "exact", head: true })
-        .gte("checkin_at", inicioDia)
-        .lte("checkin_at", fimDia);
+    const { data } = await supabase
+      .from("checkins_kids")
+      .select(
+        `
+        id,
+        checkin_at,
+        status,
+        crianca:criancas(nome, tipo),
+        responsavel:responsaveis(nome),
+        sala:salas(nome)
+      `,
+      )
+      .gte("checkin_at", inicio)
+      .lte("checkin_at", fim)
+      .order("checkin_at", { ascending: false });
 
-      // Fetch total crianças cadastradas
-      const { count: criancasCadastradas } = await supabase
-        .from("criancas")
-        .select("*", { count: "exact", head: true });
+    const lista = data || [];
 
-      // Fetch salas ativas
-      const { data: salasData, error: salasError } = await supabase
-        .from("salas")
-        .select("*")
-        .eq("status", "ativa")
-        .order("nome");
+    const total = lista.length;
+    const presentes = lista.filter((c) => c.status === "presente").length;
+    const visitantes = lista.filter((c) => c.crianca?.tipo === "visitante").length;
+    const membros = total - visitantes;
 
-      if (salasError) throw salasError;
+    setCheckins(lista);
+    setStats({ total, presentes, visitantes, membros });
 
-      // Get presentes count for each sala
-      const salasWithCount = await Promise.all(
-        (salasData || []).map(async (sala) => {
-          const { count } = await supabase
-            .from("checkins_kids")
-            .select("*", { count: "exact", head: true })
-            .eq("sala_id", sala.id)
-            .eq("status", "presente");
-          return { ...sala, presentes_count: count || 0 };
-        }),
-      );
+    setLoading(false);
+  };
 
-      setSalas(salasWithCount);
+  const exportToCSV = () => {
+    const headers = ["Nome", "Sala", "Horário", "Responsável", "Tipo"];
+    const rows = checkins.map((c) => [
+      c.crianca?.nome,
+      c.sala?.nome,
+      format(new Date(c.checkin_at), "dd/MM/yyyy HH:mm"),
+      c.responsavel?.nome,
+      c.crianca?.tipo === "visitante" ? "Visitante" : "Membro",
+    ]);
 
-      setStats({
-        presentesHoje: presentesHoje || 0,
-        checkinsTotais: checkinsTotais || 0,
-        criancasCadastradas: criancasCadastradas || 0,
-        salasAtivas: salasData?.length || 0,
-      });
-
-      // Fetch checkins recentes
-      const { data: checkinsData, error: checkinsError } = await supabase
-        .from("checkins_kids")
-        .select(
-          `
-          id,
-          checkin_at,
-          checkout_at,
-          status,
-          observacao,
-          crianca:criancas(nome),
-          responsavel:responsaveis!checkins_kids_responsavel_id_fkey(nome, telefone),
-          sala:salas(nome)
-        `,
-        )
-        .order("checkin_at", { ascending: false })
-        .limit(20);
-
-      if (checkinsError) throw checkinsError;
-      setCheckinsRecentes(checkinsData || []);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
+    const csv = [headers.join(","), ...rows.map((r) => r.map((x) => `"${x}"`).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `relatorio_kids_${dataSelecionada}.csv`;
+    link.click();
   };
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-28" />
-          ))}
-        </div>
-        <Skeleton className="h-64" />
-        <Skeleton className="h-96" />
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Relatório Kids</h1>
-          <p className="text-muted-foreground">Visão geral do ministério infantil</p>
+          <h1 className="text-2xl font-bold">Relatório Kids</h1>
+          <p className="text-muted-foreground">
+            Dados do dia {format(new Date(dataSelecionada), "dd/MM/yyyy", { locale: ptBR })}
+          </p>
         </div>
-        <Button variant="outline" onClick={() => exportToCSV(checkinsRecentes)}>
-          <Download className="w-4 h-4 mr-2" />
-          Exportar CSV
-        </Button>
+
+        <div className="flex gap-2">
+          <Input type="date" value={dataSelecionada} onChange={(e) => setDataSelecionada(e.target.value)} />
+          <Button variant="outline" onClick={exportToCSV}>
+            <Download className="w-4 h-4 mr-2" />
+            Exportar
+          </Button>
+        </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Cards Estatísticos */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                <Baby className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Presentes Hoje</p>
-                <p className="text-2xl font-bold">{stats.presentesHoje}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                <CheckSquare className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Check-ins Hoje</p>
-                <p className="text-2xl font-bold">{stats.checkinsTotais}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                <Users className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Crianças Cadastradas</p>
-                <p className="text-2xl font-bold">{stats.criancasCadastradas}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                <MapPin className="w-6 h-6 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Salas Ativas</p>
-                <p className="text-2xl font-bold">{stats.salasAtivas}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          icon={<Users className="w-5 h-5" />}
+          title="Total de Check-ins"
+          value={stats.total}
+          color="bg-blue-100 text-blue-700"
+        />
+        <StatCard
+          icon={<Baby className="w-5 h-5" />}
+          title="Presentes"
+          value={stats.presentes}
+          color="bg-green-100 text-green-700"
+        />
+        <StatCard
+          icon={<MapPin className="w-5 h-5" />}
+          title="Visitantes"
+          value={stats.visitantes}
+          color="bg-amber-100 text-amber-700"
+        />
+        <StatCard
+          icon={<Calendar className="w-5 h-5" />}
+          title="Membros"
+          value={stats.membros}
+          color="bg-purple-100 text-purple-700"
+        />
       </div>
 
-      {/* Ocupação por Sala */}
+      {/* Tabela */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="w-5 h-5" />
-            Ocupação por Sala
-          </CardTitle>
+          <CardTitle>Lista de Presenças</CardTitle>
         </CardHeader>
         <CardContent>
-          {salas.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">Nenhuma sala ativa cadastrada</p>
+          {checkins.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">Nenhum check-in encontrado para esta data.</p>
           ) : (
-            <div className="space-y-4">
-              {salas.map((sala) => {
-                const percent = sala.capacidade > 0 ? Math.round((sala.presentes_count / sala.capacidade) * 100) : 0;
-                const status = getOcupacaoStatus(percent);
-
-                return (
-                  <div key={sala.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium">{sala.nome}</span>
-                        <Badge className={status.color}>{status.label}</Badge>
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {sala.presentes_count} / {sala.capacidade} ({percent}%)
-                      </span>
-                    </div>
-                    <Progress value={percent} className="h-2" />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Check-ins Recentes */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Check-ins Recentes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {checkinsRecentes.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">Nenhum check-in registrado</p>
-          ) : (
-            <div className="space-y-3">
-              {checkinsRecentes.map((checkin) => (
-                <div
-                  key={checkin.id}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-muted/50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Baby className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{checkin.crianca?.nome}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="w-3 h-3" />
-                        <span>{checkin.sala?.nome}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      <span>{formatDateTime(checkin.checkin_at)}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <User className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">{checkin.responsavel?.nome}</span>
-                      {hasValidPhone(checkin.responsavel?.telefone) && (
-                        <a
-                          href={getWhatsAppUrl(checkin.responsavel?.telefone)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-green-600 hover:text-green-700"
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b">
+                  <tr className="text-left">
+                    <th className="py-2">Nome</th>
+                    <th>Sala</th>
+                    <th>Horário</th>
+                    <th>Responsável</th>
+                    <th>Tipo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {checkins.map((c) => (
+                    <tr key={c.id} className="border-b hover:bg-muted/40">
+                      <td className="py-2">{c.crianca?.nome}</td>
+                      <td>{c.sala?.nome}</td>
+                      <td>{format(new Date(c.checkin_at), "HH:mm")}</td>
+                      <td>{c.responsavel?.nome}</td>
+                      <td>
+                        <Badge
+                          className={
+                            c.crianca?.tipo === "visitante"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-green-100 text-green-800"
+                          }
                         >
-                          <MessageCircle className="w-4 h-4" />
-                        </a>
-                      )}
-                    </div>
-
-                    <Badge
-                      className={
-                        checkin.status === "presente" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"
-                      }
-                    >
-                      {checkin.status === "presente" ? "Presente" : "Checkout"}
-                    </Badge>
-                  </div>
-
-                  {checkin.observacao && (
-                    <p className="text-xs text-muted-foreground italic w-full sm:w-auto">"{checkin.observacao}"</p>
-                  )}
-                </div>
-              ))}
+                          {c.crianca?.tipo === "visitante" ? "Visitante" : "Membro"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function StatCard({ icon, title, value, color }: any) {
+  return (
+    <Card>
+      <CardContent className="p-4 flex items-center gap-4">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>{icon}</div>
+        <div>
+          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="text-xl font-bold">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
