@@ -26,8 +26,8 @@ DROP POLICY IF EXISTS "Authenticated can insert checkins_kids" ON public.checkin
 DROP POLICY IF EXISTS "Authenticated can view checkins_kids" ON public.checkins_kids;
 DROP POLICY IF EXISTS "Authenticated can update checkins_kids" ON public.checkins_kids;
 
--- Also drop the old generic salas_kids SELECT that uses true
-DROP POLICY IF EXISTS "Authenticated can view salas_kids" ON public.salas_kids;
+-- Also drop the old generic salas SELECT that uses true
+DROP POLICY IF EXISTS "Authenticated can view salas" ON public.salas;
 
 -- 3) Create restrictive policies
 
@@ -67,8 +67,8 @@ ON public.checkins_kids
 FOR UPDATE
 USING (is_kids_team(auth.uid()));
 
--- salas_kids: SELECT for admin OR kids team
-CREATE POLICY "Kids team can view salas_kids"
-ON public.salas_kids
+-- salas: SELECT for admin OR kids team
+CREATE POLICY "Kids team can view salas"
+ON public.salas
 FOR SELECT
 USING (is_kids_team(auth.uid()));
