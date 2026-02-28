@@ -176,7 +176,31 @@ export default function KidsCheckins() {
       setCheckins(checkinsData || []);
 
       // Fetch criancas
-      const { data: criancasData } = await supabase.from("criancas").select("id, nome, data_nascimento").order("nome");
+      // Fetch criancas
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("igreja_id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (profileError || !profile?.igreja_id) {
+        throw new Error("Igreja não encontrada");
+      }
+
+      const { data: criancasData, error: criancasError } = await supabase
+        .from("criancas")
+        .select("id, nome, data_nascimento, sala_id")
+        .eq("igreja_id", profile.igreja_id)
+        .order("nome");
+
+      if (criancasError) throw criancasError;
+
       setCriancas(criancasData || []);
 
       // Fetch responsaveis
