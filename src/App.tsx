@@ -353,16 +353,10 @@ const App = () => (
             <Route index element={<VolunteerMinisterioDashboard />} />
           </Route>
 
-          {/* Kids Panel Routes - legacy, kept for backward compatibility */}
+          {/* Kids Panel Routes - public check-in */}
           <Route
             path="/kids"
-            element={
-              <PrivateRoute allowedRoles={["admin", "lider", "voluntario"]}>
-                <RequireMinistry slug="kids">
-                  <KidsLayout />
-                </RequireMinistry>
-              </PrivateRoute>
-            }
+            element={<KidsLayout />}
           >
             <Route index element={<Navigate to="/kids/check-in" replace />} />
             <Route path="check-in" element={<KidsCheckinPanel />} />

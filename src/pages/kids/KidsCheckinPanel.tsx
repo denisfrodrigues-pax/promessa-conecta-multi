@@ -1,232 +1,236 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { CheckCircle2, Search, Baby, Clock, Loader2 } from "lucide-react";
 
-interface Crianca {
+interface CriancaResult {
   id: string;
   nome: string;
   data_nascimento: string | null;
   sala_id: string | null;
-  qr_token?: string | null;
 }
 
-interface Presente {
+interface PresenteResult {
   id: string;
   checkin_at: string;
-  crianca: { nome: string };
-  sala: { nome: string };
-  responsavel: { nome: string };
+  crianca_nome: string;
+  sala_nome: string | null;
 }
 
 export default function KidsCheckinPanel() {
-  const [criancas, setCriancas] = useState<Crianca[]>([]);
-  const [presentes, setPresentes] = useState<Presente[]>([]);
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<Crianca | null>(null);
-  const [showVisitante, setShowVisitante] = useState(false);
   const [igrejaId, setIgrejaId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [criancas, setCriancas] = useState<CriancaResult[]>([]);
+  const [presentes, setPresentes] = useState<PresenteResult[]>([]);
+  const [selected, setSelected] = useState<CriancaResult | null>(null);
   const [loadingToken, setLoadingToken] = useState(true);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Load default igreja on mount
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-
-    if (token) {
-      processarToken(token);
-    } else {
+    const init = async () => {
+      const { data } = await supabase.rpc("public_get_default_igreja");
+      if (data) {
+        setIgrejaId(data);
+        loadPresentes(data);
+      }
+      // Process QR token if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("token");
+      if (token) {
+        await processarToken(token);
+      }
       setLoadingToken(false);
-    }
+    };
+    init();
   }, []);
 
-  const fetchData = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) return;
-
-    const { data: profile } = await supabase.from("profiles").select("igreja_id").eq("user_id", user.id).single();
-
-    if (!profile?.igreja_id) return;
-
-    setIgrejaId(profile.igreja_id);
-
-    const { data: criancasData } = await supabase
-      .from("criancas")
-      .select("id, nome, data_nascimento, sala_id, qr_token")
-      .eq("igreja_id", profile.igreja_id)
-      .order("nome");
-
-    setCriancas(criancasData || []);
-
-    const inicioDia = new Date();
-    inicioDia.setHours(0, 0, 0, 0);
-
-    const { data: presentesData } = await supabase
-      .from("checkins_kids")
-      .select(
-        `
-        id,
-        checkin_at,
-        crianca:criancas(nome),
-        sala:salas(nome),
-        responsavel:responsaveis(nome)
-      `,
-      )
-      .eq("igreja_id", profile.igreja_id)
-      .eq("status", "presente")
-      .gte("checkin_at", inicioDia.toISOString())
-      .order("checkin_at", { ascending: false });
-
-    setPresentes(presentesData || []);
-  };
+  const loadPresentes = useCallback(async (igreja: string) => {
+    const { data } = await supabase.rpc("public_presentes_hoje", { p_igreja_id: igreja });
+    setPresentes((data as PresenteResult[]) || []);
+  }, []);
 
   const processarToken = async (token: string) => {
-    const { data: crianca } = await supabase
-      .from("criancas")
-      .select("id, nome, sala_id, igreja_id")
-      .eq("qr_token", token)
-      .single();
+    const { data } = await supabase.rpc("public_checkin_by_token", { p_token: token });
+    const result = data as { success: boolean; message: string; nome?: string } | null;
 
-    if (!crianca) {
-      toast({ title: "Cartão inválido ou não encontrado", variant: "destructive" });
-      setLoadingToken(false);
-      return;
+    if (result?.success) {
+      setSuccessMessage(`✅ Presença registrada: ${result.nome}`);
+      toast({ title: `Presença registrada: ${result.nome}` });
+      if (igrejaId) loadPresentes(igrejaId);
+    } else {
+      toast({ title: result?.message || "Erro ao processar cartão", variant: "destructive" });
     }
 
-    const inicioDia = new Date();
-    inicioDia.setHours(0, 0, 0, 0);
+    window.history.replaceState({}, "", window.location.pathname);
 
-    const { data: existente } = await supabase
-      .from("checkins_kids")
-      .select("id")
-      .eq("crianca_id", crianca.id)
-      .eq("status", "presente")
-      .gte("checkin_at", inicioDia.toISOString())
-      .maybeSingle();
-
-    if (existente) {
-      toast({ title: "Esta criança já está presente hoje." });
-      setLoadingToken(false);
-      return;
-    }
-
-    await supabase.from("checkins_kids").insert({
-      crianca_id: crianca.id,
-      sala_id: crianca.sala_id,
-      igreja_id: crianca.igreja_id,
-      status: "presente",
-      checkin_at: new Date().toISOString(),
-    });
-
-    toast({ title: `Presença registrada: ${crianca.nome}` });
-    window.history.replaceState({}, "", "/check-in-kids");
-    fetchData();
-    setLoadingToken(false);
+    // Reload presentes after token processing
+    const { data: igreja } = await supabase.rpc("public_get_default_igreja");
+    if (igreja) loadPresentes(igreja);
   };
+
+  // Debounced search
+  useEffect(() => {
+    if (!search || !igrejaId || search.length < 2) {
+      setCriancas([]);
+      return;
+    }
+
+    setLoadingSearch(true);
+    const timeout = setTimeout(async () => {
+      const { data } = await supabase.rpc("public_search_criancas", {
+        p_igreja_id: igrejaId,
+        p_search: search,
+      });
+      setCriancas((data as CriancaResult[]) || []);
+      setLoadingSearch(false);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [search, igrejaId]);
 
   const registrarPresenca = async () => {
-    if (!selected || !igrejaId) return;
+    if (!selected) return;
 
-    await supabase.from("checkins_kids").insert({
-      crianca_id: selected.id,
-      sala_id: selected.sala_id,
-      status: "presente",
-      igreja_id: igrejaId,
-      checkin_at: new Date().toISOString(),
-    });
+    const { data } = await supabase.rpc("public_checkin_manual", { p_crianca_id: selected.id });
+    const result = data as { success: boolean; message: string; nome?: string } | null;
 
-    toast({ title: "Presença registrada com sucesso!" });
-    setSelected(null);
-    fetchData();
+    if (result?.success) {
+      setSuccessMessage(`✅ Presença registrada: ${result.nome}`);
+      toast({ title: result.message });
+      setSelected(null);
+      setSearch("");
+      if (igrejaId) loadPresentes(igrejaId);
+    } else {
+      toast({ title: result?.message || "Erro ao registrar", variant: "destructive" });
+    }
   };
 
-  const filtered = criancas.filter((c) => c.nome.toLowerCase().includes(search.toLowerCase()));
+  // Auto-hide success message
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   if (loadingToken) {
-    return <div className="text-center mt-10">Processando cartão...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <div className="text-center space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Processando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
+      {/* Success Banner */}
+      {successMessage && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <CheckCircle2 className="w-6 h-6 text-primary shrink-0" />
+            <p className="font-medium text-foreground">{successMessage}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Search Card */}
       <Card>
         <CardContent className="p-6 space-y-4">
-          <Input
-            placeholder="Digite o nome da criança..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            autoFocus
-          />
+          <div className="flex items-center gap-2 mb-2">
+            <Baby className="w-5 h-5 text-primary" />
+            <h2 className="font-semibold text-lg">Check-in Kids</h2>
+          </div>
 
-          {search && filtered.length > 0 && (
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {filtered.map((c) => (
-                <button
-                  key={c.id}
-                  className="w-full text-left p-2 rounded hover:bg-muted"
-                  onClick={() => {
-                    setSelected(c);
-                    setSearch("");
-                  }}
-                >
-                  {c.nome}
-                </button>
-              ))}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Digite o nome da criança..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setSelected(null);
+              }}
+              className="pl-10"
+              autoFocus
+            />
+          </div>
+
+          {/* Search Results */}
+          {search.length >= 2 && !selected && (
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {loadingSearch ? (
+                <p className="text-sm text-muted-foreground p-2">Buscando...</p>
+              ) : criancas.length > 0 ? (
+                criancas.map((c) => (
+                  <button
+                    key={c.id}
+                    className="w-full text-left p-3 rounded-lg hover:bg-muted transition-colors"
+                    onClick={() => {
+                      setSelected(c);
+                      setSearch("");
+                    }}
+                  >
+                    <p className="font-medium">{c.nome}</p>
+                  </button>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground p-2">Nenhuma criança encontrada.</p>
+              )}
             </div>
           )}
 
+          {/* Selected Child */}
           {selected && (
-            <div className="border rounded p-4 space-y-2">
-              <p className="font-semibold">{selected.nome}</p>
-              <Button onClick={registrarPresenca}>Registrar Presença</Button>
+            <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Baby className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold">{selected.nome}</p>
+                </div>
+              </div>
+              <Button onClick={registrarPresenca} className="w-full">
+                Registrar Presença
+              </Button>
             </div>
           )}
-
-          <Button variant="outline" onClick={() => setShowVisitante(true)}>
-            Primeira vez? Cadastrar visitante
-          </Button>
         </CardContent>
       </Card>
 
+      {/* Today's List */}
       <Card>
         <CardContent className="p-6 space-y-4">
-          <h2 className="font-semibold text-lg">Crianças presentes hoje ({presentes.length})</h2>
+          <h2 className="font-semibold text-lg flex items-center gap-2">
+            <Clock className="w-5 h-5 text-muted-foreground" />
+            Crianças presentes hoje ({presentes.length})
+          </h2>
 
-          {presentes.length === 0 && <p className="text-muted-foreground">Nenhuma criança registrada hoje.</p>}
-
-          {presentes.map((p) => (
-            <div key={p.id} className="border rounded p-3">
-              <p className="font-medium">{p.crianca?.nome}</p>
-              <p className="text-sm text-muted-foreground">
-                {p.sala?.nome} •{" "}
-                {format(new Date(p.checkin_at), "HH:mm", {
-                  locale: ptBR,
-                })}
-              </p>
-              <p className="text-sm text-muted-foreground">Responsável: {p.responsavel?.nome}</p>
-            </div>
-          ))}
+          {presentes.length === 0 ? (
+            <p className="text-muted-foreground text-sm">Nenhuma criança registrada hoje.</p>
+          ) : (
+            presentes.map((p) => (
+              <div key={p.id} className="border rounded-lg p-3">
+                <p className="font-medium">{p.crianca_nome}</p>
+                <p className="text-sm text-muted-foreground">
+                  {p.sala_nome || "Sem sala"} •{" "}
+                  {format(new Date(p.checkin_at), "HH:mm", { locale: ptBR })}
+                </p>
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
-
-      <Dialog open={showVisitante} onOpenChange={setShowVisitante}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Cadastro de Visitante</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">(Implementaremos na próxima etapa)</p>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

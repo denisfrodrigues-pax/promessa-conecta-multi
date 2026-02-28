@@ -47,8 +47,8 @@ export default function KidsRelatorio() {
         checkin_at,
         status,
         crianca:criancas(nome, tipo),
-        responsavel:responsaveis(nome),
-        sala:salas(nome)
+        responsavel:responsaveis!checkins_kids_responsavel_id_fkey(nome),
+        sala:salas!checkins_kids_sala_id_fkey(nome)
       `,
       )
       .gte("checkin_at", inicio)

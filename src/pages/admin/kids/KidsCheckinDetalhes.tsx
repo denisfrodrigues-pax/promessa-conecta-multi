@@ -122,7 +122,7 @@ export default function KidsCheckinDetalhes() {
           *,
           crianca:criancas(id, nome, data_nascimento, observacoes, alergias),
           responsavel:responsaveis!checkins_kids_responsavel_id_fkey(id, nome, telefone),
-          sala:salas(id, nome),
+          sala:salas!checkins_kids_sala_id_fkey(id, nome),
           checkout_responsavel:responsaveis!checkins_kids_checkout_responsavel_id_fkey(id, nome, telefone)
         `,
         )
