@@ -2,9 +2,8 @@ import { Suspense, useEffect, useState } from "react";
 import { Outlet, Link, useParams, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { getIconByName, isModuleRegistered } from "@/config/moduleRegistry";
+import { isModuleRegistered } from "@/config/moduleRegistry";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Home, LogOut, Loader2 } from "lucide-react";
 import { useChurchConfig } from "@/hooks/useChurchConfig";
 import { toast } from "@/components/ui/use-toast";
@@ -18,6 +17,8 @@ interface MinisterioModulo {
   ordem: number;
 }
 
+type PapelMinisterial = "admin" | "lider" | "voluntario" | null;
+
 const MinisterioLayout = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user, profile, roles, loading, signOut } = useAuth();
@@ -27,6 +28,7 @@ const MinisterioLayout = () => {
   const [ministerioId, setMinisterioId] = useState<string | null>(null);
   const [ministerioNome, setMinisterioNome] = useState<string>("");
   const [modulos, setModulos] = useState<MinisterioModulo[]>([]);
+  const [papel, setPapel] = useState<PapelMinisterial>(null);
   const [loadingPage, setLoadingPage] = useState(true);
 
   const isAdmin = roles.includes("admin");
@@ -37,7 +39,7 @@ const MinisterioLayout = () => {
     const loadMinisterio = async () => {
       setLoadingPage(true);
 
-      // 1️⃣ Buscar ministério direto pelo slug + igreja
+      // 1️⃣ Buscar ministério por slug + igreja
       const { data: ministerio, error } = await supabase
         .from("ministerios")
         .select("id, nome, igreja_id")
@@ -51,11 +53,16 @@ const MinisterioLayout = () => {
         return;
       }
 
-      // 2️⃣ Se não for admin, validar vínculo
-      if (!isAdmin) {
+      let papelUsuario: PapelMinisterial = null;
+
+      // 2️⃣ Admin tem acesso total
+      if (isAdmin) {
+        papelUsuario = "admin";
+      } else {
+        // 3️⃣ Validar vínculo ativo
         const { data: vinculo } = await supabase
           .from("ministerio_usuarios")
-          .select("id")
+          .select("papel")
           .eq("ministerio_id", ministerio.id)
           .eq("user_id", user.id)
           .eq("ativo", true)
@@ -71,12 +78,15 @@ const MinisterioLayout = () => {
           navigate("/voluntario");
           return;
         }
+
+        papelUsuario = vinculo.papel as PapelMinisterial;
       }
 
       setMinisterioId(ministerio.id);
       setMinisterioNome(ministerio.nome);
+      setPapel(papelUsuario);
 
-      // 3️⃣ Buscar módulos
+      // 4️⃣ Buscar módulos
       const { data: mods } = await supabase
         .from("ministerio_modulos")
         .select("id, modulo_slug, nome, descricao, icone, ordem")
@@ -89,7 +99,7 @@ const MinisterioLayout = () => {
     };
 
     loadMinisterio();
-  }, [slug, user, profile, isAdmin]);
+  }, [slug, user, profile, isAdmin, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -125,7 +135,7 @@ const MinisterioLayout = () => {
 
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" asChild>
-              <Link to={roles.includes("lider") ? "/leader" : "/voluntario"}>
+              <Link to={roles.includes("lider") ? "/leader/hub" : "/voluntario"}>
                 <Home className="w-4 h-4 mr-1" />
                 Hub
               </Link>
@@ -151,6 +161,7 @@ const MinisterioLayout = () => {
               ministerioId,
               ministerioNome,
               modulos: registeredModulos,
+              papel,
               isAdmin,
             }}
           />
