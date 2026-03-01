@@ -6,7 +6,6 @@ import { isModuleRegistered } from "@/config/moduleRegistry";
 import { Button } from "@/components/ui/button";
 import { Home, LogOut, Loader2 } from "lucide-react";
 import { useChurchConfig } from "@/hooks/useChurchConfig";
-import { toast } from "@/components/ui/use-toast";
 
 interface MinisterioModulo {
   id: string;
@@ -35,17 +34,17 @@ const MinisterioLayout = () => {
   const isAdmin = roles.includes("admin");
 
   useEffect(() => {
-    if (loading || !user || !profile || !slug) return;
+    if (loading || !user || !slug) return;
 
     const loadMinisterio = async () => {
       setLoadingPage(true);
       setNotFound(false);
 
+      // 🔎 Buscar ministério apenas pelo slug
       const { data: ministerio, error } = await supabase
         .from("ministerios")
         .select("id, nome, igreja_id")
         .eq("slug", slug)
-        .eq("igreja_id", profile.igreja_id)
         .eq("ativo", true)
         .maybeSingle();
 
@@ -93,7 +92,7 @@ const MinisterioLayout = () => {
     };
 
     loadMinisterio();
-  }, [slug, user, profile, isAdmin, loading]);
+  }, [slug, user, loading, isAdmin]);
 
   const handleSignOut = async () => {
     await signOut();
