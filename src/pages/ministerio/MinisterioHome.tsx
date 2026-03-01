@@ -22,10 +22,18 @@ export default function MinisterioHome() {
   const ministerioNome = context?.ministerioNome ?? "";
   const modulos = context?.modulos ?? [];
 
-  if (!context?.ministerioId || modulos.length === 0) {
+  if (!context?.ministerioId) {
     return (
       <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground">
         Carregando ministério...
+      </div>
+    );
+  }
+
+  if (modulos.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground">
+        Nenhum módulo ativo neste ministério.
       </div>
     );
   }
