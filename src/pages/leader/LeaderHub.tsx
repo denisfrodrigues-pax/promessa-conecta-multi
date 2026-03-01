@@ -11,7 +11,8 @@ interface LedMinistry {
 
 export default function LeaderHub() {
   const navigate = useNavigate();
-  const { user, loading: authLoading, roles, profile } = useAuth();
+  const { user, loading: authLoading, roles } = useAuth();
+
   const [ledMinistries, setLedMinistries] = useState<LedMinistry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,31 +28,32 @@ export default function LeaderHub() {
     const fetchLedMinistries = async () => {
       setLoading(true);
 
+      // ✅ ADMIN: vê todos os ministérios ativos
       if (isAdmin) {
-        // Admin: fetch ALL active ministries directly
-        const { data: mins, error } = await supabase
+        const { data, error } = await supabase
           .from("ministerios")
           .select("id, nome, slug")
           .eq("ativo", true)
           .order("nome");
 
         if (error) {
-          console.error("Error fetching ministerios:", error);
+          console.error("Erro ao buscar ministérios:", error);
           setLedMinistries([]);
         } else {
           setLedMinistries(
-            (mins || []).map((m) => ({
+            (data || []).map((m) => ({
               ministerio_id: m.id,
               nome: m.nome,
               slug: m.slug,
             })),
           );
         }
+
         setLoading(false);
         return;
       }
 
-      // Leader/volunteer: fetch via ministerio_usuarios
+      // ✅ LÍDER: apenas ministérios onde é líder ativo
       const { data: vinculos, error: errVinculos } = await supabase
         .from("ministerio_usuarios")
         .select("ministerio_id")
@@ -59,8 +61,14 @@ export default function LeaderHub() {
         .eq("papel", "lider")
         .eq("ativo", true);
 
-      if (errVinculos || !vinculos || vinculos.length === 0) {
-        if (errVinculos) console.error("Error fetching vinculos:", errVinculos);
+      if (errVinculos) {
+        console.error("Erro ao buscar vínculos:", errVinculos);
+        setLedMinistries([]);
+        setLoading(false);
+        return;
+      }
+
+      if (!vinculos || vinculos.length === 0) {
         setLedMinistries([]);
         setLoading(false);
         return;
@@ -68,20 +76,26 @@ export default function LeaderHub() {
 
       const ids = vinculos.map((v) => v.ministerio_id);
 
-      const { data: mins, error: errMins } = await supabase.from("ministerios").select("id, nome, slug").in("id", ids);
+      const { data: ministerios, error: errMinisterios } = await supabase
+        .from("ministerios")
+        .select("id, nome, slug")
+        .in("id", ids)
+        .eq("ativo", true)
+        .order("nome");
 
-      if (errMins) {
-        console.error("Error fetching ministerios:", errMins);
+      if (errMinisterios) {
+        console.error("Erro ao buscar ministérios:", errMinisterios);
         setLedMinistries([]);
       } else {
         setLedMinistries(
-          (mins || []).map((m) => ({
+          (ministerios || []).map((m) => ({
             ministerio_id: m.id,
             nome: m.nome,
             slug: m.slug,
           })),
         );
       }
+
       setLoading(false);
     };
 
@@ -108,11 +122,15 @@ export default function LeaderHub() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Hub do Líder</h1>
+
       <div className="flex flex-wrap gap-4">
         {ledMinistries.map((m) => (
           <button
             key={m.ministerio_id}
-            onClick={() => navigate(`/leader/${m.slug}`)}
+            onClick={() => {
+              if (!m.slug) return;
+              navigate(`/ministerio/${m.slug}`);
+            }}
             className="rounded-xl border border-border bg-card p-5 min-w-[200px] text-left hover:shadow-md transition-shadow cursor-pointer"
           >
             <h3 className="font-semibold text-lg">{m.nome}</h3>
