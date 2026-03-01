@@ -12,14 +12,15 @@ import PrivateRoute from "@/components/routes/PrivateRoute";
 // Layouts
 import AdminLayout from "@/components/layout/AdminLayout";
 import LeaderLayout from "@/components/layout/LeaderLayout";
-import LeaderMinisterioLayout from "@/components/layout/LeaderMinisterioLayout"; // ✅ ADICIONADO
+import LeaderMinisterioLayout from "@/components/layout/LeaderMinisterioLayout";
 import KidsLayout from "@/components/layout/KidsLayout";
 import MinisterioLayout from "@/components/layout/MinisterioLayout";
 import VoluntarioLayout from "@/components/layout/VoluntarioLayout";
 import VolunteerMinisterioLayout from "@/components/layout/VolunteerMinisterioLayout";
 import AppLayout from "@/components/layout/AppLayout";
+import FinanceiroLayout from "@/components/layout/FinanceiroLayout";
 
-// Auth
+// Auth Pages
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 import InstallPWA from "@/pages/InstallPWA";
@@ -46,7 +47,7 @@ import VolunteerMinisterioDashboard from "@/pages/voluntario/VolunteerMinisterio
 // Kids
 import KidsCheckinPanel from "@/pages/kids/KidsCheckinPanel";
 
-// Outros
+// 404
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,7 +60,7 @@ const App = () => (
         <Sonner />
 
         <Routes>
-          {/* ==================== PUBLIC ==================== */}
+          {/* ================= PUBLIC ================= */}
           <Route path="/" element={<Index />} />
 
           <Route
@@ -74,7 +75,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/install" element={<InstallPWA />} />
 
-          {/* ==================== APP (MEMBRO) ==================== */}
+          {/* ================= APP (MEMBRO) ================= */}
           <Route
             path="/app"
             element={
@@ -84,7 +85,7 @@ const App = () => (
             }
           />
 
-          {/* ==================== LEADER HUB ==================== */}
+          {/* ================= LEADER ================= */}
           <Route
             path="/leader"
             element={
@@ -95,26 +96,19 @@ const App = () => (
           >
             <Route index element={<LeaderEntry />} />
             <Route path="hub" element={<LeaderHub />} />
+
+            {/* 🔥 MINISTÉRIO FIXO (ANINHADO CORRETAMENTE) */}
+            <Route path=":slug" element={<LeaderMinisterioLayout />}>
+              <Route index element={<LeaderDashboard />} />
+              <Route path="equipe" element={<LeaderMinhaEquipe />} />
+              <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
+              <Route path="escalas" element={<LeaderEscalas />} />
+              <Route path="relatorios" element={<LeaderRelatorios />} />
+              <Route path="notificacoes" element={<LeaderNotificacoes />} />
+            </Route>
           </Route>
 
-          {/* ==================== LEADER MINISTÉRIO (LAYOUT FIXO) ==================== */}
-          <Route
-            path="/leader/:slug"
-            element={
-              <PrivateRoute allowedRoles={["lider", "admin"]}>
-                <LeaderMinisterioLayout />
-              </PrivateRoute>
-            }
-          >
-            <Route index element={<LeaderDashboard />} />
-            <Route path="equipe" element={<LeaderMinhaEquipe />} />
-            <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
-            <Route path="escalas" element={<LeaderEscalas />} />
-            <Route path="relatorios" element={<LeaderRelatorios />} />
-            <Route path="notificacoes" element={<LeaderNotificacoes />} />
-          </Route>
-
-          {/* ==================== VOLUNTÁRIO ==================== */}
+          {/* ================= VOLUNTÁRIO ================= */}
           <Route
             path="/voluntario"
             element={
@@ -137,13 +131,13 @@ const App = () => (
             <Route index element={<VolunteerMinisterioDashboard />} />
           </Route>
 
-          {/* ==================== KIDS ==================== */}
+          {/* ================= KIDS ================= */}
           <Route path="/kids" element={<KidsLayout />}>
             <Route index element={<Navigate to="/kids/check-in" replace />} />
             <Route path="check-in" element={<KidsCheckinPanel />} />
           </Route>
 
-          {/* ==================== MINISTÉRIO MODULAR (MANTIDO) ==================== */}
+          {/* ================= MINISTÉRIO MODULAR (MANTIDO) ================= */}
           <Route
             path="/ministerio/:slug"
             element={
@@ -156,7 +150,7 @@ const App = () => (
             <Route path=":modulo" element={<MinisterioModulo />} />
           </Route>
 
-          {/* ==================== 404 ==================== */}
+          {/* ================= 404 ================= */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>
