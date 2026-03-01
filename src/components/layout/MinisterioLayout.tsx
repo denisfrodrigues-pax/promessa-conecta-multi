@@ -30,16 +30,17 @@ const MinisterioLayout = () => {
   const [modulos, setModulos] = useState<MinisterioModulo[]>([]);
   const [papel, setPapel] = useState<PapelMinisterial>(null);
   const [loadingPage, setLoadingPage] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   const isAdmin = roles.includes("admin");
 
   useEffect(() => {
-    if (!user || !profile || !slug) return;
+    if (loading || !user || !profile || !slug) return;
 
     const loadMinisterio = async () => {
       setLoadingPage(true);
+      setNotFound(false);
 
-      // 1️⃣ Buscar ministério por slug + igreja
       const { data: ministerio, error } = await supabase
         .from("ministerios")
         .select("id, nome, igreja_id")
@@ -49,18 +50,16 @@ const MinisterioLayout = () => {
         .maybeSingle();
 
       if (error || !ministerio) {
+        setNotFound(true);
         setLoadingPage(false);
         return;
       }
 
       let papelUsuario: PapelMinisterial = null;
 
-      // 2️⃣ Admin tem acesso total
       if (isAdmin) {
         papelUsuario = "admin";
       } else {
-        // ⚠️ AQUI ESTÁ A CORREÇÃO DEFINITIVA
-        // ministerio_usuarios.user_id referencia profile.user_id
         const { data: vinculo } = await supabase
           .from("ministerio_usuarios")
           .select("papel")
@@ -70,14 +69,8 @@ const MinisterioLayout = () => {
           .maybeSingle();
 
         if (!vinculo) {
-          toast({
-            title: "Sem permissão",
-            description: "Você não tem acesso a este ministério.",
-            variant: "destructive",
-          });
-
+          setNotFound(true);
           setLoadingPage(false);
-          navigate("/voluntario");
           return;
         }
 
@@ -88,7 +81,6 @@ const MinisterioLayout = () => {
       setMinisterioNome(ministerio.nome);
       setPapel(papelUsuario);
 
-      // 3️⃣ Buscar módulos ativos
       const { data: mods } = await supabase
         .from("ministerio_modulos")
         .select("id, modulo_slug, nome, descricao, icone, ordem")
@@ -101,7 +93,7 @@ const MinisterioLayout = () => {
     };
 
     loadMinisterio();
-  }, [slug, user, profile, isAdmin, navigate]);
+  }, [slug, user, profile, isAdmin, loading]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -120,7 +112,7 @@ const MinisterioLayout = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (!ministerioId) {
+  if (notFound) {
     return <Navigate to="/voluntario" replace />;
   }
 
