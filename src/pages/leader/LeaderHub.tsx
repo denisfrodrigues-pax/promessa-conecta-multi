@@ -68,10 +68,7 @@ export default function LeaderHub() {
 
       const ids = vinculos.map((v) => v.ministerio_id);
 
-      const { data: mins, error: errMins } = await supabase
-        .from("ministerios")
-        .select("id, nome, slug")
-        .in("id", ids);
+      const { data: mins, error: errMins } = await supabase.from("ministerios").select("id, nome, slug").in("id", ids);
 
       if (errMins) {
         console.error("Error fetching ministerios:", errMins);
@@ -115,7 +112,7 @@ export default function LeaderHub() {
         {ledMinistries.map((m) => (
           <button
             key={m.ministerio_id}
-            onClick={() => navigate(`/ministerio/${m.slug}`)}
+            onClick={() => navigate(`/leader/${m.slug}`)}
             className="rounded-xl border border-border bg-card p-5 min-w-[200px] text-left hover:shadow-md transition-shadow cursor-pointer"
           >
             <h3 className="font-semibold text-lg">{m.nome}</h3>
