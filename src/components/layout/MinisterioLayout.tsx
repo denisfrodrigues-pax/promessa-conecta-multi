@@ -2,7 +2,6 @@ import { Suspense, useEffect, useState } from "react";
 import { Outlet, Link, useParams, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { isModuleRegistered } from "@/config/moduleRegistry";
 import { Button } from "@/components/ui/button";
 import { Home, LogOut, Loader2 } from "lucide-react";
 import { useChurchConfig } from "@/hooks/useChurchConfig";
@@ -20,7 +19,7 @@ type PapelMinisterial = "admin" | "lider" | "voluntario" | null;
 
 const MinisterioLayout = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { user, profile, roles, loading, signOut } = useAuth();
+  const { user, roles, loading, signOut } = useAuth();
   const { config } = useChurchConfig();
   const navigate = useNavigate();
 
@@ -40,15 +39,15 @@ const MinisterioLayout = () => {
       setLoadingPage(true);
       setNotFound(false);
 
-      // 🔎 Buscar ministério apenas pelo slug
-      const { data: ministerio, error } = await supabase
+      // Buscar ministério apenas pelo slug
+      const { data: ministerio } = await supabase
         .from("ministerios")
-        .select("id, nome, igreja_id")
+        .select("id, nome")
         .eq("slug", slug)
         .eq("ativo", true)
         .maybeSingle();
 
-      if (error || !ministerio) {
+      if (!ministerio) {
         setNotFound(true);
         setLoadingPage(false);
         return;
@@ -107,15 +106,13 @@ const MinisterioLayout = () => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+  if (!user) return <Navigate to="/auth" replace />;
+  if (notFound) return <Navigate to="/voluntario" replace />;
 
-  if (notFound) {
-    return <Navigate to="/voluntario" replace />;
+  // 🔥 Se tiver apenas um módulo, redireciona automaticamente
+  if (modulos.length === 1) {
+    return <Navigate to={`/ministerio/${slug}/${modulos[0].modulo_slug}`} replace />;
   }
-
-  const registeredModulos = modulos.filter((m) => isModuleRegistered(m.modulo_slug));
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -142,23 +139,27 @@ const MinisterioLayout = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6">
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center min-h-[40vh]">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          }
-        >
-          <Outlet
-            context={{
-              ministerioId,
-              ministerioNome,
-              modulos: registeredModulos,
-              papel,
-              isAdmin,
-            }}
-          />
-        </Suspense>
+        {modulos.length === 0 ? (
+          <div className="text-muted-foreground">Nenhum módulo ativo para este ministério.</div>
+        ) : (
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center min-h-[40vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <Outlet
+              context={{
+                ministerioId,
+                ministerioNome,
+                modulos,
+                papel,
+                isAdmin,
+              }}
+            />
+          </Suspense>
+        )}
       </main>
     </div>
   );
