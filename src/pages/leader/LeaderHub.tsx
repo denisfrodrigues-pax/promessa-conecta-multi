@@ -129,7 +129,7 @@ export default function LeaderHub() {
             key={m.ministerio_id}
             onClick={() => {
               if (!m.slug) return;
-              navigate(`/ministerio/${m.slug}`);
+              navigate(`/leader/${m.slug}`);
             }}
             className="rounded-xl border border-border bg-card p-5 min-w-[200px] text-left hover:shadow-md transition-shadow cursor-pointer"
           >
