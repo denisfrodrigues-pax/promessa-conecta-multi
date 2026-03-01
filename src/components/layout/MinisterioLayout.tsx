@@ -64,7 +64,7 @@ const MinisterioLayout = () => {
           .from("ministerio_usuarios")
           .select("papel")
           .eq("ministerio_id", ministerio.id)
-          .eq("user_id", profile.user_id)
+          .eq("user_id", user.id)
           .eq("ativo", true)
           .maybeSingle();
 
