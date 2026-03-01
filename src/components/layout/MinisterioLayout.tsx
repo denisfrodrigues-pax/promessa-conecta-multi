@@ -59,12 +59,13 @@ const MinisterioLayout = () => {
       if (isAdmin) {
         papelUsuario = "admin";
       } else {
-        // 3️⃣ Validar vínculo ativo
+        // ⚠️ AQUI ESTÁ A CORREÇÃO DEFINITIVA
+        // ministerio_usuarios.user_id referencia profile.user_id
         const { data: vinculo } = await supabase
           .from("ministerio_usuarios")
           .select("papel")
           .eq("ministerio_id", ministerio.id)
-          .eq("user_id", user.id)
+          .eq("user_id", profile.user_id)
           .eq("ativo", true)
           .maybeSingle();
 
@@ -74,6 +75,7 @@ const MinisterioLayout = () => {
             description: "Você não tem acesso a este ministério.",
             variant: "destructive",
           });
+
           setLoadingPage(false);
           navigate("/voluntario");
           return;
@@ -86,7 +88,7 @@ const MinisterioLayout = () => {
       setMinisterioNome(ministerio.nome);
       setPapel(papelUsuario);
 
-      // 4️⃣ Buscar módulos
+      // 3️⃣ Buscar módulos ativos
       const { data: mods } = await supabase
         .from("ministerio_modulos")
         .select("id, modulo_slug, nome, descricao, icone, ordem")
