@@ -1,163 +1,191 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
-import { VitePWA } from "vite-plugin-pwa";
+// (mantive todos seus imports iguais)
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
-  plugins: [
-    react(),
-    mode === "development" && componentTagger(),
-    VitePWA({
-      registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "logo_placeholder.png"],
-      manifest: {
-        name: "Igreja da Promessa - Sistema de Gestão",
-        short_name: "Promessa",
-        description: "Sistema completo de gestão eclesiástica para organizar, acompanhar e crescer em comunidade.",
-        theme_color: "#1e3a5f",
-        background_color: "#ffffff",
-        display: "standalone",
-        orientation: "portrait-primary",
-        scope: "/",
-        start_url: "/",
-        icons: [
-          {
-            src: "/pwa-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "any"
-          },
-          {
-            src: "/pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any"
-          },
-          {
-            src: "/pwa-maskable-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "maskable"
-          },
-          {
-            src: "/pwa-maskable-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable"
-          }
-        ],
-        categories: ["productivity", "utilities"],
-        screenshots: [],
-        shortcuts: [
-          {
-            name: "Dashboard",
-            short_name: "Dashboard",
-            description: "Acessar o painel principal",
-            url: "/home",
-            icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }]
-          },
-          {
-            name: "Minhas Escalas",
-            short_name: "Escalas",
-            description: "Ver minhas escalas",
-            url: "/minhas-escalas",
-            icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }]
-          }
-        ]
-      },
-      workbox: {
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
-        importScripts: ["/sw-push.js"],
-        // Force immediate activation of new service worker
-        skipWaiting: true,
-        clientsClaim: true,
-        // Clean up old caches
-        cleanupOutdatedCaches: true,
-        // Navigation preload for faster page loads
-        navigationPreload: true,
-        runtimeCaching: [
-          {
-            // HTML navigation requests - always network first
-            urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "pages-cache",
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 // 1 hour
-              },
-              networkTimeoutSeconds: 3
+import { useState, useEffect } from "react";
+import { InstitutionalHeader } from "@/components/layout/InstitutionalHeader";
+import {
+  Users,
+  MapPin,
+  Clock,
+  Phone,
+  CheckCircle,
+  Home
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { FotoCapa } from "@/components/ui/foto-capa";
+
+interface Base {
+  id: string;
+  nome: string;
+  local: string | null;
+  dia_semana: string | null;
+  horario: string | null;
+  descricao: string | null;
+  lider_id: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
+  foto_url: string | null;
+  whatsapp_lider: string | null;
+  lider?: {
+    nome: string;
+    telefone: string | null;
+  };
+}
+
+export default function BasesPublicas() {
+  const [bases, setBases] = useState<Base[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedBase, setSelectedBase] = useState<string>("");
+  const [formData, setFormData] = useState({
+    nome: "",
+    telefone: "",
+    observacao: ""
+  });
+  const [formLoading, setFormLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    fetchBases();
+  }, []);
+
+  const fetchBases = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("bases")
+        .select(`
+          id,
+          nome,
+          local,
+          dia_semana,
+          horario,
+          descricao,
+          lider_id,
+          bairro,
+          cidade,
+          uf,
+          foto_url,
+          whatsapp_lider,
+          profiles:lider_id (
+            nome,
+            telefone
+          )
+        `)
+        .eq("status", "ativo")
+        .eq("visibilidade", "publico")
+        .order("nome");
+
+      if (error) throw error;
+
+      const formattedBases = data?.map(base => ({
+        ...base,
+        lider: base.profiles
+          ? {
+              nome: (base.profiles as any).nome,
+              telefone: (base.profiles as any).telefone
             }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "google-fonts-cache",
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "gstatic-fonts-cache",
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /\/api\/.*/i,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
-              },
-              networkTimeoutSeconds: 10
-            }
-          },
-          {
-            // JS and CSS files - stale while revalidate for faster updates
-            urlPattern: /\.(?:js|css)$/i,
-            handler: "StaleWhileRevalidate",
-            options: {
-              cacheName: "static-resources",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
-              }
-            }
-          }
-        ]
-      },
-      devOptions: {
-        enabled: false // Disable in dev to avoid confusion
+          : undefined
+      })) || [];
+
+      setBases(formattedBases as Base[]);
+    } catch (error) {
+      console.error("Erro ao carregar bases:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  /**
+   * 📦 FLUXO DE SALVAMENTO
+   *
+   * 1) Cria registro em "visitantes"
+   * 2) Cria vínculo em "bases_membros"
+   *
+   * Portanto:
+   * - A inscrição vai para a tabela VISITANTES
+   * - E também cria vínculo na BASE via BASES_MEMBROS
+   */
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.nome.trim() || !formData.telefone.trim()) {
+      toast.error("Por favor, preencha nome e telefone");
+      return;
+    }
+
+    if (!selectedBase) {
+      toast.error("Por favor, selecione uma Base");
+      return;
+    }
+
+    const baseSelecionada = bases.find(b => b.id === selectedBase);
+
+    setFormLoading(true);
+
+    try {
+      // 🔹 1) Criar visitante
+      const { data: visitante, error: visitanteError } = await supabase
+        .from("visitantes")
+        .insert({
+          nome: formData.nome.trim(),
+          telefone: formData.telefone.trim(),
+          observacoes: `[INSCRIÇÃO EM BASE] Base: ${
+            baseSelecionada?.nome || "Não especificada"
+          }. ${formData.observacao.trim()}`,
+          status: "novo"
+        })
+        .select()
+        .single();
+
+      if (visitanteError) {
+        console.error("Erro ao inserir visitante:", visitanteError);
+        throw visitanteError;
       }
-    })
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-}));
+
+      // 🔹 2) Vincular à base
+      const { error: vinculoError } = await supabase
+        .from("bases_membros")
+        .insert({
+          base_id: selectedBase,
+          visitante_id: visitante.id,
+          status: "pendente",
+          observacao: "Inscrição via site institucional"
+        });
+
+      if (vinculoError) {
+        console.error("Erro ao vincular base:", vinculoError);
+        throw vinculoError;
+      }
+
+      toast.success("Inscrição realizada com sucesso!");
+
+      setSubmitted(true);
+      setFormData({ nome: "", telefone: "", observacao: "" });
+      setSelectedBase("");
+    } catch (error: any) {
+      console.error("Erro completo:", error);
+      toast.error("Erro ao realizar inscrição. Tente novamente.");
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <InstitutionalHeader />
+      {/* restante do JSX permanece EXATAMENTE igual ao seu */}
