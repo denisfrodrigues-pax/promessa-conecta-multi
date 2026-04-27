@@ -131,6 +131,13 @@ const LeaderMinhaEquipe = lazy(() => import("@/pages/leader/MinhaEquipe"));
 const LeaderMinhasFuncoes = lazy(() => import("@/pages/leader/MinhasFuncoes"));
 const LeaderNotificacoes = lazy(() => import("@/pages/leader/Notificacoes"));
 const LeaderDocumentos = lazy(() => import("@/pages/leader/Documentos"));
+const LeaderMusicaEscalaCulto = lazy(() => import("@/pages/leader/musica/EscalaCulto"));
+const LeaderMusicaEscalaCultoDetalhe = lazy(() => import("@/pages/leader/musica/EscalaCultoDetalhe"));
+const LeaderMusicaRepertorio = lazy(() => import("@/pages/leader/musica/Repertorio"));
+const LeaderCelebracaoCultos = lazy(() => import("@/pages/leader/celebracao/Cultos"));
+const LeaderCelebracaoCultoDetalhe = lazy(() => import("@/pages/leader/celebracao/CultoDetalhe"));
+const LeaderRecepcaoVisitantesDia = lazy(() => import("@/pages/leader/recepcao/VisitantesDia"));
+const LeaderRecepcaoVisitantesHistorico = lazy(() => import("@/pages/leader/recepcao/VisitantesHistorico"));
 
 // Institucional
 const QuemSomos = lazy(() => import("@/pages/institutional/QuemSomos"));
@@ -320,6 +327,16 @@ const App = () => (
               <Route path="notificacoes" element={<LeaderNotificacoes />} />
               <Route path="relatorios" element={<LeaderRelatorios />} />
               <Route path="documentos" element={<LeaderDocumentos />} />
+              {/* Música */}
+              <Route path="escala-culto" element={<LeaderMusicaEscalaCulto />} />
+              <Route path="escala-culto/:eventoId" element={<LeaderMusicaEscalaCultoDetalhe />} />
+              <Route path="repertorio" element={<LeaderMusicaRepertorio />} />
+              {/* Celebração */}
+              <Route path="cultos" element={<LeaderCelebracaoCultos />} />
+              <Route path="cultos/:eventoId" element={<LeaderCelebracaoCultoDetalhe />} />
+              {/* Recepção */}
+              <Route path="visitantes-dia" element={<LeaderRecepcaoVisitantesDia />} />
+              <Route path="visitantes" element={<LeaderRecepcaoVisitantesHistorico />} />
             </Route>
 
             {/* ── VOLUNTÁRIO ───────────────────────────────────────────────── */}

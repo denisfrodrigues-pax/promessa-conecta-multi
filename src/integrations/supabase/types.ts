@@ -182,6 +182,58 @@ export type Database = {
           },
         ]
       }
+      avisos_culto: {
+        Row: {
+          aviso_id: string
+          created_at: string
+          created_by: string | null
+          evento_id: string
+          id: string
+          ministerio_id: string
+          ordem: number
+        }
+        Insert: {
+          aviso_id: string
+          created_at?: string
+          created_by?: string | null
+          evento_id: string
+          id?: string
+          ministerio_id: string
+          ordem?: number
+        }
+        Update: {
+          aviso_id?: string
+          created_at?: string
+          created_by?: string | null
+          evento_id?: string
+          id?: string
+          ministerio_id?: string
+          ordem?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_culto_aviso_id_fkey"
+            columns: ["aviso_id"]
+            isOneToOne: false
+            referencedRelation: "avisos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_culto_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_escala"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_culto_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bases: {
         Row: {
           anfitrioes: string | null
@@ -659,6 +711,60 @@ export type Database = {
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      culto_paleta_cores: {
+        Row: {
+          cor_acento: string | null
+          cor_primaria: string
+          cor_secundaria: string | null
+          created_at: string
+          created_by: string | null
+          evento_id: string
+          id: string
+          ministerio_id: string
+          observacao: string | null
+          updated_at: string
+        }
+        Insert: {
+          cor_acento?: string | null
+          cor_primaria: string
+          cor_secundaria?: string | null
+          created_at?: string
+          created_by?: string | null
+          evento_id: string
+          id?: string
+          ministerio_id: string
+          observacao?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cor_acento?: string | null
+          cor_primaria?: string
+          cor_secundaria?: string | null
+          created_at?: string
+          created_by?: string | null
+          evento_id?: string
+          id?: string
+          ministerio_id?: string
+          observacao?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "culto_paleta_cores_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_escala"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "culto_paleta_cores_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
             referencedColumns: ["id"]
           },
         ]
@@ -1164,6 +1270,95 @@ export type Database = {
         }
         Relationships: []
       }
+      liturgia_culto: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          evento_id: string
+          id: string
+          ministerio_id: string
+          observacoes_gerais: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          evento_id: string
+          id?: string
+          ministerio_id: string
+          observacoes_gerais?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          evento_id?: string
+          id?: string
+          ministerio_id?: string
+          observacoes_gerais?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liturgia_culto_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_escala"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liturgia_culto_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      liturgia_itens: {
+        Row: {
+          created_at: string
+          duracao_minutos: number | null
+          id: string
+          liturgia_id: string
+          observacao: string | null
+          ordem: number
+          responsavel: string | null
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          duracao_minutos?: number | null
+          id?: string
+          liturgia_id: string
+          observacao?: string | null
+          ordem?: number
+          responsavel?: string | null
+          tipo?: string
+          titulo: string
+        }
+        Update: {
+          created_at?: string
+          duracao_minutos?: number | null
+          id?: string
+          liturgia_id?: string
+          observacao?: string | null
+          ordem?: number
+          responsavel?: string | null
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liturgia_itens_liturgia_id_fkey"
+            columns: ["liturgia_id"]
+            isOneToOne: false
+            referencedRelation: "liturgia_culto"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membros: {
         Row: {
           created_at: string | null
@@ -1489,6 +1684,127 @@ export type Database = {
             columns: ["lider_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      musicas_culto: {
+        Row: {
+          artista_avulso: string | null
+          created_at: string
+          created_by: string | null
+          evento_id: string
+          id: string
+          link_youtube: string | null
+          ministerio_id: string
+          musica_id: string | null
+          ordem: number
+          titulo_avulso: string | null
+        }
+        Insert: {
+          artista_avulso?: string | null
+          created_at?: string
+          created_by?: string | null
+          evento_id: string
+          id?: string
+          link_youtube?: string | null
+          ministerio_id: string
+          musica_id?: string | null
+          ordem?: number
+          titulo_avulso?: string | null
+        }
+        Update: {
+          artista_avulso?: string | null
+          created_at?: string
+          created_by?: string | null
+          evento_id?: string
+          id?: string
+          link_youtube?: string | null
+          ministerio_id?: string
+          musica_id?: string | null
+          ordem?: number
+          titulo_avulso?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "musicas_culto_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_escala"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "musicas_culto_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "musicas_culto_musica_id_fkey"
+            columns: ["musica_id"]
+            isOneToOne: false
+            referencedRelation: "musicas_repertorio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      musicas_repertorio: {
+        Row: {
+          artista: string | null
+          church_id: string
+          cifra_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          link_youtube: string | null
+          ministerio_id: string
+          observacoes: string | null
+          titulo: string
+          tom: string | null
+          updated_at: string
+        }
+        Insert: {
+          artista?: string | null
+          church_id: string
+          cifra_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link_youtube?: string | null
+          ministerio_id: string
+          observacoes?: string | null
+          titulo: string
+          tom?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artista?: string | null
+          church_id?: string
+          cifra_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link_youtube?: string | null
+          ministerio_id?: string
+          observacoes?: string | null
+          titulo?: string
+          tom?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "musicas_repertorio_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "musicas_repertorio_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
             referencedColumns: ["id"]
           },
         ]

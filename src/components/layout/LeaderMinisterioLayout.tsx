@@ -5,7 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { NavLink } from "@/components/NavLink";
-import { LayoutDashboard, Users, ClipboardList, CalendarDays, Bell, BarChart3, FolderOpen, Home, Loader2, ArrowLeft } from "lucide-react";
+import {
+  LayoutDashboard, Users, ClipboardList, CalendarDays, Bell, BarChart3,
+  FolderOpen, Home, Loader2, ArrowLeft, Music2, ListMusic, UserCheck, History,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLeaderNotifications } from "@/hooks/useLeaderNotifications";
@@ -107,7 +110,7 @@ export default function LeaderMinisterioLayout() {
 
   const basePath = `/leader/${slug}`;
 
-  const navItems = [
+  const defaultNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
     { icon: ClipboardList, label: "Funções", path: `${basePath}/funcoes` },
@@ -116,6 +119,40 @@ export default function LeaderMinisterioLayout() {
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
     { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
   ];
+
+  const musicaNavItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
+    { icon: ListMusic, label: "Escala de Cultos", path: `${basePath}/escala-culto` },
+    { icon: Music2, label: "Repertório", path: `${basePath}/repertorio` },
+    { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
+    { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
+    { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
+  ];
+
+  const celebracaoNavItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
+    { icon: CalendarDays, label: "Cultos", path: `${basePath}/cultos` },
+    { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
+    { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
+    { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
+  ];
+
+  const recepcaoNavItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
+    { icon: UserCheck, label: "Visitantes do Dia", path: `${basePath}/visitantes-dia` },
+    { icon: History, label: "Histórico", path: `${basePath}/visitantes` },
+    { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
+    { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
+    { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
+  ];
+
+  const navBySlug: Record<string, typeof defaultNavItems> = {
+    musica: musicaNavItems,
+    celebracao: celebracaoNavItems,
+    recepcao: recepcaoNavItems,
+  };
+
+  const navItems = navBySlug[slug ?? ''] ?? defaultNavItems;
 
   return (
     <div className="min-h-screen bg-background">
