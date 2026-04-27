@@ -5,7 +5,7 @@ import { Link, useOutletContext } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, ClipboardList, Calendar, ChevronRight, CheckCircle, Clock } from 'lucide-react';
+import { Users, ClipboardList, Calendar, ChevronRight, CheckCircle, Clock, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { parseLocalDate } from '@/lib/dateUtils';
@@ -24,12 +24,21 @@ interface Escala {
   ministerios: { nome: string } | null;
 }
 
+interface AgendaEvento {
+  id: string;
+  titulo: string;
+  data_evento: string;
+  tipo: string;
+  status: string | null;
+}
+
 export default function LeaderDashboard() {
   const { ministerioId } = useOutletContext<{ ministerioId: string }>();
   const { profile } = useAuth();
   const { config } = useChurchConfig();
   const [bases, setBases] = useState<Base[]>([]);
   const [escalas, setEscalas] = useState<Escala[]>([]);
+  const [agenda, setAgenda] = useState<AgendaEvento[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -53,6 +62,26 @@ export default function LeaderDashboard() {
 
       setBases(basesRes.data || []);
       setEscalas(escalasRes.data || []);
+
+      // Próximos eventos do ministério
+      const hoje = new Date().toISOString().split('T')[0];
+      const { data: emData } = await (supabase as any)
+        .from('evento_ministerios')
+        .select('status, eventos_escala(id, titulo, tipo, data_evento)')
+        .eq('ministerio_id', ministerioId)
+        .gte('eventos_escala.data_evento', hoje)
+        .order('eventos_escala.data_evento', { ascending: true })
+        .limit(3);
+
+      if (emData) {
+        setAgenda(
+          (emData as any[])
+            .filter((em: any) => em.eventos_escala)
+            .map((em: any) => ({ ...em.eventos_escala, status: em.status }))
+            .sort((a: any, b: any) => a.data_evento.localeCompare(b.data_evento))
+            .slice(0, 3)
+        );
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -123,6 +152,48 @@ export default function LeaderDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Minha Agenda */}
+      {agenda.length > 0 && (
+        <Card className="shadow-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="font-display text-lg flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-primary" />
+              Minha Agenda
+            </CardTitle>
+            <CardDescription>Próximos eventos deste ministério</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {agenda.map(ev => (
+                <div key={ev.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-primary/10 flex flex-col items-center justify-center shrink-0">
+                      <span className="text-sm font-bold text-primary leading-tight">
+                        {format(new Date(ev.data_evento + 'T12:00:00'), 'dd')}
+                      </span>
+                      <span className="text-[10px] text-primary uppercase">
+                        {format(new Date(ev.data_evento + 'T12:00:00'), 'MMM', { locale: ptBR })}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{ev.titulo}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{ev.tipo}</p>
+                    </div>
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    ev.status === 'escala_criada'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {ev.status === 'escala_criada' ? 'Escala criada' : 'Pendente'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Minhas Bases */}

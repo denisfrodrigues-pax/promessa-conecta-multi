@@ -59,6 +59,7 @@ export default function AppLayout() {
     { icon: Home, label: 'Início', path: '/app' },
     { icon: Users, label: 'Minha Base', path: '/app/minha-base' },
     { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
+    { icon: Calendar, label: 'Calendário', path: '/app/calendario' },
     { icon: Bell, label: 'Notificações', path: '/app/notificacoes', badge: unreadCount > 0 ? unreadCount : undefined },
     { icon: Heart, label: 'Contribuições', path: '/app/contribuicoes' },
     { icon: User, label: 'Perfil', path: '/app/perfil' },
@@ -67,7 +68,7 @@ export default function AppLayout() {
   // Items for bottom mobile nav (limited)
   const mobileBottomNavItems = [
     { icon: Home, label: 'Início', path: '/app' },
-    { icon: Users, label: 'Base', path: '/app/minha-base' },
+    { icon: Calendar, label: 'Calendário', path: '/app/calendario' },
     { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
   ];
 

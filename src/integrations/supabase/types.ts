@@ -499,6 +499,7 @@ export type Database = {
           endereco: string | null
           facebook: string | null
           favicon_url: string | null
+          google_calendar_embed_url: string | null
           google_maps_url: string | null
           horario_culto: string | null
           horario_ebd: string | null
@@ -528,6 +529,7 @@ export type Database = {
           endereco?: string | null
           facebook?: string | null
           favicon_url?: string | null
+          google_calendar_embed_url?: string | null
           google_maps_url?: string | null
           horario_culto?: string | null
           horario_ebd?: string | null
@@ -557,6 +559,7 @@ export type Database = {
           endereco?: string | null
           facebook?: string | null
           favicon_url?: string | null
+          google_calendar_embed_url?: string | null
           google_maps_url?: string | null
           horario_culto?: string | null
           horario_ebd?: string | null
@@ -762,6 +765,238 @@ export type Database = {
           },
           {
             foreignKeyName: "culto_paleta_cores_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ensino_checkins: {
+        Row: {
+          church_id: string
+          created_at: string
+          data: string
+          id: string
+          ministerio_id: string
+          observacoes: string | null
+          registrado_por: string | null
+          titulo: string | null
+          turma_id: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          data: string
+          id?: string
+          ministerio_id: string
+          observacoes?: string | null
+          registrado_por?: string | null
+          titulo?: string | null
+          turma_id: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          data?: string
+          id?: string
+          ministerio_id?: string
+          observacoes?: string | null
+          registrado_por?: string | null
+          titulo?: string | null
+          turma_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ensino_checkins_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ensino_checkins_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ensino_checkins_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "ensino_turmas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ensino_plano_arquivos: {
+        Row: {
+          arquivo_tipo: string
+          arquivo_url: string
+          created_at: string
+          id: string
+          nome: string
+          plano_id: string
+          tamanho_bytes: number | null
+        }
+        Insert: {
+          arquivo_tipo: string
+          arquivo_url: string
+          created_at?: string
+          id?: string
+          nome: string
+          plano_id: string
+          tamanho_bytes?: number | null
+        }
+        Update: {
+          arquivo_tipo?: string
+          arquivo_url?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          plano_id?: string
+          tamanho_bytes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ensino_plano_arquivos_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "ensino_planos_aula"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ensino_planos_aula: {
+        Row: {
+          anotacoes: string | null
+          conteudo: string | null
+          created_at: string
+          data_aula: string
+          id: string
+          objetivos: string | null
+          professor_id: string | null
+          titulo: string
+          turma_id: string
+          updated_at: string
+        }
+        Insert: {
+          anotacoes?: string | null
+          conteudo?: string | null
+          created_at?: string
+          data_aula: string
+          id?: string
+          objetivos?: string | null
+          professor_id?: string | null
+          titulo: string
+          turma_id: string
+          updated_at?: string
+        }
+        Update: {
+          anotacoes?: string | null
+          conteudo?: string | null
+          created_at?: string
+          data_aula?: string
+          id?: string
+          objetivos?: string | null
+          professor_id?: string | null
+          titulo?: string
+          turma_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ensino_planos_aula_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "ensino_turmas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ensino_presencas: {
+        Row: {
+          checkin_id: string
+          created_at: string
+          id: string
+          is_visitante: boolean
+          nome_manual: string | null
+          perfil_id: string | null
+          presente: boolean
+        }
+        Insert: {
+          checkin_id: string
+          created_at?: string
+          id?: string
+          is_visitante?: boolean
+          nome_manual?: string | null
+          perfil_id?: string | null
+          presente?: boolean
+        }
+        Update: {
+          checkin_id?: string
+          created_at?: string
+          id?: string
+          is_visitante?: boolean
+          nome_manual?: string | null
+          perfil_id?: string | null
+          presente?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ensino_presencas_checkin_id_fkey"
+            columns: ["checkin_id"]
+            isOneToOne: false
+            referencedRelation: "ensino_checkins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ensino_turmas: {
+        Row: {
+          ativo: boolean
+          church_id: string
+          created_at: string
+          descricao: string | null
+          id: string
+          ministerio_id: string
+          nome: string
+          professor_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          church_id: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          ministerio_id: string
+          nome: string
+          professor_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          church_id?: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          ministerio_id?: string
+          nome?: string
+          professor_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ensino_turmas_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ensino_turmas_ministerio_id_fkey"
             columns: ["ministerio_id"]
             isOneToOne: false
             referencedRelation: "ministerios"
@@ -1243,33 +1478,6 @@ export type Database = {
         }
         Relationships: []
       }
-      logs_comunicacao: {
-        Row: {
-          conteudo: string
-          created_at: string | null
-          destinatarios: Json | null
-          id: string
-          status: string | null
-          tipo: Database["public"]["Enums"]["communication_type"]
-        }
-        Insert: {
-          conteudo: string
-          created_at?: string | null
-          destinatarios?: Json | null
-          id?: string
-          status?: string | null
-          tipo: Database["public"]["Enums"]["communication_type"]
-        }
-        Update: {
-          conteudo?: string
-          created_at?: string | null
-          destinatarios?: Json | null
-          id?: string
-          status?: string | null
-          tipo?: Database["public"]["Enums"]["communication_type"]
-        }
-        Relationships: []
-      }
       liturgia_culto: {
         Row: {
           created_at: string
@@ -1355,6 +1563,379 @@ export type Database = {
             columns: ["liturgia_id"]
             isOneToOne: false
             referencedRelation: "liturgia_culto"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      logs_comunicacao: {
+        Row: {
+          conteudo: string
+          created_at: string | null
+          destinatarios: Json | null
+          id: string
+          status: string | null
+          tipo: Database["public"]["Enums"]["communication_type"]
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string | null
+          destinatarios?: Json | null
+          id?: string
+          status?: string | null
+          tipo: Database["public"]["Enums"]["communication_type"]
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string | null
+          destinatarios?: Json | null
+          id?: string
+          status?: string | null
+          tipo?: Database["public"]["Enums"]["communication_type"]
+        }
+        Relationships: []
+      }
+      mca_checkins: {
+        Row: {
+          checkin_at: string
+          checkout_at: string | null
+          church_id: string
+          crianca_id: string
+          evento_id: string | null
+          id: string
+          observacao: string | null
+          registrado_por: string | null
+          sala_id: string
+        }
+        Insert: {
+          checkin_at?: string
+          checkout_at?: string | null
+          church_id: string
+          crianca_id: string
+          evento_id?: string | null
+          id?: string
+          observacao?: string | null
+          registrado_por?: string | null
+          sala_id: string
+        }
+        Update: {
+          checkin_at?: string
+          checkout_at?: string | null
+          church_id?: string
+          crianca_id?: string
+          evento_id?: string | null
+          id?: string
+          observacao?: string | null
+          registrado_por?: string | null
+          sala_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mca_checkins_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mca_checkins_crianca_id_fkey"
+            columns: ["crianca_id"]
+            isOneToOne: false
+            referencedRelation: "mca_criancas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mca_checkins_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_escala"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mca_checkins_sala_id_fkey"
+            columns: ["sala_id"]
+            isOneToOne: false
+            referencedRelation: "mca_salas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mca_comunicacoes: {
+        Row: {
+          created_at: string
+          criado_por: string | null
+          crianca_id: string
+          enviado: boolean
+          enviado_at: string | null
+          id: string
+          mensagem_melhorada: string | null
+          mensagem_original: string
+          responsavel_telefone: string
+        }
+        Insert: {
+          created_at?: string
+          criado_por?: string | null
+          crianca_id: string
+          enviado?: boolean
+          enviado_at?: string | null
+          id?: string
+          mensagem_melhorada?: string | null
+          mensagem_original: string
+          responsavel_telefone: string
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string | null
+          crianca_id?: string
+          enviado?: boolean
+          enviado_at?: string | null
+          id?: string
+          mensagem_melhorada?: string | null
+          mensagem_original?: string
+          responsavel_telefone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mca_comunicacoes_crianca_id_fkey"
+            columns: ["crianca_id"]
+            isOneToOne: false
+            referencedRelation: "mca_criancas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mca_criancas: {
+        Row: {
+          ativo: boolean
+          church_id: string
+          created_at: string
+          data_nascimento: string | null
+          foto_url: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          sala_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          church_id: string
+          created_at?: string
+          data_nascimento?: string | null
+          foto_url?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          sala_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          church_id?: string
+          created_at?: string
+          data_nascimento?: string | null
+          foto_url?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          sala_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mca_criancas_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mca_criancas_sala_id_fkey"
+            columns: ["sala_id"]
+            isOneToOne: false
+            referencedRelation: "mca_salas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mca_plano_arquivos: {
+        Row: {
+          arquivo_tipo: string
+          arquivo_url: string
+          created_at: string
+          id: string
+          nome: string
+          plano_id: string
+          tamanho_bytes: number | null
+        }
+        Insert: {
+          arquivo_tipo: string
+          arquivo_url: string
+          created_at?: string
+          id?: string
+          nome: string
+          plano_id: string
+          tamanho_bytes?: number | null
+        }
+        Update: {
+          arquivo_tipo?: string
+          arquivo_url?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          plano_id?: string
+          tamanho_bytes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mca_plano_arquivos_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "mca_planos_aula"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mca_planos_aula: {
+        Row: {
+          anotacoes: string | null
+          conteudo: string | null
+          created_at: string
+          data_aula: string
+          id: string
+          objetivos: string | null
+          professor_id: string | null
+          sala_id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          anotacoes?: string | null
+          conteudo?: string | null
+          created_at?: string
+          data_aula: string
+          id?: string
+          objetivos?: string | null
+          professor_id?: string | null
+          sala_id: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          anotacoes?: string | null
+          conteudo?: string | null
+          created_at?: string
+          data_aula?: string
+          id?: string
+          objetivos?: string | null
+          professor_id?: string | null
+          sala_id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mca_planos_aula_sala_id_fkey"
+            columns: ["sala_id"]
+            isOneToOne: false
+            referencedRelation: "mca_salas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mca_responsaveis: {
+        Row: {
+          created_at: string
+          crianca_id: string
+          id: string
+          is_primary: boolean
+          nome: string
+          parentesco: string
+          perfil_id: string | null
+          telefone: string
+        }
+        Insert: {
+          created_at?: string
+          crianca_id: string
+          id?: string
+          is_primary?: boolean
+          nome: string
+          parentesco?: string
+          perfil_id?: string | null
+          telefone: string
+        }
+        Update: {
+          created_at?: string
+          crianca_id?: string
+          id?: string
+          is_primary?: boolean
+          nome?: string
+          parentesco?: string
+          perfil_id?: string | null
+          telefone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mca_responsaveis_crianca_id_fkey"
+            columns: ["crianca_id"]
+            isOneToOne: false
+            referencedRelation: "mca_criancas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mca_salas: {
+        Row: {
+          ativo: boolean
+          capacidade: number | null
+          church_id: string
+          created_at: string
+          faixa_etaria_max: number | null
+          faixa_etaria_min: number | null
+          id: string
+          ministerio_id: string
+          nome: string
+          professor_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          capacidade?: number | null
+          church_id: string
+          created_at?: string
+          faixa_etaria_max?: number | null
+          faixa_etaria_min?: number | null
+          id?: string
+          ministerio_id: string
+          nome: string
+          professor_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          capacidade?: number | null
+          church_id?: string
+          created_at?: string
+          faixa_etaria_max?: number | null
+          faixa_etaria_min?: number | null
+          id?: string
+          ministerio_id?: string
+          nome?: string
+          professor_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mca_salas_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mca_salas_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
             referencedColumns: ["id"]
           },
         ]

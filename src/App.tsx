@@ -105,6 +105,7 @@ const Contribuir = lazy(() => import("@/pages/member/Contribuir"));
 
 // App
 const AppHome = lazy(() => import("@/pages/app/AppHome"));
+const AppCalendario = lazy(() => import("@/pages/app/Calendario"));
 const VoluntariosDoDia = lazy(() => import("@/pages/app/VoluntariosDoDia"));
 
 // Kids Panel
@@ -236,6 +237,7 @@ const App = () => (
               <Route path="notificacoes" element={<MemberNotificacoes />} />
               <Route path="contribuicoes" element={<MinhasContribuicoes />} />
               <Route path="contribuir" element={<Contribuir />} />
+              <Route path="calendario" element={<AppCalendario />} />
               <Route path="voluntarios-do-dia" element={<VoluntariosDoDia />} />
             </Route>
 

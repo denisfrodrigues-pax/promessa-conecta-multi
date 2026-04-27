@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Phone,
   ExternalLink,
+  CalendarDays,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -57,6 +58,14 @@ interface Acompanhamento {
   updated_at: string;
   visitante: { id: string; nome: string } | null;
   base: { id: string; nome: string } | null;
+}
+
+interface ProximoEvento {
+  id: string;
+  titulo: string;
+  tipo: string;
+  data_evento: string;
+  total_ministerios: number;
 }
 
 interface Alert {
@@ -101,6 +110,7 @@ export default function AdminDashboard() {
   const [recentVisitantes, setRecentVisitantes] = useState<Visitante[]>([]);
   const [recentAcompanhamentos, setRecentAcompanhamentos] = useState<Acompanhamento[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [proximosEventos, setProximosEventos] = useState<ProximoEvento[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -204,6 +214,29 @@ export default function AdminDashboard() {
       setRecentAcompanhamentos(recentAcompRes.data as any || []);
       setChartData(chartDataRes);
       setAlerts(alertsData);
+
+      // Próximos eventos
+      const { data: eventosData } = await (supabase as any)
+        .from('eventos_escala')
+        .select('id, titulo, tipo, data_evento')
+        .gte('data_evento', today)
+        .order('data_evento', { ascending: true })
+        .limit(5);
+
+      if (eventosData?.length) {
+        const eIds = eventosData.map((e: any) => e.id);
+        const { data: emData } = await (supabase as any)
+          .from('evento_ministerios')
+          .select('evento_id')
+          .in('evento_id', eIds);
+        const counts: Record<string, number> = {};
+        (emData ?? []).forEach((em: any) => {
+          counts[em.evento_id] = (counts[em.evento_id] ?? 0) + 1;
+        });
+        setProximosEventos(
+          eventosData.map((e: any) => ({ ...e, total_ministerios: counts[e.id] ?? 0 }))
+        );
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -439,6 +472,53 @@ export default function AdminDashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Próximos Eventos */}
+      <Card className="shadow-card">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <div>
+            <CardTitle className="font-display flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-primary" />
+              Próximos Eventos
+            </CardTitle>
+            <CardDescription>Escalas programadas</CardDescription>
+          </div>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/admin/escalas/periodos">Ver todos <ChevronRight className="w-4 h-4 ml-1" /></Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="space-y-2">{[1,2,3].map(i=><Skeleton key={i} className="h-12 w-full"/>)}</div>
+          ) : proximosEventos.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento programado.</p>
+          ) : (
+            <div className="space-y-2">
+              {proximosEventos.map(ev => (
+                <div key={ev.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex flex-col items-center justify-center shrink-0">
+                      <span className="text-sm font-bold text-primary leading-tight">
+                        {new Date(ev.data_evento + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit' })}
+                      </span>
+                      <span className="text-[10px] text-primary uppercase">
+                        {new Date(ev.data_evento + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short' })}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">{ev.titulo}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {ev.total_ministerios} ministério{ev.total_ministerios !== 1 ? 's' : ''} convocado{ev.total_ministerios !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-xs capitalize shrink-0">{ev.tipo}</Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

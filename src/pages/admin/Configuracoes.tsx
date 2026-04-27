@@ -12,12 +12,12 @@ import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Settings, 
-  Building2, 
-  Bell, 
-  Cog, 
-  Save, 
+import {
+  Settings,
+  Building2,
+  Bell,
+  Cog,
+  Save,
   Loader2,
   Instagram,
   Youtube,
@@ -30,8 +30,13 @@ import {
   Upload,
   X,
   Image as ImageIcon,
-  Clock
+  Clock,
+  Calendar,
+  Eye,
 } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 
 interface Configuracoes {
   id: string;
@@ -103,6 +108,8 @@ export default function Configuracoes() {
 
   // Audit logs state
   const [auditLogs, setAuditLogs] = useState<{ id: string; action: string; created_at: string | null; usuario: string }[]>([]);
+  const [googleCalendarUrl, setGoogleCalendarUrl] = useState('');
+  const [previewCalendar, setPreviewCalendar] = useState(false);
 
   // Logo state
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -172,6 +179,7 @@ export default function Configuracoes() {
         setGoogleMapsUrl(data.google_maps_url || '');
         setHorarioEbd(data.horario_ebd || '18:00');
         setHorarioCulto(data.horario_culto || '19:07');
+        setGoogleCalendarUrl((data as any).google_calendar_embed_url || '');
       }
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
@@ -283,6 +291,7 @@ export default function Configuracoes() {
         google_maps_url: googleMapsUrl || null,
         horario_ebd: horarioEbd || null,
         horario_culto: horarioCulto || null,
+        google_calendar_embed_url: googleCalendarUrl.trim() || null,
         updated_at: new Date().toISOString(),
       };
 
@@ -708,6 +717,65 @@ export default function Configuracoes() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Card: Calendário */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            Calendário
+          </CardTitle>
+          <CardDescription>
+            Integração com Google Calendar público da igreja
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="google_calendar_url">URL de Incorporação do Google Calendar</Label>
+            <div className="flex gap-2">
+              <Input
+                id="google_calendar_url"
+                value={googleCalendarUrl}
+                onChange={e => setGoogleCalendarUrl(e.target.value)}
+                placeholder="https://calendar.google.com/calendar/embed?src=..."
+                className="flex-1"
+              />
+              {googleCalendarUrl.trim() && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setPreviewCalendar(true)}
+                  title="Visualizar calendário"
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Acesse o Google Calendar → Configurações do calendário → Role até "Integrar calendário" → Copie o link de incorporação (valor do atributo <code className="bg-muted px-1 rounded">src</code> do iframe).
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Modal preview do calendário */}
+      <Dialog open={previewCalendar} onOpenChange={setPreviewCalendar}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Preview — Calendário da Igreja</DialogTitle>
+          </DialogHeader>
+          <div className="rounded-lg overflow-hidden border">
+            <iframe
+              src={googleCalendarUrl}
+              className="w-full h-[450px] block"
+              frameBorder="0"
+              scrolling="no"
+              title="Preview Google Calendar"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Card: Log de Ações */}
       <Card>
