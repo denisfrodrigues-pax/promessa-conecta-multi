@@ -42,7 +42,7 @@ export default function HistoricoEscalas() {
         .order('data', { ascending: false });
 
       if (error) throw error;
-      setEscalas((data || []) as any);
+      setEscalas((data || []) as Escala[]);
     } catch (error) {
       console.error('Error fetching escalas:', error);
       toast.error('Erro ao carregar histórico');

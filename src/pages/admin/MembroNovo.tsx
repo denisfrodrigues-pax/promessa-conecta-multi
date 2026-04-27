@@ -148,6 +148,20 @@ export default function MembroNovo() {
 
     setLoading(true);
     try {
+      // Check for duplicate email
+      if (formData.email.trim()) {
+        const { data: existingByEmail } = await supabase
+          .from('membros')
+          .select('id, nome')
+          .eq('email', formData.email.trim())
+          .maybeSingle();
+        if (existingByEmail) {
+          toast.error(`Já existe um membro com este e-mail: ${existingByEmail.nome}`);
+          setLoading(false);
+          return;
+        }
+      }
+
       // Create member
       const { data: membro, error: insertError } = await supabase
         .from('membros')

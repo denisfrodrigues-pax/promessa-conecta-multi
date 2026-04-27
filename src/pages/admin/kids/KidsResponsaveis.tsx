@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   Search, 
   Plus, 
@@ -84,7 +84,7 @@ export default function KidsResponsaveis() {
       setResponsaveis(responsaveisWithCount);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast({ title: 'Erro ao carregar dados', variant: 'destructive' });
+      toast.error('Erro ao carregar dados');
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ export default function KidsResponsaveis() {
 
   const handleSave = async () => {
     if (!formData.nome.trim()) {
-      toast({ title: 'Nome é obrigatório', variant: 'destructive' });
+      toast.error('Nome é obrigatório');
       return;
     }
 
@@ -137,12 +137,12 @@ export default function KidsResponsaveis() {
         if (error) throw error;
       }
 
-      toast({ title: editingResponsavel ? 'Responsável atualizado!' : 'Responsável cadastrado!' });
+      toast.success(editingResponsavel ? 'Responsável atualizado!' : 'Responsável cadastrado!');
       setShowModal(false);
       fetchData();
     } catch (error) {
       console.error('Error saving:', error);
-      toast({ title: 'Erro ao salvar', variant: 'destructive' });
+      toast.error('Erro ao salvar');
     } finally {
       setSaving(false);
     }
@@ -159,11 +159,11 @@ export default function KidsResponsaveis() {
 
       if (error) throw error;
 
-      toast({ title: 'Responsável excluído!' });
+      toast.success('Responsável excluído!');
       fetchData();
     } catch (error) {
       console.error('Error deleting:', error);
-      toast({ title: 'Erro ao excluir. O responsável pode estar vinculado a crianças ou check-ins.', variant: 'destructive' });
+      toast.error('Erro ao excluir. O responsável pode estar vinculado a crianças ou check-ins.');
     }
   };
 

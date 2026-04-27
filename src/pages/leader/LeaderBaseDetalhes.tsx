@@ -278,7 +278,7 @@ export default function LeaderBaseDetalhes() {
           p_search: addMemberSearch || null,
         });
         if (error) throw error;
-        setEligiblePeople((data as any[]) || []);
+        setEligiblePeople((data as { id: string; nome: string; email: string }[]) || []);
       } catch (err: any) {
         toast.error('Erro ao buscar pessoas: ' + (err.message || 'Erro desconhecido'));
       } finally {
@@ -430,7 +430,7 @@ export default function LeaderBaseDetalhes() {
 
     if (error) throw error;
     if (data) {
-      setMembrosBase((data as any[]).map((m) => ({
+      setMembrosBase((data as BaseMemberUnified[]).map((m) => ({
         bases_membros_id: m.bases_membros_id,
         profile_id: m.profile_id || null,
         membro_id: m.membro_id || null,

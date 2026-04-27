@@ -194,7 +194,14 @@ export default function KidsRelatorio() {
   );
 }
 
-function StatCard({ icon, title, value, color }: any) {
+interface StatCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: number;
+  color: string;
+}
+
+function StatCard({ icon, title, value, color }: StatCardProps) {
   return (
     <Card>
       <CardContent className="p-4 flex items-center gap-4">

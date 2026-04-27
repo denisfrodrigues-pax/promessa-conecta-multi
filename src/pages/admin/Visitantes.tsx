@@ -114,7 +114,7 @@ const exportToCSV = (data: Visitante[]) => {
 export default function Visitantes() {
   const [visitantes, setVisitantes] = useState<Visitante[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filtroStatus, setFiltroStatus] = useState<string>('todos');
+  const [filtroStatus, setFiltroStatus] = useState<string>('ativos');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -165,10 +165,12 @@ export default function Visitantes() {
         .from('visitantes')
         .select('*', { count: 'exact', head: true });
 
-      if (filtroStatus !== 'todos') {
+      if (filtroStatus === 'ativos') {
+        countQuery = countQuery.neq('status', 'concluido');
+      } else if (filtroStatus !== 'todos') {
         countQuery = countQuery.eq('status', filtroStatus);
       }
-      
+
       if (searchClean !== '') {
         // Search by name OR phone (cleaned)
         countQuery = countQuery.or(`nome.ilike.%${searchClean}%,telefone.ilike.%${searchNumeric}%,telefone.ilike.%${searchClean}%`);
@@ -184,7 +186,9 @@ export default function Visitantes() {
         .order('created_at', { ascending: false })
         .range((page - 1) * limit, page * limit - 1);
 
-      if (filtroStatus !== 'todos') {
+      if (filtroStatus === 'ativos') {
+        query = query.neq('status', 'concluido');
+      } else if (filtroStatus !== 'todos') {
         query = query.eq('status', filtroStatus);
       }
       
@@ -292,11 +296,12 @@ export default function Visitantes() {
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="ativos">Ativos (sem convertidos)</SelectItem>
             <SelectItem value="todos">Todos</SelectItem>
             <SelectItem value="novo">Novo</SelectItem>
             <SelectItem value="contato_iniciado">Contato Iniciado</SelectItem>
             <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
-            <SelectItem value="concluido">Concluído</SelectItem>
+            <SelectItem value="concluido">Concluído / Convertido</SelectItem>
           </SelectContent>
         </Select>
       </div>

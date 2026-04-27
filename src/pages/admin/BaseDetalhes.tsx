@@ -214,12 +214,21 @@ export default function BaseDetalhes() {
 
     if (!data) return;
 
+    type RowData = {
+      id: string;
+      membro_id: string | null;
+      profile_id: string | null;
+      data_entrada: string;
+      membro: { id: string; nome: string; telefone: string | null; foto_perfil: string | null } | null;
+      profile: { id: string; nome: string; telefone: string | null; foto_url: string | null } | null;
+    };
+
     // Filter: must have at least membro_id or profile_id (exclude visitante-only rows)
-    const filtered = data.filter((row: any) => row.membro_id || row.profile_id);
+    const filtered = (data as RowData[]).filter((row) => row.membro_id || row.profile_id);
 
     // Deduplicate: use bases_membros.id as unique key (already unique per row)
     // Priority: profile > membro for display data
-    const unificados: BaseMembroUnificado[] = filtered.map((row: any) => {
+    const unificados: BaseMembroUnificado[] = filtered.map((row) => {
       const hasProfile = row.profile_id && row.profile;
       const hasMembro = row.membro_id && row.membro;
 

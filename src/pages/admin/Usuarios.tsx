@@ -23,6 +23,7 @@ interface User {
   telefone: string | null;
   status: string;
   created_at: string;
+  foto_url: string | null;
 }
 
 interface UserRole {
@@ -406,10 +407,10 @@ export default function Usuarios() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {/* Mostrar foto quando existir, senão inicial */}
-                          {(user as any).foto_url && !(user as any).foto_url.includes('placeholder') ? (
+                          {user.foto_url && !user.foto_url.includes('placeholder') ? (
                             <div className="w-11 h-11 rounded-xl overflow-hidden border border-primary/10">
-                              <img 
-                                src={(user as any).foto_url} 
+                              <img
+                                src={user.foto_url}
                                 alt={user.nome}
                                 className="w-full h-full object-cover object-center"
                               />

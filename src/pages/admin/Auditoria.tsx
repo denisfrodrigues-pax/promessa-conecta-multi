@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   Search, 
   Filter, 
@@ -101,8 +101,6 @@ function TableBadge({ tableName }: { tableName: string }) {
 export default function Auditoria() {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -175,11 +173,7 @@ export default function Auditoria() {
       setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching audit logs:', error);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível carregar os logs de auditoria.',
-        variant: 'destructive'
-      });
+      toast.error('Erro ao carregar logs de auditoria');
     } finally {
       setLoading(false);
     }
@@ -218,10 +212,7 @@ export default function Auditoria() {
     link.download = `auditoria-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     link.click();
 
-    toast({
-      title: 'Exportado',
-      description: 'Log de auditoria exportado com sucesso.'
-    });
+    toast.success('Log de auditoria exportado com sucesso.');
   }
 
   function viewDetails(log: AuditLog) {

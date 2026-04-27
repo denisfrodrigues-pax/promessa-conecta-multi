@@ -93,10 +93,9 @@ export default function MembroRelatorio() {
     try {
       setLoading(true);
 
-      // Fetch all members with relevant data
       const { data: membros, error } = await supabase
         .from('membros')
-        .select('id, status, data_batismo, data_nascimento');
+        .select('id, status, data_batismo, data_nascimento, user_id');
 
       if (error) throw error;
 
@@ -105,35 +104,41 @@ export default function MembroRelatorio() {
       const inativos = membros?.filter(m => m.status === 'inativo' || m.status === 'desligado').length || 0;
       const batizados = membros?.filter(m => m.data_batismo).length || 0;
 
-      // Age breakdown
+      // Buscar sexo de profiles para membros com conta vinculada
+      const userIds = (membros || []).map(m => m.user_id).filter(Boolean) as string[];
+      let masculino = 0;
+      let feminino = 0;
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, sexo')
+          .in('user_id', userIds);
+        const sexoMap = new Map((profilesData || []).map(p => [p.user_id, p.sexo]));
+        (membros || []).forEach(m => {
+          const sexo = m.user_id ? sexoMap.get(m.user_id) : null;
+          if (sexo === 'masculino' || sexo === 'M') masculino++;
+          else if (sexo === 'feminino' || sexo === 'F') feminino++;
+        });
+      }
+
       let kids = 0, teens = 0, jovens = 0, adultos = 0, idosos = 0, semIdade = 0;
-      
       membros?.forEach(m => {
         const age = calculateAge(m.data_nascimento);
-        if (age === null) {
-          semIdade++;
-        } else if (age <= 12) {
-          kids++;
-        } else if (age <= 17) {
-          teens++;
-        } else if (age <= 35) {
-          jovens++;
-        } else if (age <= 59) {
-          adultos++;
-        } else {
-          idosos++;
-        }
+        if (age === null) semIdade++;
+        else if (age <= 12) kids++;
+        else if (age <= 17) teens++;
+        else if (age <= 35) jovens++;
+        else if (age <= 59) adultos++;
+        else idosos++;
       });
 
-      // Note: The membros table doesn't have a 'sexo' field in the schema
-      // So we'll set these to 0 or add the field later if needed
       setStats({
         total,
         ativos,
         inativos,
         batizados,
-        masculino: 0, // Field doesn't exist in schema
-        feminino: 0,  // Field doesn't exist in schema
+        masculino,
+        feminino,
         kids,
         teens,
         jovens,

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
@@ -39,11 +39,7 @@ export default function RequireMinistry({ slug, children }: Props) {
   const hasAccess = myMinistries.some((m) => m.slug === slug);
 
   if (!hasAccess) {
-    toast({
-      title: "Sem permissão",
-      description: "Você não tem acesso a este módulo.",
-      variant: "destructive",
-    });
+    toast.error('Sem permissão', { description: 'Você não tem acesso a este módulo.' });
     return <Navigate to="/voluntario" replace />;
   }
 

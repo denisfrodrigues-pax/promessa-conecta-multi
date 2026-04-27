@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -824,10 +825,20 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
           <h1 className="text-2xl font-display font-bold">Escalas</h1>
           <p className="text-muted-foreground">Gerencie as escalas de ministérios e voluntários</p>
         </div>
-        <Button onClick={handleCreate} className={canManage ? '' : 'hidden'}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nova Escala
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          {canManage && !propMinisterioId && (
+            <Button asChild variant="outline">
+              <Link to="/admin/escalas/periodos">
+                <CalendarIcon className="w-4 h-4 mr-2" />
+                Períodos de Escala
+              </Link>
+            </Button>
+          )}
+          <Button onClick={handleCreate} className={canManage ? '' : 'hidden'}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nova Escala
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

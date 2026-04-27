@@ -33,7 +33,8 @@ USING (has_role(auth.uid(), 'admin'::app_role));
 
 -- Bucket para fotos de membros
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('membros_fotos', 'membros_fotos', false);
+VALUES ('membros_fotos', 'membros_fotos', false)
+ON CONFLICT (id) DO NOTHING;
 
 -- Políticas de storage
 CREATE POLICY "Authenticated users can upload member photos"

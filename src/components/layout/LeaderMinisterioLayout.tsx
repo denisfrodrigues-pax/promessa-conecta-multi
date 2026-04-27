@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { NavLink } from "@/components/NavLink";
-import { LayoutDashboard, Users, ClipboardList, CalendarDays, Bell, BarChart3, Home, Loader2, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, CalendarDays, Bell, BarChart3, FolderOpen, Home, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLeaderNotifications } from "@/hooks/useLeaderNotifications";
@@ -44,10 +44,12 @@ export default function LeaderMinisterioLayout() {
         return;
       }
 
-      const match = vinculo.find((v: any) => {
-        const m = v.ministerios;
-        return m && m.slug === slug;
-      });
+      interface VinculoItem {
+        ministerio_id: string;
+        ministerios: { id: string; nome: string; slug: string } | null;
+      }
+
+      const match = (vinculo as unknown as VinculoItem[]).find((v) => v.ministerios?.slug === slug);
 
       if (!match) {
         // Admin fallback: try direct lookup
@@ -67,7 +69,7 @@ export default function LeaderMinisterioLayout() {
         return;
       }
 
-      const m = (match as any).ministerios;
+      const m = match.ministerios!;
       setMinisterio({ id: m.id, nome: m.nome });
       setLoadingMin(false);
     };
@@ -112,6 +114,7 @@ export default function LeaderMinisterioLayout() {
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
+    { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
   ];
 
   return (

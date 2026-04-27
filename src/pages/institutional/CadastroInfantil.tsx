@@ -1,10 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { InstitutionalHeader } from "@/components/layout/InstitutionalHeader";
-import { 
-  Baby, 
-  CheckCircle,
-  Home
-} from "lucide-react";
+import { Baby, CheckCircle, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function CadastroInfantil() {
+  const [igrejaId, setIgrejaId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nomeCrianca: "",
     dataNascimento: "",
@@ -23,47 +20,88 @@ export default function CadastroInfantil() {
     telefone: "",
     alergias: "",
     observacoes: "",
-    autorizacaoFoto: false
+    autorizacaoFoto: false,
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    supabase
+      .from("igrejas")
+      .select("id")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setIgrejaId(data.id);
+      });
+  }, []);
+
   const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
+    const numbers = value.replace(/\D/g, "");
     if (numbers.length <= 2) return numbers;
     if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    if (numbers.length <= 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    if (numbers.length <= 11)
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
     return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.nomeCrianca.trim() || !formData.nomeResponsavel.trim() || !formData.telefone.trim()) {
       toast.error("Por favor, preencha os campos obrigatórios");
       return;
     }
 
+    if (!igrejaId) {
+      toast.error("Erro de configuração. Tente novamente em instantes.");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Primeiro, criar o visitante como responsável
-      const { error } = await supabase
-        .from('visitantes')
+      // 1. Criar responsável
+      const { data: responsavel, error: respError } = await supabase
+        .from("responsaveis")
         .insert({
           nome: formData.nomeResponsavel.trim(),
           telefone: formData.telefone.trim(),
-          observacoes: `[CADASTRO INFANTIL] Criança: ${formData.nomeCrianca.trim()}. Data de nascimento: ${formData.dataNascimento || 'Não informada'}. Alergias: ${formData.alergias.trim() || 'Nenhuma informada'}. Observações: ${formData.observacoes.trim() || 'Nenhuma'}. Autorização de foto: ${formData.autorizacaoFoto ? 'Sim' : 'Não'}`,
-          status: 'novo'
-        });
+        })
+        .select("id")
+        .single();
 
-      if (error) throw error;
-      
+      if (respError) throw respError;
+
+      // 2. Criar criança
+      const { data: crianca, error: criancaError } = await supabase
+        .from("criancas")
+        .insert({
+          nome: formData.nomeCrianca.trim(),
+          data_nascimento: formData.dataNascimento || null,
+          alergias: formData.alergias.trim() || null,
+          observacoes: formData.observacoes.trim() || null,
+          autoriza_foto: formData.autorizacaoFoto,
+          igreja_id: igrejaId,
+        })
+        .select("id")
+        .single();
+
+      if (criancaError) throw criancaError;
+
+      // 3. Vincular criança ao responsável
+      const { error: vinculoError } = await supabase.from("criancas_responsaveis").insert({
+        crianca_id: crianca.id,
+        responsavel_id: responsavel.id,
+        tipo_relacao: "responsavel",
+      });
+
+      if (vinculoError) throw vinculoError;
+
       toast.success("Cadastro realizado com sucesso!");
       setSubmitted(true);
-      
     } catch (error) {
-      console.error('Erro ao cadastrar:', error);
-      toast.error('Erro ao realizar cadastro. Tente novamente.');
+      console.error("Erro ao cadastrar:", error);
+      toast.error("Erro ao realizar cadastro. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -72,13 +110,13 @@ export default function CadastroInfantil() {
   return (
     <div className="min-h-screen bg-background">
       <InstitutionalHeader />
-      
+
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-promessa-700 via-promessa-600 to-promessa-800 text-white py-16 lg:py-24">
         <div className="absolute inset-0 bg-black/20" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <Link 
+            <Link
               to="/"
               className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 text-sm font-medium transition-colors"
             >
@@ -88,9 +126,7 @@ export default function CadastroInfantil() {
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Baby className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-              Cadastro Infantil
-            </h1>
+            <h1 className="text-4xl lg:text-5xl font-bold mb-4">Cadastro Infantil</h1>
             <p className="text-lg text-white/80 max-w-2xl mx-auto">
               Cadastre seus filhos para participarem das atividades do nosso ministério Kids.
             </p>
@@ -121,9 +157,7 @@ export default function CadastroInfantil() {
                 ) : (
                   <>
                     <div className="text-center mb-8">
-                      <h2 className="text-2xl font-bold mb-2">
-                        Pré-cadastro Infantil
-                      </h2>
+                      <h2 className="text-2xl font-bold mb-2">Pré-cadastro Infantil</h2>
                       <p className="text-muted-foreground">
                         Preencha os dados para agilizar o check-in no Kids
                       </p>
@@ -154,7 +188,9 @@ export default function CadastroInfantil() {
                           id="nomeResponsavel"
                           placeholder="Nome completo do responsável"
                           value={formData.nomeResponsavel}
-                          onChange={(e) => setFormData({ ...formData, nomeResponsavel: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, nomeResponsavel: e.target.value })
+                          }
                           required
                         />
                       </div>
@@ -164,7 +200,9 @@ export default function CadastroInfantil() {
                           id="telefone"
                           placeholder="(99) 99999-9999"
                           value={formData.telefone}
-                          onChange={(e) => setFormData({ ...formData, telefone: formatPhone(e.target.value) })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, telefone: formatPhone(e.target.value) })
+                          }
                           required
                         />
                       </div>
@@ -191,7 +229,9 @@ export default function CadastroInfantil() {
                         <Checkbox
                           id="autorizacaoFoto"
                           checked={formData.autorizacaoFoto}
-                          onCheckedChange={(checked) => setFormData({ ...formData, autorizacaoFoto: checked === true })}
+                          onCheckedChange={(checked) =>
+                            setFormData({ ...formData, autorizacaoFoto: checked === true })
+                          }
                         />
                         <div>
                           <Label htmlFor="autorizacaoFoto" className="text-sm font-medium cursor-pointer">
@@ -202,8 +242,12 @@ export default function CadastroInfantil() {
                           </p>
                         </div>
                       </div>
-                      <Button type="submit" className="w-full h-12 text-base bg-promessa-600 hover:bg-promessa-700" disabled={loading}>
-                        {loading ? 'Enviando...' : 'Cadastrar criança'}
+                      <Button
+                        type="submit"
+                        className="w-full h-12 text-base bg-promessa-600 hover:bg-promessa-700"
+                        disabled={loading || !igrejaId}
+                      >
+                        {loading ? "Enviando..." : "Cadastrar criança"}
                       </Button>
                     </form>
                   </>

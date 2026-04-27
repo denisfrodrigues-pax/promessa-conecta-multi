@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -56,12 +57,6 @@ interface Configuracoes {
   horario_culto: string | null;
 }
 
-// Mock de logs para demonstração
-const mockLogs = [
-  { id: 1, acao: 'Configurações atualizadas', data: new Date().toISOString(), usuario: 'Admin', status: 'sucesso' },
-  { id: 2, acao: 'Logo alterada', data: new Date(Date.now() - 86400000).toISOString(), usuario: 'Admin', status: 'sucesso' },
-  { id: 3, acao: 'Notificações ativadas', data: new Date(Date.now() - 172800000).toISOString(), usuario: 'Admin', status: 'sucesso' },
-];
 
 const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
@@ -81,6 +76,7 @@ function ConfiguracoesSkeleton() {
 
 export default function Configuracoes() {
   const { user, isAdmin, loading: authLoading } = useAuth();
+  const { isSupported: pushSupported, isSubscribed: pushSubscribed, isLoading: pushLoading, toggleSubscription } = usePushNotifications();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [config, setConfig] = useState<Configuracoes | null>(null);
@@ -105,6 +101,9 @@ export default function Configuracoes() {
   const [horarioEbd, setHorarioEbd] = useState('18:00');
   const [horarioCulto, setHorarioCulto] = useState('19:07');
 
+  // Audit logs state
+  const [auditLogs, setAuditLogs] = useState<{ id: string; action: string; created_at: string | null; usuario: string }[]>([]);
+
   // Logo state
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -113,7 +112,32 @@ export default function Configuracoes() {
 
   useEffect(() => {
     fetchConfiguracoes();
+    fetchAuditLogs();
   }, []);
+
+  async function fetchAuditLogs() {
+    try {
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('id, action, created_at, profiles:user_id(nome)')
+        .eq('table_name', 'configuracoes_instituicao')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      const formatted = (data || []).map((row) => ({
+        id: row.id,
+        action: row.action,
+        created_at: row.created_at,
+        usuario: (row.profiles as { nome: string } | null)?.nome || 'Admin',
+      }));
+
+      setAuditLogs(formatted);
+    } catch {
+      // Silently ignore — audit log display is non-critical
+    }
+  }
 
   async function fetchConfiguracoes() {
     try {
@@ -284,6 +308,7 @@ export default function Configuracoes() {
 
       toast.success('Configurações atualizadas com sucesso!');
       fetchConfiguracoes();
+      fetchAuditLogs();
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
       toast.error('Erro ao salvar configurações');
@@ -667,13 +692,17 @@ export default function Configuracoes() {
               <div className="space-y-0.5">
                 <Label>Notificações Push</Label>
                 <p className="text-xs text-muted-foreground">
-                  Push notifications (em breve)
+                  {pushSupported
+                    ? pushSubscribed
+                      ? 'Ativas neste dispositivo'
+                      : 'Ativar para este dispositivo'
+                    : 'Não suportado neste navegador'}
                 </p>
               </div>
               <Switch
-                checked={notificacoesPush}
-                onCheckedChange={setNotificacoesPush}
-                disabled
+                checked={pushSubscribed}
+                onCheckedChange={() => toggleSubscription()}
+                disabled={!pushSupported || pushLoading}
               />
             </div>
           </div>
@@ -692,39 +721,44 @@ export default function Configuracoes() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {mockLogs.map((log) => (
-              <div
-                key={log.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <div>
-                    <p className="text-sm font-medium">{log.acao}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(log.data).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </p>
+          {auditLogs.length === 0 ? (
+            <p className="text-sm text-center text-muted-foreground py-4">
+              Nenhuma alteração registrada ainda.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {auditLogs.map((log) => (
+                <div
+                  key={log.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <div>
+                      <p className="text-sm font-medium capitalize">{log.action}</p>
+                      {log.created_at && (
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(log.created_at).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{log.usuario}</span>
+                    <Badge variant="default" className="bg-green-100 text-green-800">
+                      sucesso
+                    </Badge>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{log.usuario}</span>
-                  <Badge variant="default" className="bg-green-100 text-green-800">
-                    {log.status}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-            <p className="text-xs text-center text-muted-foreground pt-2">
-              Histórico completo em breve
-            </p>
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

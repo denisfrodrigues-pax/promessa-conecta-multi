@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 // Select import removido - campo Frequência não mais utilizado
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   HandHeart, 
@@ -131,17 +131,10 @@ export function ContribuicaoForm({
     try {
       await navigator.clipboard.writeText(PIX_DATA.chave);
       setCopiedPix(true);
-      toast({
-        title: 'Chave PIX copiada!',
-        description: 'Cole no seu aplicativo bancário.',
-      });
+      toast.success('Chave PIX copiada!', { description: 'Cole no seu aplicativo bancário.' });
       setTimeout(() => setCopiedPix(false), 2000);
     } catch (error) {
-      toast({
-        title: 'Erro ao copiar',
-        description: 'Copie manualmente a chave PIX.',
-        variant: 'destructive',
-      });
+      toast.error('Erro ao copiar', { description: 'Copie manualmente a chave PIX.' });
     }
   };
 
@@ -149,20 +142,12 @@ export function ContribuicaoForm({
     e.preventDefault();
     
     if (!valor || valorNumerico <= 0) {
-      toast({
-        title: 'Valor obrigatório',
-        description: 'Informe um valor válido para a contribuição.',
-        variant: 'destructive',
-      });
+      toast.error('Valor obrigatório', { description: 'Informe um valor válido para a contribuição.' });
       return;
     }
 
     if (tipoContribuicao === 'especial' && !destinoContribuicao.trim()) {
-      toast({
-        title: 'Destino obrigatório',
-        description: 'Informe o destino da contribuição especial.',
-        variant: 'destructive',
-      });
+      toast.error('Destino obrigatório', { description: 'Informe o destino da contribuição especial.' });
       return;
     }
 
@@ -203,11 +188,7 @@ export function ContribuicaoForm({
       onSuccess?.();
     } catch (error: any) {
       console.error('Error saving contribution:', error);
-      toast({
-        title: 'Erro ao registrar',
-        description: error.message || 'Não foi possível registrar a contribuição.',
-        variant: 'destructive',
-      });
+      toast.error('Erro ao registrar', { description: error.message || 'Não foi possível registrar a contribuição.' });
     } finally {
       setLoading(false);
     }

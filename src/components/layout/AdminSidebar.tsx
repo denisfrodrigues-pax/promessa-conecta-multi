@@ -81,6 +81,7 @@ const menuItems: MenuItem[] = [
       { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
       { icon: ClipboardList, label: 'Funções', path: '/admin/funcoes-ministerio' },
       { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
+      { icon: ClipboardList, label: 'Períodos de Escala', path: '/admin/escalas/periodos' },
       { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
       { icon: Users, label: 'Acompanhamento', path: '/admin/acompanhamento' },
     ]

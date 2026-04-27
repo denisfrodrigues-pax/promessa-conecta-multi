@@ -3,7 +3,7 @@ import { useAuth, MyMinistry } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Baby, Music, BookOpen, Users, Heart, ChevronRight } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 // Map ministry slugs to icons and routes
 const SLUG_CONFIG: Record<string, { icon: typeof Baby; color: string }> = {
@@ -28,7 +28,7 @@ export default function VoluntarioDashboard() {
     if (ministry.slug) {
       navigate(`/volunteer/${ministry.slug}`);
     } else {
-      toast({ title: `Módulo "${ministry.nome}"`, description: 'Em breve! Este módulo está sendo preparado.' });
+      toast.info(`Módulo "${ministry.nome}"`, { description: 'Em breve! Este módulo está sendo preparado.' });
     }
   };
 

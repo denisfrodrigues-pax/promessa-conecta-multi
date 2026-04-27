@@ -1,4 +1,4 @@
-project_id = "vktfcgtnpbnacjnepfhf"
+project_id = "jebacjvsrvfhmeopvyqg"
 
 [functions.daily-reminders]
 verify_jwt = false

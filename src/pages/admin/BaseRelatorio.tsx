@@ -23,7 +23,7 @@ interface BaseResumo {
 }
 
 // ===== CSV EXPORT =====
-const exportToCSV = (bases: BaseResumo[], stats: any) => {
+const exportToCSV = (bases: BaseResumo[]) => {
   const headers = ['base', 'lider', 'membros', 'visitantes', 'capacidade', 'status'];
   const rows = bases.map((b) => [
     b.nome,
@@ -76,7 +76,7 @@ export default function BaseRelatorio() {
         return;
       }
 
-      const basesResult: BaseResumo[] = (rpcData || []).map((b: any) => ({
+      const basesResult: BaseResumo[] = (rpcData || []).map((b: Record<string, unknown>) => ({
         base_id: b.base_id,
         nome: b.nome,
         status: b.status,
@@ -120,7 +120,7 @@ export default function BaseRelatorio() {
       toast.error('Nenhum dado para exportar');
       return;
     }
-    exportToCSV(bases, stats);
+    exportToCSV(bases);
     toast.success('CSV exportado!');
   };
 

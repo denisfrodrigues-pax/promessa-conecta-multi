@@ -40,6 +40,7 @@ interface Escala {
   ministerio_id: string | null;
   voluntario_id: string | null;
   ministerios: Ministerio | null;
+  eventos_escala: { titulo: string } | null;
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -112,7 +113,7 @@ export default function MinhasEscalas() {
     try {
       const { data, error } = await supabase
         .from('escalas')
-        .select('*, ministerios(nome)')
+        .select('*, ministerios(nome), eventos_escala(titulo)')
         .eq('voluntario_id', profile.id)
         .order('data', { ascending: true });
 
@@ -300,6 +301,9 @@ export default function MinhasEscalas() {
                             {escala.ministerios?.nome}
                             {escala.horario ? ` • ${escala.horario}` : ''}
                           </p>
+                          {escala.eventos_escala?.titulo && (
+                            <p className="text-xs text-primary/70 mt-0.5">{escala.eventos_escala.titulo}</p>
+                          )}
                         </div>
                       </div>
 

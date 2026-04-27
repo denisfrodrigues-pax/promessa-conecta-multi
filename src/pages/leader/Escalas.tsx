@@ -1,35 +1,61 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, Users, Eye, Plus, CalendarIcon, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import {
+  Calendar, Clock, Users, Plus, Trash2, Bell, CheckCircle,
+  AlertCircle, XCircle, Loader2, CalendarDays,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { parseLocalDate, isDatePast, formatDateForDB } from '@/lib/dateUtils';
-import { cn } from '@/lib/utils';
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+interface Voluntario {
+  id: string;
+  nome: string;
+}
+
+interface Funcao {
+  id: string;
+  nome: string;
+}
+
+interface EventoMinisterio {
+  id: string;
+  evento_id: string;
+  ministerio_id: string;
+  status: string;
+  notificacao_enviada: boolean;
+  eventos_escala: {
+    id: string;
+    titulo: string;
+    tipo: string;
+    data_evento: string;
+    horario_inicio: string | null;
+    horario_fim: string | null;
+    descricao: string | null;
+    periodos_escala: { nome: string } | null;
+  } | null;
+}
 
 interface Escala {
   id: string;
@@ -38,933 +64,589 @@ interface Escala {
   funcao: string;
   status: string;
   justificativa: string | null;
-  ministerio_id: string | null;
-  voluntario_id: string | null;
-  responsavel_id: string | null;
-  ministerios: { nome: string } | null;
+  evento_escala_id: string | null;
   voluntario: { nome: string } | null;
+  eventos_escala: { titulo: string } | null;
 }
 
-interface EscalaGroup {
-  key: string;
-  ministerio_id: string | null;
-  data: string;
-  horario: string | null;
+interface EscalaRow {
   funcao: string;
-  ministerio_nome: string | null;
-  voluntarios: Array<{
-    id: string;
-    voluntario_id: string;
-    nome: string;
-    status: string;
-    justificativa: string | null;
-  }>;
-}
-
-interface Ministerio {
-  id: string;
-  nome: string;
-}
-
-interface Funcao {
-  id: string;
-  ministerio_id: string;
-  nome: string;
-}
-
-interface Profile {
-  id: string;
-  nome: string;
-  user_id: string;
-}
-
-interface EscalaFormData {
-  ministerio_id: string;
-  data: Date;
+  voluntario_id: string;
   horario: string;
-  funcao: string;
-  voluntarios_ids: string[];
 }
 
-const initialFormData: EscalaFormData = {
-  ministerio_id: '',
-  data: new Date(),
-  horario: '',
-  funcao: '',
-  voluntarios_ids: [],
-};
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function statusIcon(status: string) {
+  if (status === 'confirmado') return <CheckCircle className="w-4 h-4 text-green-500" />;
+  if (status === 'ausente') return <XCircle className="w-4 h-4 text-red-500" />;
+  return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+}
+
+function eventoStatusBadge(status: string) {
+  if (status === 'concluido') return <Badge className="bg-green-100 text-green-800 border-green-200">Concluído</Badge>;
+  if (status === 'escala_criada') return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Escala criada</Badge>;
+  return <Badge variant="outline">Pendente</Badge>;
+}
+
+// ── Component ──────────────────────────────────────────────────────────────────
 
 export default function LeaderEscalas() {
-  const { ministerioId } = useOutletContext<{ ministerioId: string }>();
-  const { profile, isLider } = useAuth();
-  const [minhasEscalas, setMinhasEscalas] = useState<Escala[]>([]);
-  const [escalasGerenciadas, setEscalasGerenciadas] = useState<EscalaGroup[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedEscala, setSelectedEscala] = useState<Escala | null>(null);
-  const [justificativa, setJustificativa] = useState('');
-  const [isRecusing, setIsRecusing] = useState(false);
-  const [viewingGroup, setViewingGroup] = useState<EscalaGroup | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  
-  // Estados para criação de escalas
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [meusMinisterios, setMeusMinisterios] = useState<Ministerio[]>([]);
-  const [funcoes, setFuncoes] = useState<Funcao[]>([]);
-  const [voluntarios, setVoluntarios] = useState<Profile[]>([]);
-  const [formData, setFormData] = useState<EscalaFormData>(initialFormData);
-  
-  // Estados para exclusão de escalas
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [groupToDelete, setGroupToDelete] = useState<EscalaGroup | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
+  const { user, profile } = useAuth();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (profile) {
-      fetchData();
-    }
-  }, [profile]);
+  // Modal state — event-based escala creation
+  const [eventoParaCriar, setEventoParaCriar] = useState<EventoMinisterio | null>(null);
+  const [escalasRows, setEscalasRows] = useState<EscalaRow[]>([{ funcao: '', voluntario_id: '', horario: '' }]);
+  const [enviarNotificacao, setEnviarNotificacao] = useState(true);
 
-  const fetchData = async () => {
-    setLoading(true);
-    await Promise.all([
-      fetchMinhasEscalas(),
-      fetchEscalasGerenciadas(),
-    ]);
-    setLoading(false);
-  };
+  // Modal state — direct escala creation (legacy)
+  const [isDirectModalOpen, setIsDirectModalOpen] = useState(false);
+  const [directForm, setDirectForm] = useState({ data: '', horario: '', funcao: '', voluntario_id: '' });
 
-  const fetchMinhasEscalas = async () => {
-    try {
+  // Delete state
+  const [toDelete, setToDelete] = useState<Escala | null>(null);
+
+  // ── Queries ────────────────────────────────────────────────────────────────
+
+  const { data: eventosConvocados = [], isLoading: loadingEventos } = useQuery({
+    queryKey: ['evento_ministerios_lider', ministerioId],
+    enabled: !!ministerioId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('evento_ministerios')
+        .select(`
+          id, evento_id, ministerio_id, status, notificacao_enviada,
+          eventos_escala(
+            id, titulo, tipo, data_evento, horario_inicio, horario_fim, descricao,
+            periodos_escala(nome)
+          )
+        `)
+        .eq('ministerio_id', ministerioId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as EventoMinisterio[];
+    },
+  });
+
+  const { data: escalas = [], isLoading: loadingEscalas } = useQuery({
+    queryKey: ['escalas_lider', ministerioId],
+    enabled: !!ministerioId,
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('escalas')
-        .select('*, ministerios(nome), voluntario:profiles!escalas_voluntario_id_fkey(nome)')
-        .eq('voluntario_id', profile?.id)
+        .select(`
+          id, data, horario, funcao, status, justificativa, evento_escala_id,
+          voluntario:profiles!escalas_voluntario_id_fkey(nome),
+          eventos_escala(titulo)
+        `)
         .eq('ministerio_id', ministerioId)
-        .order('data', { ascending: true });
-
+        .order('data', { ascending: false })
+        .limit(100);
       if (error) throw error;
-      setMinhasEscalas(data || []);
-    } catch (error) {
-      console.error('Error fetching escalas:', error);
-    }
-  };
+      return data as Escala[];
+    },
+  });
 
-  const fetchEscalasGerenciadas = async () => {
-    if (!isLider || !ministerioId) return;
-    
-    try {
+  const { data: voluntarios = [] } = useQuery({
+    queryKey: ['voluntarios_ministerio', ministerioId],
+    enabled: !!ministerioId,
+    queryFn: async () => {
       const { data, error } = await supabase
-        .from('escalas')
-        .select('*, ministerios(nome), voluntario:profiles!escalas_voluntario_id_fkey(nome)')
+        .from('ministerio_usuarios')
+        .select('profiles(id, nome)')
         .eq('ministerio_id', ministerioId)
-        .order('data', { ascending: true });
-
+        .eq('ativo', true);
       if (error) throw error;
-      
-      const groups = groupEscalas(data || []);
-      setEscalasGerenciadas(groups);
-    } catch (error: any) {
-      console.error('Error fetching escalas gerenciadas:', error);
-      toast.error(`Erro ao buscar escalas: ${error?.message || 'Erro desconhecido'}`);
-    }
-  };
+      return (data ?? []).flatMap((d) => (d.profiles ? [d.profiles as Voluntario] : []));
+    },
+  });
 
-  const fetchMeusMinisterios = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('ministerios')
-        .select('id, nome')
-        .eq('lider_id', profile?.id)
-        .order('nome');
-
-      if (error) throw error;
-      setMeusMinisterios(data || []);
-    } catch (error) {
-      console.error('Error fetching ministerios:', error);
-    }
-  };
-
-  const fetchFuncoesByMinisterio = async (ministerioId: string) => {
-    if (!ministerioId) {
-      setFuncoes([]);
-      return;
-    }
-    try {
+  const { data: funcoes = [] } = useQuery({
+    queryKey: ['funcoes_ministerio', ministerioId],
+    enabled: !!ministerioId,
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('ministerio_funcoes')
-        .select('id, ministerio_id, nome')
+        .select('id, nome')
         .eq('ministerio_id', ministerioId)
         .eq('ativo', true)
         .order('nome');
-
       if (error) throw error;
-      setFuncoes(data || []);
-    } catch (error) {
-      console.error('Error fetching funcoes:', error);
-      setFuncoes([]);
-    }
-  };
+      return data as Funcao[];
+    },
+  });
 
-  const fetchVoluntariosByMinisterio = async (ministerioId: string) => {
-    if (!ministerioId) {
-      setVoluntarios([]);
-      return;
-    }
-    try {
-      const { data, error } = await supabase
-        .from('ministerio_usuarios')
-        .select(`
-          user_id,
-          profile:profiles!ministerio_voluntarios_user_id_fkey(id, nome, user_id)
-        `)
-        .eq('ministerio_id', ministerioId)
-        .eq('ativo', true);
+  // ── Create escalas from event ──────────────────────────────────────────────
 
-      if (error) throw error;
-      
-      const profiles = (data || [])
-        .filter(item => item.profile)
-        .map(item => ({
-          id: item.profile!.id,
-          nome: item.profile!.nome,
-          user_id: item.profile!.user_id,
-        }))
-        .sort((a, b) => a.nome.localeCompare(b.nome));
-      
-      setVoluntarios(profiles);
-    } catch (error) {
-      console.error('Error fetching voluntarios:', error);
-      setVoluntarios([]);
-    }
-  };
+  const criarEscalaMutation = useMutation({
+    mutationFn: async () => {
+      if (!eventoParaCriar?.eventos_escala) throw new Error('Evento inválido');
+      const ev = eventoParaCriar.eventos_escala;
 
-  const handleOpenCreateDialog = () => {
-    setFormData({ ...initialFormData, ministerio_id: ministerioId });
-    setFuncoes([]);
-    setVoluntarios([]);
-    fetchFuncoesByMinisterio(ministerioId);
-    fetchVoluntariosByMinisterio(ministerioId);
-    setIsCreateDialogOpen(true);
-  };
+      const rows = escalasRows.filter((r) => r.funcao && r.voluntario_id);
+      if (rows.length === 0) throw new Error('Adicione pelo menos um voluntário com função');
 
-  const handleMinisterioChange = (ministerioId: string) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      ministerio_id: ministerioId, 
-      funcao: '',
-      voluntarios_ids: [] 
-    }));
-    fetchFuncoesByMinisterio(ministerioId);
-    fetchVoluntariosByMinisterio(ministerioId);
-  };
-
-  const toggleVoluntario = (voluntarioId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      voluntarios_ids: prev.voluntarios_ids.includes(voluntarioId)
-        ? prev.voluntarios_ids.filter((id) => id !== voluntarioId)
-        : [...prev.voluntarios_ids, voluntarioId],
-    }));
-  };
-
-  const handleSubmitEscala = async () => {
-    if (!formData.ministerio_id) {
-      toast.error('Selecione um ministério');
-      return;
-    }
-    if (!formData.funcao) {
-      toast.error('Selecione uma função');
-      return;
-    }
-    if (formData.voluntarios_ids.length === 0) {
-      toast.error('Selecione pelo menos um voluntário');
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const escalasToInsert = formData.voluntarios_ids.map((voluntarioId) => ({
-        ministerio_id: formData.ministerio_id,
-        data: formatDateForDB(formData.data),
-        horario: formData.horario || null,
-        funcao: formData.funcao,
-        responsavel_id: profile?.id || null,
-        voluntario_id: voluntarioId,
+      const inserts = rows.map((r) => ({
+        ministerio_id: ministerioId,
+        evento_escala_id: ev.id,
+        data: ev.data_evento,
+        horario: r.horario || ev.horario_inicio || null,
+        funcao: r.funcao,
+        voluntario_id: r.voluntario_id,
+        responsavel_id: profile?.id ?? null,
         status: 'pendente',
       }));
 
-      const { error } = await supabase
-        .from('escalas')
-        .insert(escalasToInsert);
+      const { error: insertErr } = await supabase.from('escalas').insert(inserts);
+      if (insertErr) throw insertErr;
 
-      if (error) throw error;
-      
-      toast.success(`${escalasToInsert.length} escala(s) criada(s) com sucesso`);
-      setIsCreateDialogOpen(false);
-      setFormData(initialFormData);
-      fetchData();
-    } catch (error: any) {
-      console.error('Error creating escala:', error);
-      toast.error(`Erro ao criar escala: ${error?.message || 'Erro desconhecido'}`);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+      const { error: updErr } = await supabase
+        .from('evento_ministerios')
+        .update({ status: 'escala_criada' })
+        .eq('id', eventoParaCriar.id);
+      if (updErr) throw updErr;
 
-  const groupEscalas = (escalas: Escala[]): EscalaGroup[] => {
-    const groupMap = new Map<string, EscalaGroup>();
-    
-    escalas.forEach((escala) => {
-      const key = `${escala.ministerio_id}-${escala.data}-${escala.funcao}`;
-      
-      if (!groupMap.has(key)) {
-        groupMap.set(key, {
-          key,
-          ministerio_id: escala.ministerio_id,
-          data: escala.data,
-          horario: escala.horario,
-          funcao: escala.funcao,
-          ministerio_nome: escala.ministerios?.nome || null,
-          voluntarios: [],
+      if (enviarNotificacao) {
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            target: 'ministerio',
+            ministerio_id: ministerioId,
+            title: `Escala publicada: ${ev.titulo}`,
+            body: `A escala para ${ev.titulo} (${format(new Date(ev.data_evento + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}) foi publicada. Verifique sua convocação.`,
+          },
         });
+        await supabase
+          .from('evento_ministerios')
+          .update({ notificacao_enviada: true })
+          .eq('id', eventoParaCriar.id);
       }
-      
-      const group = groupMap.get(key)!;
-      if (escala.voluntario_id && escala.voluntario) {
-        group.voluntarios.push({
-          id: escala.id,
-          voluntario_id: escala.voluntario_id,
-          nome: escala.voluntario.nome,
-          status: escala.status,
-          justificativa: escala.justificativa,
-        });
-      }
-    });
-    
-    return Array.from(groupMap.values());
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['evento_ministerios_lider', ministerioId] });
+      queryClient.invalidateQueries({ queryKey: ['escalas_lider', ministerioId] });
+      toast.success('Escala criada!');
+      setEventoParaCriar(null);
+      setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]);
+      setEnviarNotificacao(true);
+    },
+    onError: (e: Error) => toast.error('Erro ao criar escala', { description: e.message }),
+  });
 
-  const handleConfirmar = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('escalas')
-        .update({ 
-          status: 'confirmado',
-          confirmado_em: new Date().toISOString()
-        })
-        .eq('id', id);
+  // ── Create direct escala (legacy) ──────────────────────────────────────────
 
+  const directMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('escalas').insert({
+        ministerio_id: ministerioId,
+        data: directForm.data,
+        horario: directForm.horario || null,
+        funcao: directForm.funcao,
+        voluntario_id: directForm.voluntario_id || null,
+        responsavel_id: profile?.id ?? null,
+        status: 'pendente',
+      });
       if (error) throw error;
-      toast.success('Escala confirmada!');
-      fetchData();
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Erro ao confirmar escala');
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['escalas_lider', ministerioId] });
+      toast.success('Escala criada!');
+      setIsDirectModalOpen(false);
+      setDirectForm({ data: '', horario: '', funcao: '', voluntario_id: '' });
+    },
+    onError: (e: Error) => toast.error('Erro', { description: e.message }),
+  });
 
-  const handleRecusar = async () => {
-    if (!selectedEscala) return;
-    if (!justificativa.trim()) {
-      toast.error('Informe uma justificativa');
-      return;
-    }
+  // ── Delete escala ──────────────────────────────────────────────────────────
 
-    try {
-      const { error } = await supabase
-        .from('escalas')
-        .update({ 
-          status: 'ausente', 
-          justificativa,
-          confirmado_em: new Date().toISOString()
-        })
-        .eq('id', selectedEscala.id);
-
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('escalas').delete().eq('id', id);
       if (error) throw error;
-      toast.success('Escala recusada');
-      setSelectedEscala(null);
-      setJustificativa('');
-      setIsRecusing(false);
-      fetchData();
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Erro ao recusar escala');
-    }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['escalas_lider', ministerioId] });
+      toast.success('Escala excluída');
+      setToDelete(null);
+    },
+    onError: (e: Error) => {
+      toast.error('Erro', { description: e.message });
+      setToDelete(null);
+    },
+  });
+
+  // ── Row helpers ────────────────────────────────────────────────────────────
+
+  const addRow = () => setEscalasRows((r) => [...r, { funcao: '', voluntario_id: '', horario: '' }]);
+
+  const updateRow = (idx: number, field: keyof EscalaRow, value: string) => {
+    setEscalasRows((rows) => rows.map((r, i) => i === idx ? { ...r, [field]: value } : r));
   };
 
-  const handleOpenDeleteConfirm = (group: EscalaGroup) => {
-    setGroupToDelete(group);
-    setDeleteConfirmOpen(true);
+  const removeRow = (idx: number) => {
+    if (escalasRows.length === 1) return;
+    setEscalasRows((rows) => rows.filter((_, i) => i !== idx));
   };
 
-  const handleDeleteEscalas = async () => {
-    if (!groupToDelete) return;
-    
-    setIsDeleting(true);
-    try {
-      // Delete all escalas in the group (by their individual IDs)
-      const escalaIds = groupToDelete.voluntarios.map(v => v.id);
-      
-      const { error } = await supabase
-        .from('escalas')
-        .delete()
-        .in('id', escalaIds);
-
-      if (error) throw error;
-      
-      toast.success('Escala(s) excluída(s) com sucesso');
-      setDeleteConfirmOpen(false);
-      setGroupToDelete(null);
-      fetchData();
-    } catch (error: any) {
-      console.error('Error deleting escala:', error);
-      toast.error(`Erro ao excluir escala: ${error?.message || 'Erro desconhecido'}`);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'confirmado':
-        return (
-          <Badge variant="success">
-            <CheckCircle className="w-3 h-3 mr-1" />
-            Confirmado
-          </Badge>
-        );
-      case 'ausente':
-        return (
-          <Badge variant="destructive">
-            <XCircle className="w-3 h-3 mr-1" />
-            Ausente
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="warning">
-            <Clock className="w-3 h-3 mr-1" />
-            Pendente
-          </Badge>
-        );
-    }
-  };
-
-  const getVoluntariosStatusSummary = (voluntarios: EscalaGroup['voluntarios']) => {
-    return { total: voluntarios.length };
-  };
-
-  const isPast = (date: string) => isDatePast(date);
-
-  const groupedMinhasEscalas = {
-    proximas: minhasEscalas.filter((e) => !isPast(e.data)),
-    passadas: minhasEscalas.filter((e) => isPast(e.data)),
-  };
-
-  const groupedEscalasGerenciadas = {
-    proximas: escalasGerenciadas.filter((e) => !isPast(e.data)),
-    passadas: escalasGerenciadas.filter((e) => isPast(e.data)),
-  };
-
-  const renderMinhasEscalas = () => (
-    <div className="space-y-6">
-      {/* Próximas Escalas */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4">Próximas Escalas</h2>
-        {groupedMinhasEscalas.proximas.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              Nenhuma escala programada
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {groupedMinhasEscalas.proximas.map((escala) => (
-              <Card key={escala.id} className="shadow-card">
-                <CardContent className="p-4">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
-                        <span className="text-lg font-bold text-primary">
-                          {format(parseLocalDate(escala.data), 'dd')}
-                        </span>
-                        <span className="text-xs text-primary uppercase">
-                          {format(parseLocalDate(escala.data), 'MMM', { locale: ptBR })}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-display font-semibold">{escala.funcao}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {escala.ministerios?.nome}
-                          {escala.horario && ` • ${escala.horario}`}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{escala.funcao}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Escalas Passadas */}
-      {groupedMinhasEscalas.passadas.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold mb-4 text-muted-foreground">Histórico</h2>
-          <div className="space-y-3 opacity-60">
-            {groupedMinhasEscalas.passadas.slice(0, 5).map((escala) => (
-              <Card key={escala.id} className="shadow-soft">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center">
-                        <span className="text-sm font-bold">
-                          {format(parseLocalDate(escala.data), 'dd')}
-                        </span>
-                        <span className="text-xs uppercase">
-                          {format(parseLocalDate(escala.data), 'MMM', { locale: ptBR })}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium">{escala.funcao}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {escala.ministerios?.nome}
-                        </p>
-                      </div>
-                    </div>
-                    {null}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
-  );
-
-  const renderEscalasGerenciadas = () => (
-    <div className="space-y-6">
-      {/* Próximas Escalas Gerenciadas */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4">Próximas Escalas</h2>
-        {groupedEscalasGerenciadas.proximas.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              Nenhuma escala sob sua responsabilidade
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {groupedEscalasGerenciadas.proximas.map((group) => {
-              const summary = getVoluntariosStatusSummary(group.voluntarios);
-              return (
-                <Card key={group.key} className="shadow-card">
-                  <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
-                          <span className="text-lg font-bold text-primary">
-                            {format(parseLocalDate(group.data), 'dd')}
-                          </span>
-                          <span className="text-xs text-primary uppercase">
-                            {format(parseLocalDate(group.data), 'MMM', { locale: ptBR })}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-display font-semibold">{group.funcao}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {group.ministerio_nome}
-                            {group.horario && ` • ${group.horario}`}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">{summary.total} voluntário(s)</span>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setViewingGroup(group);
-                            setIsViewDialogOpen(true);
-                          }}
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          Ver Detalhes
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => handleOpenDeleteConfirm(group)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* Escalas Passadas */}
-      {groupedEscalasGerenciadas.passadas.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold mb-4 text-muted-foreground">Histórico</h2>
-          <div className="space-y-3 opacity-60">
-            {groupedEscalasGerenciadas.passadas.slice(0, 5).map((group) => {
-              const summary = getVoluntariosStatusSummary(group.voluntarios);
-              return (
-                <Card key={group.key} className="shadow-soft cursor-pointer" onClick={() => {
-                  setViewingGroup(group);
-                  setIsViewDialogOpen(true);
-                }}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center">
-                          <span className="text-sm font-bold">
-                            {format(parseLocalDate(group.data), 'dd')}
-                          </span>
-                          <span className="text-xs uppercase">
-                            {format(parseLocalDate(group.data), 'MMM', { locale: ptBR })}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-medium">{group.funcao}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {group.ministerio_nome} • {summary.total} voluntário(s)
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </section>
-      )}
-    </div>
-  );
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">Minhas Escalas</h1>
-          <p className="text-muted-foreground">Gerencie suas escalas de serviço</p>
+          <h2 className="text-xl font-display font-bold">Escalas</h2>
+          <p className="text-sm text-muted-foreground">Gerencie as escalas do ministério</p>
         </div>
-        {isLider && (
-          <Button onClick={handleOpenCreateDialog}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Escala
-          </Button>
-        )}
+        <Button variant="outline" size="sm" onClick={() => setIsDirectModalOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Escala avulsa
+        </Button>
       </div>
 
-      {isLider ? (
-        <Tabs defaultValue="minhas">
-          <TabsList>
-            <TabsTrigger value="minhas">Minhas Escalas</TabsTrigger>
-            <TabsTrigger value="gerenciadas">Escalas que Gerencio</TabsTrigger>
-          </TabsList>
-          <TabsContent value="minhas">
-            {renderMinhasEscalas()}
-          </TabsContent>
-          <TabsContent value="gerenciadas">
-            {renderEscalasGerenciadas()}
-          </TabsContent>
-        </Tabs>
-      ) : (
-        renderMinhasEscalas()
-      )}
+      <Tabs defaultValue="eventos">
+        <TabsList>
+          <TabsTrigger value="eventos">
+            Eventos convocados
+            {eventosConvocados.filter((e) => e.status === 'pendente').length > 0 && (
+              <Badge className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-promessa-500 text-white">
+                {eventosConvocados.filter((e) => e.status === 'pendente').length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="historico">Histórico de escalas</TabsTrigger>
+        </TabsList>
 
-      {/* Dialog de Recusa */}
-      <Dialog open={isRecusing} onOpenChange={setIsRecusing}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Recusar Escala</DialogTitle>
-            <DialogDescription>
-              Informe o motivo pelo qual não poderá participar desta escala
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200 mb-4">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-yellow-800">{selectedEscala?.funcao}</p>
-                  <p className="text-sm text-yellow-700">
-                    {selectedEscala?.data && format(parseLocalDate(selectedEscala.data), "dd 'de' MMMM", { locale: ptBR })}
-                  </p>
-                </div>
-              </div>
+        {/* ── Tab: Eventos convocados ─────────────────────────────────────── */}
+        <TabsContent value="eventos" className="mt-4">
+          {loadingEventos ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
-            <div className="space-y-2">
-              <Label>Justificativa *</Label>
-              <Textarea
-                value={justificativa}
-                onChange={(e) => setJustificativa(e.target.value)}
-                placeholder="Explique o motivo da ausência..."
-                rows={4}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRecusing(false)}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={handleRecusar}>
-              Confirmar Recusa
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* View Dialog - Show all volunteers and their status */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Detalhes da Escala</DialogTitle>
-            <DialogDescription>
-              Status de cada voluntário nesta escala
-            </DialogDescription>
-          </DialogHeader>
-          
-          {viewingGroup && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Data:</span>
-                  <span className="font-medium">{format(parseLocalDate(viewingGroup.data), 'dd/MM/yyyy')}</span>
-                </div>
-                {viewingGroup.horario && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Horário:</span>
-                    <span className="font-medium">{viewingGroup.horario}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Função:</span>
-                  <span className="font-medium">{viewingGroup.funcao}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Ministério:</span>
-                  <span className="font-medium">{viewingGroup.ministerio_nome || '-'}</span>
-                </div>
-              </div>
-
-              {/* Volunteers count */}
-              <div className="p-4 rounded-lg bg-muted/50 text-center">
-                <p className="text-2xl font-bold text-primary">{viewingGroup.voluntarios.length}</p>
-                <p className="text-xs text-muted-foreground font-medium">Voluntário(s)</p>
-              </div>
-
-              {/* Volunteers List */}
-              <div className="space-y-2">
-                {viewingGroup.voluntarios.map((vol) => (
-                  <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
-                    <div>
-                      <p className="font-medium">{vol.nome}</p>
-                      {vol.justificativa && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Justificativa: {vol.justificativa}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          ) : eventosConvocados.length === 0 ? (
+            <Card>
+              <CardContent className="py-14 text-center space-y-2">
+                <CalendarDays className="w-12 h-12 mx-auto text-muted-foreground/40" />
+                <p className="text-muted-foreground">Nenhuma convocação recebida ainda.</p>
+                <p className="text-sm text-muted-foreground/70">Quando o admin convocar seu ministério para um evento, ele aparecerá aqui.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {eventosConvocados.map((em) => {
+                const ev = em.eventos_escala;
+                if (!ev) return null;
+                return (
+                  <Card key={em.id} className={em.status === 'pendente' ? 'border-yellow-200 bg-yellow-50/30' : ''}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                          <Calendar className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium">{ev.titulo}</p>
+                            <Badge variant="outline" className="text-xs capitalize">{ev.tipo}</Badge>
+                            {eventoStatusBadge(em.status)}
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              {format(new Date(ev.data_evento + 'T12:00:00'), 'EEEE, dd/MM/yyyy', { locale: ptBR })}
+                            </span>
+                            {ev.horario_inicio && (
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {ev.horario_inicio}{ev.horario_fim ? ` – ${ev.horario_fim}` : ''}
+                              </span>
+                            )}
+                            {ev.periodos_escala && (
+                              <span className="text-muted-foreground/70">{ev.periodos_escala.nome}</span>
+                            )}
+                          </div>
+                          {ev.descricao && (
+                            <p className="text-sm text-muted-foreground mt-1">{ev.descricao}</p>
+                          )}
+                        </div>
+                        <div className="shrink-0">
+                          {em.status === 'pendente' && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setEventoParaCriar(em);
+                                setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]);
+                              }}
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Criar escala
+                            </Button>
+                          )}
+                          {em.status === 'escala_criada' && (
+                            <span className="text-sm text-blue-600 font-medium">Escala enviada</span>
+                          )}
+                          {em.status === 'concluido' && (
+                            <span className="text-sm text-green-600 font-medium">Concluído</span>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
+        </TabsContent>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
-              Fechar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog de Criação de Escala */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Nova Escala</DialogTitle>
-            <DialogDescription>
-              Crie uma nova escala para seu ministério
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            {/* Ministério */}
-            <div className="space-y-2">
-              <Label>Ministério *</Label>
-              <Select
-                value={formData.ministerio_id}
-                onValueChange={handleMinisterioChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o ministério" />
-                </SelectTrigger>
-                <SelectContent>
-                  {meusMinisterios.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        {/* ── Tab: Histórico ──────────────────────────────────────────────── */}
+        <TabsContent value="historico" className="mt-4">
+          {loadingEscalas ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
-
-            {/* Data */}
+          ) : escalas.length === 0 ? (
+            <Card>
+              <CardContent className="py-14 text-center space-y-2">
+                <Users className="w-12 h-12 mx-auto text-muted-foreground/40" />
+                <p className="text-muted-foreground">Nenhuma escala criada ainda.</p>
+              </CardContent>
+            </Card>
+          ) : (
             <div className="space-y-2">
-              <Label>Data *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.data && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.data ? format(formData.data, "PPP", { locale: ptBR }) : "Selecione a data"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={formData.data}
-                    onSelect={(date) => date && setFormData(prev => ({ ...prev, data: date }))}
-                    locale={ptBR}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Horário */}
-            <div className="space-y-2">
-              <Label>Horário</Label>
-              <Input
-                type="time"
-                value={formData.horario}
-                onChange={(e) => setFormData(prev => ({ ...prev, horario: e.target.value }))}
-              />
-            </div>
-
-            {/* Função */}
-            <div className="space-y-2">
-              <Label>Função *</Label>
-              <Select
-                value={formData.funcao}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, funcao: value }))}
-                disabled={!formData.ministerio_id}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={!formData.ministerio_id ? "Selecione um ministério primeiro" : "Selecione a função"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {funcoes.map((f) => (
-                    <SelectItem key={f.id} value={f.nome}>
-                      {f.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Voluntários */}
-            <div className="space-y-2">
-              <Label>Voluntários *</Label>
-              {!formData.ministerio_id ? (
-                <p className="text-sm text-muted-foreground">Selecione um ministério primeiro</p>
-              ) : voluntarios.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum voluntário no ministério</p>
-              ) : (
-                <div className="border rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
-                  {voluntarios.map((vol) => (
-                    <div
-                      key={vol.id}
-                      className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer"
-                      onClick={() => toggleVoluntario(vol.id)}
-                    >
-                      <Checkbox
-                        checked={formData.voluntarios_ids.includes(vol.id)}
-                        onCheckedChange={() => toggleVoluntario(vol.id)}
-                      />
-                      <span className="text-sm">{vol.nome}</span>
+              {escalas.map((e) => (
+                <Card key={e.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      {statusIcon(e.status)}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium text-sm">{e.voluntario?.nome ?? 'Voluntário'}</p>
+                          <span className="text-xs text-muted-foreground">·</span>
+                          <span className="text-xs text-muted-foreground">{e.funcao}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                          <span>{format(new Date(e.data + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}</span>
+                          {e.horario && <span>{e.horario}</span>}
+                          {e.eventos_escala && (
+                            <span className="text-primary/70">{e.eventos_escala.titulo}</span>
+                          )}
+                          <Badge variant={e.status === 'confirmado' ? 'default' : e.status === 'ausente' ? 'destructive' : 'secondary'} className="text-xs">
+                            {e.status}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                        onClick={() => setToDelete(e)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                  ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* ── Modal: Criar Escala para Evento ─────────────────────────────────── */}
+      <Dialog
+        open={!!eventoParaCriar}
+        onOpenChange={(open) => { if (!open) { setEventoParaCriar(null); setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]); } }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              Criar escala — {eventoParaCriar?.eventos_escala?.titulo}
+            </DialogTitle>
+            {eventoParaCriar?.eventos_escala && (
+              <p className="text-sm text-muted-foreground">
+                {format(new Date(eventoParaCriar.eventos_escala.data_evento + 'T12:00:00'), 'EEEE, dd/MM/yyyy', { locale: ptBR })}
+                {eventoParaCriar.eventos_escala.horario_inicio && ` · ${eventoParaCriar.eventos_escala.horario_inicio}`}
+              </p>
+            )}
+          </DialogHeader>
+
+          <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
+            {escalasRows.map((row, idx) => (
+              <div key={idx} className="grid grid-cols-[1fr_1fr_100px_36px] gap-2 items-end">
+                <div className="space-y-1">
+                  {idx === 0 && <Label className="text-xs">Função *</Label>}
+                  <Select value={row.funcao} onValueChange={(v) => updateRow(idx, 'funcao', v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Função..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {funcoes.map((f) => (
+                        <SelectItem key={f.id} value={f.nome}>{f.nome}</SelectItem>
+                      ))}
+                      <SelectItem value="__outro__">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-              {formData.voluntarios_ids.length > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {formData.voluntarios_ids.length} voluntário(s) selecionado(s)
-                </p>
-              )}
+                <div className="space-y-1">
+                  {idx === 0 && <Label className="text-xs">Voluntário *</Label>}
+                  <Select value={row.voluntario_id} onValueChange={(v) => updateRow(idx, 'voluntario_id', v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Voluntário..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {voluntarios.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>{v.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  {idx === 0 && <Label className="text-xs">Horário</Label>}
+                  <Input
+                    type="time"
+                    value={row.horario}
+                    onChange={(e) => updateRow(idx, 'horario', e.target.value)}
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => removeRow(idx)}
+                  disabled={escalasRows.length === 1}
+                  style={{ marginTop: idx === 0 ? '22px' : '0' }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+
+            <Button variant="outline" size="sm" onClick={addRow} className="w-full">
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar voluntário
+            </Button>
+
+            <div className="flex items-center gap-2 pt-2 border-t">
+              <input
+                type="checkbox"
+                id="notif"
+                checked={enviarNotificacao}
+                onChange={(e) => setEnviarNotificacao(e.target.checked)}
+                className="accent-primary"
+              />
+              <label htmlFor="notif" className="text-sm cursor-pointer">
+                <Bell className="w-4 h-4 inline mr-1 text-muted-foreground" />
+                Notificar membros do ministério ao criar a escala
+              </label>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={submitting}>
+            <Button
+              variant="outline"
+              onClick={() => { setEventoParaCriar(null); setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]); }}
+              disabled={criarEscalaMutation.isPending}
+            >
               Cancelar
             </Button>
-            <Button onClick={handleSubmitEscala} disabled={submitting}>
-              {submitting ? 'Salvando...' : 'Criar Escala'}
+            <Button onClick={() => criarEscalaMutation.mutate()} disabled={criarEscalaMutation.isPending}>
+              {criarEscalaMutation.isPending
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Criando...</>
+                : 'Publicar escala'
+              }
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog de Confirmação de Exclusão */}
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+      {/* ── Modal: Escala Avulsa ─────────────────────────────────────────────── */}
+      <Dialog open={isDirectModalOpen} onOpenChange={(open) => { if (!open) setIsDirectModalOpen(false); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Escala avulsa</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Data *</Label>
+                <Input
+                  type="date"
+                  value={directForm.data}
+                  onChange={(e) => setDirectForm({ ...directForm, data: e.target.value })}
+                  disabled={directMutation.isPending}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Horário</Label>
+                <Input
+                  type="time"
+                  value={directForm.horario}
+                  onChange={(e) => setDirectForm({ ...directForm, horario: e.target.value })}
+                  disabled={directMutation.isPending}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Função *</Label>
+              <Select value={directForm.funcao} onValueChange={(v) => setDirectForm({ ...directForm, funcao: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {funcoes.map((f) => <SelectItem key={f.id} value={f.nome}>{f.nome}</SelectItem>)}
+                  <SelectItem value="Geral">Geral</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Voluntário</Label>
+              <Select value={directForm.voluntario_id} onValueChange={(v) => setDirectForm({ ...directForm, voluntario_id: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {voluntarios.map((v) => <SelectItem key={v.id} value={v.id}>{v.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDirectModalOpen(false)} disabled={directMutation.isPending}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (!directForm.data) { toast.error('Informe a data'); return; }
+                if (!directForm.funcao) { toast.error('Informe a função'); return; }
+                directMutation.mutate();
+              }}
+              disabled={directMutation.isPending}
+            >
+              {directMutation.isPending
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Criando...</>
+                : 'Criar'
+              }
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Confirmar Exclusão ───────────────────────────────────────────────── */}
+      <AlertDialog open={!!toDelete} onOpenChange={(open) => { if (!open) setToDelete(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir escala?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação remove a escala e não pode ser desfeita.
-              {groupToDelete && (
-                <div className="mt-3 p-3 rounded-lg bg-muted">
-                  <p className="font-medium">{groupToDelete.funcao}</p>
-                  <p className="text-sm">
-                    {format(parseLocalDate(groupToDelete.data), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                    {groupToDelete.ministerio_nome && ` • ${groupToDelete.ministerio_nome}`}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {groupToDelete.voluntarios.length} voluntário(s) serão removidos desta escala.
-                  </p>
-                </div>
-              )}
+              A escala de <strong>{toDelete?.voluntario?.nome}</strong> ({toDelete?.funcao}) será excluída permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeleteEscalas}
-              disabled={isDeleting}
+              onClick={() => toDelete && deleteMutation.mutate(toDelete.id)}
+              disabled={deleteMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? 'Excluindo...' : 'Excluir'}
+              {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

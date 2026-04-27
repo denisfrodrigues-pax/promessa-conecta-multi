@@ -219,7 +219,7 @@ export default function Eventos() {
       const imagemUrl = await uploadImage(eventoId);
 
       // Update event with image URL (and other data if editing)
-      const updateData: any = { imagem_url: imagemUrl };
+      const updateData: Partial<Evento> & { imagem_url: string | null } = { imagem_url: imagemUrl };
       
       if (editingEvento) {
         updateData.titulo = formData.titulo;
@@ -270,7 +270,7 @@ export default function Eventos() {
       if (error) throw error;
 
       const headers = ['Nome', 'Email', 'Telefone'];
-      const rows = (data || []).map((i: any) => [
+      const rows = (data || []).map((i: { profiles: { nome: string; email: string; telefone: string | null } | null }) => [
         i.profiles?.nome || '',
         i.profiles?.email || '',
         i.profiles?.telefone || '',

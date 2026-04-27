@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   Users, 
   TrendingUp, 
@@ -141,8 +141,6 @@ export default function LeaderRelatorios() {
   const { ministerioId } = useOutletContext<{ ministerioId: string }>();
   const { user, profile, isLider, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState('30');
   const [basesSelecionada, setBasesSelecionada] = useState<string>('all');
@@ -185,11 +183,7 @@ export default function LeaderRelatorios() {
       ]);
     } catch (error) {
       console.error('Error fetching report data:', error);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível carregar os dados dos relatórios.',
-        variant: 'destructive'
-      });
+      toast.error('Não foi possível carregar os dados dos relatórios.');
     } finally {
       setLoading(false);
     }
@@ -362,10 +356,7 @@ export default function LeaderRelatorios() {
     link.download = `relatorio-lider-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     link.click();
 
-    toast({
-      title: 'Exportado',
-      description: 'Relatório exportado com sucesso.'
-    });
+    toast.success('Relatório exportado com sucesso.');
   }
 
   const pieData = [

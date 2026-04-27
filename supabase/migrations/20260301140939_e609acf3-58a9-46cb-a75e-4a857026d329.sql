@@ -13,5 +13,21 @@ DROP POLICY IF EXISTS "Usuarios inserem modulos apenas no seu ministerio" ON min
 CREATE POLICY "Leaders manage own ministry modules"
   ON ministerio_modulos FOR ALL
   TO authenticated
-  USING (is_ministerio_lider(auth.uid(), ministerio_id))
-  WITH CHECK (is_ministerio_lider(auth.uid(), ministerio_id));
+  USING (
+    EXISTS (
+      SELECT 1 FROM ministerio_usuarios
+      WHERE user_id = auth.uid()
+        AND ministerio_id = ministerio_modulos.ministerio_id
+        AND papel = 'lider'
+        AND ativo = true
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM ministerio_usuarios
+      WHERE user_id = auth.uid()
+        AND ministerio_id = ministerio_modulos.ministerio_id
+        AND papel = 'lider'
+        AND ativo = true
+    )
+  );

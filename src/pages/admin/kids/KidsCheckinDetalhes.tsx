@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Baby,
@@ -131,7 +131,7 @@ export default function KidsCheckinDetalhes() {
 
       if (checkinError) throw checkinError;
       if (!checkinData) {
-        toast({ title: "Check-in não encontrado", variant: "destructive" });
+        toast.error('Check-in não encontrado');
         navigate("/admin/kids");
         return;
       }
@@ -164,7 +164,7 @@ export default function KidsCheckinDetalhes() {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast({ title: "Erro ao carregar dados", variant: "destructive" });
+      toast.error('Erro ao carregar dados');
     } finally {
       setLoading(false);
     }
@@ -179,11 +179,11 @@ export default function KidsCheckinDetalhes() {
 
       if (error) throw error;
 
-      toast({ title: "Observação salva!" });
+      toast.success('Observação salva!');
       fetchData();
     } catch (error) {
       console.error("Error saving:", error);
-      toast({ title: "Erro ao salvar", variant: "destructive" });
+      toast.error('Erro ao salvar');
     } finally {
       setSaving(false);
     }
@@ -191,10 +191,7 @@ export default function KidsCheckinDetalhes() {
 
   const handleCheckout = async () => {
     if (!checkin || !checkoutResponsavelId) {
-      toast({
-        title: "Selecione o responsável que está retirando",
-        variant: "destructive",
-      });
+      toast.error('Selecione o responsável que está retirando');
       return;
     }
 
@@ -211,12 +208,12 @@ export default function KidsCheckinDetalhes() {
 
       if (error) throw error;
 
-      toast({ title: "Checkout realizado com sucesso!" });
+      toast.success('Checkout realizado com sucesso!');
       setShowCheckoutModal(false);
       fetchData();
     } catch (error) {
       console.error("Error doing checkout:", error);
-      toast({ title: "Erro ao realizar checkout", variant: "destructive" });
+      toast.error('Erro ao realizar checkout');
     } finally {
       setSaving(false);
     }

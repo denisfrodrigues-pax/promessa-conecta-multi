@@ -23,4 +23,11 @@ CREATE POLICY "Authenticated view active modules"
 CREATE POLICY "Members view own ministry modules"
   ON ministerio_modulos FOR SELECT
   TO authenticated
-  USING (is_ministerio_member(auth.uid(), ministerio_id));
+  USING (
+    EXISTS (
+      SELECT 1 FROM ministerio_usuarios
+      WHERE user_id = auth.uid()
+        AND ministerio_id = ministerio_modulos.ministerio_id
+        AND ativo = true
+    )
+  );

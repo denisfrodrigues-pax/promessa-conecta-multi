@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { InstitutionalHeader } from "@/components/layout/InstitutionalHeader";
-import { 
-  HandHeart, 
+import {
+  HandHeart,
   CheckCircle,
   Home
 } from "lucide-react";
@@ -15,17 +15,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const ministeriosOpcoes = [
-  "Música",
-  "Recepção", 
-  "Kids",
-  "Áudio, Vídeo e Iluminação",
-  "Mídia",
-  "Bases",
-  "Outro"
-];
-
 export default function SejaVoluntario() {
+  const [ministerios, setMinisterios] = useState<{ id: string; nome: string }[]>([]);
   const [formData, setFormData] = useState({
     nome: "",
     telefone: "",
@@ -35,6 +26,17 @@ export default function SejaVoluntario() {
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('ministerios')
+      .select('id, nome')
+      .eq('status', 'ativo')
+      .order('nome')
+      .then(({ data }) => {
+        setMinisterios(data || []);
+      });
+  }, []);
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -177,11 +179,17 @@ export default function SejaVoluntario() {
                             <SelectValue placeholder="Em qual área você gostaria de servir?" />
                           </SelectTrigger>
                           <SelectContent>
-                            {ministeriosOpcoes.map((ministerio) => (
-                              <SelectItem key={ministerio} value={ministerio}>
-                                {ministerio}
-                              </SelectItem>
-                            ))}
+                            {ministerios.length > 0
+                            ? ministerios.map((m) => (
+                                <SelectItem key={m.id} value={m.nome}>
+                                  {m.nome}
+                                </SelectItem>
+                              ))
+                            : ["Música", "Recepção", "Kids", "Áudio, Vídeo e Iluminação", "Mídia", "Bases", "Outro"].map((nome) => (
+                                <SelectItem key={nome} value={nome}>
+                                  {nome}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </div>

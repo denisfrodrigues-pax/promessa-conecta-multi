@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, HandHeart, CheckCircle2, QrCode, Copy, Check, Building2 } from 'lucide-react';
@@ -169,17 +169,10 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
     try {
       await navigator.clipboard.writeText(PIX_DATA.chave);
       setCopiedPix(true);
-      toast({
-        title: 'Chave PIX copiada!',
-        description: 'Cole no seu aplicativo bancário.',
-      });
+      toast.success('Chave PIX copiada!', { description: 'Cole no seu aplicativo bancário.' });
       setTimeout(() => setCopiedPix(false), 2000);
     } catch (error) {
-      toast({
-        title: 'Erro ao copiar',
-        description: 'Copie manualmente a chave PIX.',
-        variant: 'destructive',
-      });
+      toast.error('Erro ao copiar', { description: 'Copie manualmente a chave PIX.' });
     }
   };
 
@@ -187,21 +180,13 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
     e.preventDefault();
     
     if (!valor || !tipoContribuicao || !formaContribuicao) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Preencha todos os campos obrigatórios.',
-        variant: 'destructive',
-      });
+      toast.error('Campos obrigatórios', { description: 'Preencha todos os campos obrigatórios.' });
       return;
     }
 
     const valorNumerico = parseFloat(valor.replace(',', '.'));
     if (isNaN(valorNumerico) || valorNumerico <= 0) {
-      toast({
-        title: 'Valor inválido',
-        description: 'Informe um valor válido maior que zero.',
-        variant: 'destructive',
-      });
+      toast.error('Valor inválido', { description: 'Informe um valor válido maior que zero.' });
       return;
     }
 
@@ -232,11 +217,7 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
       }, 3000);
     } catch (error: any) {
       console.error('Error saving contribution:', error);
-      toast({
-        title: 'Erro ao registrar',
-        description: error.message || 'Não foi possível registrar a contribuição.',
-        variant: 'destructive',
-      });
+      toast.error('Erro ao registrar', { description: error.message || 'Não foi possível registrar a contribuição.' });
     } finally {
       setLoading(false);
     }

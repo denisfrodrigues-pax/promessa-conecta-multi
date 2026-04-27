@@ -32,8 +32,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Music, User } from 'lucide-react';
+import { toast } from 'sonner';
+import { Plus, Pencil, Trash2, Music, User, ShieldCheck, PowerOff, Power } from 'lucide-react';
 
 interface Ministerio {
   id: string;
@@ -42,6 +42,8 @@ interface Ministerio {
   lider_id: string | null;
   ativo: boolean;
   contato: string | null;
+  is_core: boolean;
+  slug: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -53,15 +55,13 @@ interface Profile {
 }
 
 export default function AdminMinisterios() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedMinisterio, setSelectedMinisterio] = useState<Ministerio | null>(null);
   const [ministerioToDelete, setMinisterioToDelete] = useState<Ministerio | null>(null);
-  
-  // Form state
+
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
@@ -92,37 +92,28 @@ export default function AdminMinisterios() {
         .select('user_id')
         .eq('role', 'lider');
       if (error) throw error;
-      
       if (data.length === 0) return [];
-      
       const userIds = data.map(r => r.user_id);
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, nome, email, user_id')
         .in('user_id', userIds);
       if (profilesError) throw profilesError;
-      
       return profiles as (Profile & { user_id: string })[];
     },
   });
 
-  // Helper: sync ministerio_usuarios leader for a given ministry
   const syncMinisterioLider = async (ministerioId: string, newLiderProfileId: string | null) => {
-    // Step 1: Deactivate ALL current leaders for this ministry
     const { error: deactivateError } = await supabase
       .from('ministerio_usuarios')
       .update({ ativo: false })
       .eq('ministerio_id', ministerioId)
       .eq('papel', 'lider');
-
     if (deactivateError) throw deactivateError;
 
-    // Step 2: If a new leader is set, upsert them as active leader
     if (newLiderProfileId) {
       const leader = leaders.find(l => l.id === newLiderProfileId);
       if (!leader) return;
-
-      // Check if a record already exists for this user+ministry
       await supabase
         .from('ministerio_usuarios')
         .upsert({
@@ -137,25 +128,27 @@ export default function AdminMinisterios() {
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const { data: created, error } = await supabase.from('ministerios').insert({
-        nome: data.nome,
-        descricao: data.descricao || null,
-        lider_id: data.lider_id || null,
-        ativo: data.ativo,
-        tipo_ministerio: data.tipo_ministerio,
-      }).select('id').single();
+      const { data: created, error } = await supabase
+        .from('ministerios')
+        .insert({
+          nome: data.nome,
+          descricao: data.descricao || null,
+          lider_id: data.lider_id || null,
+          ativo: data.ativo,
+          tipo_ministerio: data.tipo_ministerio,
+        })
+        .select('id')
+        .single();
       if (error) throw error;
-
-      // Sync ministerio_usuarios
       await syncMinisterioLider(created.id, data.lider_id || null);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ministerios'] });
-      toast({ title: 'Ministério criado com sucesso!' });
+      toast.success('Ministério criado com sucesso!');
       handleCloseDialog();
     },
     onError: (error: Error) => {
-      toast({ title: 'Erro ao criar ministério', description: error.message, variant: 'destructive' });
+      toast.error('Erro ao criar ministério', { description: error.message });
     },
   });
 
@@ -172,34 +165,55 @@ export default function AdminMinisterios() {
         })
         .eq('id', id);
       if (error) throw error;
-
-      // Sync ministerio_usuarios
       await syncMinisterioLider(id, data.lider_id || null);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ministerios'] });
-      toast({ title: 'Ministério atualizado com sucesso!' });
+      toast.success('Ministério atualizado com sucesso!');
       handleCloseDialog();
     },
     onError: (error: Error) => {
-      toast({ title: 'Erro ao atualizar ministério', description: error.message, variant: 'destructive' });
+      toast.error('Erro ao atualizar ministério', { description: error.message });
     },
   });
 
-  // Delete mutation
+  // Toggle ativo mutation
+  const toggleAtivoMutation = useMutation({
+    mutationFn: async ({ id, ativo }: { id: string; ativo: boolean }) => {
+      const { error } = await supabase
+        .from('ministerios')
+        .update({ ativo })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { ativo }) => {
+      queryClient.invalidateQueries({ queryKey: ['ministerios'] });
+      toast.success(ativo ? 'Ministério ativado!' : 'Ministério inativado!');
+    },
+    onError: (error: Error) => {
+      toast.error('Erro ao alterar status', { description: error.message });
+    },
+  });
+
+  // Delete mutation — guarda frontend contra is_core
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('ministerios').delete().eq('id', id);
+    mutationFn: async (ministerio: Ministerio) => {
+      if (ministerio.is_core) {
+        throw new Error('Ministérios core não podem ser excluídos. Use "Inativar" para desativá-lo.');
+      }
+      const { error } = await supabase.from('ministerios').delete().eq('id', ministerio.id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ministerios'] });
-      toast({ title: 'Ministério excluído com sucesso!' });
+      toast.success('Ministério excluído com sucesso!');
       setIsDeleteDialogOpen(false);
       setMinisterioToDelete(null);
     },
     onError: (error: Error) => {
-      toast({ title: 'Erro ao excluir ministério', description: error.message, variant: 'destructive' });
+      toast.error('Erro ao excluir ministério', { description: error.message });
+      setIsDeleteDialogOpen(false);
+      setMinisterioToDelete(null);
     },
   });
 
@@ -216,7 +230,7 @@ export default function AdminMinisterios() {
       descricao: ministerio.descricao || '',
       lider_id: ministerio.lider_id || '',
       ativo: ministerio.ativo ?? true,
-      tipo_ministerio: (ministerio as any).tipo_ministerio || '',
+      tipo_ministerio: (ministerio as { tipo_ministerio?: string }).tipo_ministerio || '',
     });
     setIsDialogOpen(true);
   };
@@ -229,14 +243,13 @@ export default function AdminMinisterios() {
 
   const handleSubmit = () => {
     if (!formData.nome.trim()) {
-      toast({ title: 'Nome é obrigatório', variant: 'destructive' });
+      toast.error('Nome é obrigatório');
       return;
     }
     if (!selectedMinisterio && !formData.tipo_ministerio) {
-      toast({ title: 'Tipo de Ministério é obrigatório', variant: 'destructive' });
+      toast.error('Tipo de Ministério é obrigatório');
       return;
     }
-    
     if (selectedMinisterio) {
       updateMutation.mutate({ id: selectedMinisterio.id, data: formData });
     } else {
@@ -244,14 +257,20 @@ export default function AdminMinisterios() {
     }
   };
 
-  const handleDelete = (ministerio: Ministerio) => {
+  const handleDeleteClick = (ministerio: Ministerio) => {
+    if (ministerio.is_core) {
+      toast.error('Ministérios core não podem ser excluídos', {
+        description: 'Use o botão "Inativar" para desativá-lo.',
+      });
+      return;
+    }
     setMinisterioToDelete(ministerio);
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = () => {
     if (ministerioToDelete) {
-      deleteMutation.mutate(ministerioToDelete.id);
+      deleteMutation.mutate(ministerioToDelete);
     }
   };
 
@@ -292,18 +311,35 @@ export default function AdminMinisterios() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {ministerios.map((ministerio) => (
-            <Card key={ministerio.id} className="relative">
+            <Card
+              key={ministerio.id}
+              className={ministerio.is_core ? 'relative border-primary/30 bg-primary/5' : 'relative'}
+            >
               <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Music className="w-5 h-5 text-primary" />
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      {ministerio.is_core
+                        ? <ShieldCheck className="w-5 h-5 text-primary" />
+                        : <Music className="w-5 h-5 text-primary" />
+                      }
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">{ministerio.nome}</CardTitle>
-                      <Badge variant={ministerio.ativo ? 'default' : 'secondary'} className="mt-1">
-                        {ministerio.ativo ? 'Ativo' : 'Inativo'}
-                      </Badge>
+                    <div className="min-w-0">
+                      <CardTitle className="text-base leading-tight">{ministerio.nome}</CardTitle>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <Badge variant={ministerio.ativo ? 'default' : 'secondary'} className="text-xs">
+                          {ministerio.ativo ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                        {ministerio.is_core ? (
+                          <Badge variant="outline" className="text-xs border-primary/40 text-primary bg-primary/5">
+                            Core
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                            Geral
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -315,18 +351,41 @@ export default function AdminMinisterios() {
                   </p>
                 )}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <User className="w-4 h-4" />
-                  <span>{getLeaderName(ministerio.lider_id)}</span>
+                  <User className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{getLeaderName(ministerio.lider_id)}</span>
                 </div>
-                <div className="flex gap-2 pt-2">
+
+                <div className="flex gap-2 pt-2 flex-wrap">
                   <Button variant="outline" size="sm" onClick={() => handleOpenEdit(ministerio)}>
                     <Pencil className="w-4 h-4 mr-1" />
                     Editar
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleDelete(ministerio)}>
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Excluir
+
+                  {/* Inativar / Ativar — disponível para todos */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => toggleAtivoMutation.mutate({ id: ministerio.id, ativo: !ministerio.ativo })}
+                    disabled={toggleAtivoMutation.isPending}
+                  >
+                    {ministerio.ativo
+                      ? <><PowerOff className="w-4 h-4 mr-1" />Inativar</>
+                      : <><Power className="w-4 h-4 mr-1" />Ativar</>
+                    }
                   </Button>
+
+                  {/* Excluir — somente para ministérios não-core */}
+                  {!ministerio.is_core && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => handleDeleteClick(ministerio)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Excluir
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -343,6 +402,12 @@ export default function AdminMinisterios() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {selectedMinisterio?.is_core && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20 text-sm text-primary">
+                <ShieldCheck className="w-4 h-4 shrink-0" />
+                Ministério core — não pode ser excluído.
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="nome">Nome do Ministério *</Label>
               <Input
@@ -367,7 +432,9 @@ export default function AdminMinisterios() {
                 <Label htmlFor="tipo_ministerio">Tipo de Ministério *</Label>
                 <Select
                   value={formData.tipo_ministerio || '__none__'}
-                  onValueChange={(value) => setFormData({ ...formData, tipo_ministerio: value === '__none__' ? '' : value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, tipo_ministerio: value === '__none__' ? '' : value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o tipo" />
@@ -388,7 +455,9 @@ export default function AdminMinisterios() {
               <Label htmlFor="lider">Líder</Label>
               <Select
                 value={formData.lider_id || '__none__'}
-                onValueChange={(value) => setFormData({ ...formData, lider_id: value === '__none__' ? '' : value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, lider_id: value === '__none__' ? '' : value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um líder" />
@@ -416,7 +485,7 @@ export default function AdminMinisterios() {
             <Button variant="outline" onClick={handleCloseDialog}>
               Cancelar
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmit}
               disabled={createMutation.isPending || updateMutation.isPending}
             >
@@ -432,14 +501,19 @@ export default function AdminMinisterios() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir ministério?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o ministério "{ministerioToDelete?.nome}"? 
+              Tem certeza que deseja excluir o ministério{' '}
+              <strong>"{ministerioToDelete?.nome}"</strong>?{' '}
               Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>
-              Excluir
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

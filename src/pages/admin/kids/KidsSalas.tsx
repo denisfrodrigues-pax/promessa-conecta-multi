@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Search, Plus, MapPin, Edit, Trash2, Baby, Clock, UserMinus, UserPlus } from "lucide-react";
 import { format, isToday, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -110,7 +110,7 @@ export default function KidsSalas() {
       setTodayCheckinCounts(counts);
     } catch (error: any) {
       console.error("Error fetching data:", error);
-      toast({ title: "Erro ao carregar dados", description: error?.message || String(error), variant: "destructive" });
+      toast.error('Erro ao carregar dados', { description: error?.message || String(error) });
     } finally {
       setLoading(false);
     }
@@ -152,11 +152,7 @@ export default function KidsSalas() {
       );
     } catch (error) {
       console.error("Error fetching sala detail:", error);
-      toast({
-        title: "Erro ao carregar detalhes",
-        description: (error as any)?.message || String(error),
-        variant: "destructive",
-      });
+      toast.error('Erro ao carregar detalhes', { description: (error as Error)?.message || String(error) });
     } finally {
       setLoadingDetail(false);
     }
@@ -181,7 +177,7 @@ export default function KidsSalas() {
 
   const handleSave = async () => {
     if (!formData.nome.trim()) {
-      toast({ title: "Nome é obrigatório", variant: "destructive" });
+      toast.error('Nome é obrigatório');
       return;
     }
 
@@ -238,7 +234,7 @@ export default function KidsSalas() {
         if (error) throw error;
       }
 
-      toast({ title: editingSala ? "Sala atualizada!" : "Sala cadastrada!" });
+      toast.success(editingSala ? 'Sala atualizada!' : 'Sala cadastrada!');
       setShowModal(false);
       fetchData();
       if (selectedSala && editingSala?.id === selectedSala.id) {
@@ -246,7 +242,7 @@ export default function KidsSalas() {
       }
     } catch (error: any) {
       console.error("Error saving:", error);
-      toast({ title: "Erro ao salvar", description: error?.message, variant: "destructive" });
+      toast.error('Erro ao salvar', { description: error?.message });
     } finally {
       setSaving(false);
     }
@@ -260,16 +256,12 @@ export default function KidsSalas() {
 
       if (error) throw error;
 
-      toast({ title: "Sala excluída!" });
+      toast.success('Sala excluída!');
       if (selectedSala?.id === sala.id) setSelectedSala(null);
       fetchData();
     } catch (error: any) {
       console.error("Error deleting:", error);
-      toast({
-        title: "Erro ao excluir. A sala pode estar vinculada a check-ins.",
-        description: error?.message,
-        variant: "destructive",
-      });
+      toast.error('Erro ao excluir. A sala pode estar vinculada a check-ins.', { description: error?.message });
     }
   };
 
@@ -296,16 +288,12 @@ export default function KidsSalas() {
       const { error } = await supabase.from("criancas").update({ sala_id: selectedSala.id }).eq("id", criancaId);
 
       if (error) throw error;
-      toast({ title: "Criança vinculada à sala!" });
+      toast.success('Criança vinculada à sala!');
       fetchSalaDetail(selectedSala);
       setCriancasDisponiveis((prev) => prev.filter((c) => c.id !== criancaId));
     } catch (error: any) {
       console.error("Error assigning child:", error);
-      toast({
-        title: "Erro ao vincular criança",
-        description: error?.message || String(error),
-        variant: "destructive",
-      });
+      toast.error('Erro ao vincular criança', { description: error?.message || String(error) });
     }
   };
 
@@ -315,11 +303,11 @@ export default function KidsSalas() {
       const { error } = await supabase.from("criancas").update({ sala_id: null }).eq("id", criancaId);
 
       if (error) throw error;
-      toast({ title: "Criança removida da sala!" });
+      toast.success('Criança removida da sala!');
       fetchSalaDetail(selectedSala);
     } catch (error: any) {
       console.error("Error removing child:", error);
-      toast({ title: "Erro ao remover criança", description: error?.message || String(error), variant: "destructive" });
+      toast.error('Erro ao remover criança', { description: error?.message || String(error) });
     }
   };
 

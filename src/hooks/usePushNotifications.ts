@@ -42,7 +42,7 @@ export function usePushNotifications() {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await (registration as any).pushManager.getSubscription();
+      const subscription = await registration.pushManager.getSubscription();
       
       if (subscription) {
         // Check if subscription exists in database
@@ -93,11 +93,11 @@ export function usePushNotifications() {
       const registration = await navigator.serviceWorker.ready;
       
       // Check for existing subscription
-      let subscription = await (registration as any).pushManager.getSubscription();
+      let subscription = await registration.pushManager.getSubscription();
       
       // If no subscription, create one
       if (!subscription) {
-        subscription = await (registration as any).pushManager.subscribe({
+        subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
@@ -146,7 +146,7 @@ export function usePushNotifications() {
     
     try {
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await (registration as any).pushManager.getSubscription();
+      const subscription = await registration.pushManager.getSubscription();
       
       if (subscription) {
         // Unsubscribe from push manager

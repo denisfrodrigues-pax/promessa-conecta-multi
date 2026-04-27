@@ -74,9 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        setTimeout(() => {
-          fetchUserData(session.user.id);
-        }, 0);
+        fetchUserData(session.user.id);
       } else {
         setProfile(null);
         setRoles([]);
@@ -107,7 +105,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (profileError) throw profileError;
-      console.log("PROFILE LOADED:", profileData);
       setProfile(profileData as Profile);
 
       const { data: rolesData, error: rolesError } = await supabase
@@ -119,10 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userRoles = (rolesData || []).map((r: { role: UserRole }) => r.role);
       setRoles(userRoles);
 
-      // Load ministries for all users (admins get all ministries via RPC)
-      setTimeout(() => {
-        refreshMyMinistries();
-      }, 0);
+      refreshMyMinistries();
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {

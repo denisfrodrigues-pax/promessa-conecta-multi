@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Search,
   Plus,
@@ -212,10 +212,7 @@ export default function KidsCheckins() {
       setSalas(salasData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast({
-        title: "Erro ao carregar dados",
-        variant: "destructive",
-      });
+      toast.error("Erro ao carregar dados");
     } finally {
       setLoading(false);
     }
@@ -223,10 +220,7 @@ export default function KidsCheckins() {
 
   const handleCheckin = async () => {
     if (!newCheckin.crianca_id || !newCheckin.responsavel_id || !newCheckin.sala_id) {
-      toast({
-        title: "Preencha todos os campos obrigatórios",
-        variant: "destructive",
-      });
+      toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
@@ -242,16 +236,13 @@ export default function KidsCheckins() {
 
       if (error) throw error;
 
-      toast({ title: "Check-in realizado com sucesso!" });
+      toast.success("Check-in realizado com sucesso!");
       setShowCheckinModal(false);
       setNewCheckin({ crianca_id: "", responsavel_id: "", sala_id: "", observacao: "" });
       fetchData();
     } catch (error) {
       console.error("Error creating checkin:", error);
-      toast({
-        title: "Erro ao realizar check-in",
-        variant: "destructive",
-      });
+      toast.error("Erro ao realizar check-in");
     } finally {
       setSaving(false);
     }
@@ -259,10 +250,7 @@ export default function KidsCheckins() {
 
   const handleCheckout = async () => {
     if (!selectedCheckin || !checkoutResponsavelId) {
-      toast({
-        title: "Selecione o responsável que está retirando",
-        variant: "destructive",
-      });
+      toast.error("Selecione o responsável que está retirando");
       return;
     }
 
@@ -279,17 +267,14 @@ export default function KidsCheckins() {
 
       if (error) throw error;
 
-      toast({ title: "Checkout realizado com sucesso!" });
+      toast.success("Checkout realizado com sucesso!");
       setShowCheckoutModal(false);
       setSelectedCheckin(null);
       setCheckoutResponsavelId("");
       fetchData();
     } catch (error) {
       console.error("Error doing checkout:", error);
-      toast({
-        title: "Erro ao realizar checkout",
-        variant: "destructive",
-      });
+      toast.error("Erro ao realizar checkout");
     } finally {
       setSaving(false);
     }

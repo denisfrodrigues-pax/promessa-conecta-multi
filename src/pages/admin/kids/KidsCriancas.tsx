@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Plus, Baby, Edit, Trash2, Search } from "lucide-react";
 import { differenceInYears } from "date-fns";
 
@@ -165,7 +165,7 @@ export default function KidsCriancas() {
 
   const handleSave = async () => {
     if (!form.nome.trim() || !igrejaId) {
-      toast({ title: "Nome é obrigatório", variant: "destructive" });
+      toast.error("Nome é obrigatório");
       return;
     }
 
@@ -221,15 +221,11 @@ export default function KidsCriancas() {
         }
       }
 
-      toast({ title: "Salvo com sucesso!" });
+      toast.success("Salvo com sucesso!");
       setShowModal(false);
       fetchData();
     } catch (error: any) {
-      toast({
-        title: "Erro ao salvar",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Erro ao salvar", { description: error.message });
     } finally {
       setSaving(false);
     }

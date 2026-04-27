@@ -45,34 +45,32 @@ export default function VoluntariosDoDia() {
     }
   }, [authLoading, canAccess, navigate]);
 
-  // Gerar todos os sábados do ano de 2026
-  const sabados2026 = useMemo(() => {
+  // Gerar sábados: 4 semanas atrás até 12 semanas à frente
+  const sabados = useMemo(() => {
     const allSaturdays: Date[] = [];
-    // Primeiro dia de 2026
-    let current = new Date(2026, 0, 1);
-    
-    // Encontrar o primeiro sábado de 2026
+    const today = new Date();
+    // Encontrar o sábado mais recente (4 semanas atrás)
+    let current = addDays(today, -28);
     while (getDay(current) !== 6) {
       current = addDays(current, 1);
     }
-    
-    // Gerar todos os sábados de 2026
-    while (current.getFullYear() === 2026) {
+    // Gerar sábados até 12 semanas à frente
+    const limit = addDays(today, 84);
+    while (current <= limit) {
       allSaturdays.push(new Date(current));
       current = addDays(current, 7);
     }
-    
     return allSaturdays;
   }, []);
 
   // Selecionar o próximo sábado por padrão
   useEffect(() => {
     const today = new Date();
-    const nextSaturday = sabados2026.find(s => s >= today) || sabados2026[0];
+    const nextSaturday = sabados.find(s => s >= today) || sabados[sabados.length - 1];
     if (nextSaturday) {
       setSelectedDate(format(nextSaturday, 'yyyy-MM-dd'));
     }
-  }, [sabados2026]);
+  }, [sabados]);
 
   // Buscar escalas confirmadas para a data selecionada
   useEffect(() => {
@@ -238,9 +236,9 @@ export default function VoluntariosDoDia() {
                 <SelectValue placeholder="Selecione uma data" />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                {sabados2026.map(sabado => (
-                  <SelectItem 
-                    key={format(sabado, 'yyyy-MM-dd')} 
+                {sabados.map(sabado => (
+                  <SelectItem
+                    key={format(sabado, 'yyyy-MM-dd')}
                     value={format(sabado, 'yyyy-MM-dd')}
                   >
                     {format(sabado, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}

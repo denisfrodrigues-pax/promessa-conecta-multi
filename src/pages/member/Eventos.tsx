@@ -51,10 +51,10 @@ export default function MemberEventos() {
       ]);
 
       setEventos(eventosRes.data || []);
-      setInscricoes((inscricoesRes.data || []).map((i: any) => i.evento_id));
+      setInscricoes((inscricoesRes.data || []).map((i: { evento_id: string }) => i.evento_id));
 
       const counts: Record<string, number> = {};
-      (countRes.data || []).forEach((i: any) => {
+      (countRes.data || []).forEach((i: { evento_id: string }) => {
         counts[i.evento_id] = (counts[i.evento_id] || 0) + 1;
       });
       setInscricoesCount(counts);

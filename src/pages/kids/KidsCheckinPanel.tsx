@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CheckCircle2, Search, Baby, Clock, Loader2 } from "lucide-react";
@@ -62,10 +62,10 @@ export default function KidsCheckinPanel() {
 
     if (result?.success) {
       setSuccessMessage(`✅ Presença registrada: ${result.nome}`);
-      toast({ title: `Presença registrada: ${result.nome}` });
+      toast.success(`Presença registrada: ${result.nome}`);
       if (igrejaId) loadPresentes(igrejaId);
     } else {
-      toast({ title: result?.message || "Erro ao processar cartão", variant: "destructive" });
+      toast.error(result?.message || 'Erro ao processar cartão');
     }
 
     window.history.replaceState({}, "", window.location.pathname);
@@ -103,12 +103,12 @@ export default function KidsCheckinPanel() {
 
     if (result?.success) {
       setSuccessMessage(`✅ Presença registrada: ${result.nome}`);
-      toast({ title: result.message });
+      toast.success(result.message);
       setSelected(null);
       setSearch("");
       if (igrejaId) loadPresentes(igrejaId);
     } else {
-      toast({ title: result?.message || "Erro ao registrar", variant: "destructive" });
+      toast.error(result?.message || 'Erro ao registrar');
     }
   };
 

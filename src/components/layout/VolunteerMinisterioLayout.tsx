@@ -28,6 +28,12 @@ export default function VolunteerMinisterioLayout() {
   useEffect(() => {
     if (authLoading || !user || !slug) return;
 
+    interface VinculoItem {
+      ministerio_id: string;
+      papel: string;
+      ministerios: { id: string; nome: string; slug: string; filosofia_pdf: string | null } | null;
+    }
+
     const fetchMinistry = async () => {
       setLoadingMin(true);
       setNoAccess(false);
@@ -40,10 +46,10 @@ export default function VolunteerMinisterioLayout() {
         .eq("ativo", true);
 
       if (!errV && vinculos) {
-        const match = vinculos.find((v: any) => v.ministerios?.slug === slug);
+        const match = (vinculos as unknown as VinculoItem[]).find((v) => v.ministerios?.slug === slug);
         if (match) {
-          const m = (match as any).ministerios;
-          setMinisterio({ id: m.id, nome: m.nome, papel: (match as any).papel, filosofia_pdf: m.filosofia_pdf ?? null });
+          const m = match.ministerios!;
+          setMinisterio({ id: m.id, nome: m.nome, papel: match.papel, filosofia_pdf: m.filosofia_pdf ?? null });
           setLoadingMin(false);
           return;
         }
@@ -87,7 +93,7 @@ export default function VolunteerMinisterioLayout() {
   const basePath = `/volunteer/${slug}`;
 
   // Nav items (currently empty — tabs are inside the dashboard page)
-  const navItems: { icon: any; label: string; path: string; end: boolean }[] = [];
+  const navItems: { icon: React.ElementType; label: string; path: string; end: boolean }[] = [];
 
   return (
     <div className="min-h-screen bg-background">
