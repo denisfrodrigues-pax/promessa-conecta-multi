@@ -8,6 +8,7 @@ import { NavLink } from "@/components/NavLink";
 import {
   LayoutDashboard, Users, ClipboardList, CalendarDays, Bell, BarChart3,
   FolderOpen, Home, Loader2, ArrowLeft, Music2, ListMusic, UserCheck, History,
+  Baby, ClipboardCheck, MessageCircle, BookOpenCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -146,10 +147,33 @@ export default function LeaderMinisterioLayout() {
     { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
   ];
 
+  const mcaNavItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
+    { icon: Baby, label: "Crianças", path: `${basePath}/criancas` },
+    { icon: Users, label: "Salas", path: `${basePath}/salas` },
+    { icon: ClipboardCheck, label: "Check-in", path: `${basePath}/checkin` },
+    { icon: BookOpenCheck, label: "Planos de Aula", path: `${basePath}/planos` },
+    { icon: MessageCircle, label: "Comunicação", path: `${basePath}/comunicacao` },
+    { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
+    { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
+  ];
+
+  const ensinoNavItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
+    { icon: Users, label: "Turmas", path: `${basePath}/turmas` },
+    { icon: BookOpenCheck, label: "Espaço do Professor", path: `${basePath}/planos` },
+    { icon: ClipboardCheck, label: "Chamada", path: `${basePath}/chamada` },
+    { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
+    { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
+    { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
+  ];
+
   const navBySlug: Record<string, typeof defaultNavItems> = {
     musica: musicaNavItems,
     celebracao: celebracaoNavItems,
     recepcao: recepcaoNavItems,
+    mca: mcaNavItems,
+    ensino: ensinoNavItems,
   };
 
   const navItems = navBySlug[slug ?? ''] ?? defaultNavItems;

@@ -138,6 +138,16 @@ const LeaderCelebracaoCultos = lazy(() => import("@/pages/leader/celebracao/Cult
 const LeaderCelebracaoCultoDetalhe = lazy(() => import("@/pages/leader/celebracao/CultoDetalhe"));
 const LeaderRecepcaoVisitantesDia = lazy(() => import("@/pages/leader/recepcao/VisitantesDia"));
 const LeaderRecepcaoVisitantesHistorico = lazy(() => import("@/pages/leader/recepcao/VisitantesHistorico"));
+const LeaderMcaSalas = lazy(() => import("@/pages/leader/mca/Salas"));
+const LeaderMcaCriancas = lazy(() => import("@/pages/leader/mca/Criancas"));
+const LeaderMcaCheckin = lazy(() => import("@/pages/leader/mca/Checkin"));
+const LeaderMcaPlanos = lazy(() => import("@/pages/leader/mca/Planos"));
+const LeaderMcaPlanoDetalhe = lazy(() => import("@/pages/leader/mca/PlanoDetalhe"));
+const LeaderMcaComunicacao = lazy(() => import("@/pages/leader/mca/Comunicacao"));
+const LeaderEnsinoTurmas = lazy(() => import("@/pages/leader/ensino/Turmas"));
+const LeaderEnsinoPlanos = lazy(() => import("@/pages/leader/ensino/Planos"));
+const LeaderEnsinoPlanoDetalhe = lazy(() => import("@/pages/leader/ensino/PlanoDetalhe"));
+const LeaderEnsinoChamada = lazy(() => import("@/pages/leader/ensino/Chamada"));
 
 // Institucional
 const QuemSomos = lazy(() => import("@/pages/institutional/QuemSomos"));
@@ -337,6 +347,18 @@ const App = () => (
               {/* Recepção */}
               <Route path="visitantes-dia" element={<LeaderRecepcaoVisitantesDia />} />
               <Route path="visitantes" element={<LeaderRecepcaoVisitantesHistorico />} />
+              {/* MCA */}
+              <Route path="salas" element={<LeaderMcaSalas />} />
+              <Route path="criancas" element={<LeaderMcaCriancas />} />
+              <Route path="checkin" element={<LeaderMcaCheckin />} />
+              <Route path="planos" element={<LeaderMcaPlanos />} />
+              <Route path="planos/:planoId" element={<LeaderMcaPlanoDetalhe />} />
+              <Route path="comunicacao" element={<LeaderMcaComunicacao />} />
+              {/* Ensino */}
+              <Route path="turmas" element={<LeaderEnsinoTurmas />} />
+              <Route path="planos" element={<LeaderEnsinoPlanos />} />
+              <Route path="planos/:planoId" element={<LeaderEnsinoPlanoDetalhe />} />
+              <Route path="chamada" element={<LeaderEnsinoChamada />} />
             </Route>
 
             {/* ── VOLUNTÁRIO ───────────────────────────────────────────────── */}
