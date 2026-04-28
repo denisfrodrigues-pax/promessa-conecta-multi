@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -165,6 +165,16 @@ const CadastroInfantil = lazy(() => import("@/pages/institutional/CadastroInfant
 const CheckinKids = lazy(() => import("@/pages/institutional/CheckinKids"));
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Despacho de rotas compartilhadas entre ministérios com slug diferente
+function PlanosDispatch() {
+  const { slug } = useParams<{ slug: string }>();
+  return slug === 'ensino' ? <LeaderEnsinoPlanos /> : <LeaderMcaPlanos />;
+}
+function PlanoDetalheDispatch() {
+  const { slug } = useParams<{ slug: string }>();
+  return slug === 'ensino' ? <LeaderEnsinoPlanoDetalhe /> : <LeaderMcaPlanoDetalhe />;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -353,13 +363,11 @@ const App = () => (
               <Route path="salas" element={<LeaderMcaSalas />} />
               <Route path="criancas" element={<LeaderMcaCriancas />} />
               <Route path="checkin" element={<LeaderMcaCheckin />} />
-              <Route path="planos" element={<LeaderMcaPlanos />} />
-              <Route path="planos/:planoId" element={<LeaderMcaPlanoDetalhe />} />
+              <Route path="planos" element={<PlanosDispatch />} />
+              <Route path="planos/:planoId" element={<PlanoDetalheDispatch />} />
               <Route path="comunicacao" element={<LeaderMcaComunicacao />} />
               {/* Ensino */}
               <Route path="turmas" element={<LeaderEnsinoTurmas />} />
-              <Route path="planos" element={<LeaderEnsinoPlanos />} />
-              <Route path="planos/:planoId" element={<LeaderEnsinoPlanoDetalhe />} />
               <Route path="chamada" element={<LeaderEnsinoChamada />} />
             </Route>
 
