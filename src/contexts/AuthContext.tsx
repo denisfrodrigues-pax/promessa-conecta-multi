@@ -21,7 +21,6 @@ interface Profile {
   foto_url?: string;
   status: string;
   role?: string | null;
-  church_id?: string | null;
 }
 
 interface AuthContextType {
@@ -104,15 +103,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserData = async (userId: string) => {
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, user_id, nome, email, telefone, foto_url, status, church_id')
-        .eq('user_id', userId)
-        .maybeSingle();
+      // Profile fetch is non-fatal — a schema cache miss must never block role loading
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, user_id, nome, email, telefone, foto_url, status')
+          .eq('user_id', userId)
+          .maybeSingle();
+        if (!profileError) setProfile(profileData as Profile);
+        else console.error('Profile fetch error (non-fatal):', profileError);
+      } catch (profileErr) {
+        console.error('Profile fetch threw (non-fatal):', profileErr);
+      }
 
-      if (profileError) throw profileError;
-      setProfile(profileData as Profile);
-
+      // Role fetch is critical — always runs regardless of profile result
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')

@@ -50,7 +50,20 @@ export default function AdminEscalasPeriodos() {
     ano: String(currentYear),
   });
 
-  const churchId = profile?.church_id;
+  // Fetch church_id separately — AuthContext profile only carries a limited set of columns
+  const { data: churchId } = useQuery({
+    queryKey: ['my_church_id', profile?.id],
+    enabled: !!profile?.id,
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('church_id')
+        .eq('id', profile!.id)
+        .maybeSingle();
+      return (data as any)?.church_id as string | null ?? null;
+    },
+  });
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
   const { data: periodos = [], isLoading } = useQuery({
