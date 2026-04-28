@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -13,7 +14,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { LogIn, LogOut, Clock, Users, Baby, Wifi } from 'lucide-react';
+import { LogIn, LogOut, Clock, Users, Baby, Wifi, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -29,19 +30,31 @@ interface Checkin {
   mca_salas: { nome: string } | null;
 }
 
-const hoje = new Date();
-const hojeStr = format(hoje, 'yyyy-MM-dd');
+function todayStr() {
+  return format(new Date(), 'yyyy-MM-dd');
+}
 
 export default function Checkin() {
   const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
-  const { profile, user } = useAuth();
-  const churchId = (profile as any)?.church_id as string | undefined;
+  const { user } = useAuth();
   const qc = useQueryClient();
 
+  const [selectedDate, setSelectedDate] = useState(todayStr);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCrianca, setSelectedCrianca] = useState('');
   const [selectedSala, setSelectedSala] = useState('');
   const [realtime, setRealtime] = useState(true);
+
+  const isToday = selectedDate === todayStr();
+
+  const { data: churchId } = useQuery({
+    queryKey: ['my_church_id'],
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data } = await supabase.from('igrejas').select('id').limit(1).maybeSingle();
+      return (data as any)?.id as string | null ?? null;
+    },
+  });
 
   const { data: salas = [] } = useQuery({
     queryKey: ['mca_salas', ministerioId],
@@ -66,14 +79,14 @@ export default function Checkin() {
   });
 
   const { data: checkins = [], isLoading } = useQuery({
-    queryKey: ['mca_checkins_hoje', churchId],
+    queryKey: ['mca_checkins_dia', churchId, selectedDate],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('mca_checkins')
         .select('*, mca_criancas(nome), mca_salas(nome)')
         .eq('church_id', churchId)
-        .gte('checkin_at', `${hojeStr}T00:00:00`)
-        .lte('checkin_at', `${hojeStr}T23:59:59`)
+        .gte('checkin_at', `${selectedDate}T00:00:00`)
+        .lte('checkin_at', `${selectedDate}T23:59:59`)
         .order('checkin_at', { ascending: false });
       if (error) throw error;
       return data as Checkin[];
@@ -81,36 +94,40 @@ export default function Checkin() {
     enabled: !!churchId,
   });
 
-  // Realtime subscription
+  // Realtime subscription — only for today
   useEffect(() => {
-    if (!churchId) return;
+    if (!churchId || !isToday) return;
     const channel = supabase
       .channel('mca_checkins_realtime')
       .on('postgres_changes' as any, {
         event: '*', schema: 'public', table: 'mca_checkins',
         filter: `church_id=eq.${churchId}`,
       }, () => {
-        qc.invalidateQueries({ queryKey: ['mca_checkins_hoje', churchId] });
+        qc.invalidateQueries({ queryKey: ['mca_checkins_dia', churchId, selectedDate] });
       })
       .subscribe((status: string) => {
         setRealtime(status === 'SUBSCRIBED');
       });
     return () => { supabase.removeChannel(channel); };
-  }, [churchId, qc]);
+  }, [churchId, isToday, selectedDate, qc]);
 
   const checkinMutation = useMutation({
     mutationFn: async () => {
       if (!selectedCrianca || !selectedSala) throw new Error('Selecione a criança e a sala');
+      const checkinAt = isToday
+        ? new Date().toISOString()
+        : `${selectedDate}T12:00:00.000Z`;
       const { error } = await (supabase as any).from('mca_checkins').insert({
         crianca_id: selectedCrianca,
         sala_id: selectedSala,
         church_id: churchId,
         registrado_por: user?.id,
+        checkin_at: checkinAt,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['mca_checkins_hoje', churchId] });
+      qc.invalidateQueries({ queryKey: ['mca_checkins_dia', churchId, selectedDate] });
       toast.success('Check-in realizado!');
       setModalOpen(false);
       setSelectedCrianca('');
@@ -121,12 +138,15 @@ export default function Checkin() {
 
   const checkoutMutation = useMutation({
     mutationFn: async (id: string) => {
+      const checkoutAt = isToday
+        ? new Date().toISOString()
+        : `${selectedDate}T13:00:00.000Z`;
       const { error } = await (supabase as any)
-        .from('mca_checkins').update({ checkout_at: new Date().toISOString() }).eq('id', id);
+        .from('mca_checkins').update({ checkout_at: checkoutAt }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['mca_checkins_hoje', churchId] });
+      qc.invalidateQueries({ queryKey: ['mca_checkins_dia', churchId, selectedDate] });
       toast.success('Checkout registrado');
     },
     onError: () => toast.error('Erro ao registrar checkout'),
@@ -135,7 +155,6 @@ export default function Checkin() {
   const presentes = checkins.filter(c => !c.checkout_at);
   const saidas = checkins.filter(c => c.checkout_at);
 
-  // Group presentes by sala
   const porSala: Record<string, Checkin[]> = {};
   presentes.forEach(c => {
     const salaId = c.sala_id;
@@ -152,24 +171,37 @@ export default function Checkin() {
   const criancasPresentes = new Set(presentes.map(c => c.crianca_id));
   const criancasDisponiveis = criancas.filter(c => !criancasPresentes.has(c.id));
 
+  const dataFormatada = format(new Date(selectedDate + 'T12:00:00'), "EEEE, dd 'de' MMMM", { locale: ptBR });
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-promessa-900">Check-in</h1>
-            <div className={`flex items-center gap-1 text-xs ${realtime ? 'text-green-600' : 'text-amber-500'}`}>
-              <Wifi className="w-3.5 h-3.5" />
-              {realtime ? 'Ao vivo' : 'Reconectando...'}
-            </div>
+            {isToday && (
+              <div className={`flex items-center gap-1 text-xs ${realtime ? 'text-green-600' : 'text-amber-500'}`}>
+                <Wifi className="w-3.5 h-3.5" />
+                {realtime ? 'Ao vivo' : 'Reconectando...'}
+              </div>
+            )}
           </div>
-          <p className="text-muted-foreground text-sm mt-1">
-            {format(hoje, "EEEE, dd 'de' MMMM", { locale: ptBR })}
-          </p>
+          <p className="text-muted-foreground text-sm mt-1 capitalize">{dataFormatada}</p>
         </div>
-        <Button onClick={() => { setSelectedCrianca(''); setSelectedSala(''); setModalOpen(true); }}>
-          <LogIn className="w-4 h-4 mr-2" />Check-in
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <CalendarDays className="w-4 h-4 text-muted-foreground" />
+            <Input
+              type="date"
+              value={selectedDate}
+              onChange={e => setSelectedDate(e.target.value)}
+              className="h-8 w-40 text-sm"
+            />
+          </div>
+          <Button onClick={() => { setSelectedCrianca(''); setSelectedSala(''); setModalOpen(true); }}>
+            <LogIn className="w-4 h-4 mr-2" />Check-in
+          </Button>
+        </div>
       </div>
 
       {/* Resumo */}
@@ -202,7 +234,7 @@ export default function Checkin() {
       ) : presentes.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhuma criança presente ainda hoje.
+            {isToday ? 'Nenhuma criança presente ainda hoje.' : 'Nenhum check-in registrado nesta data.'}
           </CardContent>
         </Card>
       ) : (
@@ -245,7 +277,9 @@ export default function Checkin() {
       {/* Histórico de saídas */}
       {saidas.length > 0 && (
         <div>
-          <h2 className="text-sm font-medium text-muted-foreground mb-2">Saídas de hoje</h2>
+          <h2 className="text-sm font-medium text-muted-foreground mb-2">
+            Saídas {isToday ? 'de hoje' : 'do dia'}
+          </h2>
           <div className="space-y-1">
             {saidas.map(ci => (
               <div key={ci.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-neutral-50 text-sm">
@@ -263,7 +297,16 @@ export default function Checkin() {
       {/* Modal check-in */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Registrar Check-in</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>
+              Registrar Check-in
+              {!isToday && (
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  ({format(new Date(selectedDate + 'T12:00:00'), 'dd/MM/yyyy')})
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium">Criança *</label>
