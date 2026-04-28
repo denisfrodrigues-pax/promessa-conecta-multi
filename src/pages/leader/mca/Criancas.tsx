@@ -58,7 +58,7 @@ interface RespForm {
   is_primary: boolean;
 }
 
-const EMPTY_CRIANCA: CriancaForm = { nome: '', data_nascimento: '', sala_id: '', observacoes: '', ativo: true };
+const EMPTY_CRIANCA: CriancaForm = { nome: '', data_nascimento: '', sala_id: 'sem_sala', observacoes: '', ativo: true };
 const EMPTY_RESP: RespForm = { nome: '', telefone: '', parentesco: 'pai/mãe', is_primary: false };
 
 function calcIdade(nascimento: string | null): string {
@@ -136,7 +136,7 @@ export default function Criancas() {
       const payload = {
         nome: v.nome.trim(),
         data_nascimento: v.data_nascimento || null,
-        sala_id: v.sala_id || null,
+        sala_id: v.sala_id === 'sem_sala' ? null : v.sala_id || null,
         observacoes: v.observacoes.trim() || null,
         ativo: v.ativo,
       };
@@ -233,7 +233,7 @@ export default function Criancas() {
     setFormCrianca({
       nome: c.nome,
       data_nascimento: c.data_nascimento ?? '',
-      sala_id: c.sala_id ?? '',
+      sala_id: c.sala_id ?? 'sem_sala',
       observacoes: c.observacoes ?? '',
       ativo: c.ativo,
     });
@@ -352,7 +352,7 @@ export default function Criancas() {
               <Select value={formCrianca.sala_id} onValueChange={v => setFormCrianca(p => ({ ...p, sala_id: v }))}>
                 <SelectTrigger><SelectValue placeholder="Selecionar sala" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sem sala</SelectItem>
+                  <SelectItem value="sem_sala">Sem sala definida</SelectItem>
                   {salas.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
                 </SelectContent>
               </Select>
