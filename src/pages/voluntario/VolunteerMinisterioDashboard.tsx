@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, Users, LayoutDashboard, Clock, CheckCircle2, AlertCircle, BookOpen } from "lucide-react";
+import { CalendarDays, Users, LayoutDashboard, Clock, CheckCircle2, AlertCircle, BookOpen, FileText, Download, Loader2 } from "lucide-react";
 import { parseLocalDate } from "@/lib/dateUtils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -56,6 +56,20 @@ export default function VolunteerMinisterioDashboard() {
         .eq("ativo", true)
         .order("papel");
       return data ?? [];
+    },
+    enabled: !!ministerioId,
+  });
+
+  const { data: documentos = [], isLoading: loadingDocs } = useQuery({
+    queryKey: ["ministerio_documentos_vol", ministerioId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ministerio_documentos")
+        .select("id, nome, descricao, arquivo_url, arquivo_tipo, arquivo_nome")
+        .eq("ministerio_id", ministerioId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as { id: string; nome: string; descricao: string | null; arquivo_url: string; arquivo_tipo: string; arquivo_nome: string }[];
     },
     enabled: !!ministerioId,
   });
@@ -199,30 +213,50 @@ export default function VolunteerMinisterioDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-        {/* FILOSOFIA */}
+        {/* FILOSOFIA / DOCUMENTOS */}
         <TabsContent value="filosofia">
-          {filosofiaPdf ? (
-            <Card>
-              <CardContent className="py-12 flex flex-col items-center gap-4">
-                <BookOpen className="w-10 h-10 text-primary" />
-                <a
-                  href={filosofiaPdf}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground px-6 py-3 font-medium shadow hover:bg-primary/90 transition-colors"
-                >
-                  Abrir Filosofia Ministerial
-                </a>
-              </CardContent>
-            </Card>
-          ) : (
+          {loadingDocs ? (
+            <div className="space-y-2">
+              {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full" />)}
+            </div>
+          ) : documentos.length === 0 ? (
             <Card>
               <CardContent className="py-8">
                 <p className="text-muted-foreground text-center">
-                  Filosofia ministerial ainda não cadastrada.
+                  Nenhum documento publicado pelo líder ainda.
                 </p>
               </CardContent>
             </Card>
+          ) : (
+            <div className="space-y-2">
+              {documentos.map(doc => (
+                <Card key={doc.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <FileText className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{doc.nome}</p>
+                        {doc.descricao && (
+                          <p className="text-xs text-muted-foreground truncate">{doc.descricao}</p>
+                        )}
+                      </div>
+                      <a
+                        href={doc.arquivo_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download={doc.arquivo_nome}
+                        className="inline-flex items-center gap-1 text-sm text-primary hover:underline shrink-0"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Abrir
+                      </a>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
         </TabsContent>
       </Tabs>
