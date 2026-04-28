@@ -70,11 +70,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Auth] onAuthStateChange event:', event, 'user:', session?.user?.email ?? null);
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        setLoading(true); // mantém loading=true até fetchUserData terminar e setar roles
+        setLoading(true);
         fetchUserData(session.user.id);
       } else {
         setProfile(null);
@@ -85,16 +86,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
+      console.log('[Auth] getSession result:', session?.user?.email ?? null);
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserData(session.user.id);
+      } else {
         setLoading(false);
       }
-      // se há sessão, onAuthStateChange (INITIAL_SESSION) já chamou fetchUserData
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const fetchUserData = async (userId: string) => {
+    console.log('[Auth] fetchUserData start, userId:', userId);
     try {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -102,6 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId)
         .maybeSingle();
 
+      console.log('[Auth] profile result:', profileData?.email, 'error:', profileError?.message);
       if (profileError) throw profileError;
       setProfile(profileData as Profile);
 
@@ -110,13 +117,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .select('role')
         .eq('user_id', userId);
 
+      console.log('[Auth] roles result:', rolesData, 'error:', rolesError?.message);
       if (rolesError) throw rolesError;
       const userRoles = (rolesData || []).map((r: { role: UserRole }) => r.role);
+      console.log('[Auth] setRoles:', userRoles);
       setRoles(userRoles);
 
       refreshMyMinistries();
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('[Auth] fetchUserData ERROR:', error);
     } finally {
       setLoading(false);
     }

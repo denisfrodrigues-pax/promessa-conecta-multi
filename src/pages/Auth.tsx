@@ -56,6 +56,7 @@ export default function Auth() {
   // - If ?redirect= exists, go to that URL (e.g., from Check-in Kids)
   // - Otherwise, redirect to the panel matching the user's highest role
   useEffect(() => {
+    console.log('[Auth.tsx] redirect effect — loading:', loading, 'user:', user?.email, 'roles:', roles);
     if (!loading && user) {
       if (redirectUrl) {
         navigate(decodeURIComponent(redirectUrl), { replace: true });
