@@ -7,7 +7,6 @@ import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { NavLink } from "@/components/NavLink";
 import { Home, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import moduleRegistry from "@/config/moduleRegistry";
 
 interface MinisterioInfo {
   id: string;
@@ -18,7 +17,11 @@ interface MinisterioInfo {
 
 export default function VolunteerMinisterioLayout() {
   const { slug } = useParams<{ slug: string }>();
-  const { user, loading: authLoading, profile, isVoluntario, roles } = useAuth();
+  const {
+    user, loading: authLoading, profile,
+    isVoluntario, roles,
+    myMinistries, myMinistriesLoading,
+  } = useAuth();
   const [ministerio, setMinisterio] = useState<MinisterioInfo | null>(null);
   const [loadingMin, setLoadingMin] = useState(true);
   const [noAccess, setNoAccess] = useState(false);
@@ -26,79 +29,51 @@ export default function VolunteerMinisterioLayout() {
   const isAdmin = roles.includes("admin");
 
   useEffect(() => {
-    if (authLoading || !user || !slug) return;
+    // Wait for auth and myMinistries to finish loading
+    if (authLoading || myMinistriesLoading || !user || !slug) return;
 
-    interface VinculoItem {
-      ministerio_id: string;
-      papel: string;
-      ministerios: { id: string; nome: string; slug: string; filosofia_pdf: string | null } | null;
+    // Primary: use already-loaded myMinistries from AuthContext (RPC runs with SECURITY DEFINER)
+    const match = myMinistries.find((m) => m.slug === slug);
+    if (match) {
+      setMinisterio({
+        id: match.ministerio_id,
+        nome: match.nome,
+        papel: match.papel ?? "voluntario",
+        filosofia_pdf: null,
+      });
+      setLoadingMin(false);
+      return;
     }
 
-    const fetchMinistry = async () => {
-      setLoadingMin(true);
-      setNoAccess(false);
-
-      // Get user's active ministry links
-      const { data: vinculos, error: errV } = await supabase
-        .from("ministerio_usuarios")
-        .select("ministerio_id, papel, ministerios!ministerio_voluntarios_ministerio_id_fkey(id, nome, slug, filosofia_pdf)")
-        .eq("user_id", user.id)
-        .eq("ativo", true);
-
-      if (!errV && vinculos) {
-        const typed = vinculos as unknown as VinculoItem[];
-        const match = typed.find((v) => v.ministerios?.slug === slug);
-        if (match) {
-          const m = match.ministerios!;
-          setMinisterio({ id: m.id, nome: m.nome, papel: match.papel, filosofia_pdf: m.filosofia_pdf ?? null });
-          setLoadingMin(false);
-          return;
-        }
-
-        // FK join may have returned null for ministerios — do two-step fallback
-        if (typed.length > 0) {
-          const ids = typed.map((v) => v.ministerio_id);
-          const { data: mData } = await supabase
-            .from("ministerios")
-            .select("id, nome, slug, filosofia_pdf")
-            .in("id", ids)
-            .eq("slug", slug)
-            .eq("ativo", true)
-            .maybeSingle();
-
-          if (mData) {
-            const vinculo = typed.find((v) => v.ministerio_id === mData.id);
-            setMinisterio({ id: mData.id, nome: mData.nome, papel: vinculo?.papel ?? "voluntario", filosofia_pdf: mData.filosofia_pdf ?? null });
-            setLoadingMin(false);
-            return;
+    // Admin fallback: direct lookup when user is admin but not in myMinistries
+    if (isAdmin) {
+      supabase
+        .from("ministerios")
+        .select("id, nome, filosofia_pdf")
+        .eq("slug", slug)
+        .eq("ativo", true)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            setMinisterio({
+              id: data.id,
+              nome: data.nome,
+              papel: "admin",
+              filosofia_pdf: (data as any).filosofia_pdf ?? null,
+            });
+          } else {
+            setNoAccess(true);
           }
-        }
-      }
-
-      // Admin fallback: direct lookup
-      if (isAdmin) {
-        const { data: adm } = await supabase
-          .from("ministerios")
-          .select("id, nome, filosofia_pdf")
-          .eq("slug", slug)
-          .eq("ativo", true)
-          .maybeSingle();
-
-        if (adm) {
-          setMinisterio({ id: adm.id, nome: adm.nome, papel: "admin", filosofia_pdf: adm.filosofia_pdf ?? null });
           setLoadingMin(false);
-          return;
-        }
-      }
+        });
+      return;
+    }
 
-      setNoAccess(true);
-      setLoadingMin(false);
-    };
+    setNoAccess(true);
+    setLoadingMin(false);
+  }, [user, authLoading, myMinistries, myMinistriesLoading, slug, isAdmin]);
 
-    fetchMinistry();
-  }, [user, authLoading, slug, isAdmin]);
-
-  if (authLoading || loadingMin) {
+  if (authLoading || myMinistriesLoading || loadingMin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -109,11 +84,6 @@ export default function VolunteerMinisterioLayout() {
   if (!user) return <Navigate to="/auth" replace />;
   if (!isVoluntario && !isAdmin) return <Navigate to="/app" replace />;
   if (noAccess || !ministerio) return <Navigate to="/voluntario" replace />;
-
-  const basePath = `/volunteer/${slug}`;
-
-  // Nav items (currently empty — tabs are inside the dashboard page)
-  const navItems: { icon: React.ElementType; label: string; path: string; end: boolean }[] = [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -145,25 +115,6 @@ export default function VolunteerMinisterioLayout() {
             <UserAvatarMenu size="sm" />
           </div>
         </div>
-
-        {navItems.length > 0 && (
-          <div className="container mx-auto px-4 pb-2">
-            <nav className="flex gap-1 overflow-x-auto">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end={item.end}
-                  className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
-                  activeClassName="bg-primary/10 text-primary font-medium"
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span className="text-sm">{item.label}</span>
-                </NavLink>
-              ))}
-            </nav>
-          </div>
-        )}
       </header>
 
       <main className="container mx-auto px-4 py-6">
