@@ -74,11 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        // TOKEN_REFRESHED is silent background refresh — don't flash loading spinner
-        // as it would unmount child components and lose unsaved form data
-        if (event !== 'TOKEN_REFRESHED') {
-          setLoading(true);
-        }
+        // TOKEN_REFRESHED is a silent background token rotation — skip re-fetching
+        // profile/roles/ministries to avoid unnecessary re-renders and form data loss
+        if (event === 'TOKEN_REFRESHED') return;
+        setLoading(true);
         fetchUserData(session.user.id);
       } else {
         setProfile(null);

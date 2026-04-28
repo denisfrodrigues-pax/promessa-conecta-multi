@@ -64,7 +64,16 @@ export default function AdminEscalasPeriodoDetalhe() {
   const { id: periodoId } = useParams<{ id: string }>();
   const { profile } = useAuth();
   const queryClient = useQueryClient();
-  const churchId = profile?.church_id;
+
+  // church_id para eventos_escala (NOT NULL) — ministerios não tem essa coluna
+  const { data: churchId } = useQuery({
+    queryKey: ['church_id_igrejas'],
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data } = await supabase.from('igrejas').select('id').limit(1).maybeSingle();
+      return (data as any)?.id as string | null ?? null;
+    },
+  });
 
   const [isEventoModalOpen, setIsEventoModalOpen] = useState(false);
   const [isConvocacaoModalOpen, setIsConvocacaoModalOpen] = useState(false);
@@ -116,13 +125,11 @@ export default function AdminEscalasPeriodoDetalhe() {
   });
 
   const { data: ministerios = [] } = useQuery({
-    queryKey: ['ministerios_ativos', churchId],
-    enabled: !!churchId,
+    queryKey: ['ministerios_ativos'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('ministerios')
         .select('id, nome')
-        .eq('church_id', churchId!)
         .eq('ativo', true)
         .order('nome');
       if (error) throw error;
