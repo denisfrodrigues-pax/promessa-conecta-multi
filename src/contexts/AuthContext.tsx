@@ -74,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        setLoading(true); // mantém loading=true até fetchUserData terminar e setar roles
         fetchUserData(session.user.id);
       } else {
         setProfile(null);
@@ -84,13 +85,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(session.user.id);
-      } else {
+      if (!session) {
         setLoading(false);
       }
+      // se há sessão, onAuthStateChange (INITIAL_SESSION) já chamou fetchUserData
     });
 
     return () => subscription.unsubscribe();
