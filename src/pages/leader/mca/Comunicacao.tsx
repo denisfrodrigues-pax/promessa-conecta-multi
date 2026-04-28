@@ -34,8 +34,7 @@ function cleanPhone(tel: string): string {
 
 export default function Comunicacao() {
   const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
-  const { profile, user } = useAuth();
-  const churchId = (profile as any)?.church_id as string | undefined;
+  const { user } = useAuth();
   const qc = useQueryClient();
 
   const [criancaId, setCriancaId] = useState('');
@@ -45,6 +44,15 @@ export default function Comunicacao() {
   const [contexto, setContexto] = useState('');
   const [melhorando, setMelhorando] = useState(false);
   const [usarMelhorada, setUsarMelhorada] = useState(false);
+
+  const { data: churchId } = useQuery({
+    queryKey: ['my_church_id'],
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data } = await supabase.from('igrejas').select('id').limit(1).maybeSingle();
+      return (data as any)?.id as string | null ?? null;
+    },
+  });
 
   const { data: criancas = [] } = useQuery({
     queryKey: ['mca_criancas_simples', churchId],
