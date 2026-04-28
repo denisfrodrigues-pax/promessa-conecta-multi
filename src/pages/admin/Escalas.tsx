@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -50,6 +52,8 @@ interface Escala {
   voluntario_id: string | null;
   responsavel_id: string | null;
   justificativa: string | null;
+  status: string;
+  confirmado_em: string | null;
   created_at: string;
   ministerios: { nome: string } | null;
   voluntario: { nome: string } | null;
@@ -69,7 +73,9 @@ interface EscalaGroup {
     id: string;
     voluntario_id: string;
     nome: string;
+    status: string;
     justificativa: string | null;
+    confirmado_em: string | null;
   }>;
 }
 
@@ -99,6 +105,7 @@ interface AdminEscalasProps {
 }
 
 export default function AdminEscalas({ ministerioId: propMinisterioId, canManage = true }: AdminEscalasProps = {}) {
+  const { profile } = useAuth();
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [escalaGroups, setEscalaGroups] = useState<EscalaGroup[]>([]);
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
@@ -134,7 +141,11 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
     created_at: string;
   }>>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  
+  const [isConfirmandoEscala, setIsConfirmandoEscala] = useState(false);
+  const [isRecusandoEscala, setIsRecusandoEscala] = useState(false);
+  const [justificativaConfirmacao, setJustificativaConfirmacao] = useState('');
+  const [showRecusarForm, setShowRecusarForm] = useState(false);
+
   // Filters
   const [filterMinisterio, setFilterMinisterio] = useState<string>('all');
   const [filterData, setFilterData] = useState<Date | undefined>();
@@ -211,7 +222,9 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
           id: escala.id,
           voluntario_id: escala.voluntario_id,
           nome: escala.voluntario.nome,
+          status: escala.status ?? 'pendente',
           justificativa: escala.justificativa,
+          confirmado_em: escala.confirmado_em,
         });
       }
     });
@@ -762,6 +775,47 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
     }
   };
 
+  const handleConfirmarPresenca = async (escalaId: string) => {
+    setIsConfirmandoEscala(true);
+    try {
+      const { error } = await supabase
+        .from('escalas')
+        .update({ status: 'confirmado', confirmado_em: new Date().toISOString() })
+        .eq('id', escalaId);
+      if (error) throw error;
+      toast.success('Presença confirmada!');
+      setShowRecusarForm(false);
+      await fetchEscalas();
+    } catch (err) {
+      toast.error('Erro ao confirmar presença');
+    } finally {
+      setIsConfirmandoEscala(false);
+    }
+  };
+
+  const handleRecusarPresenca = async (escalaId: string) => {
+    if (!justificativaConfirmacao.trim()) {
+      toast.error('Informe uma justificativa');
+      return;
+    }
+    setIsRecusandoEscala(true);
+    try {
+      const { error } = await supabase
+        .from('escalas')
+        .update({ status: 'ausente', justificativa: justificativaConfirmacao, confirmado_em: new Date().toISOString() })
+        .eq('id', escalaId);
+      if (error) throw error;
+      toast.success('Resposta registrada');
+      setShowRecusarForm(false);
+      setJustificativaConfirmacao('');
+      await fetchEscalas();
+    } catch (err) {
+      toast.error('Erro ao registrar resposta');
+    } finally {
+      setIsRecusandoEscala(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'confirmado':
@@ -1048,7 +1102,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
       </Tabs>
 
       {/* View Dialog - Show all volunteers and their status */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+      <Dialog open={isViewDialogOpen} onOpenChange={(open) => { setIsViewDialogOpen(open); if (!open) { setShowRecusarForm(false); setJustificativaConfirmacao(''); } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Detalhes da Escala</DialogTitle>
@@ -1096,7 +1150,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
               <div className="space-y-2">
                 {viewingGroup.voluntarios.map((vol) => (
                   <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="font-medium">{vol.nome}</p>
                       {vol.justificativa && (
                         <p className="text-sm text-muted-foreground mt-1">
@@ -1104,9 +1158,111 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                         </p>
                       )}
                     </div>
+                    {getStatusBadge(vol.status)}
                   </div>
                 ))}
               </div>
+
+              {/* ── Minha Confirmação (só para o próprio voluntário) ─────────── */}
+              {(() => {
+                const myEntry = viewingGroup.voluntarios.find(
+                  (v) => v.voluntario_id === profile?.id
+                );
+                if (!myEntry) return null;
+                const isPast = new Date(viewingGroup.data) < new Date(new Date().toISOString().split('T')[0]);
+                if (isPast) return null;
+                return (
+                  <div className="border-t pt-4 space-y-3">
+                    <p className="text-sm font-semibold">Minha confirmação</p>
+                    {myEntry.status === 'pendente' && !showRecusarForm && (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          disabled={isConfirmandoEscala}
+                          onClick={() => handleConfirmarPresenca(myEntry.id)}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Confirmar presença
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-destructive/40 text-destructive hover:bg-destructive/10"
+                          onClick={() => setShowRecusarForm(true)}
+                        >
+                          <XCircle className="w-4 h-4 mr-1" />
+                          Não consigo
+                        </Button>
+                      </div>
+                    )}
+                    {myEntry.status === 'pendente' && showRecusarForm && (
+                      <div className="space-y-2">
+                        <Label htmlFor="just-confirm">Justificativa *</Label>
+                        <Textarea
+                          id="just-confirm"
+                          rows={2}
+                          placeholder="Por que não pode comparecer?"
+                          value={justificativaConfirmacao}
+                          onChange={(e) => setJustificativaConfirmacao(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            disabled={isRecusandoEscala || !justificativaConfirmacao.trim()}
+                            onClick={() => handleRecusarPresenca(myEntry.id)}
+                          >
+                            Confirmar recusa
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setShowRecusarForm(false); setJustificativaConfirmacao(''); }}>
+                            Cancelar
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {myEntry.status === 'confirmado' && (
+                      <div className="flex items-center gap-3">
+                        <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Confirmado
+                        </Badge>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-muted-foreground text-xs h-7"
+                          disabled={isConfirmandoEscala}
+                          onClick={async () => {
+                            setIsConfirmandoEscala(true);
+                            await supabase.from('escalas').update({ status: 'pendente', confirmado_em: null }).eq('id', myEntry.id);
+                            setIsConfirmandoEscala(false);
+                            await fetchEscalas();
+                          }}
+                        >
+                          Cancelar confirmação
+                        </Button>
+                      </div>
+                    )}
+                    {myEntry.status === 'ausente' && (
+                      <div className="flex items-center gap-3">
+                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
+                          <XCircle className="w-3 h-3 mr-1" />
+                          Não confirmado
+                        </Badge>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-muted-foreground text-xs h-7"
+                          onClick={() => handleConfirmarPresenca(myEntry.id)}
+                          disabled={isConfirmandoEscala}
+                        >
+                          Alterar para confirmado
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -1128,7 +1284,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
               <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
                 Fechar
               </Button>
-              {viewingGroup && (
+              {viewingGroup && canManage && (
                 <Button onClick={() => {
                   setIsViewDialogOpen(false);
                   handleEdit(viewingGroup);
