@@ -1,4 +1,4 @@
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -11,13 +11,8 @@ import {
 import familiaPastoral from "@/assets/familia-pastoral.png";
 
 export default function AppHome() {
-  const { profile, roles, loading } = useAuth();
+  const { profile } = useAuth();
   const firstName = profile?.nome?.split(' ')[0] || 'membro';
-
-  if (!loading && roles.includes('admin')) return <Navigate to="/admin/dashboard" replace />;
-  if (!loading && roles.includes('financeiro')) return <Navigate to="/financeiro" replace />;
-  if (!loading && roles.includes('lider')) return <Navigate to="/leader/hub" replace />;
-  if (!loading && roles.includes('voluntario')) return <Navigate to="/voluntario" replace />;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

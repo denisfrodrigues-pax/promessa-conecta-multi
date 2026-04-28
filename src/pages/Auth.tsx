@@ -56,23 +56,11 @@ export default function Auth() {
   // - If ?redirect= exists, go to that URL (e.g., from Check-in Kids)
   // - Otherwise, redirect to the panel matching the user's highest role
   useEffect(() => {
-    console.log('[Auth.tsx] redirect effect — loading:', loading, 'user:', user?.email, 'roles:', roles);
     if (!loading && user) {
-      if (redirectUrl) {
-        navigate(decodeURIComponent(redirectUrl), { replace: true });
-      } else if (roles.includes('admin')) {
-        navigate('/admin/dashboard', { replace: true });
-      } else if (roles.includes('financeiro')) {
-        navigate('/financeiro', { replace: true });
-      } else if (roles.includes('lider')) {
-        navigate('/leader/hub', { replace: true });
-      } else if (roles.includes('voluntario')) {
-        navigate('/voluntario', { replace: true });
-      } else {
-        navigate('/app', { replace: true });
-      }
+      const dest = redirectUrl ? decodeURIComponent(redirectUrl) : '/app';
+      navigate(dest, { replace: true });
     }
-  }, [user, loading, roles, redirectUrl, navigate]);
+  }, [user, loading, redirectUrl, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
