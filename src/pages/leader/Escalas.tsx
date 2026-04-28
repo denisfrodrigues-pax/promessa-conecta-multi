@@ -490,6 +490,11 @@ export default function LeaderEscalas() {
                             {e.status}
                           </Badge>
                         </div>
+                        {e.justificativa && (
+                          <p className="text-xs text-muted-foreground mt-1 italic">
+                            Justificativa: "{e.justificativa}"
+                          </p>
+                        )}
                       </div>
                       <Button
                         size="sm"

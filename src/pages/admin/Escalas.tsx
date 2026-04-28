@@ -843,7 +843,10 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
   };
 
   const getVoluntariosStatusSummary = (voluntarios: EscalaGroup['voluntarios']) => {
-    return { total: voluntarios.length };
+    const confirmados = voluntarios.filter((v) => v.status === 'confirmado').length;
+    const pendentes = voluntarios.filter((v) => v.status === 'pendente').length;
+    const ausentes = voluntarios.filter((v) => v.status === 'ausente').length;
+    return { total: voluntarios.length, confirmados, pendentes, ausentes };
   };
 
   const toggleVoluntario = (voluntarioId: string) => {
@@ -1010,7 +1013,28 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                               <span className="font-medium">{summary.total}</span>
                             </div>
                           </TableCell>
-                          <TableCell></TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1 flex-wrap">
+                              {summary.confirmados > 0 && (
+                                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-xs px-1.5 py-0">
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  {summary.confirmados}
+                                </Badge>
+                              )}
+                              {summary.pendentes > 0 && (
+                                <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs px-1.5 py-0">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {summary.pendentes}
+                                </Badge>
+                              )}
+                              {summary.ausentes > 0 && (
+                                <Badge className="bg-red-100 text-red-700 hover:bg-red-100 text-xs px-1.5 py-0">
+                                  <XCircle className="w-3 h-3 mr-1" />
+                                  {summary.ausentes}
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
                               <Button variant="ghost" size="icon" onClick={() => handleView(group)}>
