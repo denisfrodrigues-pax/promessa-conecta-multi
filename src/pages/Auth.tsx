@@ -52,19 +52,26 @@ export default function Auth() {
   // Get redirect URL from query params
   const redirectUrl = searchParams.get('redirect');
 
-  // Redirect authenticated users:
+  // Redirect authenticated users based on role:
   // - If ?redirect= exists, go to that URL (e.g., from Check-in Kids)
-  // - Otherwise, redirect to /app as the default post-login home
+  // - Otherwise, redirect to the panel matching the user's highest role
   useEffect(() => {
     if (!loading && user) {
       if (redirectUrl) {
-        const decodedUrl = decodeURIComponent(redirectUrl);
-        navigate(decodedUrl, { replace: true });
+        navigate(decodeURIComponent(redirectUrl), { replace: true });
+      } else if (roles.includes('admin')) {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (roles.includes('financeiro')) {
+        navigate('/financeiro', { replace: true });
+      } else if (roles.includes('lider')) {
+        navigate('/leader/hub', { replace: true });
+      } else if (roles.includes('voluntario')) {
+        navigate('/voluntario', { replace: true });
       } else {
         navigate('/app', { replace: true });
       }
     }
-  }, [user, loading, redirectUrl, navigate]);
+  }, [user, loading, roles, redirectUrl, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
