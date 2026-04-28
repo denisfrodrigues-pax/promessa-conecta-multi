@@ -209,34 +209,44 @@ export default function MemberPerfil() {
     }
   };
 
-  // Load profile data
+  // Load full profile data from DB — AuthContext only fetches a subset of columns,
+  // so extended fields (cpf, address, etc.) must be fetched directly.
   useEffect(() => {
-    if (profile) {
-      const p = profile as any;
-      setFormData({
-        nome: p.nome || '',
-        cpf: p.cpf || '',
-        data_nascimento: p.data_nascimento || '',
-        telefone: p.telefone || '',
-        sexo: p.sexo || '',
-        estado_civil: p.estado_civil || '',
-        naturalidade: p.naturalidade || '',
-        cep: p.cep || '',
-        logradouro: p.logradouro || '',
-        numero: p.numero || '',
-        complemento: p.complemento || '',
-        bairro: p.bairro || '',
-        cidade: p.cidade || '',
-        uf: p.uf || '',
-        grau_instrucao: p.grau_instrucao || '',
-        formacao: p.formacao || '',
-        profissao: p.profissao || '',
-        pcd: p.pcd || '',
-        batizado_aguas: p.batizado_aguas || false,
-        data_batismo: p.data_batismo || '',
+    if (!user?.id) return;
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        const p = data as any;
+        setFormData({
+          nome: p.nome || '',
+          cpf: p.cpf ? formatCPF(p.cpf) : '',
+          data_nascimento: p.data_nascimento || '',
+          telefone: p.telefone ? formatPhone(p.telefone) : '',
+          sexo: p.sexo || '',
+          estado_civil: p.estado_civil || '',
+          naturalidade: p.naturalidade || '',
+          cep: p.cep ? formatCEP(p.cep) : '',
+          logradouro: p.logradouro || '',
+          numero: p.numero || '',
+          complemento: p.complemento || '',
+          bairro: p.bairro || '',
+          cidade: p.cidade || '',
+          uf: p.uf || '',
+          grau_instrucao: p.grau_instrucao || '',
+          formacao: p.formacao || '',
+          profissao: p.profissao || '',
+          pcd: p.pcd || '',
+          batizado_aguas: p.batizado_aguas || false,
+          data_batismo: p.data_batismo || '',
+        });
+        if (p.foto_url) setAvatarUrl(p.foto_url);
       });
-    }
-  }, [profile]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, '');

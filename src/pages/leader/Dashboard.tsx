@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Link, useOutletContext } from 'react-router-dom';
+import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,6 +34,7 @@ interface AgendaEvento {
 
 export default function LeaderDashboard() {
   const { ministerioId } = useOutletContext<{ ministerioId: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const { profile } = useAuth();
   const { config } = useChurchConfig();
   const [bases, setBases] = useState<Base[]>([]);
@@ -103,7 +104,7 @@ export default function LeaderDashboard() {
           />
         )}
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">Olá, {profile?.nome?.split(' ')[0]}!</h1>
+          <h1 className="text-3xl font-display font-bold tracking-tight">Olá, {profile?.nome || 'Líder'}!</h1>
           <p className="text-muted-foreground mt-1">Confira suas atividades e responsabilidades</p>
         </div>
       </div>
@@ -204,7 +205,7 @@ export default function LeaderDashboard() {
               <CardDescription>Bases que você lidera</CardDescription>
             </div>
             <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
-              <Link to="/leader/bases">
+              <Link to={`/leader/${slug}/bases`}>
                 Ver todas <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
@@ -247,7 +248,7 @@ export default function LeaderDashboard() {
               <CardDescription>Suas escalas de serviço</CardDescription>
             </div>
             <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
-              <Link to="/lider/escalas">
+              <Link to={`/leader/${slug}/escalas`}>
                 Ver todas <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>

@@ -6,7 +6,9 @@ import { Loader2 } from 'lucide-react';
 export default function AdminLayout() {
   const { user, loading, isAdmin, roles } = useAuth();
 
-  if (loading) {
+  // Only block rendering on initial load (no user yet). Once authenticated,
+  // never unmount the Outlet — avoids wiping unsaved form data on token refresh.
+  if (loading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

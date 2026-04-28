@@ -135,7 +135,7 @@ export default function AdminMinisterios() {
           descricao: data.descricao || null,
           lider_id: data.lider_id || null,
           ativo: data.ativo,
-          tipo_ministerio: data.tipo_ministerio,
+          slug: data.tipo_ministerio,
         })
         .select('id')
         .single();
@@ -442,7 +442,7 @@ export default function AdminMinisterios() {
                   <SelectContent>
                     <SelectItem value="__none__" disabled>Selecione...</SelectItem>
                     <SelectItem value="padrao">Padrão</SelectItem>
-                    <SelectItem value="kids">Kids</SelectItem>
+                    <SelectItem value="mca">MCA - Ministério de Crianças e Adolescentes</SelectItem>
                     <SelectItem value="musica">Música</SelectItem>
                     <SelectItem value="midia">Mídia</SelectItem>
                     <SelectItem value="ensino">Ensino</SelectItem>

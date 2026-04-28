@@ -46,12 +46,32 @@ export default function VolunteerMinisterioLayout() {
         .eq("ativo", true);
 
       if (!errV && vinculos) {
-        const match = (vinculos as unknown as VinculoItem[]).find((v) => v.ministerios?.slug === slug);
+        const typed = vinculos as unknown as VinculoItem[];
+        const match = typed.find((v) => v.ministerios?.slug === slug);
         if (match) {
           const m = match.ministerios!;
           setMinisterio({ id: m.id, nome: m.nome, papel: match.papel, filosofia_pdf: m.filosofia_pdf ?? null });
           setLoadingMin(false);
           return;
+        }
+
+        // FK join may have returned null for ministerios — do two-step fallback
+        if (typed.length > 0) {
+          const ids = typed.map((v) => v.ministerio_id);
+          const { data: mData } = await supabase
+            .from("ministerios")
+            .select("id, nome, slug, filosofia_pdf")
+            .in("id", ids)
+            .eq("slug", slug)
+            .eq("ativo", true)
+            .maybeSingle();
+
+          if (mData) {
+            const vinculo = typed.find((v) => v.ministerio_id === mData.id);
+            setMinisterio({ id: mData.id, nome: mData.nome, papel: vinculo?.papel ?? "voluntario", filosofia_pdf: mData.filosofia_pdf ?? null });
+            setLoadingMin(false);
+            return;
+          }
         }
       }
 

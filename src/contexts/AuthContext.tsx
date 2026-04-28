@@ -21,6 +21,7 @@ interface Profile {
   foto_url?: string;
   status: string;
   role?: string | null;
+  church_id?: string | null;
 }
 
 interface AuthContextType {
@@ -74,7 +75,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        setLoading(true);
+        // TOKEN_REFRESHED is silent background refresh — don't flash loading spinner
+        // as it would unmount child components and lose unsaved form data
+        if (event !== 'TOKEN_REFRESHED') {
+          setLoading(true);
+        }
         fetchUserData(session.user.id);
       } else {
         setProfile(null);
@@ -101,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, user_id, nome, email, telefone, foto_url, status')
+        .select('id, user_id, nome, email, telefone, foto_url, status, church_id')
         .eq('user_id', userId)
         .maybeSingle();
 
