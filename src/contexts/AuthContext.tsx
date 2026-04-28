@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -53,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [myMinistries, setMyMinistries] = useState<MyMinistry[]>([]);
   const [myMinistriesLoading, setMyMinistriesLoading] = useState(false);
+  const loadedUserIdRef = useRef<string | null>(null);
 
   const refreshMyMinistries = useCallback(async () => {
     setMyMinistriesLoading(true);
@@ -74,12 +75,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        // TOKEN_REFRESHED is a silent background token rotation — skip re-fetching
-        // profile/roles/ministries to avoid unnecessary re-renders and form data loss
+        // Skip silent token rotation and same-user re-auth (tab focus) to prevent
+        // resetting loading state and wiping in-progress form data.
         if (event === 'TOKEN_REFRESHED') return;
+        if (loadedUserIdRef.current === session.user.id) return;
         setLoading(true);
         fetchUserData(session.user.id);
       } else {
+        loadedUserIdRef.current = null;
         setProfile(null);
         setRoles([]);
         setMyMinistries([]);
@@ -129,6 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
+      loadedUserIdRef.current = userId;
       setLoading(false);
     }
   };
@@ -153,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    loadedUserIdRef.current = null;
     setUser(null);
     setSession(null);
     setProfile(null);

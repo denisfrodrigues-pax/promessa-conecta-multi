@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -73,9 +72,16 @@ function calcIdade(nascimento: string | null): string {
 
 export default function Criancas() {
   const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
-  const { profile } = useAuth();
-  const churchId = (profile as any)?.church_id as string | undefined;
   const qc = useQueryClient();
+
+  const { data: churchId } = useQuery({
+    queryKey: ['my_church_id'],
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data } = await supabase.from('igrejas').select('id').limit(1).maybeSingle();
+      return (data as any)?.id as string | null ?? null;
+    },
+  });
 
   const [search, setSearch] = useState('');
   const [salaFilter, setSalaFilter] = useState('todas');
