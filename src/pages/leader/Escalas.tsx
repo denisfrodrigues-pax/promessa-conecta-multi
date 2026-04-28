@@ -22,7 +22,7 @@ import {
 import { toast } from 'sonner';
 import {
   Calendar, Clock, Users, Plus, Trash2, Bell, CheckCircle,
-  AlertCircle, XCircle, Loader2, CalendarDays,
+  AlertCircle, XCircle, Loader2, CalendarDays, Pencil,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -96,10 +96,12 @@ export default function LeaderEscalas() {
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
 
-  // Modal state — event-based escala creation
+  // Modal state — event-based escala creation/edit
   const [eventoParaCriar, setEventoParaCriar] = useState<EventoMinisterio | null>(null);
   const [escalasRows, setEscalasRows] = useState<EscalaRow[]>([{ funcao: '', voluntario_id: '', horario: '' }]);
   const [enviarNotificacao, setEnviarNotificacao] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [loadingEscalasEvento, setLoadingEscalasEvento] = useState(false);
 
   // Modal state — direct escala creation (legacy)
   const [isDirectModalOpen, setIsDirectModalOpen] = useState(false);
@@ -188,6 +190,16 @@ export default function LeaderEscalas() {
       const rows = escalasRows.filter((r) => r.funcao && r.voluntario_id);
       if (rows.length === 0) throw new Error('Adicione pelo menos um voluntário com função');
 
+      // In edit mode: delete existing escalas for this event first
+      if (isEditMode) {
+        const { error: delErr } = await supabase
+          .from('escalas')
+          .delete()
+          .eq('ministerio_id', ministerioId)
+          .eq('evento_escala_id', ev.id);
+        if (delErr) throw delErr;
+      }
+
       const inserts = rows.map((r) => ({
         ministerio_id: ministerioId,
         evento_escala_id: ev.id,
@@ -202,19 +214,22 @@ export default function LeaderEscalas() {
       const { error: insertErr } = await supabase.from('escalas').insert(inserts);
       if (insertErr) throw insertErr;
 
-      const { error: updErr } = await supabase
-        .from('evento_ministerios')
-        .update({ status: 'escala_criada' })
-        .eq('id', eventoParaCriar.id);
-      if (updErr) throw updErr;
+      // Only update evento_ministerios status when creating (not editing — already escala_criada)
+      if (!isEditMode) {
+        const { error: updErr } = await supabase
+          .from('evento_ministerios')
+          .update({ status: 'escala_criada' })
+          .eq('id', eventoParaCriar.id);
+        if (updErr) throw updErr;
+      }
 
       if (enviarNotificacao) {
         await supabase.functions.invoke('send-notification', {
           body: {
             target: 'ministerio',
             ministerio_id: ministerioId,
-            title: `Escala publicada: ${ev.titulo}`,
-            body: `A escala para ${ev.titulo} (${format(new Date(ev.data_evento + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}) foi publicada. Verifique sua convocação.`,
+            title: `Escala atualizada: ${ev.titulo}`,
+            body: `A escala para ${ev.titulo} (${format(new Date(ev.data_evento + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}) foi atualizada. Verifique sua convocação.`,
           },
         });
         await supabase
@@ -226,12 +241,13 @@ export default function LeaderEscalas() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['evento_ministerios_lider', ministerioId] });
       queryClient.invalidateQueries({ queryKey: ['escalas_lider', ministerioId] });
-      toast.success('Escala criada!');
+      toast.success(isEditMode ? 'Escala atualizada!' : 'Escala criada!');
       setEventoParaCriar(null);
       setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]);
       setEnviarNotificacao(true);
+      setIsEditMode(false);
     },
-    onError: (e: Error) => toast.error('Erro ao criar escala', { description: e.message }),
+    onError: (e: Error) => toast.error(isEditMode ? 'Erro ao atualizar escala' : 'Erro ao criar escala', { description: e.message }),
   });
 
   // ── Create direct escala (legacy) ──────────────────────────────────────────
@@ -275,6 +291,34 @@ export default function LeaderEscalas() {
       setToDelete(null);
     },
   });
+
+  // ── Edit existing escala ───────────────────────────────────────────────────
+
+  const openEditModal = async (em: EventoMinisterio) => {
+    if (!em.eventos_escala) return;
+    setLoadingEscalasEvento(true);
+    try {
+      const { data, error } = await supabase
+        .from('escalas')
+        .select('id, funcao, voluntario_id, horario')
+        .eq('ministerio_id', ministerioId)
+        .eq('evento_escala_id', em.eventos_escala.id);
+      if (error) throw error;
+      const rows: EscalaRow[] = (data ?? []).map((e) => ({
+        funcao: e.funcao ?? '',
+        voluntario_id: e.voluntario_id ?? '',
+        horario: e.horario ?? '',
+      }));
+      setEscalasRows(rows.length > 0 ? rows : [{ funcao: '', voluntario_id: '', horario: '' }]);
+      setIsEditMode(true);
+      setEnviarNotificacao(false);
+      setEventoParaCriar(em);
+    } catch {
+      toast.error('Erro ao carregar escala existente');
+    } finally {
+      setLoadingEscalasEvento(false);
+    }
+  };
 
   // ── Row helpers ────────────────────────────────────────────────────────────
 
@@ -382,7 +426,20 @@ export default function LeaderEscalas() {
                             </Button>
                           )}
                           {em.status === 'escala_criada' && (
-                            <span className="text-sm text-blue-600 font-medium">Escala enviada</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-blue-600 font-medium">Escala enviada</span>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={loadingEscalasEvento}
+                                onClick={() => openEditModal(em)}
+                              >
+                                {loadingEscalasEvento
+                                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                                  : <><Pencil className="w-4 h-4 mr-1" />Editar</>
+                                }
+                              </Button>
+                            </div>
                           )}
                           {em.status === 'concluido' && (
                             <span className="text-sm text-green-600 font-medium">Concluído</span>
@@ -454,12 +511,12 @@ export default function LeaderEscalas() {
       {/* ── Modal: Criar Escala para Evento ─────────────────────────────────── */}
       <Dialog
         open={!!eventoParaCriar}
-        onOpenChange={(open) => { if (!open) { setEventoParaCriar(null); setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]); } }}
+        onOpenChange={(open) => { if (!open) { setEventoParaCriar(null); setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]); setIsEditMode(false); } }}
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              Criar escala — {eventoParaCriar?.eventos_escala?.titulo}
+              {isEditMode ? 'Editar escala' : 'Criar escala'} — {eventoParaCriar?.eventos_escala?.titulo}
             </DialogTitle>
             {eventoParaCriar?.eventos_escala && (
               <p className="text-sm text-muted-foreground">
@@ -543,15 +600,15 @@ export default function LeaderEscalas() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => { setEventoParaCriar(null); setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]); }}
+              onClick={() => { setEventoParaCriar(null); setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]); setIsEditMode(false); }}
               disabled={criarEscalaMutation.isPending}
             >
               Cancelar
             </Button>
             <Button onClick={() => criarEscalaMutation.mutate()} disabled={criarEscalaMutation.isPending}>
               {criarEscalaMutation.isPending
-                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Criando...</>
-                : 'Publicar escala'
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{isEditMode ? 'Salvando...' : 'Criando...'}</>
+                : isEditMode ? 'Salvar alterações' : 'Publicar escala'
               }
             </Button>
           </DialogFooter>
