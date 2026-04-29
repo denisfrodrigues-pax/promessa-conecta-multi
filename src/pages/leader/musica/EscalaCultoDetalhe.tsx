@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import BuscaMusica, { SearchResultItem } from '@/components/musica/BuscaMusica';
 
 interface OutletCtx {
   ministerioId: string;
@@ -85,30 +86,6 @@ interface EventoInfo {
   horario_inicio: string | null;
 }
 
-interface YoutubeResultItem {
-  videoId: string;
-  titulo: string;
-  canal: string;
-  thumbnail: string;
-}
-
-const YT_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY as string | undefined;
-
-async function buscarYoutube(termo: string): Promise<YoutubeResultItem[]> {
-  if (!YT_API_KEY) return [];
-  const url =
-    `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=6&q=${encodeURIComponent(termo)}&key=${YT_API_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Erro na API do YouTube');
-  const json = await res.json();
-  return (json.items ?? []).map((item: any) => ({
-    videoId: item.id.videoId,
-    titulo: item.snippet.title,
-    canal: item.snippet.channelTitle,
-    thumbnail: item.snippet.thumbnails?.default?.url ?? '',
-  }));
-}
-
 function useDebounceLocal(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -129,16 +106,15 @@ export default function EscalaCultoDetalhe() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounceLocal(searchTerm, 400);
-  const [ytResultados, setYtResultados] = useState<YoutubeResultItem[]>([]);
-  const [ytCarregando, setYtCarregando] = useState(false);
-  const [ytErro, setYtErro] = useState('');
-  const [mostraYt, setMostraYt] = useState(false);
+  const [buscaExternaOpen, setBuscaExternaOpen] = useState(false);
 
   const [form, setForm] = useState({
     titulo: '',
     artista: '',
     tom: '',
     link_youtube: '',
+    link_deezer: '',
+    capa_url: '',
     musica_id: null as string | null,
   });
 
@@ -237,7 +213,7 @@ export default function EscalaCultoDetalhe() {
 
       if (form.musica_id) {
         // Música do repertório
-        const { error } = await supabase.from('musicas_culto').insert({
+        const { error } = await (supabase as any).from('musicas_culto').insert({
           evento_id: eventoId!,
           ministerio_id: ministerioId,
           musica_id: form.musica_id,
@@ -248,12 +224,14 @@ export default function EscalaCultoDetalhe() {
         if (error) throw error;
       } else {
         // Música avulsa — trigger cria no repertório automaticamente
-        const { error } = await supabase.from('musicas_culto').insert({
+        const { error } = await (supabase as any).from('musicas_culto').insert({
           evento_id: eventoId!,
           ministerio_id: ministerioId,
           titulo_avulso: form.titulo,
           artista_avulso: form.artista || null,
           link_youtube: form.link_youtube || null,
+          link_deezer: form.link_deezer || null,
+          capa_url: form.capa_url || null,
           ordem: proximaOrdem,
           created_by: user?.id,
         });
@@ -328,45 +306,22 @@ export default function EscalaCultoDetalhe() {
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
   const resetForm = () => {
-    setForm({ titulo: '', artista: '', tom: '', link_youtube: '', musica_id: null });
+    setForm({ titulo: '', artista: '', tom: '', link_youtube: '', link_deezer: '', capa_url: '', musica_id: null });
     setSearchTerm('');
-    setYtResultados([]);
-    setYtErro('');
-    setMostraYt(false);
+    setBuscaExternaOpen(false);
   };
 
-  const handleBuscarYoutube = async () => {
-    if (!searchTerm.trim()) return;
-    if (!YT_API_KEY) {
-      window.open(
-        `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`,
-        '_blank'
-      );
-      return;
-    }
-    setYtCarregando(true);
-    setYtErro('');
-    setMostraYt(true);
-    try {
-      const resultados = await buscarYoutube(searchTerm);
-      setYtResultados(resultados);
-    } catch {
-      setYtErro('Não foi possível buscar no YouTube. Verifique a API Key.');
-      setYtResultados([]);
-    } finally {
-      setYtCarregando(false);
-    }
-  };
-
-  const selecionarYoutube = (item: YoutubeResultItem) => {
+  const handleSelectExterno = (item: SearchResultItem) => {
     setForm((f) => ({
       ...f,
       musica_id: null,
       titulo: f.titulo || item.titulo,
-      artista: f.artista || item.canal,
-      link_youtube: `https://www.youtube.com/watch?v=${item.videoId}`,
+      artista: f.artista || item.artista,
+      link_youtube: item.link_youtube ?? f.link_youtube,
+      link_deezer: item.link_deezer ?? f.link_deezer,
+      capa_url: item.capa_url ?? f.capa_url,
     }));
-    setMostraYt(false);
+    setBuscaExternaOpen(false);
   };
 
   const moverMusica = (index: number, direcao: 'up' | 'down') => {
@@ -701,61 +656,20 @@ export default function EscalaCultoDetalhe() {
               </div>
             </div>
 
-            {/* Busca no YouTube */}
-            {searchTerm && !form.musica_id && (
+            {/* Busca externa: YouTube + Deezer */}
+            {!form.musica_id && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-1.5">
-                    <Youtube className="w-4 h-4 text-red-500" />
-                    {YT_API_KEY ? 'Buscar no YouTube' : 'YouTube'}
-                  </Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleBuscarYoutube}
-                    disabled={ytCarregando}
-                  >
-                    {ytCarregando ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                    ) : (
-                      <Youtube className="w-4 h-4 mr-1 text-red-500" />
-                    )}
-                    {YT_API_KEY ? 'Buscar' : 'Abrir no YouTube'}
-                  </Button>
-                </div>
-
-                {ytErro && (
-                  <p className="text-xs text-destructive">{ytErro}</p>
-                )}
-
-                {mostraYt && ytResultados.length > 0 && (
-                  <div className="border rounded-md divide-y max-h-52 overflow-y-auto">
-                    {ytResultados.map((item) => (
-                      <button
-                        key={item.videoId}
-                        type="button"
-                        className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted/60 transition-colors text-left"
-                        onClick={() => selecionarYoutube(item)}
-                      >
-                        {item.thumbnail && (
-                          <img
-                            src={item.thumbnail}
-                            alt=""
-                            className="w-12 h-9 object-cover rounded flex-shrink-0"
-                          />
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium line-clamp-1">{item.titulo}</p>
-                          <p className="text-xs text-muted-foreground">{item.canal}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {mostraYt && !ytCarregando && ytResultados.length === 0 && !ytErro && (
-                  <p className="text-xs text-muted-foreground">Nenhum resultado encontrado.</p>
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 text-sm font-medium text-promessa-600 hover:text-promessa-800"
+                  onClick={() => setBuscaExternaOpen(o => !o)}
+                >
+                  <Search className="w-4 h-4" />
+                  Buscar no YouTube / Deezer
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${buscaExternaOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {buscaExternaOpen && (
+                  <BuscaMusica onSelect={handleSelectExterno} />
                 )}
               </div>
             )}
