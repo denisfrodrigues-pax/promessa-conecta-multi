@@ -221,9 +221,11 @@ export default function Repertorio() {
       ...prev,
       titulo: item.titulo,
       artista: item.artista,
+      tom: item.tom ?? prev.tom,
       link_youtube: item.link_youtube ?? prev.link_youtube,
-      link_deezer: item.link_deezer ?? '',
+      link_deezer: item.link_deezer_busca ?? '',
       capa_url: item.capa_url ?? '',
+      cifra_url: item.link_cifraclub ?? prev.cifra_url,
     }));
     setStep('form');
   };
@@ -404,14 +406,10 @@ export default function Repertorio() {
           </DialogHeader>
 
           {step === 'busca' ? (
-            <>
-              <BuscaMusica onSelect={handleSelectMusica} autoFocus />
-              <DialogFooter>
-                <Button variant="ghost" size="sm" onClick={() => setStep('form')}>
-                  Cadastro manual →
-                </Button>
-              </DialogFooter>
-            </>
+            <BuscaMusica
+              onSelect={handleSelectMusica}
+              onManual={() => setStep('form')}
+            />
           ) : (
             <>
               <div className="space-y-3">
@@ -460,10 +458,10 @@ export default function Repertorio() {
                   />
                 </div>
 
-                {/* Links automáticos */}
+                {/* Links de busca */}
                 {form.titulo && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Links automáticos</Label>
+                    <Label className="text-xs text-muted-foreground">Buscar em</Label>
                     <div className="flex gap-2 flex-wrap">
                       <a
                         href={`https://open.spotify.com/search/${encodeURIComponent(`${form.titulo} ${form.artista}`.trim())}`}
@@ -473,15 +471,6 @@ export default function Repertorio() {
                       >
                         <ExternalLink className="w-3 h-3" />
                         Spotify
-                      </a>
-                      <a
-                        href={`https://www.cifraclub.com.br/busca/?q=${encodeURIComponent(form.titulo)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        CifraClub
                       </a>
                       {form.link_deezer && (
                         <a

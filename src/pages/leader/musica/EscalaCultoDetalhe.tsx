@@ -317,8 +317,9 @@ export default function EscalaCultoDetalhe() {
       musica_id: null,
       titulo: f.titulo || item.titulo,
       artista: f.artista || item.artista,
+      tom: item.tom ?? f.tom,
       link_youtube: item.link_youtube ?? f.link_youtube,
-      link_deezer: item.link_deezer ?? f.link_deezer,
+      link_deezer: item.link_deezer_busca ?? f.link_deezer,
       capa_url: item.capa_url ?? f.capa_url,
     }));
     setBuscaExternaOpen(false);
