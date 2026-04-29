@@ -8,10 +8,8 @@ const corsHeaders = {
 function extractJson(text: string): Record<string, unknown> {
   const trimmed = text.trim();
   try { return JSON.parse(trimmed); } catch {}
-  // Strip markdown code fences
   const stripped = trimmed.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
   try { return JSON.parse(stripped.trim()); } catch {}
-  // Find first { ... } block in the string
   const match = trimmed.match(/\{[\s\S]*\}/);
   if (match) {
     try { return JSON.parse(match[0]); } catch {}
@@ -56,28 +54,28 @@ serve(async (req) => {
           'Content-Type': 'application/json',
           'x-api-key': apiKey,
           'anthropic-version': '2023-06-01',
-          'anthropic-beta': 'web-search-2025-03-05',
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1024,
-          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          model: 'claude-3-5-haiku-20241022',
+          max_tokens: 512,
           messages: [{
             role: 'user',
-            content: `Busque informações sobre a música gospel "${query.trim()}".
+            content: `Você é um especialista em música gospel brasileira. Com base no seu conhecimento de treinamento, retorne informações sobre a música: "${query.trim()}"
 
-Retorne APENAS um objeto JSON válido, sem explicações, sem markdown, sem texto adicional:
+Retorne APENAS um objeto JSON válido, sem explicações, sem markdown, sem texto antes ou depois:
 {
   "titulo": "título exato da música",
-  "artista": "nome do artista ou banda",
-  "tom": "tom original se encontrado, ex: G, Am, C (null se não encontrar)",
-  "link_youtube": "URL direta do YouTube se encontrar (null se não encontrar)",
-  "link_cifraclub": "URL direta no cifraclub.com.br se encontrar (null se não encontrar)",
-  "link_spotify_busca": "https://open.spotify.com/search/[titulo+artista encodado]",
-  "link_deezer_busca": "https://www.deezer.com/search/[titulo+artista encodado]",
-  "capa_url": "URL de imagem da capa se encontrar (null se não encontrar)"
-}`,
+  "artista": "nome do artista ou banda principal",
+  "tom": "tom musical original mais comum, ex: G, Am, C, D, E — null se não souber",
+  "link_youtube": null,
+  "link_cifraclub": "URL direta no cifraclub.com.br se tiver certeza que existe, ex: https://www.cifraclub.com.br/artista/musica — null se não souber",
+  "link_spotify_busca": "https://open.spotify.com/search/${encodeURIComponent(query.trim())}",
+  "link_deezer_busca": "https://www.deezer.com/search/${encodeURIComponent(query.trim())}",
+  "capa_url": null
+}
+
+Se não conhecer a música, mesmo assim retorne o JSON com titulo e artista preenchidos com a melhor estimativa, e null nos demais campos opcionais.`,
           }],
         }),
       });
@@ -87,7 +85,7 @@ Retorne APENAS um objeto JSON válido, sem explicações, sem markdown, sem text
 
     if (!anthropicResponse.ok) {
       const errText = await anthropicResponse.text();
-      console.error('[busca-musica-ia] Anthropic error:', errText);
+      console.error('[busca-musica-ia] Anthropic error:', anthropicResponse.status, errText);
       return new Response(JSON.stringify({ error: `Erro na API da IA: ${anthropicResponse.status}`, detail: errText }), {
         status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -95,7 +93,6 @@ Retorne APENAS um objeto JSON válido, sem explicações, sem markdown, sem text
 
     const data = await anthropicResponse.json();
 
-    // Find the last text block in the response (after any tool use/result blocks)
     const textBlocks = (data.content ?? []).filter((b: any) => b.type === 'text');
     const lastText: string = textBlocks[textBlocks.length - 1]?.text ?? '';
 
@@ -108,7 +105,7 @@ Retorne APENAS um objeto JSON válido, sem explicações, sem markdown, sem text
     let result: Record<string, unknown>;
     try {
       result = extractJson(lastText);
-    } catch (e) {
+    } catch {
       console.error('[busca-musica-ia] JSON parse error. Raw text:', lastText);
       return new Response(JSON.stringify({ error: 'Formato de resposta inválido da IA', raw: lastText }), {
         status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
