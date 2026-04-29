@@ -219,14 +219,20 @@ export default function Repertorio() {
   const handleSelectMusica = (item: SearchResultItem) => {
     const sanitize = (v: string | null | undefined) =>
       (!v || v.trim().toLowerCase() === 'null') ? '' : v.trim();
+    const isSearchUrl = (v: string) =>
+      v.includes('youtube.com/results') || v.includes('cifraclub.com.br/busca');
+    const youtube = sanitize(item.link_youtube);
+    const cifra = sanitize(item.link_cifraclub);
     setForm({
       titulo: sanitize(item.titulo) || '',
       artista: sanitize(item.artista),
       tom: sanitize(item.tom),
-      link_youtube: sanitize(item.link_youtube),
+      // Don't pre-fill with search URLs — user should paste the specific video link
+      link_youtube: youtube && !isSearchUrl(youtube) ? youtube : '',
       link_deezer: sanitize(item.link_deezer_busca),
       capa_url: sanitize(item.capa_url),
-      cifra_url: sanitize(item.link_cifraclub),
+      // Only save direct CifraClub URL, not the search fallback
+      cifra_url: cifra && !isSearchUrl(cifra) ? cifra : '',
       observacoes: '',
     });
     setStep('form');

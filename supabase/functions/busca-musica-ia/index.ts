@@ -146,12 +146,15 @@ Se houver apenas um intérprete conhecido, retorne array com 1 item. Nunca retor
       const titulo = nullify(item.titulo) ?? q;
       const artista = nullify(item.artista) ?? 'Artista não identificado';
       const searchTerm = encodeURIComponent(`${titulo} ${artista}`.trim());
+      // CifraClub: use AI-provided direct URL when confident, else generate search URL
+      const cifraclubDirect = nullify(item.link_cifraclub);
       return {
         titulo,
         artista,
         tom: nullify(item.tom),
-        link_youtube: null,
-        link_cifraclub: nullify(item.link_cifraclub),
+        // YouTube: always a search URL so user can preview (not saved to form)
+        link_youtube: `https://www.youtube.com/results?search_query=${searchTerm}`,
+        link_cifraclub: cifraclubDirect ?? `https://www.cifraclub.com.br/busca/?q=${encodeURIComponent(titulo)}`,
         link_spotify_busca: `https://open.spotify.com/search/${searchTerm}`,
         link_deezer_busca: `https://www.deezer.com/search/${searchTerm}`,
         capa_url: null,

@@ -106,9 +106,10 @@ export default function BuscaMusica({ onSelect, onManual }: BuscaMusicaProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors"
+                    title="Buscar no YouTube"
                   >
                     <Youtube className="w-3 h-3" />
-                    YouTube
+                    {r.link_youtube.includes('youtube.com/results') ? 'Buscar YouTube' : 'YouTube'}
                   </a>
                 )}
                 {r.link_cifraclub && (
@@ -117,9 +118,10 @@ export default function BuscaMusica({ onSelect, onManual }: BuscaMusicaProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors"
+                    title={r.link_cifraclub.includes('/busca/') ? 'Buscar no CifraClub' : 'Ver cifra'}
                   >
                     <ExternalLink className="w-3 h-3" />
-                    CifraClub
+                    {r.link_cifraclub.includes('/busca/') ? 'Buscar Cifra' : 'CifraClub'}
                   </a>
                 )}
                 {r.link_spotify_busca && (
