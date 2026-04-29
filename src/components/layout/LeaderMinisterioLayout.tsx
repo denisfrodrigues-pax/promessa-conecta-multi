@@ -17,6 +17,7 @@ import { useLeaderNotifications } from "@/hooks/useLeaderNotifications";
 interface MinisterioInfo {
   id: string;
   nome: string;
+  tipo: string | null;
 }
 
 export default function LeaderMinisterioLayout() {
@@ -37,7 +38,7 @@ export default function LeaderMinisterioLayout() {
       // Get ministry by slug where user is active leader
       const { data: vinculo, error: errV } = await supabase
         .from("ministerio_usuarios")
-        .select("ministerio_id, ministerios!ministerio_voluntarios_ministerio_id_fkey(id, nome, slug)")
+        .select("ministerio_id, ministerios!ministerio_voluntarios_ministerio_id_fkey(id, nome, slug, tipo)")
         .eq("user_id", user.id)
         .eq("papel", "lider")
         .eq("ativo", true);
@@ -50,22 +51,22 @@ export default function LeaderMinisterioLayout() {
 
       interface VinculoItem {
         ministerio_id: string;
-        ministerios: { id: string; nome: string; slug: string } | null;
+        ministerios: { id: string; nome: string; slug: string; tipo: string | null } | null;
       }
 
       const match = (vinculo as unknown as VinculoItem[]).find((v) => v.ministerios?.slug === slug);
 
       if (!match) {
         // Admin fallback: try direct lookup
-        const { data: adm } = await supabase
+        const { data: adm } = await (supabase as any)
           .from("ministerios")
-          .select("id, nome")
+          .select("id, nome, tipo")
           .eq("slug", slug)
           .eq("ativo", true)
           .maybeSingle();
 
         if (adm) {
-          setMinisterio({ id: adm.id, nome: adm.nome });
+          setMinisterio({ id: adm.id, nome: adm.nome, tipo: adm.tipo ?? null });
         } else {
           setError(true);
         }
@@ -74,7 +75,7 @@ export default function LeaderMinisterioLayout() {
       }
 
       const m = match.ministerios!;
-      setMinisterio({ id: m.id, nome: m.nome });
+      setMinisterio({ id: m.id, nome: m.nome, tipo: m.tipo ?? null });
       setLoadingMin(false);
     };
 
@@ -181,7 +182,7 @@ export default function LeaderMinisterioLayout() {
     ensino: ensinoNavItems,
   };
 
-  const navItems = navBySlug[slug ?? ''] ?? defaultNavItems;
+  const navItems = navBySlug[ministerio.tipo ?? ''] ?? defaultNavItems;
 
   return (
     <div className="min-h-screen bg-background">
@@ -238,7 +239,7 @@ export default function LeaderMinisterioLayout() {
       </header>
 
       <main className="container mx-auto px-4 py-6">
-        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome }} />
+        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, ministerioTipo: ministerio.tipo }} />
       </main>
     </div>
   );

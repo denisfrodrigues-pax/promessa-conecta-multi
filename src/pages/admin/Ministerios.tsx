@@ -44,9 +44,17 @@ interface Ministerio {
   contato: string | null;
   is_core: boolean;
   slug: string | null;
+  tipo: string | null;
   created_at: string;
   updated_at: string;
 }
+
+const generateSlug = (nome: string) =>
+  nome.toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
 
 interface Profile {
   id: string;
@@ -128,14 +136,15 @@ export default function AdminMinisterios() {
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const { data: created, error } = await supabase
+      const { data: created, error } = await (supabase as any)
         .from('ministerios')
         .insert({
           nome: data.nome,
           descricao: data.descricao || null,
           lider_id: data.lider_id || null,
           ativo: data.ativo,
-          slug: data.tipo_ministerio,
+          slug: generateSlug(data.nome),
+          tipo: data.tipo_ministerio,
         })
         .select('id')
         .single();
@@ -155,13 +164,14 @@ export default function AdminMinisterios() {
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('ministerios')
         .update({
           nome: data.nome,
           descricao: data.descricao || null,
           lider_id: data.lider_id || null,
           ativo: data.ativo,
+          tipo: data.tipo_ministerio || null,
         })
         .eq('id', id);
       if (error) throw error;
@@ -230,7 +240,7 @@ export default function AdminMinisterios() {
       descricao: ministerio.descricao || '',
       lider_id: ministerio.lider_id || '',
       ativo: ministerio.ativo ?? true,
-      tipo_ministerio: (ministerio as { tipo_ministerio?: string }).tipo_ministerio || '',
+      tipo_ministerio: ministerio.tipo || '',
     });
     setIsDialogOpen(true);
   };
@@ -427,30 +437,28 @@ export default function AdminMinisterios() {
                 rows={3}
               />
             </div>
-            {!selectedMinisterio && (
-              <div className="space-y-2">
-                <Label htmlFor="tipo_ministerio">Tipo de Ministério *</Label>
-                <Select
-                  value={formData.tipo_ministerio || '__none__'}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, tipo_ministerio: value === '__none__' ? '' : value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__" disabled>Selecione...</SelectItem>
-                    <SelectItem value="padrao">Padrão</SelectItem>
-                    <SelectItem value="mca">MCA - Ministério de Crianças e Adolescentes</SelectItem>
-                    <SelectItem value="musica">Música</SelectItem>
-                    <SelectItem value="midia">Mídia</SelectItem>
-                    <SelectItem value="ensino">Ensino</SelectItem>
-                    <SelectItem value="recepcao">Recepção</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="tipo_ministerio">Tipo de Ministério {!selectedMinisterio && '*'}</Label>
+              <Select
+                value={formData.tipo_ministerio || '__none__'}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, tipo_ministerio: value === '__none__' ? '' : value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__" disabled>Selecione...</SelectItem>
+                  <SelectItem value="padrao">Padrão</SelectItem>
+                  <SelectItem value="mca">MCA - Ministério de Crianças e Adolescentes</SelectItem>
+                  <SelectItem value="musica">Música</SelectItem>
+                  <SelectItem value="celebracao">Celebração</SelectItem>
+                  <SelectItem value="recepcao">Recepção</SelectItem>
+                  <SelectItem value="ensino">Ensino</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="lider">Líder</Label>
               <Select

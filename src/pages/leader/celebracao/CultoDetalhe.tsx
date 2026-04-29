@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,34 +11,28 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown,
   FileDown, Loader2, Clock, Megaphone, ListOrdered,
+  Users, Music2, Image, ExternalLink,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import CardCulto from '@/components/celebracao/CardCulto';
 
 interface OutletCtx {
   ministerioId: string;
   ministerioNome: string;
+  ministerioTipo?: string | null;
 }
 
 type TipoItem =
@@ -80,6 +74,35 @@ interface LiturgiaCulto {
   observacoes_gerais: string | null;
 }
 
+interface EquipeMembro {
+  id: string;
+  funcao: string;
+  status: string;
+  voluntario_nome: string;
+  ministerio_id: string;
+  ministerio_nome: string;
+  ministerio_tipo: string | null;
+}
+
+interface MusicaCulto {
+  id: string;
+  ordem: number;
+  link_youtube: string | null;
+  titulo_avulso: string | null;
+  artista_avulso: string | null;
+  musicas_repertorio: {
+    titulo: string;
+    artista: string;
+    tom: string | null;
+    link_youtube: string | null;
+  } | null;
+}
+
+interface ConfigInstituicao {
+  logo_url: string | null;
+  nome_igreja: string | null;
+}
+
 const TIPOS: { value: TipoItem; label: string; color: string }[] = [
   { value: 'abertura',     label: 'Abertura',     color: 'bg-blue-100 text-blue-700' },
   { value: 'louvor',       label: 'Louvor',       color: 'bg-purple-100 text-purple-700' },
@@ -94,6 +117,15 @@ const TIPOS: { value: TipoItem; label: string; color: string }[] = [
 const tipoLabel = (tipo: string) => TIPOS.find((t) => t.value === tipo)?.label ?? tipo;
 const tipoColor = (tipo: string) => TIPOS.find((t) => t.value === tipo)?.color ?? 'bg-gray-100 text-gray-700';
 
+const STATUS_ICON: Record<string, string> = {
+  confirmado: '✅',
+  pendente: '⏳',
+};
+const statusIcon = (s: string) => STATUS_ICON[s] ?? '❌';
+const statusLabel: Record<string, string> = {
+  confirmado: 'Confirmado', pendente: 'Pendente',
+};
+
 const emptyItemForm = {
   tipo: 'louvor' as TipoItem,
   titulo: '',
@@ -102,19 +134,25 @@ const emptyItemForm = {
   observacao: '',
 };
 
+const emptyAvisoForm = { titulo: '', conteudo: '' };
+
 export default function CultoDetalhe() {
   const { ministerioId, ministerioNome } = useOutletContext<OutletCtx>();
   const { slug, eventoId } = useParams<{ slug: string; eventoId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const [showItemModal, setShowItemModal] = useState(false);
   const [editItem, setEditItem] = useState<LiturgiaItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [itemForm, setItemForm] = useState({ ...emptyItemForm });
   const [obsGerais, setObsGerais] = useState('');
-  const [savingObs, setSavingObs] = useState(false);
+  const [showNovoAviso, setShowNovoAviso] = useState(false);
+  const [novoAvisoForm, setNovoAvisoForm] = useState({ ...emptyAvisoForm });
+  const [exportFormato, setExportFormato] = useState<'stories' | 'feed'>('feed');
+  const [exportingImg, setExportingImg] = useState(false);
 
   // ─── Queries ──────────────────────────────────────────────────────────────
   const { data: evento } = useQuery({
@@ -129,6 +167,19 @@ export default function CultoDetalhe() {
       return data as EventoInfo;
     },
     enabled: !!eventoId,
+  });
+
+  const { data: config } = useQuery({
+    queryKey: ['config_instituicao'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('configuracoes_instituicao')
+        .select('logo_url, nome_igreja')
+        .limit(1)
+        .maybeSingle();
+      return (data as ConfigInstituicao | null);
+    },
+    staleTime: Infinity,
   });
 
   const { data: liturgia, isLoading: loadingLiturgia } = useQuery({
@@ -163,6 +214,49 @@ export default function CultoDetalhe() {
     enabled: !!liturgia?.id,
   });
 
+  const { data: equipeDia, isLoading: loadingEquipe } = useQuery({
+    queryKey: ['equipe_dia', eventoId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('escalas')
+        .select(`
+          id, funcao, status,
+          profiles!escalas_voluntario_id_fkey(id, nome),
+          ministerios!escalas_ministerio_id_fkey(id, nome, tipo)
+        `)
+        .eq('evento_escala_id', eventoId!)
+        .neq('status', 'recusado');
+      if (error) throw error;
+      return ((data ?? []) as any[]).map((r: any): EquipeMembro => ({
+        id: r.id,
+        funcao: r.funcao,
+        status: r.status,
+        voluntario_nome: r.profiles?.nome ?? 'Desconhecido',
+        ministerio_id: r.ministerios?.id ?? '',
+        ministerio_nome: r.ministerios?.nome ?? 'Ministério',
+        ministerio_tipo: r.ministerios?.tipo ?? null,
+      }));
+    },
+    enabled: !!eventoId,
+  });
+
+  const { data: musicasCulto, isLoading: loadingMusicas } = useQuery({
+    queryKey: ['musicas_culto_evento', eventoId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('musicas_culto')
+        .select(`
+          id, ordem, link_youtube, titulo_avulso, artista_avulso,
+          musicas_repertorio!musicas_culto_musica_id_fkey(titulo, artista, tom, link_youtube)
+        `)
+        .eq('evento_id', eventoId!)
+        .order('ordem');
+      if (error) throw error;
+      return (data ?? []) as MusicaCulto[];
+    },
+    enabled: !!eventoId,
+  });
+
   const { data: todosAvisos } = useQuery({
     queryKey: ['avisos_lista'],
     queryFn: async () => {
@@ -190,7 +284,36 @@ export default function CultoDetalhe() {
     enabled: !!eventoId && !!ministerioId,
   });
 
+  // Realtime subscription for equipe_dia
+  useEffect(() => {
+    if (!eventoId) return;
+    const channel = supabase
+      .channel(`escalas_evento_${eventoId}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'escalas',
+        filter: `evento_escala_id=eq.${eventoId}`,
+      }, () => {
+        queryClient.invalidateQueries({ queryKey: ['equipe_dia', eventoId] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [eventoId, queryClient]);
+
+  // ─── Derived data ─────────────────────────────────────────────────────────
   const selectedAvisoIds = new Set((avisosCulto ?? []).map((a) => a.aviso_id));
+
+  const equipePorMinisterio = useMemo(() => {
+    const map = new Map<string, { nome: string; tipo: string | null; membros: EquipeMembro[] }>();
+    for (const m of equipeDia ?? []) {
+      if (!map.has(m.ministerio_id)) {
+        map.set(m.ministerio_id, { nome: m.ministerio_nome, tipo: m.ministerio_tipo, membros: [] });
+      }
+      map.get(m.ministerio_id)!.membros.push(m);
+    }
+    return Array.from(map.values());
+  }, [equipeDia]);
+
+  const totalDuracao = (itens ?? []).reduce((acc, it) => acc + (it.duracao_minutos ?? 0), 0);
 
   // ─── Ensure liturgia record exists ────────────────────────────────────────
   const ensureLiturgia = async () => {
@@ -198,10 +321,8 @@ export default function CultoDetalhe() {
     const { data, error } = await supabase
       .from('liturgia_culto')
       .insert({
-        evento_id: eventoId!,
-        ministerio_id: ministerioId,
-        observacoes_gerais: null,
-        created_by: user?.id,
+        evento_id: eventoId!, ministerio_id: ministerioId,
+        observacoes_gerais: null, created_by: user?.id,
       })
       .select('id')
       .single();
@@ -223,12 +344,8 @@ export default function CultoDetalhe() {
         observacao: itemForm.observacao || null,
         ordem: editItem ? editItem.ordem : (itens?.length ?? 0) + 1,
       };
-
       if (editItem) {
-        const { error } = await supabase
-          .from('liturgia_itens')
-          .update(payload)
-          .eq('id', editItem.id);
+        const { error } = await supabase.from('liturgia_itens').update(payload).eq('id', editItem.id);
         if (error) throw error;
       } else {
         const { error } = await supabase.from('liturgia_itens').insert(payload);
@@ -259,11 +376,9 @@ export default function CultoDetalhe() {
 
   const reorderMutation = useMutation({
     mutationFn: async (items: { id: string; ordem: number }[]) => {
-      await Promise.all(
-        items.map(({ id, ordem }) =>
-          supabase.from('liturgia_itens').update({ ordem }).eq('id', id)
-        )
-      );
+      await Promise.all(items.map(({ id, ordem }) =>
+        supabase.from('liturgia_itens').update({ ordem }).eq('id', id)
+      ));
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['liturgia_itens', liturgia?.id] }),
     onError: () => toast.error('Erro ao reordenar'),
@@ -289,38 +404,59 @@ export default function CultoDetalhe() {
     mutationFn: async ({ avisoId, selected }: { avisoId: string; selected: boolean }) => {
       if (selected) {
         const { error } = await supabase.from('avisos_culto').insert({
-          evento_id: eventoId!,
-          aviso_id: avisoId,
-          ministerio_id: ministerioId,
-          ordem: (avisosCulto?.length ?? 0) + 1,
+          evento_id: eventoId!, aviso_id: avisoId,
+          ministerio_id: ministerioId, ordem: (avisosCulto?.length ?? 0) + 1,
           created_by: user?.id,
         });
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('avisos_culto')
-          .delete()
-          .eq('evento_id', eventoId!)
-          .eq('aviso_id', avisoId)
-          .eq('ministerio_id', ministerioId);
+        const { error } = await supabase.from('avisos_culto').delete()
+          .eq('evento_id', eventoId!).eq('aviso_id', avisoId).eq('ministerio_id', ministerioId);
         if (error) throw error;
       }
     },
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ['avisos_culto', eventoId, ministerioId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['avisos_culto', eventoId, ministerioId] }),
     onError: () => toast.error('Erro ao atualizar aviso'),
   });
 
   const reorderAvisosMutation = useMutation({
     mutationFn: async (items: { id: string; ordem: number }[]) => {
-      await Promise.all(
-        items.map(({ id, ordem }) =>
-          supabase.from('avisos_culto').update({ ordem }).eq('id', id)
-        )
-      );
+      await Promise.all(items.map(({ id, ordem }) =>
+        supabase.from('avisos_culto').update({ ordem }).eq('id', id)
+      ));
     },
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ['avisos_culto', eventoId, ministerioId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['avisos_culto', eventoId, ministerioId] }),
+  });
+
+  const criarAvisoMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase
+        .from('avisos')
+        .insert({
+          titulo: novoAvisoForm.titulo,
+          conteudo: novoAvisoForm.conteudo,
+          criado_por: user?.id,
+          publico: false,
+        })
+        .select('id')
+        .single();
+      if (error) throw error;
+      // Automatically add to this culto
+      const { error: acError } = await supabase.from('avisos_culto').insert({
+        evento_id: eventoId!, aviso_id: data.id,
+        ministerio_id: ministerioId, ordem: (avisosCulto?.length ?? 0) + 1,
+        created_by: user?.id,
+      });
+      if (acError) throw acError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['avisos_lista'] });
+      queryClient.invalidateQueries({ queryKey: ['avisos_culto', eventoId, ministerioId] });
+      toast.success('Aviso criado e adicionado ao culto');
+      setShowNovoAviso(false);
+      setNovoAvisoForm({ ...emptyAvisoForm });
+    },
+    onError: (e: Error) => toast.error('Erro ao criar aviso', { description: e.message }),
   });
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -339,8 +475,7 @@ export default function CultoDetalhe() {
   const openEditItem = (item: LiturgiaItem) => {
     setEditItem(item);
     setItemForm({
-      tipo: item.tipo,
-      titulo: item.titulo,
+      tipo: item.tipo, titulo: item.titulo,
       responsavel: item.responsavel ?? '',
       duracao_minutos: item.duracao_minutos?.toString() ?? '',
       observacao: item.observacao ?? '',
@@ -365,11 +500,6 @@ export default function CultoDetalhe() {
     [lista[index], lista[swapIdx]] = [lista[swapIdx], lista[index]];
     reorderAvisosMutation.mutate(lista.map((a, i) => ({ id: a.id, ordem: i + 1 })));
   };
-
-  const totalDuracao = (itens ?? []).reduce(
-    (acc, it) => acc + (it.duracao_minutos ?? 0),
-    0
-  );
 
   const exportarPDF = () => {
     if (!evento) return;
@@ -397,6 +527,7 @@ export default function CultoDetalhe() {
     pdf.line(14, y, W - 14, y);
     y += 6;
 
+    // Liturgia
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(12);
     pdf.text('Ordem de Liturgia', 14, y);
@@ -404,12 +535,10 @@ export default function CultoDetalhe() {
 
     (itens ?? []).forEach((item, idx) => {
       if (y > 265) { pdf.addPage(); y = 20; }
-
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(10);
       pdf.text(`${idx + 1}. ${item.titulo}`, 14, y);
       y += 5;
-
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(9);
       const meta: string[] = [`Tipo: ${tipoLabel(item.tipo)}`];
@@ -419,7 +548,6 @@ export default function CultoDetalhe() {
       pdf.text(meta.join('   ·   '), 18, y);
       pdf.setTextColor(0, 0, 0);
       y += 4;
-
       if (item.observacao) {
         pdf.setFont('helvetica', 'italic');
         pdf.setFontSize(8);
@@ -431,17 +559,64 @@ export default function CultoDetalhe() {
       y += 2;
     });
 
-    if (totalDuracao > 0) {
-      if (y > 265) { pdf.addPage(); y = 20; }
+    // Músicas
+    if ((musicasCulto ?? []).length > 0) {
+      if (y > 250) { pdf.addPage(); y = 20; }
       pdf.setDrawColor(180, 180, 180);
       pdf.line(14, y, W - 14, y);
-      y += 5;
+      y += 6;
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(9);
-      pdf.text(`Duração total estimada: ${totalDuracao} minutos`, 14, y);
-      y += 8;
+      pdf.setFontSize(12);
+      pdf.text('Músicas do Culto', 14, y);
+      y += 7;
+      (musicasCulto ?? []).forEach((mc, idx) => {
+        if (y > 265) { pdf.addPage(); y = 20; }
+        const titulo = mc.musicas_repertorio?.titulo ?? mc.titulo_avulso ?? '—';
+        const artista = mc.musicas_repertorio?.artista ?? mc.artista_avulso ?? '';
+        const tom = mc.musicas_repertorio?.tom ?? '';
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(10);
+        pdf.text(`${idx + 1}. ${titulo}`, 14, y);
+        y += 5;
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text([artista, tom ? `Tom: ${tom}` : ''].filter(Boolean).join('   ·   '), 18, y);
+        pdf.setTextColor(0, 0, 0);
+        y += 6;
+      });
     }
 
+    // Equipe
+    if (equipePorMinisterio.length > 0) {
+      if (y > 250) { pdf.addPage(); y = 20; }
+      pdf.setDrawColor(180, 180, 180);
+      pdf.line(14, y, W - 14, y);
+      y += 6;
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.text('Equipe do Dia', 14, y);
+      y += 7;
+      equipePorMinisterio.forEach((grupo) => {
+        if (y > 265) { pdf.addPage(); y = 20; }
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(10);
+        pdf.setTextColor(60, 80, 120);
+        pdf.text(grupo.nome, 14, y);
+        pdf.setTextColor(0, 0, 0);
+        y += 5;
+        grupo.membros.forEach((m) => {
+          if (y > 265) { pdf.addPage(); y = 20; }
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(9);
+          pdf.text(`• ${m.voluntario_nome} — ${m.funcao} (${statusLabel[m.status] ?? m.status})`, 18, y);
+          y += 4;
+        });
+        y += 2;
+      });
+    }
+
+    // Avisos
     const selecionados = (avisosCulto ?? []).filter((a) => a.avisos);
     if (selecionados.length > 0) {
       if (y > 250) { pdf.addPage(); y = 20; }
@@ -452,21 +627,19 @@ export default function CultoDetalhe() {
       pdf.setFontSize(12);
       pdf.text('Avisos do Culto', 14, y);
       y += 7;
-
       selecionados.forEach((ac, idx) => {
         if (y > 265) { pdf.addPage(); y = 20; }
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(10);
         pdf.text(`${idx + 1}. ${ac.avisos!.titulo}`, 14, y);
         y += 5;
-
-        const conteudoLinhas = pdf.splitTextToSize(ac.avisos!.conteudo, W - 28);
+        const linhas = pdf.splitTextToSize(ac.avisos!.conteudo, W - 28);
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(9);
         pdf.setTextColor(80, 80, 80);
-        pdf.text(conteudoLinhas, 18, y);
+        pdf.text(linhas, 18, y);
         pdf.setTextColor(0, 0, 0);
-        y += conteudoLinhas.length * 4 + 4;
+        y += linhas.length * 4 + 4;
       });
     }
 
@@ -489,11 +662,56 @@ export default function CultoDetalhe() {
     pdf.save(nomeArquivo);
   };
 
+  const exportarImagem = async () => {
+    if (!cardRef.current || !evento) return;
+    setExportingImg(true);
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 1,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        width: exportFormato === 'feed' ? 1080 : 1080,
+        height: exportFormato === 'feed' ? 1080 : 1920,
+      });
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `culto-${format(parseISO(evento.data_evento), 'yyyy-MM-dd')}-${evento.titulo.toLowerCase().replace(/\s+/g, '-')}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } catch {
+      toast.error('Erro ao gerar imagem');
+    } finally {
+      setExportingImg(false);
+    }
+  };
+
+  // ─── Derived card data ────────────────────────────────────────────────────
+  const cardMusicas = (musicasCulto ?? []).map(mc => ({
+    ordem: mc.ordem,
+    titulo: mc.musicas_repertorio?.titulo ?? mc.titulo_avulso ?? 'Sem título',
+    artista: mc.musicas_repertorio?.artista ?? mc.artista_avulso ?? '',
+    tom: mc.musicas_repertorio?.tom ?? null,
+  }));
+
+  const cardEquipe = equipePorMinisterio.map(g => ({
+    nome: g.nome,
+    membros: g.membros.map(m => ({
+      nome: m.voluntario_nome,
+      funcao: m.funcao,
+      status: m.status,
+    })),
+  }));
+
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => navigate(`/leader/${slug}/cultos`)}>
             <ArrowLeft className="w-4 h-4 mr-1" />
@@ -509,13 +727,147 @@ export default function CultoDetalhe() {
             )}
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={exportarPDF} disabled={!itens?.length}>
-          <FileDown className="w-4 h-4 mr-1" />
-          Exportar PDF
-        </Button>
+
+        {/* Export buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1 border rounded-md overflow-hidden">
+            <Button
+              variant={exportFormato === 'feed' ? 'default' : 'ghost'}
+              size="sm" className="rounded-none h-8 px-3 text-xs"
+              onClick={() => setExportFormato('feed')}
+            >
+              Feed
+            </Button>
+            <Button
+              variant={exportFormato === 'stories' ? 'default' : 'ghost'}
+              size="sm" className="rounded-none h-8 px-3 text-xs"
+              onClick={() => setExportFormato('stories')}
+            >
+              Stories
+            </Button>
+          </div>
+          <Button variant="outline" size="sm" onClick={exportarImagem} disabled={exportingImg}>
+            {exportingImg
+              ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              : <Image className="w-4 h-4 mr-1" />}
+            Exportar Imagem
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportarPDF} disabled={!itens?.length}>
+            <FileDown className="w-4 h-4 mr-1" />
+            Exportar PDF
+          </Button>
+        </div>
       </div>
 
-      {/* Ordem de Liturgia */}
+      {/* ── Equipe do Dia ─────────────────────────────────────────────────── */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Users className="w-4 h-4" />
+            Equipe do Dia
+            <Badge variant="outline" className="text-xs font-normal">Tempo real</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loadingEquipe ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="w-5 h-5 animate-spin text-promessa-500" />
+            </div>
+          ) : equipePorMinisterio.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              Nenhum voluntário escalado para este evento ainda.
+            </p>
+          ) : (
+            <div className="space-y-5">
+              {equipePorMinisterio.map((grupo) => (
+                <div key={grupo.nome}>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    {grupo.nome}
+                  </p>
+                  <div className="space-y-1.5">
+                    {grupo.membros.map((m) => (
+                      <div key={m.id} className="flex items-center gap-3 text-sm">
+                        <span className="text-base leading-none">{statusIcon(m.status)}</span>
+                        <span className="font-medium flex-1">{m.voluntario_nome}</span>
+                        <span className="text-muted-foreground">{m.funcao}</span>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${m.status === 'confirmado' ? 'border-green-300 text-green-700 bg-green-50' : 'border-yellow-300 text-yellow-700 bg-yellow-50'}`}
+                        >
+                          {statusLabel[m.status] ?? m.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground pt-1">
+                Legenda: ✅ Confirmado · ⏳ Pendente · ❌ Não confirmado
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Músicas do Culto (somente leitura) ────────────────────────────── */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Music2 className="w-4 h-4" />
+              Músicas do Culto
+            </CardTitle>
+            <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
+              Definidas pelo Ministério de Música
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loadingMusicas ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="w-5 h-5 animate-spin text-promessa-500" />
+            </div>
+          ) : !musicasCulto || musicasCulto.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              Nenhuma música definida pelo ministério de música para este evento.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {musicasCulto.map((mc, idx) => {
+                const titulo = mc.musicas_repertorio?.titulo ?? mc.titulo_avulso ?? '—';
+                const artista = mc.musicas_repertorio?.artista ?? mc.artista_avulso ?? '';
+                const tom = mc.musicas_repertorio?.tom ?? null;
+                const youtube = mc.link_youtube ?? mc.musicas_repertorio?.link_youtube ?? null;
+                return (
+                  <div key={mc.id} className="flex items-center gap-3 p-2.5 rounded-lg border bg-card">
+                    <span className="text-sm font-mono text-muted-foreground w-5 text-center">{idx + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{titulo}</p>
+                      <p className="text-xs text-muted-foreground">{artista}</p>
+                    </div>
+                    {tom && (
+                      <Badge variant="outline" className="text-xs shrink-0">{tom}</Badge>
+                    )}
+                    {youtube && (
+                      <a
+                        href={youtube}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-red-500 hover:text-red-600 shrink-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Ordem de Liturgia ──────────────────────────────────────────────── */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <div>
@@ -552,10 +904,7 @@ export default function CultoDetalhe() {
                   className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/40 cursor-pointer transition-colors"
                   onClick={() => openEditItem(item)}
                 >
-                  <span className="text-sm font-mono text-muted-foreground w-5 text-center">
-                    {idx + 1}
-                  </span>
-
+                  <span className="text-sm font-mono text-muted-foreground w-5 text-center">{idx + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tipoColor(item.tipo)}`}>
@@ -573,25 +922,15 @@ export default function CultoDetalhe() {
                       )}
                     </div>
                   </div>
-
                   <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="ghost" size="icon" className="h-7 w-7"
-                      disabled={idx === 0}
-                      onClick={() => moverItem(idx, 'up')}
-                    >
+                    <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === 0} onClick={() => moverItem(idx, 'up')}>
                       <ChevronUp className="w-4 h-4" />
                     </Button>
-                    <Button
-                      variant="ghost" size="icon" className="h-7 w-7"
-                      disabled={idx === itens.length - 1}
-                      onClick={() => moverItem(idx, 'down')}
-                    >
+                    <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === itens.length - 1} onClick={() => moverItem(idx, 'down')}>
                       <ChevronDown className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="ghost" size="icon"
-                      className="h-7 w-7 text-destructive hover:text-destructive"
+                      variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive"
                       onClick={() => setDeleteTarget(item.id)}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -604,40 +943,34 @@ export default function CultoDetalhe() {
         </CardContent>
       </Card>
 
-      {/* Avisos do Culto */}
+      {/* ── Avisos do Culto ────────────────────────────────────────────────── */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Megaphone className="w-4 h-4" />
-            Avisos do Culto
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Megaphone className="w-4 h-4" />
+              Avisos do Culto
+            </CardTitle>
+            <Button size="sm" variant="outline" onClick={() => setShowNovoAviso(true)}>
+              <Plus className="w-4 h-4 mr-1" />
+              Novo Aviso
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Avisos selecionados com reordenação */}
           {avisosCulto && avisosCulto.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                 Selecionados — na ordem do culto
               </p>
               {avisosCulto.map((ac, idx) => (
-                <div
-                  key={ac.id}
-                  className="flex items-center gap-2 p-2 rounded-lg bg-promessa-50 border border-promessa-200"
-                >
+                <div key={ac.id} className="flex items-center gap-2 p-2 rounded-lg bg-promessa-50 border border-promessa-200">
                   <span className="text-xs font-mono text-muted-foreground w-4">{idx + 1}</span>
                   <p className="flex-1 text-sm font-medium">{ac.avisos?.titulo ?? '—'}</p>
-                  <Button
-                    variant="ghost" size="icon" className="h-6 w-6"
-                    disabled={idx === 0}
-                    onClick={() => moverAviso(idx, 'up')}
-                  >
+                  <Button variant="ghost" size="icon" className="h-6 w-6" disabled={idx === 0} onClick={() => moverAviso(idx, 'up')}>
                     <ChevronUp className="w-3 h-3" />
                   </Button>
-                  <Button
-                    variant="ghost" size="icon" className="h-6 w-6"
-                    disabled={idx === avisosCulto.length - 1}
-                    onClick={() => moverAviso(idx, 'down')}
-                  >
+                  <Button variant="ghost" size="icon" className="h-6 w-6" disabled={idx === avisosCulto.length - 1} onClick={() => moverAviso(idx, 'down')}>
                     <ChevronDown className="w-3 h-3" />
                   </Button>
                 </div>
@@ -645,7 +978,6 @@ export default function CultoDetalhe() {
             </div>
           )}
 
-          {/* Checkboxes para selecionar/desselecionar avisos */}
           {todosAvisos && todosAvisos.length > 0 ? (
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
@@ -671,7 +1003,7 @@ export default function CultoDetalhe() {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Nenhum aviso cadastrado no sistema.</p>
+            <p className="text-sm text-muted-foreground">Nenhum aviso cadastrado. Use "Novo Aviso" para criar.</p>
           )}
         </CardContent>
       </Card>
@@ -688,24 +1020,19 @@ export default function CultoDetalhe() {
             placeholder="Anotações para o culto…"
             rows={3}
           />
-          <Button
-            size="sm"
-            onClick={() => saveObsMutation.mutate()}
-            disabled={saveObsMutation.isPending}
-          >
+          <Button size="sm" onClick={() => saveObsMutation.mutate()} disabled={saveObsMutation.isPending}>
             {saveObsMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Salvar
           </Button>
         </CardContent>
       </Card>
 
-      {/* Modal Adicionar/Editar Item */}
+      {/* ── Modal Adicionar/Editar Item ────────────────────────────────────── */}
       <Dialog open={showItemModal} onOpenChange={(open) => { if (!open) closeItemModal(); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{editItem ? 'Editar Item' : 'Adicionar Item'}</DialogTitle>
           </DialogHeader>
-
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>Tipo *</Label>
@@ -714,12 +1041,9 @@ export default function CultoDetalhe() {
                 value={itemForm.tipo}
                 onChange={(e) => setItemForm((p) => ({ ...p, tipo: e.target.value as TipoItem }))}
               >
-                {TIPOS.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
+                {TIPOS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </div>
-
             <div className="space-y-1.5">
               <Label>Título *</Label>
               <Input
@@ -728,7 +1052,6 @@ export default function CultoDetalhe() {
                 placeholder="Ex: Louvor de abertura, Oração pelos enfermos…"
               />
             </div>
-
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Responsável</Label>
@@ -741,15 +1064,13 @@ export default function CultoDetalhe() {
               <div className="space-y-1.5">
                 <Label>Duração (min)</Label>
                 <Input
-                  type="number"
-                  min="1"
+                  type="number" min="1"
                   value={itemForm.duracao_minutos}
                   onChange={(e) => setItemForm((p) => ({ ...p, duracao_minutos: e.target.value }))}
                   placeholder="0"
                 />
               </div>
             </div>
-
             <div className="space-y-1.5">
               <Label>Observação</Label>
               <Textarea
@@ -760,7 +1081,6 @@ export default function CultoDetalhe() {
               />
             </div>
           </div>
-
           <DialogFooter>
             <Button variant="outline" onClick={closeItemModal}>Cancelar</Button>
             <Button
@@ -769,6 +1089,51 @@ export default function CultoDetalhe() {
             >
               {saveItemMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {editItem ? 'Salvar' : 'Adicionar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Modal Novo Aviso ───────────────────────────────────────────────── */}
+      <Dialog open={showNovoAviso} onOpenChange={(open) => {
+        if (!open) { setShowNovoAviso(false); setNovoAvisoForm({ ...emptyAvisoForm }); }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Novo Aviso</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Título *</Label>
+              <Input
+                value={novoAvisoForm.titulo}
+                onChange={(e) => setNovoAvisoForm((p) => ({ ...p, titulo: e.target.value }))}
+                placeholder="Título do aviso"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Conteúdo *</Label>
+              <Textarea
+                value={novoAvisoForm.conteudo}
+                onChange={(e) => setNovoAvisoForm((p) => ({ ...p, conteudo: e.target.value }))}
+                placeholder="Descreva o aviso…"
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowNovoAviso(false);
+              setNovoAvisoForm({ ...emptyAvisoForm });
+            }}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => criarAvisoMutation.mutate()}
+              disabled={criarAvisoMutation.isPending || !novoAvisoForm.titulo || !novoAvisoForm.conteudo}
+            >
+              {criarAvisoMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Criar e Adicionar ao Culto
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -794,6 +1159,22 @@ export default function CultoDetalhe() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── CardCulto off-screen para exportação de imagem ─────────────────── */}
+      {evento && (
+        <div style={{ position: 'fixed', top: -9999, left: -9999, zIndex: -1, pointerEvents: 'none' }}>
+          <CardCulto
+            ref={cardRef}
+            formato={exportFormato}
+            evento={evento}
+            itens={itens ?? []}
+            musicas={cardMusicas}
+            equipe={cardEquipe}
+            logoUrl={config?.logo_url}
+            nomeIgreja={config?.nome_igreja}
+          />
+        </div>
+      )}
     </div>
   );
 }
