@@ -60,7 +60,7 @@ serve(async (req) => {
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-3-5-sonnet-20241022',
           max_tokens: 1024,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           messages: [{
@@ -88,7 +88,7 @@ Retorne APENAS um objeto JSON válido, sem explicações, sem markdown, sem text
     if (!anthropicResponse.ok) {
       const errText = await anthropicResponse.text();
       console.error('[busca-musica-ia] Anthropic error:', errText);
-      return new Response(JSON.stringify({ error: `Erro na API da IA: ${anthropicResponse.status}` }), {
+      return new Response(JSON.stringify({ error: `Erro na API da IA: ${anthropicResponse.status}`, detail: errText }), {
         status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
