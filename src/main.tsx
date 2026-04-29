@@ -5,17 +5,12 @@ import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import "./index.css";
 import "./styles/global-containers.css";
 
-// ✅ Só ativa service worker em produção
+// Verifica atualizações do service worker a cada 60s em produção (sem forçar reload)
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   navigator.serviceWorker.ready.then((registration) => {
     setInterval(() => {
       registration.update();
     }, 60 * 1000);
-  });
-
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    console.log("[App] New service worker activated, reloading...");
-    window.location.reload();
   });
 }
 
