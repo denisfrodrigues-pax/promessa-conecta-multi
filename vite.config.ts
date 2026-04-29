@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
+      disable: process.env.NODE_ENV === 'development',
       registerType: "prompt",
       includeAssets: ["favicon.ico", "logo_placeholder.png"],
       manifest: {
