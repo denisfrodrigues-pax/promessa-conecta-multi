@@ -57,7 +57,7 @@ serve(async (req) => {
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: 'claude-3-5-haiku-20241022',
+          model: 'claude-haiku-4-5-20251001',
           max_tokens: 512,
           messages: [{
             role: 'user',
@@ -83,15 +83,24 @@ Se não conhecer a música, mesmo assim retorne o JSON com titulo e artista pree
       clearTimeout(timeout);
     }
 
+    const responseText = await anthropicResponse.text();
+    console.log('[busca-musica-ia] Status Anthropic:', anthropicResponse.status);
+    console.log('[busca-musica-ia] Resposta Anthropic:', responseText);
+
     if (!anthropicResponse.ok) {
-      const errText = await anthropicResponse.text();
-      console.error('[busca-musica-ia] Anthropic error:', anthropicResponse.status, errText);
-      return new Response(JSON.stringify({ error: `Erro na API da IA: ${anthropicResponse.status}`, detail: errText }), {
+      return new Response(JSON.stringify({ error: responseText }), {
         status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const data = await anthropicResponse.json();
+    let data: any;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      return new Response(JSON.stringify({ error: 'JSON inválido da Anthropic', raw: responseText }), {
+        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const textBlocks = (data.content ?? []).filter((b: any) => b.type === 'text');
     const lastText: string = textBlocks[textBlocks.length - 1]?.text ?? '';
