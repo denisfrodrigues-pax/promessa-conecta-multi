@@ -5,7 +5,16 @@ import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import "./index.css";
 import "./styles/global-containers.css";
 
-// Verifica atualizações do service worker a cada 60s em produção (sem forçar reload)
+// Remove todos os SWs antigos que possam ter lógica de reload automático
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister();
+    }
+  });
+}
+
+// Em produção, verifica atualizações do SW a cada 60s (sem forçar reload)
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   navigator.serviceWorker.ready.then((registration) => {
     setInterval(() => {

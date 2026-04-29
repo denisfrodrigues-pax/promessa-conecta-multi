@@ -179,10 +179,11 @@ function PlanoDetalheDispatch() {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,   // dados frescos por 5 min — evita refetch em toda navegação
-      gcTime: 1000 * 60 * 10,     // cache mantido 10 min após componente desmontar
-      retry: 1,                    // 1 retry em erros de rede antes de falhar
-      refetchOnWindowFocus: false, // não refaz query ao voltar para a aba
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
+      retry: 1,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     },
   },
 });

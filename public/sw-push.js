@@ -1,37 +1,8 @@
 // Push notification handler for service worker
 // This file will be imported by the main service worker
-
-// Force immediate activation on install
-self.addEventListener('install', function(event) {
-  console.log('[Service Worker] Installing new version...');
-  // Skip waiting to activate immediately
-  self.skipWaiting();
-});
-
-// Claim all clients immediately on activation
-self.addEventListener('activate', function(event) {
-  console.log('[Service Worker] Activating new version...');
-  event.waitUntil(
-    Promise.all([
-      // Take control of all clients immediately
-      self.clients.claim(),
-      // Clean up old caches
-      caches.keys().then(function(cacheNames) {
-        return Promise.all(
-          cacheNames.map(function(cacheName) {
-            // Delete old versioned caches
-            if (cacheName.startsWith('workbox-') || 
-                cacheName.includes('-precache-') ||
-                cacheName.includes('runtime-')) {
-              console.log('[Service Worker] Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      })
-    ])
-  );
-});
+// NOTE: install/activate lifecycle is managed by Workbox (vite-plugin-pwa).
+// skipWaiting and clients.claim are intentionally omitted here to avoid
+// forcing controllerchange events that trigger unwanted page reloads.
 
 self.addEventListener('push', function(event) {
   console.log('[Service Worker] Push received:', event);
