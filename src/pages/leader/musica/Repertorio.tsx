@@ -217,16 +217,18 @@ export default function Repertorio() {
   };
 
   const handleSelectMusica = (item: SearchResultItem) => {
-    setForm(prev => ({
-      ...prev,
-      titulo: item.titulo,
-      artista: item.artista,
-      tom: item.tom ?? prev.tom,
-      link_youtube: item.link_youtube ?? prev.link_youtube,
-      link_deezer: item.link_deezer_busca ?? '',
-      capa_url: item.capa_url ?? '',
-      cifra_url: item.link_cifraclub ?? prev.cifra_url,
-    }));
+    const sanitize = (v: string | null | undefined) =>
+      (!v || v.trim().toLowerCase() === 'null') ? '' : v.trim();
+    setForm({
+      titulo: sanitize(item.titulo) || '',
+      artista: sanitize(item.artista),
+      tom: sanitize(item.tom),
+      link_youtube: sanitize(item.link_youtube),
+      link_deezer: sanitize(item.link_deezer_busca),
+      capa_url: sanitize(item.capa_url),
+      cifra_url: sanitize(item.link_cifraclub),
+      observacoes: '',
+    });
     setStep('form');
   };
 

@@ -22,24 +22,32 @@ interface BuscaMusicaProps {
   onManual?: () => void;
 }
 
+function safeArtista(v: string | null | undefined): string {
+  if (!v || v.trim() === '' || v.trim().toLowerCase() === 'null') return 'Artista não identificado';
+  return v.trim();
+}
+
 export default function BuscaMusica({ onSelect, onManual }: BuscaMusicaProps) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resultado, setResultado] = useState<SearchResultItem | null>(null);
+  const [resultados, setResultados] = useState<SearchResultItem[]>([]);
   const [erro, setErro] = useState('');
 
   async function buscar() {
     if (!query.trim()) return;
     setLoading(true);
     setErro('');
-    setResultado(null);
+    setResultados([]);
     try {
       const { data, error } = await supabase.functions.invoke('busca-musica-ia', {
         body: { query: query.trim() },
       });
       if (error) throw new Error(error.message ?? 'Erro ao buscar');
-      if (data?.error) throw new Error(data.error);
-      setResultado(data as SearchResultItem);
+      if (data?.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+
+      // API now returns an array; handle legacy single-object for safety
+      const lista: SearchResultItem[] = Array.isArray(data) ? data : [data];
+      setResultados(lista);
     } catch (err: any) {
       const msg = err?.message ?? 'Erro ao buscar música. Tente novamente.';
       setErro(msg);
@@ -50,7 +58,7 @@ export default function BuscaMusica({ onSelect, onManual }: BuscaMusicaProps) {
   }
 
   function resetBusca() {
-    setResultado(null);
+    setResultados([]);
     setErro('');
   }
 
@@ -63,95 +71,101 @@ export default function BuscaMusica({ onSelect, onManual }: BuscaMusicaProps) {
     );
   }
 
-  if (resultado) {
+  if (resultados.length > 0) {
     return (
       <div className="space-y-4">
-        {/* Result card */}
-        <div className="border rounded-xl p-4 bg-muted/30 space-y-3">
-          <div className="flex items-start gap-3">
-            {resultado.capa_url ? (
-              <img
-                src={resultado.capa_url}
-                alt="Capa"
-                className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                <Music className="w-6 h-6 text-muted-foreground" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-base leading-tight">{resultado.titulo}</p>
-              <p className="text-sm text-muted-foreground mt-0.5">{resultado.artista}</p>
-              {resultado.tom && (
-                <Badge variant="outline" className="mt-1 font-mono text-xs">{resultado.tom}</Badge>
-              )}
-            </div>
-          </div>
+        <p className="text-xs text-muted-foreground">
+          {resultados.length === 1
+            ? 'Resultado encontrado — revise e clique em "Usar esta".'
+            : `${resultados.length} versões encontradas — escolha a que deseja usar.`}
+        </p>
 
-          {/* Links */}
-          <div className="flex flex-wrap gap-2">
-            {resultado.link_youtube && (
-              <a
-                href={resultado.link_youtube}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors"
+        <div className="space-y-3">
+          {resultados.map((r, idx) => (
+            <div key={idx} className="border rounded-xl p-4 bg-muted/30 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                  <Music className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-base leading-tight">{r.titulo}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {safeArtista(r.artista)}
+                  </p>
+                  {r.tom && (
+                    <Badge variant="outline" className="mt-1 font-mono text-xs">Tom: {r.tom}</Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Links */}
+              <div className="flex flex-wrap gap-2">
+                {r.link_youtube && (
+                  <a
+                    href={r.link_youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors"
+                  >
+                    <Youtube className="w-3 h-3" />
+                    YouTube
+                  </a>
+                )}
+                {r.link_cifraclub && (
+                  <a
+                    href={r.link_cifraclub}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    CifraClub
+                  </a>
+                )}
+                {r.link_spotify_busca && (
+                  <a
+                    href={r.link_spotify_busca}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Spotify
+                  </a>
+                )}
+                {r.link_deezer_busca && (
+                  <a
+                    href={r.link_deezer_busca}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Deezer
+                  </a>
+                )}
+              </div>
+
+              <Button
+                size="sm"
+                className="w-full"
+                onClick={() => onSelect({ ...r, artista: safeArtista(r.artista) })}
               >
-                <Youtube className="w-3 h-3" />
-                YouTube
-              </a>
-            )}
-            {resultado.link_cifraclub && (
-              <a
-                href={resultado.link_cifraclub}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors"
-              >
-                <ExternalLink className="w-3 h-3" />
-                CifraClub
-              </a>
-            )}
-            {resultado.link_spotify_busca && (
-              <a
-                href={resultado.link_spotify_busca}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors"
-              >
-                <ExternalLink className="w-3 h-3" />
-                Spotify
-              </a>
-            )}
-            {resultado.link_deezer_busca && (
-              <a
-                href={resultado.link_deezer_busca}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors"
-              >
-                <ExternalLink className="w-3 h-3" />
-                Deezer
-              </a>
-            )}
-          </div>
+                Usar esta
+              </Button>
+            </div>
+          ))}
         </div>
 
-        <div className="flex flex-col gap-2">
-          <Button onClick={() => onSelect(resultado)}>
-            Usar esta música
+        <div className="flex gap-2">
+          <Button variant="outline" className="flex-1" onClick={resetBusca}>
+            Buscar novamente
           </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={resetBusca}>
-              Buscar novamente
+          {onManual && (
+            <Button variant="ghost" className="flex-1" onClick={onManual}>
+              Cadastrar manualmente
             </Button>
-            {onManual && (
-              <Button variant="ghost" className="flex-1" onClick={onManual}>
-                Cadastrar manualmente
-              </Button>
-            )}
-          </div>
+          )}
         </div>
       </div>
     );

@@ -5,14 +5,37 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function extractJson(text: string): Record<string, unknown> {
+function nullify(v: unknown): string | null {
+  if (v === null || v === undefined) return null;
+  const s = String(v).trim();
+  return s === '' || s.toLowerCase() === 'null' ? null : s;
+}
+
+function extractJsonArray(text: string): Record<string, unknown>[] {
   const trimmed = text.trim();
-  try { return JSON.parse(trimmed); } catch {}
-  const stripped = trimmed.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-  try { return JSON.parse(stripped.trim()); } catch {}
-  const match = trimmed.match(/\{[\s\S]*\}/);
-  if (match) {
-    try { return JSON.parse(match[0]); } catch {}
+  const candidates = [
+    trimmed,
+    trimmed.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim(),
+  ];
+  for (const c of candidates) {
+    try {
+      const p = JSON.parse(c);
+      if (Array.isArray(p)) return p;
+      if (typeof p === 'object' && p !== null) return [p];
+    } catch {}
+  }
+  // Try to find [...] block
+  const arrM = trimmed.match(/\[[\s\S]*\]/);
+  if (arrM) {
+    try {
+      const p = JSON.parse(arrM[0]);
+      if (Array.isArray(p)) return p;
+    } catch {}
+  }
+  // Fall back to first {...} block as single item
+  const objM = trimmed.match(/\{[\s\S]*\}/);
+  if (objM) {
+    try { return [JSON.parse(objM[0])]; } catch {}
   }
   throw new Error('Não foi possível extrair JSON da resposta da IA');
 }
@@ -43,6 +66,7 @@ serve(async (req) => {
       });
     }
 
+    const q = query.trim();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
 
@@ -58,24 +82,22 @@ serve(async (req) => {
         signal: controller.signal,
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 512,
+          max_tokens: 1024,
           messages: [{
             role: 'user',
-            content: `Você é um especialista em música gospel brasileira. Com base no seu conhecimento de treinamento, retorne informações sobre a música: "${query.trim()}"
+            content: `Você é especialista em música gospel brasileira. Retorne informações sobre a música: "${q}"
 
-Retorne APENAS um objeto JSON válido, sem explicações, sem markdown, sem texto antes ou depois:
-{
-  "titulo": "título exato da música",
-  "artista": "nome do artista ou banda principal",
-  "tom": "tom musical original mais comum, ex: G, Am, C, D, E — null se não souber",
-  "link_youtube": null,
-  "link_cifraclub": "URL direta no cifraclub.com.br se tiver certeza que existe, ex: https://www.cifraclub.com.br/artista/musica — null se não souber",
-  "link_spotify_busca": "https://open.spotify.com/search/${encodeURIComponent(query.trim())}",
-  "link_deezer_busca": "https://www.deezer.com/search/${encodeURIComponent(query.trim())}",
-  "capa_url": null
-}
+Retorne APENAS um array JSON válido com até 3 versões/intérpretes diferentes (sem texto extra, sem markdown):
+[
+  {
+    "titulo": "título exato",
+    "artista": "nome do artista ou banda — nunca retorne null, use o nome mais conhecido",
+    "tom": "tom musical mais comum, ex: G, Am, C — null se não souber",
+    "link_cifraclub": "URL exata no cifraclub.com.br se tiver certeza, ex: https://www.cifraclub.com.br/artista/musica — null se não souber"
+  }
+]
 
-Se não conhecer a música, mesmo assim retorne o JSON com titulo e artista preenchidos com a melhor estimativa, e null nos demais campos opcionais.`,
+Se houver apenas um intérprete conhecido, retorne array com 1 item. Nunca retorne o campo "artista" como null.`,
           }],
         }),
       });
@@ -84,8 +106,8 @@ Se não conhecer a música, mesmo assim retorne o JSON com titulo e artista pree
     }
 
     const responseText = await anthropicResponse.text();
-    console.log('[busca-musica-ia] Status Anthropic:', anthropicResponse.status);
-    console.log('[busca-musica-ia] Resposta Anthropic:', responseText);
+    console.log('[busca-musica-ia] Status:', anthropicResponse.status);
+    console.log('[busca-musica-ia] Body:', responseText);
 
     if (!anthropicResponse.ok) {
       return new Response(JSON.stringify({ error: responseText }), {
@@ -94,9 +116,7 @@ Se não conhecer a música, mesmo assim retorne o JSON com titulo e artista pree
     }
 
     let data: any;
-    try {
-      data = JSON.parse(responseText);
-    } catch {
+    try { data = JSON.parse(responseText); } catch {
       return new Response(JSON.stringify({ error: 'JSON inválido da Anthropic', raw: responseText }), {
         status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -111,17 +131,34 @@ Se não conhecer a música, mesmo assim retorne o JSON com titulo e artista pree
       });
     }
 
-    let result: Record<string, unknown>;
+    let raw: Record<string, unknown>[];
     try {
-      result = extractJson(lastText);
+      raw = extractJsonArray(lastText);
     } catch {
-      console.error('[busca-musica-ia] JSON parse error. Raw text:', lastText);
-      return new Response(JSON.stringify({ error: 'Formato de resposta inválido da IA', raw: lastText }), {
+      console.error('[busca-musica-ia] JSON parse error. Raw:', lastText);
+      return new Response(JSON.stringify({ error: 'Formato inválido da IA', raw: lastText }), {
         status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify(result), {
+    // Normalize each item and generate search links from titulo+artista
+    const results = raw.slice(0, 3).map((item) => {
+      const titulo = nullify(item.titulo) ?? q;
+      const artista = nullify(item.artista) ?? 'Artista não identificado';
+      const searchTerm = encodeURIComponent(`${titulo} ${artista}`.trim());
+      return {
+        titulo,
+        artista,
+        tom: nullify(item.tom),
+        link_youtube: null,
+        link_cifraclub: nullify(item.link_cifraclub),
+        link_spotify_busca: `https://open.spotify.com/search/${searchTerm}`,
+        link_deezer_busca: `https://www.deezer.com/search/${searchTerm}`,
+        capa_url: null,
+      };
+    });
+
+    return new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
