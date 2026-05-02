@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, History, ClipboardCheck } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, Clock, AlertCircle, History, ClipboardCheck, Palette } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,6 +30,13 @@ interface Ministerio {
   nome: string;
 }
 
+interface PaletaCores {
+  cor_primaria: string;
+  cor_secundaria: string | null;
+  cor_acento: string | null;
+  observacao: string | null;
+}
+
 interface Escala {
   id: string;
   data: string;
@@ -39,8 +47,68 @@ interface Escala {
   confirmado_em: string | null;
   ministerio_id: string | null;
   voluntario_id: string | null;
+  evento_escala_id: string | null;
   ministerios: Ministerio | null;
   eventos_escala: { titulo: string } | null;
+}
+
+function PaletaIdentidadeVisual({ eventoId }: { eventoId: string }) {
+  const { data: paleta, isLoading } = useQuery<PaletaCores | null>({
+    queryKey: ['paleta_cores_voluntario', eventoId],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from('culto_paleta_cores')
+        .select('cor_primaria, cor_secundaria, cor_acento, observacao')
+        .eq('evento_id', eventoId)
+        .maybeSingle();
+      return data as PaletaCores | null;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (isLoading || !paleta) return null;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border/50">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5 mb-2">
+        <Palette className="w-3.5 h-3.5" />
+        Identidade Visual do Culto
+      </p>
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <div
+            className="w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-border"
+            style={{ backgroundColor: paleta.cor_primaria }}
+            title="Cor Principal"
+          />
+          <span className="text-xs text-muted-foreground">Cor Principal</span>
+        </div>
+        {paleta.cor_secundaria && (
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-border"
+              style={{ backgroundColor: paleta.cor_secundaria }}
+              title="Cor Secundária"
+            />
+            <span className="text-xs text-muted-foreground">Cor Secundária</span>
+          </div>
+        )}
+        {paleta.cor_acento && (
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-border"
+              style={{ backgroundColor: paleta.cor_acento }}
+              title="Cor Acento"
+            />
+            <span className="text-xs text-muted-foreground">Cor Acento</span>
+          </div>
+        )}
+      </div>
+      {paleta.observacao && (
+        <p className="text-xs text-muted-foreground mt-1.5 italic">{paleta.observacao}</p>
+      )}
+    </div>
+  );
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -306,6 +374,10 @@ export default function MinhasEscalas() {
                           )}
                         </div>
                       </div>
+
+                      {escala.evento_escala_id && (
+                        <PaletaIdentidadeVisual eventoId={escala.evento_escala_id} />
+                      )}
 
                       <div className="flex items-center gap-3 flex-wrap">
                         <EscalaStatusBadge status={escala.status} />

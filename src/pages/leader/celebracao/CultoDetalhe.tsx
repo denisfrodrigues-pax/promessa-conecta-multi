@@ -39,6 +39,8 @@ type TipoItem =
   | 'abertura' | 'louvor' | 'oracao' | 'palavra'
   | 'aviso' | 'oferta' | 'encerramento' | 'outro';
 
+type OrigemItem = 'musica' | 'equipe' | 'manual';
+
 interface LiturgiaItem {
   id: string;
   ordem: number;
@@ -47,6 +49,7 @@ interface LiturgiaItem {
   responsavel: string | null;
   duracao_minutos: number | null;
   observacao: string | null;
+  origem: OrigemItem;
 }
 
 interface Aviso {
@@ -204,7 +207,7 @@ export default function CultoDetalhe() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('liturgia_itens')
-        .select('id, ordem, tipo, titulo, responsavel, duracao_minutos, observacao')
+        .select('id, ordem, tipo, titulo, responsavel, duracao_minutos, observacao, origem')
         .eq('liturgia_id', liturgia!.id)
         .order('ordem');
       if (error) throw error;
@@ -397,6 +400,77 @@ export default function CultoDetalhe() {
       toast.success('Observações salvas');
     },
     onError: () => toast.error('Erro ao salvar observações'),
+  });
+
+  const prepopularMutation = useMutation({
+    mutationFn: async () => {
+      const liturgiaId = await ensureLiturgia();
+      const itemsToInsert: any[] = [];
+      let ordem = (itens?.length ?? 0) + 1;
+
+      // Itens de música: um louvor para cada música confirmada
+      if (musicasCulto && musicasCulto.length > 0) {
+        for (const mc of musicasCulto) {
+          const titulo = mc.musicas_repertorio?.titulo ?? mc.titulo_avulso ?? 'Música';
+          const artista = mc.musicas_repertorio?.artista ?? mc.artista_avulso ?? null;
+          itemsToInsert.push({
+            liturgia_id: liturgiaId,
+            tipo: 'louvor',
+            titulo,
+            responsavel: artista,
+            duracao_minutos: null,
+            observacao: null,
+            ordem: ordem++,
+            origem: 'musica',
+          });
+        }
+      }
+
+      // Sugestões de equipe por tipo de ministério
+      const tiposPresentes = new Set(
+        (equipeDia ?? [])
+          .filter(m => m.status === 'confirmado')
+          .map(m => m.ministerio_tipo)
+      );
+      if (tiposPresentes.has('recepcao')) {
+        itemsToInsert.push({
+          liturgia_id: liturgiaId,
+          tipo: 'abertura',
+          titulo: 'Recepção dos presentes',
+          responsavel: 'Equipe de Recepção',
+          duracao_minutos: 5,
+          observacao: null,
+          ordem: ordem++,
+          origem: 'equipe',
+        });
+      }
+      if (tiposPresentes.has('mca')) {
+        itemsToInsert.push({
+          liturgia_id: liturgiaId,
+          tipo: 'outro',
+          titulo: 'Ministério Kids',
+          responsavel: 'Equipe MCA',
+          duracao_minutos: null,
+          observacao: null,
+          ordem: ordem++,
+          origem: 'equipe',
+        });
+      }
+
+      if (itemsToInsert.length === 0) {
+        throw new Error('Nenhuma música ou equipe confirmada encontrada para pré-popular.');
+      }
+
+      const { error } = await supabase.from('liturgia_itens').insert(itemsToInsert);
+      if (error) throw error;
+      return itemsToInsert.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['liturgia_itens', liturgia?.id] });
+      queryClient.invalidateQueries({ queryKey: ['liturgia_culto', eventoId, ministerioId] });
+      toast.success(`${count} item(s) adicionados à liturgia`);
+    },
+    onError: (e: Error) => toast.error('Erro ao pré-popular', { description: e.message }),
   });
 
   const toggleAvisoMutation = useMutation({
@@ -876,11 +950,37 @@ export default function CultoDetalhe() {
               <Loader2 className="w-5 h-5 animate-spin text-promessa-500" />
             </div>
           ) : !itens || itens.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              Nenhum item na liturgia ainda.
-            </p>
+            <div className="flex flex-col items-center gap-3 py-8 text-center">
+              <p className="text-sm text-muted-foreground">Nenhum item na liturgia ainda.</p>
+              {(musicasCulto?.length ?? 0) > 0 || (equipeDia?.length ?? 0) > 0 ? (
+                <Button
+                  size="sm" variant="outline"
+                  onClick={() => prepopularMutation.mutate()}
+                  disabled={prepopularMutation.isPending}
+                >
+                  {prepopularMutation.isPending
+                    ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    : <ListOrdered className="w-4 h-4 mr-1" />}
+                  Pré-popular com músicas e equipe
+                </Button>
+              ) : null}
+            </div>
           ) : (
             <div className="space-y-2">
+              {itens.length > 0 && (musicasCulto?.length ?? 0) > 0 && (
+                <div className="flex justify-end mb-1">
+                  <Button
+                    size="sm" variant="ghost" className="text-xs text-muted-foreground h-7"
+                    onClick={() => prepopularMutation.mutate()}
+                    disabled={prepopularMutation.isPending}
+                  >
+                    {prepopularMutation.isPending
+                      ? <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      : <Plus className="w-3 h-3 mr-1" />}
+                    Adicionar sugestões
+                  </Button>
+                </div>
+              )}
               {itens.map((item, idx) => (
                 <div
                   key={item.id}
@@ -893,6 +993,16 @@ export default function CultoDetalhe() {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tipoColor(item.tipo)}`}>
                         {tipoLabel(item.tipo)}
                       </span>
+                      {item.origem === 'musica' && (
+                        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                          Música
+                        </span>
+                      )}
+                      {item.origem === 'equipe' && (
+                        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                          Equipe
+                        </span>
+                      )}
                       <p className="font-medium text-sm truncate">{item.titulo}</p>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
