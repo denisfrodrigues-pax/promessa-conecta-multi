@@ -24,7 +24,6 @@ function extractJsonArray(text: string): Record<string, unknown>[] {
       if (typeof p === 'object' && p !== null) return [p];
     } catch {}
   }
-  // Try to find [...] block
   const arrM = trimmed.match(/\[[\s\S]*\]/);
   if (arrM) {
     try {
@@ -32,12 +31,33 @@ function extractJsonArray(text: string): Record<string, unknown>[] {
       if (Array.isArray(p)) return p;
     } catch {}
   }
-  // Fall back to first {...} block as single item
   const objM = trimmed.match(/\{[\s\S]*\}/);
   if (objM) {
     try { return [JSON.parse(objM[0])]; } catch {}
   }
   throw new Error('Não foi possível extrair JSON da resposta da IA');
+}
+
+async function fetchYoutube(
+  youtubeKey: string,
+  titulo: string,
+  artista: string,
+): Promise<{ videoId: string; thumbnail: string } | null> {
+  try {
+    const q = encodeURIComponent(`${titulo} ${artista} gospel`);
+    const url = `https://www.googleapis.com/youtube/v3/search?key=${youtubeKey}&q=${q}&part=snippet&type=video&maxResults=1&relevanceLanguage=pt&regionCode=BR`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const item = data.items?.[0];
+    if (!item?.id?.videoId) return null;
+    return {
+      videoId: item.id.videoId,
+      thumbnail: item.snippet?.thumbnails?.medium?.url ?? null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -57,6 +77,8 @@ serve(async (req) => {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
+
+  const youtubeKey = Deno.env.get('YOUTUBE_API_KEY') ?? null;
 
   try {
     const { query } = await req.json() as { query: string };
@@ -106,8 +128,7 @@ Se houver apenas um intérprete conhecido, retorne array com 1 item. Nunca retor
     }
 
     const responseText = await anthropicResponse.text();
-    console.log('[busca-musica-ia] Status:', anthropicResponse.status);
-    console.log('[busca-musica-ia] Body:', responseText);
+    console.log('[busca-musica-ia] Status Anthropic:', anthropicResponse.status);
 
     if (!anthropicResponse.ok) {
       return new Response(JSON.stringify({ error: responseText }), {
@@ -141,27 +162,38 @@ Se houver apenas um intérprete conhecido, retorne array com 1 item. Nunca retor
       });
     }
 
-    // Normalize each item and generate search links from titulo+artista
-    const results = raw.slice(0, 3).map((item) => {
+    // Build base results
+    const baseResults = raw.slice(0, 3).map((item) => {
       const titulo = nullify(item.titulo) ?? q;
       const artista = nullify(item.artista) ?? 'Artista não identificado';
       const searchTerm = encodeURIComponent(`${titulo} ${artista}`.trim());
-      // CifraClub: use AI-provided direct URL when confident, else generate search URL
       const cifraclubDirect = nullify(item.link_cifraclub);
       return {
         titulo,
         artista,
         tom: nullify(item.tom),
-        // YouTube: always a search URL so user can preview (not saved to form)
         link_youtube: `https://www.youtube.com/results?search_query=${searchTerm}`,
         link_cifraclub: cifraclubDirect ?? `https://www.cifraclub.com.br/busca/?q=${encodeURIComponent(titulo)}`,
         link_spotify_busca: `https://open.spotify.com/search/${searchTerm}`,
         link_deezer_busca: `https://www.deezer.com/search/${searchTerm}`,
-        capa_url: null,
+        capa_url: null as string | null,
       };
     });
 
-    return new Response(JSON.stringify(results), {
+    // Enrich with YouTube Data API in parallel (failures are silently ignored)
+    if (youtubeKey) {
+      const ytResults = await Promise.allSettled(
+        baseResults.map((item) => fetchYoutube(youtubeKey, item.titulo, item.artista))
+      );
+      ytResults.forEach((result, i) => {
+        if (result.status === 'fulfilled' && result.value) {
+          baseResults[i].link_youtube = `https://www.youtube.com/watch?v=${result.value.videoId}`;
+          if (result.value.thumbnail) baseResults[i].capa_url = result.value.thumbnail;
+        }
+      });
+    }
+
+    return new Response(JSON.stringify(baseResults), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

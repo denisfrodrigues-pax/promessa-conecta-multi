@@ -151,7 +151,6 @@ export default function CultoDetalhe() {
   const [obsGerais, setObsGerais] = useState('');
   const [showNovoAviso, setShowNovoAviso] = useState(false);
   const [novoAvisoForm, setNovoAvisoForm] = useState({ ...emptyAvisoForm });
-  const [exportFormato, setExportFormato] = useState<'stories' | 'feed'>('feed');
   const [exportingImg, setExportingImg] = useState(false);
 
   // ─── Queries ──────────────────────────────────────────────────────────────
@@ -667,12 +666,12 @@ export default function CultoDetalhe() {
     setExportingImg(true);
     try {
       const canvas = await html2canvas(cardRef.current, {
-        scale: 1,
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: null,
-        width: exportFormato === 'feed' ? 1080 : 1080,
-        height: exportFormato === 'feed' ? 1080 : 1920,
+        width: 1080,
+        height: 1920,
       });
       canvas.toBlob((blob) => {
         if (!blob) return;
@@ -730,22 +729,6 @@ export default function CultoDetalhe() {
 
         {/* Export buttons */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1 border rounded-md overflow-hidden">
-            <Button
-              variant={exportFormato === 'feed' ? 'default' : 'ghost'}
-              size="sm" className="rounded-none h-8 px-3 text-xs"
-              onClick={() => setExportFormato('feed')}
-            >
-              Feed
-            </Button>
-            <Button
-              variant={exportFormato === 'stories' ? 'default' : 'ghost'}
-              size="sm" className="rounded-none h-8 px-3 text-xs"
-              onClick={() => setExportFormato('stories')}
-            >
-              Stories
-            </Button>
-          </div>
           <Button variant="outline" size="sm" onClick={exportarImagem} disabled={exportingImg}>
             {exportingImg
               ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -1165,7 +1148,7 @@ export default function CultoDetalhe() {
         <div style={{ position: 'fixed', top: -9999, left: -9999, zIndex: -1, pointerEvents: 'none' }}>
           <CardCulto
             ref={cardRef}
-            formato={exportFormato}
+            formato="stories"
             evento={evento}
             itens={itens ?? []}
             musicas={cardMusicas}
