@@ -14,13 +14,13 @@ export interface MyMinistry {
 
 interface Profile {
   id: string;
-  user_id: string;
   nome: string;
   email: string;
   telefone?: string;
   foto_url?: string;
   status: string;
-  role?: string | null;
+  role_global?: string | null;
+  igreja_id?: string | null;
 }
 
 interface AuthContextType {
@@ -105,28 +105,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserData = async (userId: string) => {
     try {
-      // Profile fetch is non-fatal — a schema cache miss must never block role loading
-      try {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, user_id, nome, email, telefone, foto_url, status')
-          .eq('user_id', userId)
-          .maybeSingle();
-        if (!profileError) setProfile(profileData as Profile);
-        else console.error('Profile fetch error (non-fatal):', profileError);
-      } catch (profileErr) {
-        console.error('Profile fetch threw (non-fatal):', profileErr);
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, nome, email, telefone, foto_url, status, role_global, igreja_id')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (!profileError && profileData) {
+        setProfile(profileData as Profile);
+        // Derive roles from role_global so the rest of the app keeps working
+        const rg = (profileData as any).role_global as string | null;
+        const derived: UserRole[] = [];
+        if (rg === 'super_admin' || rg === 'admin_igreja') {
+          derived.push('admin', 'lider', 'financeiro', 'voluntario', 'membro');
+        } else if (rg === 'lider') {
+          derived.push('lider', 'voluntario', 'membro');
+        } else if (rg === 'voluntario') {
+          derived.push('voluntario', 'membro');
+        } else {
+          derived.push('membro');
+        }
+        setRoles(derived);
+      } else if (profileError) {
+        console.error('Profile fetch error:', profileError);
       }
-
-      // Role fetch is critical — always runs regardless of profile result
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId);
-
-      if (rolesError) throw rolesError;
-      const userRoles = (rolesData || []).map((r: { role: UserRole }) => r.role);
-      setRoles(userRoles);
 
       refreshMyMinistries();
     } catch (error) {
