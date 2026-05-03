@@ -109,6 +109,7 @@ export default function LeaderEscalas() {
 
   // Delete state
   const [toDelete, setToDelete] = useState<Escala | null>(null);
+  const [deleteEscalaConfirm, setDeleteEscalaConfirm] = useState(false);
 
   // ── Queries ────────────────────────────────────────────────────────────────
 
@@ -298,6 +299,36 @@ export default function LeaderEscalas() {
       toast.error('Erro', { description: e.message });
       setToDelete(null);
     },
+  });
+
+  // ── Delete full escala for an event ───────────────────────────────────────
+
+  const excluirEscalaMutation = useMutation({
+    mutationFn: async () => {
+      if (!eventoParaCriar?.eventos_escala) throw new Error('Evento inválido');
+      const evId = eventoParaCriar.eventos_escala.id;
+      const { error: delErr } = await supabase
+        .from('escalas')
+        .delete()
+        .eq('ministerio_id', ministerioId)
+        .eq('evento_escala_id', evId);
+      if (delErr) throw delErr;
+      const { error: updErr } = await supabase
+        .from('evento_ministerios')
+        .update({ status: 'pendente' })
+        .eq('id', eventoParaCriar.id);
+      if (updErr) throw updErr;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['evento_ministerios_lider', ministerioId] });
+      queryClient.invalidateQueries({ queryKey: ['escalas_lider', ministerioId] });
+      toast.success('Escala excluída');
+      setDeleteEscalaConfirm(false);
+      setEventoParaCriar(null);
+      setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]);
+      setIsEditMode(false);
+    },
+    onError: (e: Error) => toast.error('Erro ao excluir escala', { description: e.message }),
   });
 
   // ── Edit existing escala ───────────────────────────────────────────────────
@@ -610,7 +641,18 @@ export default function LeaderEscalas() {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-row items-center gap-2">
+            {isEditMode && (
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteEscalaConfirm(true)}
+                disabled={criarEscalaMutation.isPending || excluirEscalaMutation.isPending}
+                className="mr-auto"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Excluir escala
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => { setEventoParaCriar(null); setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]); setIsEditMode(false); }}
@@ -699,6 +741,28 @@ export default function LeaderEscalas() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── Confirmar Exclusão de Escala Completa ───────────────────────────── */}
+      <AlertDialog open={deleteEscalaConfirm} onOpenChange={(open) => { if (!open) setDeleteEscalaConfirm(false); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir escala completa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Todos os voluntários escalados para <strong>{eventoParaCriar?.eventos_escala?.titulo}</strong> serão removidos e o evento voltará ao status pendente. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={excluirEscalaMutation.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => excluirEscalaMutation.mutate()}
+              disabled={excluirEscalaMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {excluirEscalaMutation.isPending ? 'Excluindo...' : 'Sim, excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ── Confirmar Exclusão ───────────────────────────────────────────────── */}
       <AlertDialog open={!!toDelete} onOpenChange={(open) => { if (!open) setToDelete(null); }}>
