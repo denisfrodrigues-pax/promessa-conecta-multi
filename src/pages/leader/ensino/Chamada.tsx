@@ -51,7 +51,7 @@ function useDebounce<T>(value: T, delay: number): T {
 export default function Chamada() {
   const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
   const { profile, user } = useAuth();
-  const churchId = (profile as any)?.church_id as string | undefined;
+  const churchId = (profile as any)?.igreja_id as string | undefined;
   const qc = useQueryClient();
 
   const [turmaId, setTurmaId] = useState('');

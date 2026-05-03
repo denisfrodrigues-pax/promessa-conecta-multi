@@ -40,7 +40,7 @@ const EMPTY: FormData = { nome: '', descricao: '', ativo: true };
 export default function Turmas() {
   const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
   const { profile, user } = useAuth();
-  const churchId = (profile as any)?.church_id as string | undefined;
+  const churchId = (profile as any)?.igreja_id as string | undefined;
   const qc = useQueryClient();
 
   const [modal, setModal] = useState<'create' | 'edit' | null>(null);
@@ -87,7 +87,7 @@ export default function Turmas() {
       toast.success(editing ? 'Turma atualizada' : 'Turma criada');
       setModal(null);
     },
-    onError: () => toast.error('Erro ao salvar turma'),
+    onError: (e: Error) => toast.error('Erro ao salvar turma', { description: e.message }),
   });
 
   const deleteMutation = useMutation({
