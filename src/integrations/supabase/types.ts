@@ -10,174 +10,61 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
-      acompanhamentos: {
-        Row: {
-          base_id: string
-          created_at: string
-          id: string
-          observacao: string | null
-          status: string
-          updated_at: string
-          visitante_id: string
-        }
-        Insert: {
-          base_id: string
-          created_at?: string
-          id?: string
-          observacao?: string | null
-          status: string
-          updated_at?: string
-          visitante_id: string
-        }
-        Update: {
-          base_id?: string
-          created_at?: string
-          id?: string
-          observacao?: string | null
-          status?: string
-          updated_at?: string
-          visitante_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "acompanhamentos_base_id_fkey"
-            columns: ["base_id"]
-            isOneToOne: false
-            referencedRelation: "bases"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "acompanhamentos_visitante_id_fkey"
-            columns: ["visitante_id"]
-            isOneToOne: false
-            referencedRelation: "visitantes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      audit_logs: {
-        Row: {
-          action: string
-          created_at: string | null
-          id: string
-          new_data: Json | null
-          old_data: Json | null
-          record_id: string | null
-          table_name: string
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          created_at?: string | null
-          id?: string
-          new_data?: Json | null
-          old_data?: Json | null
-          record_id?: string | null
-          table_name: string
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          created_at?: string | null
-          id?: string
-          new_data?: Json | null
-          old_data?: Json | null
-          record_id?: string | null
-          table_name?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "audit_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      auditoria_financeira: {
-        Row: {
-          acao: string
-          created_at: string | null
-          entidade: string
-          entidade_id: string | null
-          id: string
-          payload: Json | null
-          usuario_id: string | null
-        }
-        Insert: {
-          acao: string
-          created_at?: string | null
-          entidade: string
-          entidade_id?: string | null
-          id?: string
-          payload?: Json | null
-          usuario_id?: string | null
-        }
-        Update: {
-          acao?: string
-          created_at?: string | null
-          entidade?: string
-          entidade_id?: string | null
-          id?: string
-          payload?: Json | null
-          usuario_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "auditoria_financeira_usuario_id_fkey"
-            columns: ["usuario_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       avisos: {
         Row: {
+          ativo: boolean
+          church_id: string | null
           conteudo: string
-          created_at: string | null
-          criado_por: string | null
-          data_publicacao: string | null
+          created_at: string
+          created_by: string | null
           id: string
-          publico: boolean | null
-          segmentos: Json | null
           titulo: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          conteudo: string
-          created_at?: string | null
-          criado_por?: string | null
-          data_publicacao?: string | null
+          ativo?: boolean
+          church_id?: string | null
+          conteudo?: string
+          created_at?: string
+          created_by?: string | null
           id?: string
-          publico?: boolean | null
-          segmentos?: Json | null
           titulo: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
+          ativo?: boolean
+          church_id?: string | null
           conteudo?: string
-          created_at?: string | null
-          criado_por?: string | null
-          data_publicacao?: string | null
+          created_at?: string
+          created_by?: string | null
           id?: string
-          publico?: boolean | null
-          segmentos?: Json | null
           titulo?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "avisos_criado_por_fkey"
-            columns: ["criado_por"]
+            foreignKeyName: "avisos_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
             referencedColumns: ["id"]
           },
         ]
@@ -219,6 +106,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "avisos_culto_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_culto_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "avisos_culto_evento_id_fkey"
             columns: ["evento_id"]
             isOneToOne: false
@@ -234,251 +135,142 @@ export type Database = {
           },
         ]
       }
-      bases: {
+      checkin_sessions: {
         Row: {
-          anfitrioes: string | null
-          bairro: string | null
-          capacidade: number | null
-          cidade: string | null
+          ativo: boolean | null
           created_at: string | null
-          data_criacao: string | null
-          descricao: string | null
-          dia_semana: string | null
-          foto_url: string | null
-          horario: string | null
+          culto_id: string
+          expires_at: string | null
           id: string
-          lider_id: string | null
-          local: string | null
-          nome: string
-          numero: string | null
-          observacoes: string | null
-          rua: string | null
-          status: string | null
-          uf: string | null
-          updated_at: string | null
-          visibilidade: string | null
-          whatsapp_lider: string | null
+          igreja_id: string
+          token: string
         }
         Insert: {
-          anfitrioes?: string | null
-          bairro?: string | null
-          capacidade?: number | null
-          cidade?: string | null
+          ativo?: boolean | null
           created_at?: string | null
-          data_criacao?: string | null
-          descricao?: string | null
-          dia_semana?: string | null
-          foto_url?: string | null
-          horario?: string | null
+          culto_id: string
+          expires_at?: string | null
           id?: string
-          lider_id?: string | null
-          local?: string | null
-          nome: string
-          numero?: string | null
-          observacoes?: string | null
-          rua?: string | null
-          status?: string | null
-          uf?: string | null
-          updated_at?: string | null
-          visibilidade?: string | null
-          whatsapp_lider?: string | null
+          igreja_id: string
+          token: string
         }
         Update: {
-          anfitrioes?: string | null
-          bairro?: string | null
-          capacidade?: number | null
-          cidade?: string | null
+          ativo?: boolean | null
           created_at?: string | null
-          data_criacao?: string | null
-          descricao?: string | null
-          dia_semana?: string | null
-          foto_url?: string | null
-          horario?: string | null
+          culto_id?: string
+          expires_at?: string | null
           id?: string
-          lider_id?: string | null
-          local?: string | null
-          nome?: string
-          numero?: string | null
-          observacoes?: string | null
-          rua?: string | null
-          status?: string | null
-          uf?: string | null
-          updated_at?: string | null
-          visibilidade?: string | null
-          whatsapp_lider?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bases_lider_id_fkey"
-            columns: ["lider_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      bases_membros: {
-        Row: {
-          base_id: string
-          created_at: string | null
-          data_entrada: string | null
-          data_saida: string | null
-          id: string
-          membro_id: string | null
-          observacao: string | null
-          profile_id: string | null
-          status: string | null
-          updated_at: string | null
-          visitante_id: string | null
-        }
-        Insert: {
-          base_id: string
-          created_at?: string | null
-          data_entrada?: string | null
-          data_saida?: string | null
-          id?: string
-          membro_id?: string | null
-          observacao?: string | null
-          profile_id?: string | null
-          status?: string | null
-          updated_at?: string | null
-          visitante_id?: string | null
-        }
-        Update: {
-          base_id?: string
-          created_at?: string | null
-          data_entrada?: string | null
-          data_saida?: string | null
-          id?: string
-          membro_id?: string | null
-          observacao?: string | null
-          profile_id?: string | null
-          status?: string | null
-          updated_at?: string | null
-          visitante_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bases_membros_base_id_fkey"
-            columns: ["base_id"]
-            isOneToOne: false
-            referencedRelation: "bases"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bases_membros_membro_id_fkey"
-            columns: ["membro_id"]
-            isOneToOne: false
-            referencedRelation: "membros"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bases_membros_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bases_membros_visitante_id_fkey"
-            columns: ["visitante_id"]
-            isOneToOne: false
-            referencedRelation: "visitantes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      categorias_financeiras: {
-        Row: {
-          created_at: string | null
-          descricao: string | null
-          id: string
-          natureza: string
-          nome: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          descricao?: string | null
-          id?: string
-          natureza: string
-          nome: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          descricao?: string | null
-          id?: string
-          natureza?: string
-          nome?: string
-          updated_at?: string | null
+          igreja_id?: string
+          token?: string
         }
         Relationships: []
       }
-      checkins_kids: {
+      checkins: {
         Row: {
-          checkin_at: string
-          checkout_at: string | null
-          checkout_responsavel_id: string | null
-          created_at: string
-          crianca_id: string
+          checked_in_at: string
+          checked_in_by: string | null
+          checked_out_at: string | null
+          crianca_id: string | null
+          event_occurrence_id: string | null
           id: string
-          observacao: string | null
+          igreja_id: string
+          observacoes: string | null
+          profile_id: string | null
           responsavel_id: string | null
-          sala_id: string
-          status: string
-          updated_at: string
+          sala_id: string | null
         }
         Insert: {
-          checkin_at?: string
-          checkout_at?: string | null
-          checkout_responsavel_id?: string | null
-          created_at?: string
-          crianca_id: string
+          checked_in_at?: string
+          checked_in_by?: string | null
+          checked_out_at?: string | null
+          crianca_id?: string | null
+          event_occurrence_id?: string | null
           id?: string
-          observacao?: string | null
+          igreja_id: string
+          observacoes?: string | null
+          profile_id?: string | null
           responsavel_id?: string | null
-          sala_id: string
-          status?: string
-          updated_at?: string
+          sala_id?: string | null
         }
         Update: {
-          checkin_at?: string
-          checkout_at?: string | null
-          checkout_responsavel_id?: string | null
-          created_at?: string
-          crianca_id?: string
+          checked_in_at?: string
+          checked_in_by?: string | null
+          checked_out_at?: string | null
+          crianca_id?: string | null
+          event_occurrence_id?: string | null
           id?: string
-          observacao?: string | null
+          igreja_id?: string
+          observacoes?: string | null
+          profile_id?: string | null
           responsavel_id?: string | null
-          sala_id?: string
-          status?: string
-          updated_at?: string
+          sala_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "checkins_kids_checkout_responsavel_id_fkey"
-            columns: ["checkout_responsavel_id"]
+            foreignKeyName: "checkins_checked_in_by_fkey"
+            columns: ["checked_in_by"]
             isOneToOne: false
-            referencedRelation: "responsaveis"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "checkins_kids_crianca_id_fkey"
+            foreignKeyName: "checkins_checked_in_by_fkey"
+            columns: ["checked_in_by"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_crianca_id_fkey"
             columns: ["crianca_id"]
             isOneToOne: false
             referencedRelation: "criancas"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "checkins_kids_responsavel_id_fkey"
+            foreignKeyName: "checkins_event_occurrence_id_fkey"
+            columns: ["event_occurrence_id"]
+            isOneToOne: false
+            referencedRelation: "event_occurrences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_event_occurrence_id_fkey"
+            columns: ["event_occurrence_id"]
+            isOneToOne: false
+            referencedRelation: "view_presenca_eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "responsaveis"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "checkins_kids_sala_id_fkey"
+            foreignKeyName: "checkins_sala_id_fkey"
             columns: ["sala_id"]
             isOneToOne: false
             referencedRelation: "salas"
@@ -488,232 +280,115 @@ export type Database = {
       }
       configuracoes_instituicao: {
         Row: {
-          banner_home_url: string | null
-          banner_sou_novo_url: string | null
-          bases_publicas: boolean | null
-          capacidade_base_padrao: number | null
-          chave_whatsapp: string | null
-          cores: Json | null
-          created_at: string | null
-          email: string | null
-          endereco: string | null
-          facebook: string | null
-          favicon_url: string | null
-          google_calendar_embed_url: string | null
-          google_maps_url: string | null
-          horario_culto: string | null
-          horario_ebd: string | null
+          church_id: string | null
+          created_at: string
           id: string
-          logo_monochrome_url: string | null
           logo_url: string | null
-          membros_editam_perfil: boolean | null
           nome_igreja: string | null
-          notificacoes_email: boolean | null
-          notificacoes_lideres: boolean | null
-          notificacoes_push: boolean | null
-          pix_info: Json | null
-          telefone: string | null
-          updated_at: string | null
-          urls_transmissao: Json | null
-          visitantes_auto: boolean | null
+          updated_at: string
         }
         Insert: {
-          banner_home_url?: string | null
-          banner_sou_novo_url?: string | null
-          bases_publicas?: boolean | null
-          capacidade_base_padrao?: number | null
-          chave_whatsapp?: string | null
-          cores?: Json | null
-          created_at?: string | null
-          email?: string | null
-          endereco?: string | null
-          facebook?: string | null
-          favicon_url?: string | null
-          google_calendar_embed_url?: string | null
-          google_maps_url?: string | null
-          horario_culto?: string | null
-          horario_ebd?: string | null
+          church_id?: string | null
+          created_at?: string
           id?: string
-          logo_monochrome_url?: string | null
           logo_url?: string | null
-          membros_editam_perfil?: boolean | null
           nome_igreja?: string | null
-          notificacoes_email?: boolean | null
-          notificacoes_lideres?: boolean | null
-          notificacoes_push?: boolean | null
-          pix_info?: Json | null
-          telefone?: string | null
-          updated_at?: string | null
-          urls_transmissao?: Json | null
-          visitantes_auto?: boolean | null
+          updated_at?: string
         }
         Update: {
-          banner_home_url?: string | null
-          banner_sou_novo_url?: string | null
-          bases_publicas?: boolean | null
-          capacidade_base_padrao?: number | null
-          chave_whatsapp?: string | null
-          cores?: Json | null
-          created_at?: string | null
-          email?: string | null
-          endereco?: string | null
-          facebook?: string | null
-          favicon_url?: string | null
-          google_calendar_embed_url?: string | null
-          google_maps_url?: string | null
-          horario_culto?: string | null
-          horario_ebd?: string | null
+          church_id?: string | null
+          created_at?: string
           id?: string
-          logo_monochrome_url?: string | null
           logo_url?: string | null
-          membros_editam_perfil?: boolean | null
           nome_igreja?: string | null
-          notificacoes_email?: boolean | null
-          notificacoes_lideres?: boolean | null
-          notificacoes_push?: boolean | null
-          pix_info?: Json | null
-          telefone?: string | null
-          updated_at?: string | null
-          urls_transmissao?: Json | null
-          visitantes_auto?: boolean | null
+          updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "configuracoes_instituicao_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      contas_financeiras: {
+      convites_acesso: {
         Row: {
-          created_at: string | null
-          descricao: string | null
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
           id: string
-          moeda: string | null
-          nome: string
-          saldo: number | null
-          status: string | null
-          tipo: string
-          updated_at: string | null
+          igreja_id: string
+          profile_id: string
+          status: string
+          token: string
         }
         Insert: {
-          created_at?: string | null
-          descricao?: string | null
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
           id?: string
-          moeda?: string | null
-          nome: string
-          saldo?: number | null
-          status?: string | null
-          tipo: string
-          updated_at?: string | null
+          igreja_id: string
+          profile_id: string
+          status?: string
+          token: string
         }
         Update: {
-          created_at?: string | null
-          descricao?: string | null
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
           id?: string
-          moeda?: string | null
-          nome?: string
-          saldo?: number | null
-          status?: string | null
-          tipo?: string
-          updated_at?: string | null
+          igreja_id?: string
+          profile_id?: string
+          status?: string
+          token?: string
         }
         Relationships: []
       }
       criancas: {
         Row: {
           alergias: string | null
-          autorizacao_foto: boolean | null
-          created_at: string | null
+          ativo: boolean | null
+          created_at: string
           data_nascimento: string | null
+          foto_url: string | null
           id: string
+          igreja_id: string
           nome: string
           observacoes: string | null
-          responsavel_id: string
-          sala_id: string | null
-          turma_id: string | null
-          updated_at: string | null
         }
         Insert: {
           alergias?: string | null
-          autorizacao_foto?: boolean | null
-          created_at?: string | null
+          ativo?: boolean | null
+          created_at?: string
           data_nascimento?: string | null
+          foto_url?: string | null
           id?: string
+          igreja_id: string
           nome: string
           observacoes?: string | null
-          responsavel_id: string
-          sala_id?: string | null
-          turma_id?: string | null
-          updated_at?: string | null
         }
         Update: {
           alergias?: string | null
-          autorizacao_foto?: boolean | null
-          created_at?: string | null
+          ativo?: boolean | null
+          created_at?: string
           data_nascimento?: string | null
+          foto_url?: string | null
           id?: string
+          igreja_id?: string
           nome?: string
           observacoes?: string | null
-          responsavel_id?: string
-          sala_id?: string | null
-          turma_id?: string | null
-          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "criancas_responsavel_id_fkey"
-            columns: ["responsavel_id"]
+            foreignKeyName: "criancas_igreja_id_fkey"
+            columns: ["igreja_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "criancas_sala_id_fkey"
-            columns: ["sala_id"]
-            isOneToOne: false
-            referencedRelation: "salas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "criancas_turma_id_fkey"
-            columns: ["turma_id"]
-            isOneToOne: false
-            referencedRelation: "turmas_infantil"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      criancas_responsaveis: {
-        Row: {
-          created_at: string
-          crianca_id: string
-          id: string
-          responsavel_id: string
-          tipo_relacao: string | null
-        }
-        Insert: {
-          created_at?: string
-          crianca_id: string
-          id?: string
-          responsavel_id: string
-          tipo_relacao?: string | null
-        }
-        Update: {
-          created_at?: string
-          crianca_id?: string
-          id?: string
-          responsavel_id?: string
-          tipo_relacao?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "criancas_responsaveis_crianca_id_fkey"
-            columns: ["crianca_id"]
-            isOneToOne: false
-            referencedRelation: "criancas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "criancas_responsaveis_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "responsaveis"
+            referencedRelation: "igrejas"
             referencedColumns: ["id"]
           },
         ]
@@ -757,6 +432,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "culto_paleta_cores_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "culto_paleta_cores_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "culto_paleta_cores_evento_id_fkey"
             columns: ["evento_id"]
             isOneToOne: false
@@ -772,266 +461,212 @@ export type Database = {
           },
         ]
       }
-      ensino_checkins: {
+      culto_presencas: {
         Row: {
-          church_id: string
+          checkin_at: string
+          culto_id: string
+          id: string
+          profile_id: string | null
+          tipo_pessoa: string
+          visitante_id: string | null
+        }
+        Insert: {
+          checkin_at?: string
+          culto_id: string
+          id?: string
+          profile_id?: string | null
+          tipo_pessoa?: string
+          visitante_id?: string | null
+        }
+        Update: {
+          checkin_at?: string
+          culto_id?: string
+          id?: string
+          profile_id?: string | null
+          tipo_pessoa?: string
+          visitante_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "culto_presencas_culto_id_fkey"
+            columns: ["culto_id"]
+            isOneToOne: false
+            referencedRelation: "cultos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "culto_presencas_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "culto_presencas_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "culto_presencas_visitante_id_fkey"
+            columns: ["visitante_id"]
+            isOneToOne: false
+            referencedRelation: "visitantes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cultos: {
+        Row: {
           created_at: string
           data: string
           id: string
-          ministerio_id: string
-          observacoes: string | null
-          registrado_por: string | null
-          titulo: string | null
-          turma_id: string
+          igreja_id: string
+          tipo: string | null
+          titulo: string
         }
         Insert: {
-          church_id: string
-          created_at?: string
-          data: string
-          id?: string
-          ministerio_id: string
-          observacoes?: string | null
-          registrado_por?: string | null
-          titulo?: string | null
-          turma_id: string
-        }
-        Update: {
-          church_id?: string
           created_at?: string
           data?: string
           id?: string
-          ministerio_id?: string
-          observacoes?: string | null
-          registrado_por?: string | null
-          titulo?: string | null
-          turma_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ensino_checkins_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "igrejas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ensino_checkins_ministerio_id_fkey"
-            columns: ["ministerio_id"]
-            isOneToOne: false
-            referencedRelation: "ministerios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ensino_checkins_turma_id_fkey"
-            columns: ["turma_id"]
-            isOneToOne: false
-            referencedRelation: "ensino_turmas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ensino_plano_arquivos: {
-        Row: {
-          arquivo_tipo: string
-          arquivo_url: string
-          created_at: string
-          id: string
-          nome: string
-          plano_id: string
-          tamanho_bytes: number | null
-        }
-        Insert: {
-          arquivo_tipo: string
-          arquivo_url: string
-          created_at?: string
-          id?: string
-          nome: string
-          plano_id: string
-          tamanho_bytes?: number | null
+          igreja_id: string
+          tipo?: string | null
+          titulo: string
         }
         Update: {
-          arquivo_tipo?: string
-          arquivo_url?: string
           created_at?: string
+          data?: string
           id?: string
-          nome?: string
-          plano_id?: string
-          tamanho_bytes?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ensino_plano_arquivos_plano_id_fkey"
-            columns: ["plano_id"]
-            isOneToOne: false
-            referencedRelation: "ensino_planos_aula"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ensino_planos_aula: {
-        Row: {
-          anotacoes: string | null
-          conteudo: string | null
-          created_at: string
-          data_aula: string
-          id: string
-          objetivos: string | null
-          professor_id: string | null
-          titulo: string
-          turma_id: string
-          updated_at: string
-        }
-        Insert: {
-          anotacoes?: string | null
-          conteudo?: string | null
-          created_at?: string
-          data_aula: string
-          id?: string
-          objetivos?: string | null
-          professor_id?: string | null
-          titulo: string
-          turma_id: string
-          updated_at?: string
-        }
-        Update: {
-          anotacoes?: string | null
-          conteudo?: string | null
-          created_at?: string
-          data_aula?: string
-          id?: string
-          objetivos?: string | null
-          professor_id?: string | null
+          igreja_id?: string
+          tipo?: string | null
           titulo?: string
-          turma_id?: string
-          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "ensino_planos_aula_turma_id_fkey"
-            columns: ["turma_id"]
-            isOneToOne: false
-            referencedRelation: "ensino_turmas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ensino_presencas: {
-        Row: {
-          checkin_id: string
-          created_at: string
-          id: string
-          is_visitante: boolean
-          nome_manual: string | null
-          perfil_id: string | null
-          presente: boolean
-        }
-        Insert: {
-          checkin_id: string
-          created_at?: string
-          id?: string
-          is_visitante?: boolean
-          nome_manual?: string | null
-          perfil_id?: string | null
-          presente?: boolean
-        }
-        Update: {
-          checkin_id?: string
-          created_at?: string
-          id?: string
-          is_visitante?: boolean
-          nome_manual?: string | null
-          perfil_id?: string | null
-          presente?: boolean
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ensino_presencas_checkin_id_fkey"
-            columns: ["checkin_id"]
-            isOneToOne: false
-            referencedRelation: "ensino_checkins"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ensino_turmas: {
-        Row: {
-          ativo: boolean
-          church_id: string
-          created_at: string
-          descricao: string | null
-          id: string
-          ministerio_id: string
-          nome: string
-          professor_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          ativo?: boolean
-          church_id: string
-          created_at?: string
-          descricao?: string | null
-          id?: string
-          ministerio_id: string
-          nome: string
-          professor_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          ativo?: boolean
-          church_id?: string
-          created_at?: string
-          descricao?: string | null
-          id?: string
-          ministerio_id?: string
-          nome?: string
-          professor_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ensino_turmas_church_id_fkey"
-            columns: ["church_id"]
+            foreignKeyName: "cultos_igreja_id_fkey"
+            columns: ["igreja_id"]
             isOneToOne: false
             referencedRelation: "igrejas"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      escala_datas: {
+        Row: {
+          created_at: string | null
+          data: string
+          escala_id: string
+          event_occurrence_id: string | null
+          id: string
+          igreja_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data: string
+          escala_id: string
+          event_occurrence_id?: string | null
+          id?: string
+          igreja_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          escala_id?: string
+          event_occurrence_id?: string | null
+          id?: string
+          igreja_id?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "ensino_turmas_ministerio_id_fkey"
-            columns: ["ministerio_id"]
+            foreignKeyName: "escala_datas_event_occurrence_id_fkey"
+            columns: ["event_occurrence_id"]
             isOneToOne: false
-            referencedRelation: "ministerios"
+            referencedRelation: "event_occurrences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_datas_event_occurrence_id_fkey"
+            columns: ["event_occurrence_id"]
+            isOneToOne: false
+            referencedRelation: "view_presenca_eventos"
             referencedColumns: ["id"]
           },
         ]
       }
-      escala_checkins: {
+      escala_musicas: {
         Row: {
-          checked_in_at: string
           created_at: string
           escala_id: string
           id: string
-          user_id: string
+          musica_id: string
+          ordem: number | null
         }
         Insert: {
-          checked_in_at?: string
           created_at?: string
           escala_id: string
           id?: string
-          user_id?: string
+          musica_id: string
+          ordem?: number | null
         }
         Update: {
-          checked_in_at?: string
           created_at?: string
           escala_id?: string
           id?: string
-          user_id?: string
+          musica_id?: string
+          ordem?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "escala_checkins_escala_id_fkey"
+            foreignKeyName: "escala_musicas_escala_id_fkey"
             columns: ["escala_id"]
             isOneToOne: false
             referencedRelation: "escalas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_musicas_musica_id_fkey"
+            columns: ["musica_id"]
+            isOneToOne: false
+            referencedRelation: "musicas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escala_pessoas: {
+        Row: {
+          confirmado: boolean | null
+          created_at: string | null
+          escala_data_id: string
+          funcao: string | null
+          id: string
+          igreja_id: string
+          profile_id: string
+        }
+        Insert: {
+          confirmado?: boolean | null
+          created_at?: string | null
+          escala_data_id: string
+          funcao?: string | null
+          id?: string
+          igreja_id: string
+          profile_id: string
+        }
+        Update: {
+          confirmado?: boolean | null
+          created_at?: string | null
+          escala_data_id?: string
+          funcao?: string | null
+          id?: string
+          igreja_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escala_pessoas_escala_data_id_fkey"
+            columns: ["escala_data_id"]
+            isOneToOne: false
+            referencedRelation: "escala_datas"
             referencedColumns: ["id"]
           },
         ]
@@ -1039,53 +674,56 @@ export type Database = {
       escalas: {
         Row: {
           confirmado_em: string | null
-          created_at: string | null
+          created_at: string
           created_by: string | null
           data: string
+          event_id: string | null
           evento_escala_id: string | null
-          funcao: string
+          funcao: string | null
           horario: string | null
           id: string
+          igreja_id: string
           justificativa: string | null
-          lembrete_automatico_dias_antes: number | null
-          ministerio_id: string | null
+          ministerio_id: string
           responsavel_id: string | null
           status: string
-          updated_at: string | null
+          titulo: string
           voluntario_id: string | null
         }
         Insert: {
           confirmado_em?: string | null
-          created_at?: string | null
+          created_at?: string
           created_by?: string | null
           data: string
+          event_id?: string | null
           evento_escala_id?: string | null
-          funcao: string
+          funcao?: string | null
           horario?: string | null
           id?: string
+          igreja_id: string
           justificativa?: string | null
-          lembrete_automatico_dias_antes?: number | null
-          ministerio_id?: string | null
+          ministerio_id: string
           responsavel_id?: string | null
           status?: string
-          updated_at?: string | null
+          titulo: string
           voluntario_id?: string | null
         }
         Update: {
           confirmado_em?: string | null
-          created_at?: string | null
+          created_at?: string
           created_by?: string | null
           data?: string
+          event_id?: string | null
           evento_escala_id?: string | null
-          funcao?: string
+          funcao?: string | null
           horario?: string | null
           id?: string
+          igreja_id?: string
           justificativa?: string | null
-          lembrete_automatico_dias_antes?: number | null
-          ministerio_id?: string | null
+          ministerio_id?: string
           responsavel_id?: string | null
           status?: string
-          updated_at?: string | null
+          titulo?: string
           voluntario_id?: string | null
         }
         Relationships: [
@@ -1097,10 +735,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "escalas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalas_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "escalas_evento_escala_id_fkey"
             columns: ["evento_escala_id"]
             isOneToOne: false
             referencedRelation: "eventos_escala"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalas_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
             referencedColumns: ["id"]
           },
           {
@@ -1118,10 +777,65 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "escalas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "escalas_voluntario_id_fkey"
             columns: ["voluntario_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalas_voluntario_id_fkey"
+            columns: ["voluntario_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_occurrences: {
+        Row: {
+          created_at: string | null
+          end_time: string | null
+          event_date: string
+          event_id: string | null
+          id: string
+          start_time: string | null
+          status: string | null
+          tipo: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_time?: string | null
+          event_date: string
+          event_id?: string | null
+          id?: string
+          start_time?: string | null
+          status?: string | null
+          tipo?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string | null
+          event_date?: string
+          event_id?: string | null
+          id?: string
+          start_time?: string | null
+          status?: string | null
+          tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_occurrences_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
             referencedColumns: ["id"]
           },
         ]
@@ -1170,50 +884,65 @@ export type Database = {
       }
       eventos: {
         Row: {
-          created_at: string | null
-          created_by: string | null
+          cover_image_url: string | null
+          created_at: string
           data_fim: string | null
           data_inicio: string
           descricao: string | null
+          event_type: string | null
           id: string
+          igreja_id: string
           imagem_url: string | null
+          is_recurring: boolean | null
           local: string | null
+          location: string | null
+          publico: boolean | null
+          recurrence_type: string | null
+          status: string | null
           titulo: string
-          updated_at: string | null
-          vagas: number | null
         }
         Insert: {
-          created_at?: string | null
-          created_by?: string | null
+          cover_image_url?: string | null
+          created_at?: string
           data_fim?: string | null
           data_inicio: string
           descricao?: string | null
+          event_type?: string | null
           id?: string
+          igreja_id: string
           imagem_url?: string | null
+          is_recurring?: boolean | null
           local?: string | null
+          location?: string | null
+          publico?: boolean | null
+          recurrence_type?: string | null
+          status?: string | null
           titulo: string
-          updated_at?: string | null
-          vagas?: number | null
         }
         Update: {
-          created_at?: string | null
-          created_by?: string | null
+          cover_image_url?: string | null
+          created_at?: string
           data_fim?: string | null
           data_inicio?: string
           descricao?: string | null
+          event_type?: string | null
           id?: string
+          igreja_id?: string
           imagem_url?: string | null
+          is_recurring?: boolean | null
           local?: string | null
+          location?: string | null
+          publico?: boolean | null
+          recurrence_type?: string | null
+          status?: string | null
           titulo?: string
-          updated_at?: string | null
-          vagas?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "eventos_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: "eventos_igreja_id_fkey"
+            columns: ["igreja_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "igrejas"
             referencedColumns: ["id"]
           },
         ]
@@ -1275,206 +1004,217 @@ export type Database = {
           },
         ]
       }
-      eventos_inscricoes: {
+      familias: {
         Row: {
-          data_inscricao: string | null
-          evento_id: string
-          id: string
-          status: string | null
-          usuario_id: string
-        }
-        Insert: {
-          data_inscricao?: string | null
-          evento_id: string
-          id?: string
-          status?: string | null
-          usuario_id: string
-        }
-        Update: {
-          data_inscricao?: string | null
-          evento_id?: string
-          id?: string
-          status?: string | null
-          usuario_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "eventos_inscricoes_evento_id_fkey"
-            columns: ["evento_id"]
-            isOneToOne: false
-            referencedRelation: "eventos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "eventos_inscricoes_usuario_id_fkey"
-            columns: ["usuario_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      grupos: {
-        Row: {
-          capacidade: number | null
           created_at: string | null
-          descricao: string | null
-          dia_semana: string | null
-          horario: string | null
           id: string
-          lider_id: string | null
-          local: string | null
+          igreja_id: string
           nome: string
-          updated_at: string | null
-          visibilidade: Database["public"]["Enums"]["group_visibility"] | null
         }
         Insert: {
-          capacidade?: number | null
           created_at?: string | null
-          descricao?: string | null
-          dia_semana?: string | null
-          horario?: string | null
           id?: string
-          lider_id?: string | null
-          local?: string | null
+          igreja_id: string
           nome: string
-          updated_at?: string | null
-          visibilidade?: Database["public"]["Enums"]["group_visibility"] | null
         }
         Update: {
-          capacidade?: number | null
           created_at?: string | null
-          descricao?: string | null
-          dia_semana?: string | null
-          horario?: string | null
           id?: string
-          lider_id?: string | null
-          local?: string | null
+          igreja_id?: string
           nome?: string
-          updated_at?: string | null
-          visibilidade?: Database["public"]["Enums"]["group_visibility"] | null
         }
         Relationships: [
           {
-            foreignKeyName: "grupos_lider_id_fkey"
-            columns: ["lider_id"]
+            foreignKeyName: "familias_igreja_id_fkey"
+            columns: ["igreja_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "igrejas"
             referencedColumns: ["id"]
           },
         ]
       }
-      grupos_participantes: {
-        Row: {
-          created_at: string | null
-          data_entrada: string | null
-          grupo_id: string
-          id: string
-          status: Database["public"]["Enums"]["participant_status"] | null
-          usuario_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          data_entrada?: string | null
-          grupo_id: string
-          id?: string
-          status?: Database["public"]["Enums"]["participant_status"] | null
-          usuario_id: string
-        }
-        Update: {
-          created_at?: string | null
-          data_entrada?: string | null
-          grupo_id?: string
-          id?: string
-          status?: Database["public"]["Enums"]["participant_status"] | null
-          usuario_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "grupos_participantes_grupo_id_fkey"
-            columns: ["grupo_id"]
-            isOneToOne: false
-            referencedRelation: "grupos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "grupos_participantes_usuario_id_fkey"
-            columns: ["usuario_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      historico_comunicacoes: {
+      grupo_presencas: {
         Row: {
           created_at: string
-          detalhes_erro: string | null
-          escala_id: string | null
+          data: string
           id: string
-          mensagem_preview: string | null
-          status: string
-          tipo: string
-          voluntario_id: string | null
+          igreja_id: string
+          ministerio_id: string
+          presente: boolean | null
+          profile_id: string
         }
         Insert: {
           created_at?: string
-          detalhes_erro?: string | null
-          escala_id?: string | null
+          data: string
           id?: string
-          mensagem_preview?: string | null
-          status: string
-          tipo: string
-          voluntario_id?: string | null
+          igreja_id: string
+          ministerio_id: string
+          presente?: boolean | null
+          profile_id: string
         }
         Update: {
           created_at?: string
-          detalhes_erro?: string | null
-          escala_id?: string | null
+          data?: string
           id?: string
-          mensagem_preview?: string | null
-          status?: string
-          tipo?: string
-          voluntario_id?: string | null
+          igreja_id?: string
+          ministerio_id?: string
+          presente?: boolean | null
+          profile_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "historico_comunicacoes_escala_id_fkey"
-            columns: ["escala_id"]
+            foreignKeyName: "grupo_presencas_igreja_id_fkey"
+            columns: ["igreja_id"]
             isOneToOne: false
-            referencedRelation: "escalas"
+            referencedRelation: "igrejas"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "historico_comunicacoes_voluntario_id_fkey"
-            columns: ["voluntario_id"]
+            foreignKeyName: "grupo_presencas_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grupo_presencas_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grupo_presencas_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
             referencedColumns: ["id"]
           },
         ]
       }
       igrejas: {
         Row: {
-          ativa: boolean | null
+          banco: string | null
+          cep: string | null
+          chave_pix: string | null
           cidade: string | null
+          cnpj: string | null
+          cor_primaria: string | null
+          cor_secundaria: string | null
           created_at: string
+          descricao: string | null
+          descricao_curta: string | null
+          email: string | null
+          email_contato: string | null
+          endereco_json: Json | null
+          estado: string | null
+          facebook: string | null
+          fotos_publicas: string[] | null
+          historia: string | null
+          horarios_culto: Json | null
+          horarios_culto_structured: Json | null
           id: string
+          instagram: string | null
+          limite_membros: number | null
+          logo_url: string | null
+          missao: string | null
+          modulos_ativos: Json | null
           nome: string
+          nome_pequeno_grupo: string | null
+          pastores_json: Json | null
+          pequeno_grupo_label: string | null
+          plano: string | null
+          slug: string
+          status: string | null
+          telefone: string | null
+          teologia: string | null
+          trial_ate: string | null
+          valores: string | null
+          visao: string | null
+          whatsapp: string | null
+          youtube: string | null
         }
         Insert: {
-          ativa?: boolean | null
+          banco?: string | null
+          cep?: string | null
+          chave_pix?: string | null
           cidade?: string | null
+          cnpj?: string | null
+          cor_primaria?: string | null
+          cor_secundaria?: string | null
           created_at?: string
+          descricao?: string | null
+          descricao_curta?: string | null
+          email?: string | null
+          email_contato?: string | null
+          endereco_json?: Json | null
+          estado?: string | null
+          facebook?: string | null
+          fotos_publicas?: string[] | null
+          historia?: string | null
+          horarios_culto?: Json | null
+          horarios_culto_structured?: Json | null
           id?: string
+          instagram?: string | null
+          limite_membros?: number | null
+          logo_url?: string | null
+          missao?: string | null
+          modulos_ativos?: Json | null
           nome: string
+          nome_pequeno_grupo?: string | null
+          pastores_json?: Json | null
+          pequeno_grupo_label?: string | null
+          plano?: string | null
+          slug: string
+          status?: string | null
+          telefone?: string | null
+          teologia?: string | null
+          trial_ate?: string | null
+          valores?: string | null
+          visao?: string | null
+          whatsapp?: string | null
+          youtube?: string | null
         }
         Update: {
-          ativa?: boolean | null
+          banco?: string | null
+          cep?: string | null
+          chave_pix?: string | null
           cidade?: string | null
+          cnpj?: string | null
+          cor_primaria?: string | null
+          cor_secundaria?: string | null
           created_at?: string
+          descricao?: string | null
+          descricao_curta?: string | null
+          email?: string | null
+          email_contato?: string | null
+          endereco_json?: Json | null
+          estado?: string | null
+          facebook?: string | null
+          fotos_publicas?: string[] | null
+          historia?: string | null
+          horarios_culto?: Json | null
+          horarios_culto_structured?: Json | null
           id?: string
+          instagram?: string | null
+          limite_membros?: number | null
+          logo_url?: string | null
+          missao?: string | null
+          modulos_ativos?: Json | null
           nome?: string
+          nome_pequeno_grupo?: string | null
+          pastores_json?: Json | null
+          pequeno_grupo_label?: string | null
+          plano?: string | null
+          slug?: string
+          status?: string | null
+          telefone?: string | null
+          teologia?: string | null
+          trial_ate?: string | null
+          valores?: string | null
+          visao?: string | null
+          whatsapp?: string | null
+          youtube?: string | null
         }
         Relationships: []
       }
@@ -1508,6 +1248,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "liturgia_culto_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liturgia_culto_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "liturgia_culto_evento_id_fkey"
             columns: ["evento_id"]
             isOneToOne: false
@@ -1531,6 +1285,7 @@ export type Database = {
           liturgia_id: string
           observacao: string | null
           ordem: number
+          origem: string
           responsavel: string | null
           tipo: string
           titulo: string
@@ -1542,6 +1297,7 @@ export type Database = {
           liturgia_id: string
           observacao?: string | null
           ordem?: number
+          origem?: string
           responsavel?: string | null
           tipo?: string
           titulo: string
@@ -1553,6 +1309,7 @@ export type Database = {
           liturgia_id?: string
           observacao?: string | null
           ordem?: number
+          origem?: string
           responsavel?: string | null
           tipo?: string
           titulo?: string
@@ -1567,514 +1324,45 @@ export type Database = {
           },
         ]
       }
-      logs_comunicacao: {
-        Row: {
-          conteudo: string
-          created_at: string | null
-          destinatarios: Json | null
-          id: string
-          status: string | null
-          tipo: Database["public"]["Enums"]["communication_type"]
-        }
-        Insert: {
-          conteudo: string
-          created_at?: string | null
-          destinatarios?: Json | null
-          id?: string
-          status?: string | null
-          tipo: Database["public"]["Enums"]["communication_type"]
-        }
-        Update: {
-          conteudo?: string
-          created_at?: string | null
-          destinatarios?: Json | null
-          id?: string
-          status?: string | null
-          tipo?: Database["public"]["Enums"]["communication_type"]
-        }
-        Relationships: []
-      }
-      mca_checkins: {
-        Row: {
-          checkin_at: string
-          checkout_at: string | null
-          church_id: string
-          crianca_id: string
-          evento_id: string | null
-          id: string
-          observacao: string | null
-          registrado_por: string | null
-          sala_id: string
-        }
-        Insert: {
-          checkin_at?: string
-          checkout_at?: string | null
-          church_id: string
-          crianca_id: string
-          evento_id?: string | null
-          id?: string
-          observacao?: string | null
-          registrado_por?: string | null
-          sala_id: string
-        }
-        Update: {
-          checkin_at?: string
-          checkout_at?: string | null
-          church_id?: string
-          crianca_id?: string
-          evento_id?: string | null
-          id?: string
-          observacao?: string | null
-          registrado_por?: string | null
-          sala_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mca_checkins_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "igrejas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mca_checkins_crianca_id_fkey"
-            columns: ["crianca_id"]
-            isOneToOne: false
-            referencedRelation: "mca_criancas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mca_checkins_evento_id_fkey"
-            columns: ["evento_id"]
-            isOneToOne: false
-            referencedRelation: "eventos_escala"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mca_checkins_sala_id_fkey"
-            columns: ["sala_id"]
-            isOneToOne: false
-            referencedRelation: "mca_salas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mca_comunicacoes: {
-        Row: {
-          created_at: string
-          criado_por: string | null
-          crianca_id: string
-          enviado: boolean
-          enviado_at: string | null
-          id: string
-          mensagem_melhorada: string | null
-          mensagem_original: string
-          responsavel_telefone: string
-        }
-        Insert: {
-          created_at?: string
-          criado_por?: string | null
-          crianca_id: string
-          enviado?: boolean
-          enviado_at?: string | null
-          id?: string
-          mensagem_melhorada?: string | null
-          mensagem_original: string
-          responsavel_telefone: string
-        }
-        Update: {
-          created_at?: string
-          criado_por?: string | null
-          crianca_id?: string
-          enviado?: boolean
-          enviado_at?: string | null
-          id?: string
-          mensagem_melhorada?: string | null
-          mensagem_original?: string
-          responsavel_telefone?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mca_comunicacoes_crianca_id_fkey"
-            columns: ["crianca_id"]
-            isOneToOne: false
-            referencedRelation: "mca_criancas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mca_criancas: {
-        Row: {
-          ativo: boolean
-          church_id: string
-          created_at: string
-          data_nascimento: string | null
-          foto_url: string | null
-          id: string
-          nome: string
-          observacoes: string | null
-          sala_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          ativo?: boolean
-          church_id: string
-          created_at?: string
-          data_nascimento?: string | null
-          foto_url?: string | null
-          id?: string
-          nome: string
-          observacoes?: string | null
-          sala_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          ativo?: boolean
-          church_id?: string
-          created_at?: string
-          data_nascimento?: string | null
-          foto_url?: string | null
-          id?: string
-          nome?: string
-          observacoes?: string | null
-          sala_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mca_criancas_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "igrejas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mca_criancas_sala_id_fkey"
-            columns: ["sala_id"]
-            isOneToOne: false
-            referencedRelation: "mca_salas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mca_plano_arquivos: {
-        Row: {
-          arquivo_tipo: string
-          arquivo_url: string
-          created_at: string
-          id: string
-          nome: string
-          plano_id: string
-          tamanho_bytes: number | null
-        }
-        Insert: {
-          arquivo_tipo: string
-          arquivo_url: string
-          created_at?: string
-          id?: string
-          nome: string
-          plano_id: string
-          tamanho_bytes?: number | null
-        }
-        Update: {
-          arquivo_tipo?: string
-          arquivo_url?: string
-          created_at?: string
-          id?: string
-          nome?: string
-          plano_id?: string
-          tamanho_bytes?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mca_plano_arquivos_plano_id_fkey"
-            columns: ["plano_id"]
-            isOneToOne: false
-            referencedRelation: "mca_planos_aula"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mca_planos_aula: {
-        Row: {
-          anotacoes: string | null
-          conteudo: string | null
-          created_at: string
-          data_aula: string
-          id: string
-          objetivos: string | null
-          professor_id: string | null
-          sala_id: string
-          titulo: string
-          updated_at: string
-        }
-        Insert: {
-          anotacoes?: string | null
-          conteudo?: string | null
-          created_at?: string
-          data_aula: string
-          id?: string
-          objetivos?: string | null
-          professor_id?: string | null
-          sala_id: string
-          titulo: string
-          updated_at?: string
-        }
-        Update: {
-          anotacoes?: string | null
-          conteudo?: string | null
-          created_at?: string
-          data_aula?: string
-          id?: string
-          objetivos?: string | null
-          professor_id?: string | null
-          sala_id?: string
-          titulo?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mca_planos_aula_sala_id_fkey"
-            columns: ["sala_id"]
-            isOneToOne: false
-            referencedRelation: "mca_salas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mca_responsaveis: {
-        Row: {
-          created_at: string
-          crianca_id: string
-          id: string
-          is_primary: boolean
-          nome: string
-          parentesco: string
-          perfil_id: string | null
-          telefone: string
-        }
-        Insert: {
-          created_at?: string
-          crianca_id: string
-          id?: string
-          is_primary?: boolean
-          nome: string
-          parentesco?: string
-          perfil_id?: string | null
-          telefone: string
-        }
-        Update: {
-          created_at?: string
-          crianca_id?: string
-          id?: string
-          is_primary?: boolean
-          nome?: string
-          parentesco?: string
-          perfil_id?: string | null
-          telefone?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mca_responsaveis_crianca_id_fkey"
-            columns: ["crianca_id"]
-            isOneToOne: false
-            referencedRelation: "mca_criancas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mca_salas: {
-        Row: {
-          ativo: boolean
-          capacidade: number | null
-          church_id: string
-          created_at: string
-          faixa_etaria_max: number | null
-          faixa_etaria_min: number | null
-          id: string
-          ministerio_id: string
-          nome: string
-          professor_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          ativo?: boolean
-          capacidade?: number | null
-          church_id: string
-          created_at?: string
-          faixa_etaria_max?: number | null
-          faixa_etaria_min?: number | null
-          id?: string
-          ministerio_id: string
-          nome: string
-          professor_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          ativo?: boolean
-          capacidade?: number | null
-          church_id?: string
-          created_at?: string
-          faixa_etaria_max?: number | null
-          faixa_etaria_min?: number | null
-          id?: string
-          ministerio_id?: string
-          nome?: string
-          professor_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mca_salas_church_id_fkey"
-            columns: ["church_id"]
-            isOneToOne: false
-            referencedRelation: "igrejas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mca_salas_ministerio_id_fkey"
-            columns: ["ministerio_id"]
-            isOneToOne: false
-            referencedRelation: "ministerios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      membros: {
-        Row: {
-          created_at: string | null
-          data_batismo: string | null
-          data_nascimento: string | null
-          data_registro: string | null
-          email: string | null
-          endereco: string | null
-          estado_civil: string | null
-          foto_perfil: string | null
-          id: string
-          nome: string
-          observacoes: string | null
-          status: string | null
-          telefone: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          data_batismo?: string | null
-          data_nascimento?: string | null
-          data_registro?: string | null
-          email?: string | null
-          endereco?: string | null
-          estado_civil?: string | null
-          foto_perfil?: string | null
-          id?: string
-          nome: string
-          observacoes?: string | null
-          status?: string | null
-          telefone?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          data_batismo?: string | null
-          data_nascimento?: string | null
-          data_registro?: string | null
-          email?: string | null
-          endereco?: string | null
-          estado_civil?: string | null
-          foto_perfil?: string | null
-          id?: string
-          nome?: string
-          observacoes?: string | null
-          status?: string | null
-          telefone?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "membros_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ministerio_documentos: {
-        Row: {
-          arquivo_nome: string
-          arquivo_tipo: string
-          arquivo_url: string
-          created_at: string
-          criado_por: string | null
-          descricao: string | null
-          id: string
-          ministerio_id: string
-          nome: string
-        }
-        Insert: {
-          arquivo_nome: string
-          arquivo_tipo: string
-          arquivo_url: string
-          created_at?: string
-          criado_por?: string | null
-          descricao?: string | null
-          id?: string
-          ministerio_id: string
-          nome: string
-        }
-        Update: {
-          arquivo_nome?: string
-          arquivo_tipo?: string
-          arquivo_url?: string
-          created_at?: string
-          criado_por?: string | null
-          descricao?: string | null
-          id?: string
-          ministerio_id?: string
-          nome?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ministerio_documentos_ministerio_id_fkey"
-            columns: ["ministerio_id"]
-            isOneToOne: false
-            referencedRelation: "ministerios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       ministerio_funcoes: {
         Row: {
-          ativo: boolean | null
+          ativo: boolean
           created_at: string | null
           descricao: string | null
           id: string
+          igreja_id: string
           ministerio_id: string
           nome: string
           updated_at: string | null
         }
         Insert: {
-          ativo?: boolean | null
+          ativo?: boolean
           created_at?: string | null
           descricao?: string | null
           id?: string
+          igreja_id: string
           ministerio_id: string
           nome: string
           updated_at?: string | null
         }
         Update: {
-          ativo?: boolean | null
+          ativo?: boolean
           created_at?: string | null
           descricao?: string | null
           id?: string
+          igreja_id?: string
           ministerio_id?: string
           nome?: string
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ministerio_funcoes_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ministerio_funcoes_ministerio_id_fkey"
             columns: ["ministerio_id"]
@@ -2084,105 +1372,134 @@ export type Database = {
           },
         ]
       }
-      ministerio_modulos: {
+      ministerio_membros: {
         Row: {
-          ativo: boolean
           created_at: string
-          descricao: string | null
-          icone: string | null
+          funcao_id: string | null
           id: string
+          igreja_id: string
+          is_lider: boolean | null
           ministerio_id: string
-          modulo_slug: string
-          nome: string
-          ordem: number
-          updated_at: string
+          nivel_permissao: number
+          profile_id: string
         }
         Insert: {
-          ativo?: boolean
           created_at?: string
-          descricao?: string | null
-          icone?: string | null
+          funcao_id?: string | null
           id?: string
+          igreja_id: string
+          is_lider?: boolean | null
           ministerio_id: string
-          modulo_slug: string
-          nome: string
-          ordem?: number
-          updated_at?: string
+          nivel_permissao?: number
+          profile_id: string
         }
         Update: {
-          ativo?: boolean
           created_at?: string
-          descricao?: string | null
-          icone?: string | null
+          funcao_id?: string | null
           id?: string
+          igreja_id?: string
+          is_lider?: boolean | null
           ministerio_id?: string
-          modulo_slug?: string
-          nome?: string
-          ordem?: number
-          updated_at?: string
+          nivel_permissao?: number
+          profile_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "ministerio_modulos_ministerio_id_fkey"
+            foreignKeyName: "ministerio_membros_funcao_id_fkey"
+            columns: ["funcao_id"]
+            isOneToOne: false
+            referencedRelation: "ministerio_funcoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministerio_membros_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministerio_membros_ministerio_id_fkey"
             columns: ["ministerio_id"]
             isOneToOne: false
             referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministerio_membros_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministerio_membros_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
             referencedColumns: ["id"]
           },
         ]
       }
       ministerio_usuarios: {
         Row: {
-          ativo: boolean | null
-          created_at: string | null
+          ativo: boolean
+          created_at: string
           funcao_principal_id: string | null
           id: string
           ministerio_id: string
-          papel: Database["public"]["Enums"]["papel_ministerial"]
-          updated_at: string | null
+          papel: string
+          updated_at: string
           user_id: string
         }
         Insert: {
-          ativo?: boolean | null
-          created_at?: string | null
+          ativo?: boolean
+          created_at?: string
           funcao_principal_id?: string | null
           id?: string
           ministerio_id: string
-          papel?: Database["public"]["Enums"]["papel_ministerial"]
-          updated_at?: string | null
+          papel?: string
+          updated_at?: string
           user_id: string
         }
         Update: {
-          ativo?: boolean | null
-          created_at?: string | null
+          ativo?: boolean
+          created_at?: string
           funcao_principal_id?: string | null
           id?: string
           ministerio_id?: string
-          papel?: Database["public"]["Enums"]["papel_ministerial"]
-          updated_at?: string | null
+          papel?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "ministerio_voluntarios_funcao_principal_id_fkey"
+            foreignKeyName: "ministerio_usuarios_funcao_principal_id_fkey"
             columns: ["funcao_principal_id"]
             isOneToOne: false
             referencedRelation: "ministerio_funcoes"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "ministerio_voluntarios_ministerio_id_fkey"
+            foreignKeyName: "ministerio_usuarios_ministerio_id_fkey"
             columns: ["ministerio_id"]
             isOneToOne: false
             referencedRelation: "ministerios"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "ministerio_voluntarios_user_id_fkey"
+            foreignKeyName: "ministerio_usuarios_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministerio_usuarios_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2225,46 +1542,81 @@ export type Database = {
       ministerios: {
         Row: {
           ativo: boolean | null
-          contato: string | null
-          created_at: string | null
+          created_at: string
           descricao: string | null
           id: string
-          is_core: boolean
-          lider_id: string | null
+          igreja_id: string
           nome: string
-          slug: string | null
-          updated_at: string | null
+          tipo: string
         }
         Insert: {
           ativo?: boolean | null
-          contato?: string | null
-          created_at?: string | null
+          created_at?: string
           descricao?: string | null
           id?: string
-          is_core?: boolean
-          lider_id?: string | null
+          igreja_id: string
           nome: string
-          slug?: string | null
-          updated_at?: string | null
+          tipo?: string
         }
         Update: {
           ativo?: boolean | null
-          contato?: string | null
-          created_at?: string | null
+          created_at?: string
           descricao?: string | null
           id?: string
-          is_core?: boolean
-          lider_id?: string | null
+          igreja_id?: string
           nome?: string
-          slug?: string | null
-          updated_at?: string | null
+          tipo?: string
         }
         Relationships: [
           {
-            foreignKeyName: "ministerios_lider_id_fkey"
-            columns: ["lider_id"]
+            foreignKeyName: "ministerios_igreja_id_fkey"
+            columns: ["igreja_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      musicas: {
+        Row: {
+          artista: string | null
+          ativo: boolean | null
+          created_at: string
+          id: string
+          igreja_id: string
+          letra: string | null
+          link: string | null
+          titulo: string
+          tom: string | null
+        }
+        Insert: {
+          artista?: string | null
+          ativo?: boolean | null
+          created_at?: string
+          id?: string
+          igreja_id: string
+          letra?: string | null
+          link?: string | null
+          titulo: string
+          tom?: string | null
+        }
+        Update: {
+          artista?: string | null
+          ativo?: boolean | null
+          created_at?: string
+          id?: string
+          igreja_id?: string
+          letra?: string | null
+          link?: string | null
+          titulo?: string
+          tom?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "musicas_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
             referencedColumns: ["id"]
           },
         ]
@@ -2307,6 +1659,20 @@ export type Database = {
           titulo_avulso?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "musicas_culto_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "musicas_culto_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "musicas_culto_evento_id_fkey"
             columns: ["evento_id"]
@@ -2382,6 +1748,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "musicas_repertorio_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "musicas_repertorio_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "musicas_repertorio_ministerio_id_fkey"
             columns: ["ministerio_id"]
             isOneToOne: false
@@ -2390,155 +1770,222 @@ export type Database = {
           },
         ]
       }
-      notas_base: {
+      notificacoes: {
         Row: {
-          base_id: string
-          conteudo: string | null
-          created_at: string | null
-          data: string
+          created_at: string
+          descricao: string | null
           id: string
+          igreja_id: string
+          lida: boolean | null
+          link: string | null
+          mensagem: string | null
           profile_id: string
-          updated_at: string | null
+          tipo: string | null
+          titulo: string
         }
         Insert: {
-          base_id: string
-          conteudo?: string | null
-          created_at?: string | null
-          data?: string
+          created_at?: string
+          descricao?: string | null
           id?: string
+          igreja_id?: string
+          lida?: boolean | null
+          link?: string | null
+          mensagem?: string | null
           profile_id: string
-          updated_at?: string | null
+          tipo?: string | null
+          titulo: string
         }
         Update: {
-          base_id?: string
-          conteudo?: string | null
-          created_at?: string | null
-          data?: string
+          created_at?: string
+          descricao?: string | null
           id?: string
+          igreja_id?: string
+          lida?: boolean | null
+          link?: string | null
+          mensagem?: string | null
           profile_id?: string
-          updated_at?: string | null
+          tipo?: string | null
+          titulo?: string
         }
         Relationships: [
           {
-            foreignKeyName: "notas_base_base_id_fkey"
-            columns: ["base_id"]
+            foreignKeyName: "notificacoes_igreja_id_fkey"
+            columns: ["igreja_id"]
             isOneToOne: false
-            referencedRelation: "bases"
+            referencedRelation: "igrejas"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "notas_base_profile_id_fkey"
+            foreignKeyName: "notificacoes_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "notificacoes_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      notificacoes: {
+      occurrence_ministerios: {
         Row: {
           created_at: string | null
-          enviado_em: string | null
-          escala_id: string | null
           id: string
-          lido: boolean | null
-          mensagem: string
           ministerio_id: string | null
-          tipo: Database["public"]["Enums"]["notification_type"]
-          titulo: string | null
-          updated_at: string | null
-          voluntario_id: string | null
+          occurrence_id: string | null
         }
         Insert: {
           created_at?: string | null
-          enviado_em?: string | null
-          escala_id?: string | null
           id?: string
-          lido?: boolean | null
-          mensagem: string
           ministerio_id?: string | null
-          tipo: Database["public"]["Enums"]["notification_type"]
-          titulo?: string | null
-          updated_at?: string | null
-          voluntario_id?: string | null
+          occurrence_id?: string | null
         }
         Update: {
           created_at?: string | null
-          enviado_em?: string | null
-          escala_id?: string | null
           id?: string
-          lido?: boolean | null
-          mensagem?: string
           ministerio_id?: string | null
-          tipo?: Database["public"]["Enums"]["notification_type"]
-          titulo?: string | null
-          updated_at?: string | null
-          voluntario_id?: string | null
+          occurrence_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "notificacoes_escala_id_fkey"
-            columns: ["escala_id"]
-            isOneToOne: false
-            referencedRelation: "escalas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notificacoes_ministerio_id_fkey"
+            foreignKeyName: "occurrence_ministerios_ministerio_id_fkey"
             columns: ["ministerio_id"]
             isOneToOne: false
             referencedRelation: "ministerios"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "notificacoes_voluntario_id_fkey"
-            columns: ["voluntario_id"]
+            foreignKeyName: "occurrence_ministerios_occurrence_id_fkey"
+            columns: ["occurrence_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "event_occurrences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "occurrence_ministerios_occurrence_id_fkey"
+            columns: ["occurrence_id"]
+            isOneToOne: false
+            referencedRelation: "view_presenca_eventos"
             referencedColumns: ["id"]
           },
         ]
       }
       pedidos_oracao: {
         Row: {
-          anonimo: boolean | null
-          created_at: string | null
-          descricao: string | null
+          anonimo: boolean
+          contato: string | null
+          created_at: string
+          email: string | null
           id: string
-          status: string | null
-          titulo: string
-          updated_at: string | null
-          usuario_id: string | null
+          igreja_id: string
+          nome: string
+          pedido: string
+          status: string
+          telefone: string | null
         }
         Insert: {
-          anonimo?: boolean | null
-          created_at?: string | null
-          descricao?: string | null
+          anonimo?: boolean
+          contato?: string | null
+          created_at?: string
+          email?: string | null
           id?: string
-          status?: string | null
-          titulo: string
-          updated_at?: string | null
-          usuario_id?: string | null
+          igreja_id: string
+          nome: string
+          pedido: string
+          status?: string
+          telefone?: string | null
         }
         Update: {
-          anonimo?: boolean | null
-          created_at?: string | null
-          descricao?: string | null
+          anonimo?: boolean
+          contato?: string | null
+          created_at?: string
+          email?: string | null
           id?: string
-          status?: string | null
-          titulo?: string
-          updated_at?: string | null
-          usuario_id?: string | null
+          igreja_id?: string
+          nome?: string
+          pedido?: string
+          status?: string
+          telefone?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "pedidos_oracao_usuario_id_fkey"
-            columns: ["usuario_id"]
+            foreignKeyName: "pedidos_oracao_igreja_id_fkey"
+            columns: ["igreja_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "igrejas"
             referencedColumns: ["id"]
           },
         ]
+      }
+      pequeno_grupo_membros: {
+        Row: {
+          created_at: string | null
+          id: string
+          igreja_id: string
+          papel: string | null
+          pequeno_grupo_id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          igreja_id: string
+          papel?: string | null
+          pequeno_grupo_id: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          igreja_id?: string
+          papel?: string | null
+          pequeno_grupo_id?: string
+          profile_id?: string
+        }
+        Relationships: []
+      }
+      pequenos_grupos: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          dia_semana: string | null
+          endereco: string | null
+          horario: string | null
+          id: string
+          igreja_id: string
+          lider_id: string | null
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          dia_semana?: string | null
+          endereco?: string | null
+          horario?: string | null
+          id?: string
+          igreja_id: string
+          lider_id?: string | null
+          nome: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          dia_semana?: string | null
+          endereco?: string | null
+          horario?: string | null
+          id?: string
+          igreja_id?: string
+          lider_id?: string | null
+          nome?: string
+        }
+        Relationships: []
       }
       periodos_escala: {
         Row: {
@@ -2582,487 +2029,503 @@ export type Database = {
             referencedRelation: "igrejas"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      presencas: {
-        Row: {
-          created_at: string | null
-          data: string | null
-          id: string
-          marcado_por: string | null
-          presente: boolean | null
-          referencia_id: string
-          referencia_tipo: string
-          usuario_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          data?: string | null
-          id?: string
-          marcado_por?: string | null
-          presente?: boolean | null
-          referencia_id: string
-          referencia_tipo: string
-          usuario_id: string
-        }
-        Update: {
-          created_at?: string | null
-          data?: string | null
-          id?: string
-          marcado_por?: string | null
-          presente?: boolean | null
-          referencia_id?: string
-          referencia_tipo?: string
-          usuario_id?: string
-        }
-        Relationships: [
           {
-            foreignKeyName: "presencas_marcado_por_fkey"
-            columns: ["marcado_por"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "presencas_usuario_id_fkey"
-            columns: ["usuario_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          bairro: string | null
-          batizado_aguas: boolean | null
-          cep: string | null
-          cidade: string | null
-          complemento: string | null
-          cpf: string | null
-          created_at: string | null
-          data_batismo: string | null
-          data_cadastro: string | null
-          data_nascimento: string | null
-          email: string
-          endereco: string | null
-          estado_civil: string | null
-          formacao: string | null
-          foto_url: string | null
-          grau_instrucao: string | null
-          id: string
-          logradouro: string | null
-          naturalidade: string | null
-          nome: string
-          numero: string | null
-          observacoes_privadas: string | null
-          pcd: string | null
-          preferencias_notificacao: Json | null
-          profissao: string | null
-          sexo: string | null
-          status: Database["public"]["Enums"]["user_status"] | null
-          telefone: string | null
-          uf: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          bairro?: string | null
-          batizado_aguas?: boolean | null
-          cep?: string | null
-          cidade?: string | null
-          complemento?: string | null
-          cpf?: string | null
-          created_at?: string | null
-          data_batismo?: string | null
-          data_cadastro?: string | null
-          data_nascimento?: string | null
-          email: string
-          endereco?: string | null
-          estado_civil?: string | null
-          formacao?: string | null
-          foto_url?: string | null
-          grau_instrucao?: string | null
-          id?: string
-          logradouro?: string | null
-          naturalidade?: string | null
-          nome: string
-          numero?: string | null
-          observacoes_privadas?: string | null
-          pcd?: string | null
-          preferencias_notificacao?: Json | null
-          profissao?: string | null
-          sexo?: string | null
-          status?: Database["public"]["Enums"]["user_status"] | null
-          telefone?: string | null
-          uf?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          bairro?: string | null
-          batizado_aguas?: boolean | null
-          cep?: string | null
-          cidade?: string | null
-          complemento?: string | null
-          cpf?: string | null
-          created_at?: string | null
-          data_batismo?: string | null
-          data_cadastro?: string | null
-          data_nascimento?: string | null
-          email?: string
-          endereco?: string | null
-          estado_civil?: string | null
-          formacao?: string | null
-          foto_url?: string | null
-          grau_instrucao?: string | null
-          id?: string
-          logradouro?: string | null
-          naturalidade?: string | null
-          nome?: string
-          numero?: string | null
-          observacoes_privadas?: string | null
-          pcd?: string | null
-          preferencias_notificacao?: Json | null
-          profissao?: string | null
-          sexo?: string | null
-          status?: Database["public"]["Enums"]["user_status"] | null
-          telefone?: string | null
-          uf?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      push_subscriptions: {
-        Row: {
-          auth: string
-          created_at: string
-          endpoint: string
-          id: string
-          p256dh: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          auth: string
-          created_at?: string
-          endpoint: string
-          id?: string
-          p256dh: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          auth?: string
-          created_at?: string
-          endpoint?: string
-          id?: string
-          p256dh?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      responsaveis: {
-        Row: {
-          created_at: string
-          id: string
-          nome: string
-          observacoes: string | null
-          telefone: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          nome: string
-          observacoes?: string | null
-          telefone?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          nome?: string
-          observacoes?: string | null
-          telefone?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      salas: {
-        Row: {
-          capacidade: number | null
-          created_at: string
-          id: string
-          nome: string
-          observacao: string | null
-          status: string | null
-          updated_at: string
-        }
-        Insert: {
-          capacidade?: number | null
-          created_at?: string
-          id?: string
-          nome: string
-          observacao?: string | null
-          status?: string | null
-          updated_at?: string
-        }
-        Update: {
-          capacidade?: number | null
-          created_at?: string
-          id?: string
-          nome?: string
-          observacao?: string | null
-          status?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      transacoes_financeiras: {
-        Row: {
-          categoria_id: string | null
-          conta_id: string | null
-          created_at: string | null
-          criado_por: string | null
-          data_operacao: string
-          descricao: string | null
-          evento_id: string | null
-          id: string
-          membro_id: string | null
-          nota: string | null
-          referencia: string | null
-          status: string | null
-          tipo: string
-          updated_at: string | null
-          valor: number
-          visitante_id: string | null
-        }
-        Insert: {
-          categoria_id?: string | null
-          conta_id?: string | null
-          created_at?: string | null
-          criado_por?: string | null
-          data_operacao: string
-          descricao?: string | null
-          evento_id?: string | null
-          id?: string
-          membro_id?: string | null
-          nota?: string | null
-          referencia?: string | null
-          status?: string | null
-          tipo: string
-          updated_at?: string | null
-          valor: number
-          visitante_id?: string | null
-        }
-        Update: {
-          categoria_id?: string | null
-          conta_id?: string | null
-          created_at?: string | null
-          criado_por?: string | null
-          data_operacao?: string
-          descricao?: string | null
-          evento_id?: string | null
-          id?: string
-          membro_id?: string | null
-          nota?: string | null
-          referencia?: string | null
-          status?: string | null
-          tipo?: string
-          updated_at?: string | null
-          valor?: number
-          visitante_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "transacoes_financeiras_categoria_id_fkey"
-            columns: ["categoria_id"]
-            isOneToOne: false
-            referencedRelation: "categorias_financeiras"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "transacoes_financeiras_conta_id_fkey"
-            columns: ["conta_id"]
-            isOneToOne: false
-            referencedRelation: "contas_financeiras"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "transacoes_financeiras_criado_por_fkey"
+            foreignKeyName: "periodos_escala_criado_por_fkey"
             columns: ["criado_por"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "transacoes_financeiras_evento_id_fkey"
-            columns: ["evento_id"]
+            foreignKeyName: "periodos_escala_criado_por_fkey"
+            columns: ["criado_por"]
             isOneToOne: false
-            referencedRelation: "eventos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "transacoes_financeiras_membro_id_fkey"
-            columns: ["membro_id"]
-            isOneToOne: false
-            referencedRelation: "membros"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "transacoes_financeiras_visitante_id_fkey"
-            columns: ["visitante_id"]
-            isOneToOne: false
-            referencedRelation: "visitantes"
+            referencedRelation: "view_voluntariado"
             referencedColumns: ["id"]
           },
         ]
       }
-      turmas_infantil: {
+      profiles: {
         Row: {
-          created_at: string | null
-          faixa_etaria: string | null
+          ativo: boolean | null
+          batizado_aguas: boolean | null
+          cpf: string | null
+          created_at: string
+          curso: string | null
+          data_nascimento: string | null
+          email: string | null
+          endereco_json: Json | null
+          estado_civil: string | null
+          familia_id: string | null
+          foto_url: string | null
+          grau_instrucao: string | null
           id: string
-          nome: string
-          responsavel_id: string | null
-          updated_at: string | null
+          igreja_id: string | null
+          nacionalidade: string | null
+          naturalidade: string | null
+          nome: string | null
+          nome_mae: string | null
+          nome_pai: string | null
+          observacoes: string | null
+          ordenacao_json: Json | null
+          origem_batismo_json: Json | null
+          papel_familia: string | null
+          pcd: string | null
+          profissao: string | null
+          rg: string | null
+          rg_orgao: string | null
+          role_global: string
+          sexo: string | null
+          status: string
+          telefone: string | null
         }
         Insert: {
-          created_at?: string | null
-          faixa_etaria?: string | null
+          ativo?: boolean | null
+          batizado_aguas?: boolean | null
+          cpf?: string | null
+          created_at?: string
+          curso?: string | null
+          data_nascimento?: string | null
+          email?: string | null
+          endereco_json?: Json | null
+          estado_civil?: string | null
+          familia_id?: string | null
+          foto_url?: string | null
+          grau_instrucao?: string | null
           id?: string
-          nome: string
-          responsavel_id?: string | null
-          updated_at?: string | null
+          igreja_id?: string | null
+          nacionalidade?: string | null
+          naturalidade?: string | null
+          nome?: string | null
+          nome_mae?: string | null
+          nome_pai?: string | null
+          observacoes?: string | null
+          ordenacao_json?: Json | null
+          origem_batismo_json?: Json | null
+          papel_familia?: string | null
+          pcd?: string | null
+          profissao?: string | null
+          rg?: string | null
+          rg_orgao?: string | null
+          role_global?: string
+          sexo?: string | null
+          status?: string
+          telefone?: string | null
         }
         Update: {
-          created_at?: string | null
-          faixa_etaria?: string | null
+          ativo?: boolean | null
+          batizado_aguas?: boolean | null
+          cpf?: string | null
+          created_at?: string
+          curso?: string | null
+          data_nascimento?: string | null
+          email?: string | null
+          endereco_json?: Json | null
+          estado_civil?: string | null
+          familia_id?: string | null
+          foto_url?: string | null
+          grau_instrucao?: string | null
           id?: string
-          nome?: string
-          responsavel_id?: string | null
-          updated_at?: string | null
+          igreja_id?: string | null
+          nacionalidade?: string | null
+          naturalidade?: string | null
+          nome?: string | null
+          nome_mae?: string | null
+          nome_pai?: string | null
+          observacoes?: string | null
+          ordenacao_json?: Json | null
+          origem_batismo_json?: Json | null
+          papel_familia?: string | null
+          pcd?: string | null
+          profissao?: string | null
+          rg?: string | null
+          rg_orgao?: string | null
+          role_global?: string
+          sexo?: string | null
+          status?: string
+          telefone?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "turmas_infantil_responsavel_id_fkey"
-            columns: ["responsavel_id"]
+            foreignKeyName: "profiles_familia_id_fkey"
+            columns: ["familia_id"]
+            isOneToOne: false
+            referencedRelation: "familias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      responsaveis: {
+        Row: {
+          created_at: string
+          crianca_id: string
+          id: string
+          igreja_id: string
+          nome: string
+          parentesco: string | null
+          profile_id: string | null
+          telefone: string | null
+        }
+        Insert: {
+          created_at?: string
+          crianca_id: string
+          id?: string
+          igreja_id: string
+          nome: string
+          parentesco?: string | null
+          profile_id?: string | null
+          telefone?: string | null
+        }
+        Update: {
+          created_at?: string
+          crianca_id?: string
+          id?: string
+          igreja_id?: string
+          nome?: string
+          parentesco?: string | null
+          profile_id?: string | null
+          telefone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "responsaveis_crianca_id_fkey"
+            columns: ["crianca_id"]
+            isOneToOne: false
+            referencedRelation: "criancas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "responsaveis_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "responsaveis_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "responsaveis_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      user_roles: {
+      roteiros: {
         Row: {
-          created_at: string | null
+          created_at: string
+          escala_id: string | null
+          estrutura_json: Json | null
           id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          igreja_id: string
+          tema: string | null
+          texto_base: string | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
+          escala_id?: string | null
+          estrutura_json?: Json | null
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          igreja_id: string
+          tema?: string | null
+          texto_base?: string | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
+          escala_id?: string | null
+          estrutura_json?: Json | null
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          igreja_id?: string
+          tema?: string | null
+          texto_base?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "roteiros_escala_id_fkey"
+            columns: ["escala_id"]
+            isOneToOne: false
+            referencedRelation: "escalas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roteiros_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salas: {
+        Row: {
+          ativo: boolean | null
+          capacidade: number | null
+          created_at: string
+          faixa_etaria: string | null
+          id: string
+          igreja_id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          capacidade?: number | null
+          created_at?: string
+          faixa_etaria?: string | null
+          id?: string
+          igreja_id: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean | null
+          capacidade?: number | null
+          created_at?: string
+          faixa_etaria?: string | null
+          id?: string
+          igreja_id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salas_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      turma_membros: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          turma_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          turma_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          turma_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turma_membros_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turma_membros_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turma_membros_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "turmas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      turma_presencas: {
+        Row: {
+          created_at: string
+          data: string
+          id: string
+          presente: boolean | null
+          profile_id: string
+          turma_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          id?: string
+          presente?: boolean | null
+          profile_id: string
+          turma_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          id?: string
+          presente?: boolean | null
+          profile_id?: string
+          turma_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turma_presencas_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turma_presencas_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "view_voluntariado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turma_presencas_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "turmas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      turmas: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          igreja_id: string
+          ministerio_id: string
+          nome: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          igreja_id: string
+          ministerio_id: string
+          nome: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          igreja_id?: string
+          ministerio_id?: string
+          nome?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turmas_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turmas_ministerio_id_fkey"
+            columns: ["ministerio_id"]
+            isOneToOne: false
+            referencedRelation: "ministerios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       visitantes: {
         Row: {
-          created_at: string | null
-          culto: string | null
-          data_visita: string | null
+          created_at: string
           email: string | null
           id: string
-          melhor_horario: string | null
+          igreja_id: string
           nome: string
           observacoes: string | null
+          origem: string | null
           status: string | null
           telefone: string | null
         }
         Insert: {
-          created_at?: string | null
-          culto?: string | null
-          data_visita?: string | null
+          created_at?: string
           email?: string | null
           id?: string
-          melhor_horario?: string | null
+          igreja_id: string
           nome: string
           observacoes?: string | null
+          origem?: string | null
           status?: string | null
           telefone?: string | null
         }
         Update: {
-          created_at?: string | null
-          culto?: string | null
-          data_visita?: string | null
+          created_at?: string
           email?: string | null
           id?: string
-          melhor_horario?: string | null
+          igreja_id?: string
           nome?: string
           observacoes?: string | null
+          origem?: string | null
           status?: string | null
           telefone?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "visitantes_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
-      [_ in never]: never
+      view_presenca_eventos: {
+        Row: {
+          event_date: string | null
+          id: string | null
+          presentes: number | null
+          titulo: string | null
+        }
+        Relationships: []
+      }
+      view_voluntariado: {
+        Row: {
+          id: string | null
+          igreja_id: string | null
+          nome: string | null
+          total_servicos: number | null
+          ultimo_servico: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_igreja_id_fkey"
+            columns: ["igreja_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      can_ministry: {
-        Args: { _action: string; _ministerio_id: string; _user_id: string }
-        Returns: boolean
+      checkin_by_token: {
+        Args: { p_profile: string; p_token: string }
+        Returns: undefined
       }
-      get_base_members_for_leader: {
-        Args: { p_base_id: string; p_search?: string }
-        Returns: {
-          bases_membros_id: string
-          data_entrada: string
-          foto_url: string
-          membro_id: string
-          nome: string
-          origem: string
-          profile_id: string
-          telefone: string
-        }[]
-      }
-      get_bases_report: {
-        Args: never
-        Returns: {
-          base_id: string
-          capacidade: number
-          lider_id: string
-          lider_nome: string
-          membros_em_bases_distintos: number
-          nome: string
-          status: string
-          total_membros: number
-          total_membros_ativos: number
-          total_visitantes: number
-          total_visitantes_geral: number
-          visibilidade: string
-          visitantes_em_bases_distintos: number
-        }[]
-      }
-      get_eligible_people_for_base: {
-        Args: { p_base_id: string; p_search?: string }
-        Returns: {
-          email: string
-          id: string
-          nome: string
-        }[]
+      create_notification: {
+        Args: { p_mensagem: string; p_profile: string; p_titulo: string }
+        Returns: undefined
       }
       get_eligible_volunteers_for_ministry: {
         Args: { p_ministerio_id: string; p_search_term?: string }
@@ -3073,79 +2536,25 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_my_bases: { Args: never; Returns: Json }
-      get_my_ministries: {
-        Args: never
+      get_invite_by_token: {
+        Args: { p_token: string }
         Returns: {
-          descricao: string
-          ministerio_id: string
-          nome: string
-          papel: string
-          slug: string
+          invite_email: string
+          invite_status: string
+          profile_nome: string
         }[]
       }
-      get_profile_id: { Args: { _user_id: string }; Returns: string }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      is_kids_team: { Args: { _user_id: string }; Returns: boolean }
-      leader_add_member_to_base: {
-        Args: { p_base_id: string; p_profile_id: string }
+      get_my_igreja_id: { Args: never; Returns: string }
+      get_my_status: { Args: never; Returns: string }
+      merge_invited_profile: {
+        Args: { p_token: string; p_user_id: string }
         Returns: undefined
       }
-      leader_remove_member_from_base: {
-        Args: { p_bases_membros_id: string }
-        Returns: undefined
-      }
-      public_checkin_by_token: { Args: { p_token: string }; Returns: Json }
-      public_checkin_manual: { Args: { p_crianca_id: string }; Returns: Json }
-      public_get_default_igreja: { Args: never; Returns: string }
-      public_presentes_hoje: {
-        Args: { p_igreja_id: string }
-        Returns: {
-          checkin_at: string
-          crianca_nome: string
-          id: string
-          sala_nome: string
-        }[]
-      }
-      public_search_criancas: {
-        Args: { p_igreja_id: string; p_search: string }
-        Returns: {
-          data_nascimento: string
-          id: string
-          nome: string
-          sala_id: string
-        }[]
-      }
-      recalcula_saldo_conta: { Args: { p_conta_id: string }; Returns: number }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
-      app_role:
-        | "admin"
-        | "lider"
-        | "voluntario"
-        | "membro"
-        | "visitante"
-        | "financeiro"
-      communication_type: "push" | "whatsapp" | "email"
-      escala_status_geral: "planejada" | "ativa" | "concluida"
-      group_visibility: "publica" | "privada"
-      notification_type:
-        | "nova_escala"
-        | "lembrete"
-        | "status_alterado"
-        | "sistema"
-        | "ministerio"
-        | "aviso_admin"
-      papel_ministerial: "lider" | "voluntario"
-      participant_status: "ativo" | "saida" | "pendente"
-      scale_status: "confirmado" | "pendente" | "ausente"
-      user_status: "ativo" | "inativo" | "pendente"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3272,30 +2681,7 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: [
-        "admin",
-        "lider",
-        "voluntario",
-        "membro",
-        "visitante",
-        "financeiro",
-      ],
-      communication_type: ["push", "whatsapp", "email"],
-      escala_status_geral: ["planejada", "ativa", "concluida"],
-      group_visibility: ["publica", "privada"],
-      notification_type: [
-        "nova_escala",
-        "lembrete",
-        "status_alterado",
-        "sistema",
-        "ministerio",
-        "aviso_admin",
-      ],
-      papel_ministerial: ["lider", "voluntario"],
-      participant_status: ["ativo", "saida", "pendente"],
-      scale_status: ["confirmado", "pendente", "ausente"],
-      user_status: ["ativo", "inativo", "pendente"],
-    },
+    Enums: {},
   },
 } as const
+<claude-code-hint v="1" type="plugin" value="supabase@claude-plugins-official" />
