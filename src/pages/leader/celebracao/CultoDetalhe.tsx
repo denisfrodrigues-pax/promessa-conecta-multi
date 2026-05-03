@@ -509,7 +509,6 @@ export default function CultoDetalhe() {
           titulo: novoAvisoForm.titulo,
           conteudo: novoAvisoForm.conteudo,
           created_by: user?.id,
-          church_id: profile?.church_id ?? null,
         })
         .select('id')
         .single();
