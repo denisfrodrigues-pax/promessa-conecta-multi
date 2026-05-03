@@ -143,7 +143,7 @@ export default function CultoDetalhe() {
   const { ministerioId, ministerioNome } = useOutletContext<OutletCtx>();
   const { slug, eventoId } = useParams<{ slug: string; eventoId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -508,8 +508,8 @@ export default function CultoDetalhe() {
         .insert({
           titulo: novoAvisoForm.titulo,
           conteudo: novoAvisoForm.conteudo,
-          criado_por: user?.id,
-          publico: false,
+          created_by: user?.id,
+          church_id: profile?.church_id ?? null,
         })
         .select('id')
         .single();
