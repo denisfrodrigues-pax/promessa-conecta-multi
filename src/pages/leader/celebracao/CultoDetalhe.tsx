@@ -1289,6 +1289,10 @@ export default function CultoDetalhe() {
             itens={itens ?? []}
             musicas={cardMusicas}
             equipe={cardEquipe}
+            avisos={(avisosCulto ?? [])
+              .filter((a) => a.avisos)
+              .map((a) => ({ titulo: a.avisos!.titulo, conteudo: a.avisos!.conteudo }))}
+            observacoesGerais={liturgia?.observacoes_gerais}
             logoUrl={config?.logo_url}
             nomeIgreja={config?.nome_igreja}
           />

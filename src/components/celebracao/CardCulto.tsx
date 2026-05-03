@@ -28,18 +28,25 @@ interface GrupoMinisterio {
   membros: MembroCard[];
 }
 
+interface AvisoCard {
+  titulo: string;
+  conteudo: string;
+}
+
 interface CardCultoProps {
   formato: 'stories' | 'feed';
   evento: { titulo: string; data_evento: string; horario_inicio?: string | null };
   itens: LiturgiaItem[];
   musicas: MusicaCard[];
   equipe: GrupoMinisterio[];
+  avisos?: AvisoCard[];
+  observacoesGerais?: string | null;
   logoUrl?: string | null;
   nomeIgreja?: string | null;
 }
 
 const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
-  ({ formato, evento, musicas, equipe, logoUrl, nomeIgreja }, ref) => {
+  ({ formato, evento, musicas, equipe, avisos, observacoesGerais, logoUrl, nomeIgreja }, ref) => {
     const W = 1080;
     const H = formato === 'stories' ? 1920 : 1080;
     const scale = formato === 'feed' ? 0.62 : 1;
@@ -288,6 +295,59 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
             </div>
           )}
 
+          {/* ── Avisos ──────────────────────────────────────────────────── */}
+          {avisos && avisos.length > 0 && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: sz(14), marginBottom: sz(16) }}>
+                <span style={{
+                  fontSize: sz(17),
+                  fontWeight: 800,
+                  letterSpacing: Math.max(2, sz(4)),
+                  color: '#ffd200',
+                  whiteSpace: 'nowrap' as const,
+                }}>AVISOS</span>
+                <div style={{
+                  flex: 1, height: 1,
+                  background: 'linear-gradient(90deg, rgba(255,210,0,0.45) 0%, transparent 100%)',
+                }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: sz(12) }}>
+                {avisos.map((a, i) => (
+                  <div key={i} style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    borderLeft: `3px solid rgba(255,210,0,0.5)`,
+                    borderRadius: `0 ${sz(10)}px ${sz(10)}px 0`,
+                    padding: `${sz(14)}px ${sz(20)}px`,
+                  }}>
+                    <div style={{
+                      fontSize: sz(19),
+                      fontWeight: 700,
+                      color: '#ffffff',
+                      marginBottom: a.conteudo ? sz(6) : 0,
+                      wordWrap: 'break-word' as const,
+                      overflowWrap: 'break-word' as const,
+                    }}>
+                      {a.titulo}
+                    </div>
+                    {a.conteudo && (
+                      <div style={{
+                        fontSize: sz(15),
+                        color: 'rgba(255,255,255,0.7)',
+                        lineHeight: 1.5,
+                        wordWrap: 'break-word' as const,
+                        overflowWrap: 'break-word' as const,
+                        whiteSpace: 'pre-wrap' as const,
+                      }}>
+                        {a.conteudo}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ── Equipe do Dia ────────────────────────────────────────────── */}
           {confirmedEquipe.length > 0 && (
             <div>
@@ -349,6 +409,35 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
               </div>
             </div>
           )}
+          {/* ── Observações Gerais ──────────────────────────────────────── */}
+          {observacoesGerais && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: sz(14), marginBottom: sz(16) }}>
+                <span style={{
+                  fontSize: sz(17),
+                  fontWeight: 800,
+                  letterSpacing: Math.max(2, sz(4)),
+                  color: 'rgba(255,255,255,0.5)',
+                  whiteSpace: 'nowrap' as const,
+                }}>OBSERVAÇÕES</span>
+                <div style={{
+                  flex: 1, height: 1,
+                  background: 'linear-gradient(90deg, rgba(255,255,255,0.15) 0%, transparent 100%)',
+                }} />
+              </div>
+              <p style={{
+                fontSize: sz(17),
+                color: 'rgba(255,255,255,0.65)',
+                lineHeight: 1.6,
+                fontStyle: 'italic' as const,
+                wordWrap: 'break-word' as const,
+                overflowWrap: 'break-word' as const,
+                whiteSpace: 'pre-wrap' as const,
+              }}>
+                {observacoesGerais}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* ═══ RODAPÉ ═══════════════════════════════════════════════════════ */}
@@ -385,4 +474,4 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
 
 CardCulto.displayName = 'CardCulto';
 export default CardCulto;
-export type { CardCultoProps, MusicaCard, GrupoMinisterio, MembroCard };
+export type { CardCultoProps, MusicaCard, GrupoMinisterio, MembroCard, AvisoCard };
