@@ -195,13 +195,11 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
 
         {/* ═══ CONTENT — Músicas + Equipe ══════════════════════════════════ */}
         <div style={{
-          flex: 1,
           paddingLeft: px,
           paddingRight: px,
           display: 'flex',
           flexDirection: 'column',
           gap: sz(36),
-          overflow: 'hidden',
         }}>
 
           {/* ── Músicas ─────────────────────────────────────────────────── */}
@@ -228,9 +226,9 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                     background: 'rgba(255,255,255,0.07)',
                     borderLeft: `3px solid #ffd200`,
                     borderRadius: `0 ${sz(10)}px ${sz(10)}px 0`,
-                    padding: `${sz(12)}px ${sz(18)}px`,
+                    padding: `${sz(16)}px ${sz(24)}px`,
                     display: 'flex',
-                    alignItems: 'center',
+                    alignItems: 'flex-start',
                     gap: sz(14),
                   }}>
                     <span style={{
@@ -240,25 +238,29 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                       minWidth: sz(24),
                       textAlign: 'right' as const,
                       flexShrink: 0,
+                      paddingTop: sz(2),
                     }}>{m.ordem}</span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ flex: 1 }}>
                       <div style={{
-                        fontSize: sz(24),
+                        fontSize: sz(22),
                         fontWeight: 700,
                         color: '#ffffff',
-                        lineHeight: 1.2,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap' as const,
+                        lineHeight: 1.3,
+                        wordWrap: 'break-word' as const,
+                        overflowWrap: 'break-word' as const,
+                        whiteSpace: 'normal' as const,
                       }}>
                         {m.titulo}
                       </div>
                       {m.artista && (
                         <div style={{
-                          fontSize: sz(17),
+                          fontSize: sz(16),
                           color: '#aaaaaa',
                           fontStyle: 'italic' as const,
-                          marginTop: sz(2),
+                          marginTop: sz(4),
+                          wordWrap: 'break-word' as const,
+                          overflowWrap: 'break-word' as const,
+                          whiteSpace: 'normal' as const,
                         }}>
                           {m.artista}
                         </div>
@@ -275,6 +277,7 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                         borderRadius: sz(6),
                         whiteSpace: 'nowrap' as const,
                         flexShrink: 0,
+                        marginTop: sz(2),
                       }}>
                         {m.tom}
                       </div>
