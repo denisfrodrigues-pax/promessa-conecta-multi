@@ -4,16 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Plus, Trash2, Users, Building2, Search, Pencil } from 'lucide-react';
+import { Plus, Trash2, Users, Building2, Search, Pencil, X, Tag } from 'lucide-react';
 
 interface LeaderMinisterioContext {
   ministerioId: string;
@@ -24,6 +25,7 @@ interface Funcao {
   id: string;
   nome: string;
   ativo: boolean;
+  descricao: string | null;
 }
 
 interface Profile {
@@ -51,16 +53,22 @@ export default function LeaderMinhaEquipe() {
   const [funcoes, setFuncoes] = useState<Funcao[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Dialogs
+
+  // Volunteer dialogs
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditFuncoesDialogOpen, setIsEditFuncoesDialogOpen] = useState(false);
-  
   const [deletingVoluntario, setDeletingVoluntario] = useState<MinisterioVoluntario | null>(null);
   const [editingVoluntario, setEditingVoluntario] = useState<MinisterioVoluntario | null>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string>('');
   const [selectedFuncaoIds, setSelectedFuncaoIds] = useState<string[]>([]);
+
+  // Function management state
+  const [funcaoModalOpen, setFuncaoModalOpen] = useState(false);
+  const [editingFuncao, setEditingFuncao] = useState<Funcao | null>(null);
+  const [funcaoForm, setFuncaoForm] = useState({ nome: '', descricao: '' });
+  const [funcaoDeleteConfirm, setFuncaoDeleteConfirm] = useState<Funcao | null>(null);
+  const [savingFuncao, setSavingFuncao] = useState(false);
 
   useEffect(() => {
     if (ministerioId) {
@@ -89,22 +97,20 @@ export default function LeaderMinhaEquipe() {
 
       if (error) throw error;
 
-      // Fetch functions for each volunteer from the junction table
       const voluntariosWithFuncoes = await Promise.all((data || []).map(async (vol) => {
         const { data: funcoesData } = await supabase
           .from('ministerio_voluntarios_funcoes')
           .select('funcao_id, ministerio_funcoes(id, nome)')
           .eq('ministerio_voluntario_id', vol.id);
-        
+
         const funcoes = (funcoesData || [])
           .filter(f => f.ministerio_funcoes)
           .map(f => ({ id: f.ministerio_funcoes!.id, nome: f.ministerio_funcoes!.nome }));
-        
+
         return { ...vol, funcoes };
       }));
-      
-      // Sort alphabetically by name
-      const sorted = voluntariosWithFuncoes.sort((a, b) => 
+
+      const sorted = voluntariosWithFuncoes.sort((a, b) =>
         (a.profile?.nome || '').localeCompare(b.profile?.nome || '')
       );
       setVoluntarios(sorted);
@@ -120,7 +126,7 @@ export default function LeaderMinhaEquipe() {
     try {
       const { data, error } = await supabase
         .from('ministerio_funcoes')
-        .select('id, nome, ativo')
+        .select('id, nome, ativo, descricao')
         .eq('ministerio_id', ministerioId)
         .eq('ativo', true)
         .order('nome');
@@ -132,11 +138,69 @@ export default function LeaderMinhaEquipe() {
     }
   };
 
+  // ── Function management handlers ─────────────────────────────────────────
+
+  const handleOpenCreateFuncao = () => {
+    setEditingFuncao(null);
+    setFuncaoForm({ nome: '', descricao: '' });
+    setFuncaoModalOpen(true);
+  };
+
+  const handleOpenEditFuncao = (funcao: Funcao) => {
+    setEditingFuncao(funcao);
+    setFuncaoForm({ nome: funcao.nome, descricao: funcao.descricao ?? '' });
+    setFuncaoModalOpen(true);
+  };
+
+  const handleSaveFuncao = async () => {
+    if (!funcaoForm.nome.trim()) return toast.error('Nome é obrigatório');
+    setSavingFuncao(true);
+    try {
+      if (editingFuncao) {
+        const { error } = await supabase
+          .from('ministerio_funcoes')
+          .update({ nome: funcaoForm.nome.trim(), descricao: funcaoForm.descricao || null })
+          .eq('id', editingFuncao.id);
+        if (error) throw error;
+        toast.success('Função atualizada');
+      } else {
+        const { error } = await supabase
+          .from('ministerio_funcoes')
+          .insert({ ministerio_id: ministerioId, nome: funcaoForm.nome.trim(), descricao: funcaoForm.descricao || null, ativo: true });
+        if (error) throw error;
+        toast.success('Função criada');
+      }
+      setFuncaoModalOpen(false);
+      fetchFuncoes();
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao salvar função');
+    } finally {
+      setSavingFuncao(false);
+    }
+  };
+
+  const handleDeleteFuncao = async () => {
+    if (!funcaoDeleteConfirm) return;
+    try {
+      const { error } = await supabase
+        .from('ministerio_funcoes')
+        .update({ ativo: false })
+        .eq('id', funcaoDeleteConfirm.id);
+      if (error) throw error;
+      toast.success('Função removida');
+      setFuncaoDeleteConfirm(null);
+      fetchFuncoes();
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao remover função');
+    }
+  };
+
+  // ── Volunteer handlers ────────────────────────────────────────────────────
+
   const fetchAvailableProfiles = async (search: string = '') => {
     if (!ministerioId) return;
 
     try {
-      // Use secure RPC function to fetch eligible volunteers
       const { data, error } = await supabase
         .rpc('get_eligible_volunteers_for_ministry', {
           p_ministerio_id: ministerioId,
@@ -144,7 +208,6 @@ export default function LeaderMinhaEquipe() {
         });
 
       if (error) throw error;
-
       setAvailableProfiles(data || []);
     } catch (error: any) {
       console.error('Error fetching available profiles:', error);
@@ -161,8 +224,7 @@ export default function LeaderMinhaEquipe() {
     setProfileSearchTerm('');
     setAvailableProfiles([]);
     setIsAddDialogOpen(true);
-    
-    // Load initial list immediately when opening dialog
+
     if (ministerioId) {
       setIsSearching(true);
       await fetchAvailableProfiles('');
@@ -170,10 +232,9 @@ export default function LeaderMinhaEquipe() {
     }
   };
 
-  // Debounced search for profiles
   useEffect(() => {
     if (!isAddDialogOpen || !ministerioId) return;
-    
+
     const timer = setTimeout(async () => {
       setIsSearching(true);
       await fetchAvailableProfiles(profileSearchTerm);
@@ -201,7 +262,6 @@ export default function LeaderMinhaEquipe() {
     }
 
     try {
-      // Insert voluntario
       const { data: newVol, error } = await supabase
         .from('ministerio_usuarios')
         .upsert({
@@ -215,7 +275,6 @@ export default function LeaderMinhaEquipe() {
 
       if (error) throw error;
 
-      // Insert all functions into junction table
       const funcoesInsert = selectedFuncaoIds.map(funcaoId => ({
         ministerio_voluntario_id: newVol.id,
         funcao_id: funcaoId,
@@ -255,13 +314,11 @@ export default function LeaderMinhaEquipe() {
     }
 
     try {
-      // Delete all existing functions
       await supabase
         .from('ministerio_voluntarios_funcoes')
         .delete()
         .eq('ministerio_voluntario_id', editingVoluntario.id);
 
-      // Insert new functions
       const funcoesInsert = selectedFuncaoIds.map(funcaoId => ({
         ministerio_voluntario_id: editingVoluntario.id,
         funcao_id: funcaoId,
@@ -273,7 +330,6 @@ export default function LeaderMinhaEquipe() {
 
       if (funcError) throw funcError;
 
-      // Update funcao_principal_id for compatibility
       await supabase
         .from('ministerio_usuarios')
         .update({ funcao_principal_id: selectedFuncaoIds[0] || null })
@@ -328,14 +384,13 @@ export default function LeaderMinhaEquipe() {
   };
 
   const toggleFuncaoSelection = (funcaoId: string) => {
-    setSelectedFuncaoIds(prev => 
+    setSelectedFuncaoIds(prev =>
       prev.includes(funcaoId)
         ? prev.filter(id => id !== funcaoId)
         : [...prev, funcaoId]
     );
   };
 
-  // Filter voluntarios by search term
   const filteredVoluntarios = voluntarios.filter((v) =>
     v.profile?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     v.profile?.email?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -372,6 +427,60 @@ export default function LeaderMinhaEquipe() {
         <p className="text-muted-foreground mt-1">Gerencie os voluntários do ministério {ministerioNome}</p>
       </div>
 
+      {/* ── Funções do Ministério ─────────────────────────────────────────── */}
+      <Card className="shadow-card">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <CardTitle className="flex items-center gap-3 text-lg">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Tag className="h-5 w-5 text-primary" />
+              </div>
+              Funções do Ministério
+            </CardTitle>
+            <Button onClick={handleOpenCreateFuncao} variant="outline" size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Função
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {funcoes.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <Tag className="h-8 w-8 mx-auto mb-3 opacity-40" />
+              <p className="text-sm">Nenhuma função cadastrada. Crie a primeira função para começar a escalar voluntários.</p>
+              <Button variant="outline" size="sm" className="mt-3" onClick={handleOpenCreateFuncao}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Função
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {funcoes.map((f) => (
+                <div
+                  key={f.id}
+                  className="flex items-center gap-1 bg-secondary rounded-full pl-3 pr-1 py-1 text-sm font-medium"
+                >
+                  <span
+                    className="cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => handleOpenEditFuncao(f)}
+                    title={f.descricao ?? undefined}
+                  >
+                    {f.nome}
+                  </span>
+                  <button
+                    className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-destructive/20 hover:text-destructive transition-colors ml-1"
+                    onClick={() => setFuncaoDeleteConfirm(f)}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Voluntários ──────────────────────────────────────────────────── */}
       <Card className="shadow-card">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -379,7 +488,7 @@ export default function LeaderMinhaEquipe() {
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Users className="h-5 w-5 text-primary" />
               </div>
-              Voluntários - {ministerioNome}
+              Voluntários — {ministerioNome}
             </CardTitle>
             <Button onClick={handleOpenAddDialog} className="shadow-sm">
               <Plus className="h-4 w-4 mr-2" />
@@ -479,7 +588,66 @@ export default function LeaderMinhaEquipe() {
         </CardContent>
       </Card>
 
-      {/* Add Voluntario Dialog */}
+      {/* ── Function create/edit Modal ──────────────────────────────────── */}
+      <Dialog open={funcaoModalOpen} onOpenChange={setFuncaoModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingFuncao ? 'Editar Função' : 'Nova Função'}</DialogTitle>
+            <DialogDescription>
+              {editingFuncao ? 'Atualize os dados desta função.' : 'Crie uma nova função para o ministério.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="funcao-nome">Nome</Label>
+              <Input
+                id="funcao-nome"
+                value={funcaoForm.nome}
+                onChange={(e) => setFuncaoForm(p => ({ ...p, nome: e.target.value }))}
+                placeholder="Ex: Guitarrista, Recepcionista, Professor..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="funcao-descricao">Descrição (opcional)</Label>
+              <Textarea
+                id="funcao-descricao"
+                value={funcaoForm.descricao}
+                onChange={(e) => setFuncaoForm(p => ({ ...p, descricao: e.target.value }))}
+                placeholder="Descreva as responsabilidades desta função..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFuncaoModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveFuncao} disabled={savingFuncao || !funcaoForm.nome.trim()}>
+              {editingFuncao ? 'Salvar' : 'Criar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Function delete confirmation ────────────────────────────────── */}
+      <AlertDialog open={!!funcaoDeleteConfirm} onOpenChange={(open) => { if (!open) setFuncaoDeleteConfirm(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover função</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover a função "{funcaoDeleteConfirm?.nome}"? Voluntários com esta função não serão afetados, mas ela deixará de aparecer nas opções.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteFuncao} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Add Volunteer Dialog ─────────────────────────────────────────── */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -500,8 +668,7 @@ export default function LeaderMinhaEquipe() {
                   className="pl-10"
                 />
               </div>
-              
-              {/* Search Results */}
+
               <div className="border rounded-md max-h-48 overflow-y-auto">
                 {isSearching ? (
                   <div className="p-4 text-center text-muted-foreground">
@@ -510,30 +677,30 @@ export default function LeaderMinhaEquipe() {
                   </div>
                 ) : availableProfiles.length === 0 ? (
                   <div className="p-4 text-center text-muted-foreground text-sm">
-                    {profileSearchTerm 
-                      ? 'Nenhum voluntário encontrado' 
+                    {profileSearchTerm
+                      ? 'Nenhum voluntário encontrado'
                       : 'Todos os usuários já estão neste ministério'}
                   </div>
                 ) : (
-                  availableProfiles.map((profile) => (
+                  availableProfiles.map((p) => (
                     <div
-                      key={profile.id}
+                      key={p.id}
                       className={`p-3 cursor-pointer hover:bg-muted/50 border-b last:border-b-0 transition-colors ${
-                        selectedProfileId === profile.id ? 'bg-primary/10 border-primary' : ''
+                        selectedProfileId === p.id ? 'bg-primary/10 border-primary' : ''
                       }`}
-                      onClick={() => setSelectedProfileId(profile.id)}
+                      onClick={() => setSelectedProfileId(p.id)}
                     >
                       <div className="flex items-center gap-2">
                         <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          selectedProfileId === profile.id ? 'border-primary bg-primary' : 'border-muted-foreground'
+                          selectedProfileId === p.id ? 'border-primary bg-primary' : 'border-muted-foreground'
                         }`}>
-                          {selectedProfileId === profile.id && (
+                          {selectedProfileId === p.id && (
                             <div className="w-2 h-2 rounded-full bg-white" />
                           )}
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{profile.nome}</p>
-                          <p className="text-xs text-muted-foreground">{profile.email}</p>
+                          <p className="font-medium text-sm">{p.nome}</p>
+                          <p className="text-xs text-muted-foreground">{p.email}</p>
                         </div>
                       </div>
                     </div>
@@ -577,7 +744,7 @@ export default function LeaderMinhaEquipe() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Funcoes Dialog */}
+      {/* ── Edit Volunteer Functions Dialog ──────────────────────────────── */}
       <Dialog open={isEditFuncoesDialogOpen} onOpenChange={setIsEditFuncoesDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -621,7 +788,7 @@ export default function LeaderMinhaEquipe() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* ── Delete Volunteer Confirmation ────────────────────────────────── */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

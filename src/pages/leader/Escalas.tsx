@@ -200,16 +200,21 @@ export default function LeaderEscalas() {
         if (delErr) throw delErr;
       }
 
-      const inserts = rows.map((r) => ({
-        ministerio_id: ministerioId,
-        evento_escala_id: ev.id,
-        data: ev.data_evento,
-        horario: r.horario || ev.horario_inicio || null,
-        funcao: r.funcao,
-        voluntario_id: r.voluntario_id,
-        responsavel_id: profile?.id ?? null,
-        status: 'pendente',
-      }));
+      const agora = new Date().toISOString();
+      const inserts = rows.map((r) => {
+        const isLider = r.voluntario_id === profile?.id;
+        return {
+          ministerio_id: ministerioId,
+          evento_escala_id: ev.id,
+          data: ev.data_evento,
+          horario: r.horario || ev.horario_inicio || null,
+          funcao: r.funcao,
+          voluntario_id: r.voluntario_id,
+          responsavel_id: profile?.id ?? null,
+          status: isLider ? 'confirmado' : 'pendente',
+          confirmado_em: isLider ? agora : null,
+        };
+      });
 
       const { error: insertErr } = await supabase.from('escalas').insert(inserts);
       if (insertErr) throw insertErr;
@@ -254,6 +259,8 @@ export default function LeaderEscalas() {
 
   const directMutation = useMutation({
     mutationFn: async () => {
+      const isLider = directForm.voluntario_id === profile?.id;
+      const agora = new Date().toISOString();
       const { error } = await supabase.from('escalas').insert({
         ministerio_id: ministerioId,
         data: directForm.data,
@@ -261,7 +268,8 @@ export default function LeaderEscalas() {
         funcao: directForm.funcao,
         voluntario_id: directForm.voluntario_id || null,
         responsavel_id: profile?.id ?? null,
-        status: 'pendente',
+        status: isLider ? 'confirmado' : 'pendente',
+        confirmado_em: isLider ? agora : null,
       });
       if (error) throw error;
     },

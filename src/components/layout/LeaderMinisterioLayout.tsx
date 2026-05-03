@@ -6,7 +6,7 @@ import { Logo } from "@/components/Logo";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { NavLink } from "@/components/NavLink";
 import {
-  LayoutDashboard, Users, ClipboardList, CalendarDays, Bell, BarChart3,
+  LayoutDashboard, Users, CalendarDays, Bell, BarChart3,
   FolderOpen, Home, Loader2, ArrowLeft, Music2, ListMusic, UserCheck, History,
   Baby, ClipboardCheck, MessageCircle, BookOpenCheck,
 } from "lucide-react";
@@ -115,7 +115,6 @@ export default function LeaderMinisterioLayout() {
   const defaultNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
-    { icon: ClipboardList, label: "Funções", path: `${basePath}/funcoes` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
@@ -128,7 +127,6 @@ export default function LeaderMinisterioLayout() {
     { icon: Music2, label: "Repertório", path: `${basePath}/repertorio` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
-    { icon: ClipboardList, label: "Funções", path: `${basePath}/funcoes` },
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
     { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
     { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
@@ -139,7 +137,6 @@ export default function LeaderMinisterioLayout() {
     { icon: CalendarDays, label: "Cultos", path: `${basePath}/cultos` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
-    { icon: ClipboardList, label: "Funções", path: `${basePath}/funcoes` },
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
     { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
     { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
@@ -151,7 +148,6 @@ export default function LeaderMinisterioLayout() {
     { icon: History, label: "Histórico", path: `${basePath}/visitantes` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
-    { icon: ClipboardList, label: "Funções", path: `${basePath}/funcoes` },
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
     { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
     { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
@@ -164,7 +160,6 @@ export default function LeaderMinisterioLayout() {
     { icon: ClipboardCheck, label: "Check-in", path: `${basePath}/checkin` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
-    { icon: ClipboardList, label: "Funções", path: `${basePath}/funcoes` },
     { icon: BookOpenCheck, label: "Planos de Aula", path: `${basePath}/planos` },
     { icon: MessageCircle, label: "Comunicação", path: `${basePath}/comunicacao` },
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
@@ -179,7 +174,6 @@ export default function LeaderMinisterioLayout() {
     { icon: ClipboardCheck, label: "Chamada", path: `${basePath}/chamada` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
-    { icon: ClipboardList, label: "Funções", path: `${basePath}/funcoes` },
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
     { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
     { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
