@@ -508,7 +508,6 @@ export default function CultoDetalhe() {
         .insert({
           titulo: novoAvisoForm.titulo,
           conteudo: novoAvisoForm.conteudo,
-          created_by: user?.id,
         })
         .select('id')
         .single();
