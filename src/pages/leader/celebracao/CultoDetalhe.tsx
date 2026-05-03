@@ -21,7 +21,7 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown,
   FileDown, Loader2, Clock, Megaphone, ListOrdered,
-  Users, Music2, Image, ExternalLink,
+  Users, Music2, Image, ExternalLink, Pencil,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -152,6 +152,7 @@ export default function CultoDetalhe() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [itemForm, setItemForm] = useState({ ...emptyItemForm });
   const [obsGerais, setObsGerais] = useState('');
+  const [editingObs, setEditingObs] = useState(false);
   const [showNovoAviso, setShowNovoAviso] = useState(false);
   const [novoAvisoForm, setNovoAvisoForm] = useState({ ...emptyAvisoForm });
   const [exportingImg, setExportingImg] = useState(false);
@@ -398,6 +399,7 @@ export default function CultoDetalhe() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['liturgia_culto', eventoId, ministerioId] });
       toast.success('Observações salvas');
+      setEditingObs(false);
     },
     onError: () => toast.error('Erro ao salvar observações'),
   });
@@ -1101,20 +1103,46 @@ export default function CultoDetalhe() {
 
       {/* Observações gerais */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base">Observações Gerais</CardTitle>
+          {liturgia?.observacoes_gerais && !editingObs && (
+            <Button size="sm" variant="ghost" onClick={() => setEditingObs(true)}>
+              <Pencil className="w-3.5 h-3.5 mr-1" />
+              Editar
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-3">
-          <Textarea
-            value={obsGerais}
-            onChange={(e) => setObsGerais(e.target.value)}
-            placeholder="Anotações para o culto…"
-            rows={3}
-          />
-          <Button size="sm" onClick={() => saveObsMutation.mutate()} disabled={saveObsMutation.isPending}>
-            {saveObsMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Salvar
-          </Button>
+          {editingObs || !liturgia?.observacoes_gerais ? (
+            <>
+              <Textarea
+                value={obsGerais}
+                onChange={(e) => setObsGerais(e.target.value)}
+                placeholder="Anotações para o culto…"
+                rows={3}
+                autoFocus={editingObs}
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => saveObsMutation.mutate()}
+                  disabled={saveObsMutation.isPending}
+                >
+                  {saveObsMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  Salvar
+                </Button>
+                {editingObs && (
+                  <Button size="sm" variant="ghost" onClick={() => { setObsGerais(liturgia?.observacoes_gerais ?? ''); setEditingObs(false); }}>
+                    Cancelar
+                  </Button>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+              {liturgia.observacoes_gerais}
+            </p>
+          )}
         </CardContent>
       </Card>
 
