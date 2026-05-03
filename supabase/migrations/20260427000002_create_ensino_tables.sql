@@ -113,8 +113,8 @@ END $$;
 ALTER TABLE ensino_turmas ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "admin_all_ensino_turmas" ON ensino_turmas FOR ALL TO authenticated
-  USING (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','super_admin')))
-  WITH CHECK (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','super_admin')));
+  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role_global IN ('admin','super_admin')))
+  WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role_global IN ('admin','super_admin')));
 
 CREATE POLICY "lider_all_ensino_turmas" ON ensino_turmas FOR ALL TO authenticated
   USING (EXISTS (
@@ -136,8 +136,8 @@ CREATE POLICY "membro_select_ensino_turmas" ON ensino_turmas FOR SELECT TO authe
 ALTER TABLE ensino_planos_aula ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "admin_all_ensino_planos" ON ensino_planos_aula FOR ALL TO authenticated
-  USING (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','super_admin')))
-  WITH CHECK (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','super_admin')));
+  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role_global IN ('admin','super_admin')))
+  WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role_global IN ('admin','super_admin')));
 
 CREATE POLICY "membro_all_ensino_planos" ON ensino_planos_aula FOR ALL TO authenticated
   USING (EXISTS (
@@ -157,8 +157,8 @@ CREATE POLICY "membro_all_ensino_planos" ON ensino_planos_aula FOR ALL TO authen
 ALTER TABLE ensino_plano_arquivos ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "admin_all_ensino_arquivos" ON ensino_plano_arquivos FOR ALL TO authenticated
-  USING (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','super_admin')))
-  WITH CHECK (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','super_admin')));
+  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role_global IN ('admin','super_admin')))
+  WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role_global IN ('admin','super_admin')));
 
 CREATE POLICY "membro_all_ensino_arquivos" ON ensino_plano_arquivos FOR ALL TO authenticated
   USING (EXISTS (
@@ -180,8 +180,8 @@ CREATE POLICY "membro_all_ensino_arquivos" ON ensino_plano_arquivos FOR ALL TO a
 ALTER TABLE ensino_checkins ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "admin_all_ensino_checkins" ON ensino_checkins FOR ALL TO authenticated
-  USING (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','super_admin')))
-  WITH CHECK (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','super_admin')));
+  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role_global IN ('admin','super_admin')))
+  WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role_global IN ('admin','super_admin')));
 
 CREATE POLICY "membro_all_ensino_checkins" ON ensino_checkins FOR ALL TO authenticated
   USING (EXISTS (
@@ -199,8 +199,8 @@ CREATE POLICY "membro_all_ensino_checkins" ON ensino_checkins FOR ALL TO authent
 ALTER TABLE ensino_presencas ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "admin_all_ensino_presencas" ON ensino_presencas FOR ALL TO authenticated
-  USING (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','super_admin')))
-  WITH CHECK (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','super_admin')));
+  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role_global IN ('admin','super_admin')))
+  WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role_global IN ('admin','super_admin')));
 
 CREATE POLICY "membro_all_ensino_presencas" ON ensino_presencas FOR ALL TO authenticated
   USING (EXISTS (
