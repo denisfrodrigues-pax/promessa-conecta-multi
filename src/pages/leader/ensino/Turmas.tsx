@@ -39,8 +39,7 @@ const EMPTY: FormData = { nome: '', descricao: '', ativo: true };
 
 export default function Turmas() {
   const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
-  const { profile, user } = useAuth();
-  const churchId = (profile as any)?.igreja_id as string | undefined;
+  const { churchId, user } = useAuth();
   const qc = useQueryClient();
 
   const [modal, setModal] = useState<'create' | 'edit' | null>(null);

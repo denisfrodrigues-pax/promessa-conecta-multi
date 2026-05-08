@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +15,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Paperclip, Trash2, Download, Upload, FileText, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Paperclip, Trash2, Download, Upload, FileText, Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -57,6 +57,7 @@ export default function PlanoDetalhe() {
   } | null>(null);
   const [deleteArquivo, setDeleteArquivo] = useState<Arquivo | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [aiLoading, setAiLoading] = useState<'objetivos' | 'conteudo' | 'completo' | null>(null);
 
   const { data: turmasList = [] } = useQuery({
     queryKey: ['ensino_turmas_all'],
@@ -74,15 +75,20 @@ export default function PlanoDetalhe() {
       const { data, error } = await (supabase as any)
         .from('ensino_planos_aula').select('*, ensino_turmas(nome)').eq('id', planoId).single();
       if (error) throw error;
-      const p = data as Plano;
-      setForm({
-        titulo: p.titulo, data_aula: p.data_aula, turma_id: p.turma_id,
-        objetivos: p.objetivos ?? '', conteudo: p.conteudo ?? '', anotacoes: p.anotacoes ?? '',
-      });
-      return p;
+      return data as Plano;
     },
     enabled: !!planoId,
   });
+
+  // Sync form when plano loads (including from cache on navigation)
+  useEffect(() => {
+    if (plano) {
+      setForm({
+        titulo: plano.titulo, data_aula: plano.data_aula, turma_id: plano.turma_id,
+        objetivos: plano.objetivos ?? '', conteudo: plano.conteudo ?? '', anotacoes: plano.anotacoes ?? '',
+      });
+    }
+  }, [plano?.id]);
 
   const { data: arquivos = [] } = useQuery({
     queryKey: ['ensino_plano_arquivos', planoId],
@@ -118,7 +124,8 @@ export default function PlanoDetalhe() {
 
   const deleteArquivoMutation = useMutation({
     mutationFn: async (arq: Arquivo) => {
-      await supabase.storage.from('ensino-planos').remove([`${planoId}/${arq.nome}`]);
+      const path = new URL(arq.arquivo_url).pathname.split('/ensino-planos/')[1];
+      if (path) await supabase.storage.from('ensino-planos').remove([path]);
       const { error } = await (supabase as any).from('ensino_plano_arquivos').delete().eq('id', arq.id);
       if (error) throw error;
     },
@@ -136,9 +143,10 @@ export default function PlanoDetalhe() {
     setUploading(true);
     try {
       for (const file of files) {
-        const path = `${planoId}/${Date.now()}_${file.name}`;
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const path = `${planoId}/${Date.now()}_${safeName}`;
         const { error: upErr } = await supabase.storage.from('ensino-planos').upload(path, file);
-        if (upErr) throw upErr;
+        if (upErr) throw new Error(`Erro no upload: ${upErr.message}`);
         const { data: { publicUrl } } = supabase.storage.from('ensino-planos').getPublicUrl(path);
         const { error: dbErr } = await (supabase as any).from('ensino_plano_arquivos').insert({
           plano_id: planoId, nome: file.name,
@@ -146,15 +154,49 @@ export default function PlanoDetalhe() {
           arquivo_tipo: file.type || 'application/octet-stream',
           tamanho_bytes: file.size,
         });
-        if (dbErr) throw dbErr;
+        if (dbErr) throw new Error(`Erro ao salvar: ${dbErr.message}`);
       }
       qc.invalidateQueries({ queryKey: ['ensino_plano_arquivos', planoId] });
       toast.success(`${files.length} arquivo${files.length > 1 ? 's' : ''} enviado${files.length > 1 ? 's' : ''}`);
-    } catch {
-      toast.error('Erro ao enviar arquivo');
+    } catch (err: any) {
+      toast.error('Erro ao enviar arquivo', { description: err?.message });
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
+    }
+  }
+
+  async function gerarComIA(secao: 'objetivos' | 'conteudo' | 'completo') {
+    if (!form) return;
+    if (!form.titulo.trim()) { toast.error('Preencha o título antes de usar a IA'); return; }
+    setAiLoading(secao);
+    try {
+      const turma = turmasList.find(t => t.id === form.turma_id);
+      const { data, error } = await supabase.functions.invoke('gera-plano-aula', {
+        body: {
+          titulo: form.titulo,
+          turma_nome: turma?.nome ?? '',
+          data_aula: form.data_aula,
+          secao,
+        },
+      });
+      if (error) throw error;
+      if (secao === 'completo') {
+        setForm(f => f && ({
+          ...f,
+          objetivos: data.objetivos ?? f.objetivos,
+          conteudo: data.conteudo ?? f.conteudo,
+          anotacoes: data.anotacoes ?? f.anotacoes,
+        }));
+        toast.success('Plano gerado pela IA! Revise e salve.');
+      } else {
+        setForm(f => f && ({ ...f, [secao]: data.text ?? '' }));
+        toast.success('Texto gerado! Revise e salve.');
+      }
+    } catch (err: any) {
+      toast.error('Erro ao gerar com IA', { description: err?.message });
+    } finally {
+      setAiLoading(null);
     }
   }
 
@@ -177,6 +219,18 @@ export default function PlanoDetalhe() {
             {plano?.ensino_turmas?.nome} · {format(new Date(plano!.data_aula + 'T12:00:00'), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => gerarComIA('completo')}
+          disabled={!!aiLoading}
+          className="text-promessa-700 border-promessa-300 hover:bg-promessa-50"
+        >
+          {aiLoading === 'completo'
+            ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            : <Wand2 className="w-4 h-4 mr-2" />}
+          Gerar com IA
+        </Button>
         <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
           {saveMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           Salvar
@@ -205,18 +259,49 @@ export default function PlanoDetalhe() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Objetivos */}
           <div>
-            <Label>Objetivos</Label>
+            <div className="flex items-center justify-between mb-1">
+              <Label>Objetivos</Label>
+              <Button
+                type="button" variant="ghost" size="sm"
+                className="h-6 text-xs text-promessa-600 hover:text-promessa-700 px-2"
+                onClick={() => gerarComIA('objetivos')}
+                disabled={!!aiLoading}
+              >
+                {aiLoading === 'objetivos'
+                  ? <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  : <Sparkles className="w-3 h-3 mr-1" />}
+                Gerar com IA
+              </Button>
+            </div>
             <Textarea value={form.objetivos}
               onChange={e => setForm(p => p && ({ ...p, objetivos: e.target.value }))}
               placeholder="O que os alunos aprenderão nesta aula..." rows={3} />
           </div>
+
+          {/* Conteúdo */}
           <div>
-            <Label>Conteúdo / Desenvolvimento</Label>
+            <div className="flex items-center justify-between mb-1">
+              <Label>Conteúdo / Desenvolvimento</Label>
+              <Button
+                type="button" variant="ghost" size="sm"
+                className="h-6 text-xs text-promessa-600 hover:text-promessa-700 px-2"
+                onClick={() => gerarComIA('conteudo')}
+                disabled={!!aiLoading}
+              >
+                {aiLoading === 'conteudo'
+                  ? <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  : <Sparkles className="w-3 h-3 mr-1" />}
+                Gerar com IA
+              </Button>
+            </div>
             <Textarea value={form.conteudo}
               onChange={e => setForm(p => p && ({ ...p, conteudo: e.target.value }))}
               placeholder="Texto bíblico, dinâmicas, perguntas para reflexão..." rows={6} />
           </div>
+
           <div>
             <Label>Anotações</Label>
             <Textarea value={form.anotacoes}

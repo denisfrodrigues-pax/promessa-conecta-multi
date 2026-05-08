@@ -37,8 +37,9 @@ interface FormData {
 
 const EMPTY_FORM: FormData = { nome: '', faixa_etaria_min: '', faixa_etaria_max: '', capacidade: '', ativo: true };
 
-export default function Salas() {
-  const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
+export default function Salas({ ministerioId: propMid }: { ministerioId?: string } = {}) {
+  const ctx = useOutletContext<{ ministerioId: string } | null>();
+  const ministerioId = propMid ?? ctx?.ministerioId ?? '';
   const qc = useQueryClient();
 
   const { data: churchId } = useQuery({

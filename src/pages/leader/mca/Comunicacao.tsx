@@ -32,8 +32,9 @@ function cleanPhone(tel: string): string {
   return tel.replace(/\D/g, '');
 }
 
-export default function Comunicacao() {
-  const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
+export default function Comunicacao({ ministerioId: propMid }: { ministerioId?: string } = {}) {
+  const ctx = useOutletContext<{ ministerioId: string } | null>();
+  const ministerioId = propMid ?? ctx?.ministerioId ?? '';
   const { user } = useAuth();
   const qc = useQueryClient();
 

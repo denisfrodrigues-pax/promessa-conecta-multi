@@ -70,8 +70,9 @@ function calcIdade(nascimento: string | null): string {
   return `${idade} ano${idade !== 1 ? 's' : ''}`;
 }
 
-export default function Criancas() {
-  const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
+export default function Criancas({ ministerioId: propMid }: { ministerioId?: string } = {}) {
+  const ctx = useOutletContext<{ ministerioId: string } | null>();
+  const ministerioId = propMid ?? ctx?.ministerioId ?? '';
   const qc = useQueryClient();
 
   const { data: churchId } = useQuery({

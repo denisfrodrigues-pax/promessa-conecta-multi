@@ -456,6 +456,7 @@ export default function AdminMinisterios() {
                   <SelectItem value="celebracao">Celebração</SelectItem>
                   <SelectItem value="recepcao">Recepção</SelectItem>
                   <SelectItem value="ensino">Ensino</SelectItem>
+                  <SelectItem value="pequenos-grupos">Pequenos Grupos</SelectItem>
                 </SelectContent>
               </Select>
             </div>

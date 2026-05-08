@@ -14,13 +14,12 @@ export interface MyMinistry {
 
 interface Profile {
   id: string;
+  user_id: string;
   nome: string;
   email: string;
   telefone?: string;
   foto_url?: string;
   status: string;
-  role_global?: string | null;
-  igreja_id?: string | null;
 }
 
 interface AuthContextType {
@@ -29,6 +28,7 @@ interface AuthContextType {
   profile: Profile | null;
   roles: UserRole[];
   loading: boolean;
+  churchId: string | null;
   myMinistries: MyMinistry[];
   myMinistriesLoading: boolean;
   refreshMyMinistries: () => Promise<void>;
@@ -51,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [churchId, setChurchId] = useState<string | null>(null);
   const [myMinistries, setMyMinistries] = useState<MyMinistry[]>([]);
   const [myMinistriesLoading, setMyMinistriesLoading] = useState(false);
   const loadedUserIdRef = useRef<string | null>(null);
@@ -105,29 +106,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserData = async (userId: string) => {
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, nome, email, telefone, foto_url, status, role_global, igreja_id')
-        .eq('id', userId)
-        .maybeSingle();
+      const [profileResult, rolesResult, churchResult] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, user_id, nome, email, telefone, foto_url, status')
+          .eq('user_id', userId)
+          .maybeSingle(),
+        supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId),
+        supabase
+          .from('igrejas')
+          .select('id')
+          .limit(1)
+          .maybeSingle(),
+      ]);
 
-      if (!profileError && profileData) {
-        setProfile(profileData as Profile);
-        // Derive roles from role_global so the rest of the app keeps working
-        const rg = (profileData as any).role_global as string | null;
-        const derived: UserRole[] = [];
-        if (rg === 'super_admin' || rg === 'admin_igreja') {
-          derived.push('admin', 'lider', 'financeiro', 'voluntario', 'membro');
-        } else if (rg === 'lider') {
-          derived.push('lider', 'voluntario', 'membro');
-        } else if (rg === 'voluntario') {
-          derived.push('voluntario', 'membro');
-        } else {
-          derived.push('membro');
-        }
-        setRoles(derived);
-      } else if (profileError) {
-        console.error('Profile fetch error:', profileError);
+      if (!profileResult.error && profileResult.data) {
+        setProfile(profileResult.data as Profile);
+      } else if (profileResult.error) {
+        console.error('Profile fetch error:', profileResult.error);
+      }
+
+      if (!rolesResult.error && rolesResult.data) {
+        setRoles(rolesResult.data.map(r => r.role as UserRole));
+      } else if (rolesResult.error) {
+        console.error('Roles fetch error:', rolesResult.error);
+      }
+
+      if (!churchResult.error && churchResult.data) {
+        setChurchId(churchResult.data.id);
       }
 
       refreshMyMinistries();
@@ -164,11 +173,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     setProfile(null);
     setRoles([]);
+    setChurchId(null);
     setMyMinistries([]);
   };
 
   const hasRole = (role: UserRole) => roles.includes(role);
-  
+
   const canMinistry = useCallback((action: 'read' | 'write', ministerioId: string): boolean => {
     if (roles.includes('admin')) return true;
     const ministry = myMinistries.find(m => m.ministerio_id === ministerioId);
@@ -176,7 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (action === 'read') return true;
     return ministry.papel === 'lider';
   }, [roles, myMinistries]);
-  
+
   const isAdmin = roles.includes('admin');
   const isFinanceiro = roles.includes('financeiro') && !roles.includes('admin');
   const isLider = roles.includes('lider') || roles.includes('admin');
@@ -189,6 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profile,
       roles,
       loading,
+      churchId,
       myMinistries,
       myMinistriesLoading,
       refreshMyMinistries,

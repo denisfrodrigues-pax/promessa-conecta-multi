@@ -34,8 +34,9 @@ function todayStr() {
   return format(new Date(), 'yyyy-MM-dd');
 }
 
-export default function Checkin() {
-  const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
+export default function Checkin({ ministerioId: propMid }: { ministerioId?: string } = {}) {
+  const ctx = useOutletContext<{ ministerioId: string } | null>();
+  const ministerioId = propMid ?? ctx?.ministerioId ?? '';
   const { user } = useAuth();
   const qc = useQueryClient();
 

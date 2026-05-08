@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useOutletContext, useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,6 +38,7 @@ const EMPTY: PlanoForm = { titulo: '', data_aula: '', turma_id: '' };
 
 export default function Planos() {
   const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -90,7 +91,7 @@ export default function Planos() {
       qc.invalidateQueries({ queryKey: ['ensino_planos', ministerioId] });
       toast.success('Plano criado');
       setModal(false);
-      navigate(`planos/${id}`);
+      navigate(`/leader/${slug}/planos/${id}`);
     },
     onError: () => toast.error('Erro ao criar plano'),
   });
@@ -150,7 +151,7 @@ export default function Planos() {
         <div className="space-y-2">
           {planos.map(p => (
             <Card key={p.id} className="cursor-pointer hover:border-promessa-300 transition-colors"
-              onClick={() => navigate(`planos/${p.id}`)}>
+              onClick={() => navigate(`/leader/${slug}/planos/${p.id}`)}>
               <CardContent className="py-3 px-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">

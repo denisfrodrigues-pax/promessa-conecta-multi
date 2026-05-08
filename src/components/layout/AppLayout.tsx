@@ -2,16 +2,17 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { ChurchLogo } from '@/components/ChurchLogo';
-import { 
-  Users, 
-  Calendar, 
-  Bell, 
-  Heart, 
+import {
+  Users,
+  Calendar,
+  Bell,
+  Heart,
   LayoutDashboard,
   Menu,
   X,
   Home,
-  User
+  User,
+  BookOpenCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -60,6 +61,7 @@ export default function AppLayout() {
     { icon: Users, label: 'Minha Base', path: '/app/minha-base' },
     { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
     { icon: Calendar, label: 'Calendário', path: '/app/calendario' },
+    { icon: BookOpenCheck, label: 'Meu Ensino', path: '/app/meu-ensino' },
     { icon: Bell, label: 'Notificações', path: '/app/notificacoes', badge: unreadCount > 0 ? unreadCount : undefined },
     { icon: Heart, label: 'Contribuições', path: '/app/contribuicoes' },
     { icon: User, label: 'Perfil', path: '/app/perfil' },

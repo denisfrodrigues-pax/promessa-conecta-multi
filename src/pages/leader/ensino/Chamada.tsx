@@ -13,7 +13,7 @@ import {
 import { toast } from 'sonner';
 import {
   Search, UserPlus, Check, X, Save, ChevronDown, ChevronUp,
-  Users, UserCheck, UserX, Clock,
+  Users, UserCheck, UserX, Clock, Pencil,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -50,8 +50,7 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export default function Chamada() {
   const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
-  const { profile, user } = useAuth();
-  const churchId = (profile as any)?.igreja_id as string | undefined;
+  const { churchId, user } = useAuth();
   const qc = useQueryClient();
 
   const [turmaId, setTurmaId] = useState('');
@@ -84,13 +83,12 @@ export default function Chamada() {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, nome')
-        .eq('church_id', churchId)
         .ilike('nome', `%${debouncedBusca}%`)
         .limit(8);
       if (error) throw error;
       return (data ?? []) as PerfilResult[];
     },
-    enabled: debouncedBusca.length >= 2 && !!churchId,
+    enabled: debouncedBusca.length >= 2,
   });
 
   const { data: historico = [] } = useQuery({
@@ -227,6 +225,29 @@ export default function Chamada() {
 
   function removerPessoa(key: string) {
     setPessoas(prev => prev.filter(p => p.key !== key));
+  }
+
+  async function carregarCheckin(cId: string, cData: string) {
+    const { data: presencas } = await (supabase as any)
+      .from('ensino_presencas').select('*').eq('checkin_id', cId);
+    const lista: Pessoa[] = (presencas ?? []).map((p: any) => ({
+      key: p.id,
+      perfil_id: p.perfil_id,
+      nome: p.nome_manual ?? `Perfil ${p.perfil_id?.slice(0, 6)}`,
+      is_visitante: p.is_visitante,
+      presente: p.presente,
+    }));
+    const perfilIds = lista.filter(p => p.perfil_id).map(p => p.perfil_id!);
+    if (perfilIds.length) {
+      const { data: profs } = await supabase.from('profiles').select('id, nome').in('id', perfilIds);
+      const map = Object.fromEntries((profs ?? []).map((p: any) => [p.id, p.nome]));
+      lista.forEach(p => { if (p.perfil_id && map[p.perfil_id]) p.nome = map[p.perfil_id]; });
+    }
+    setData(cData);
+    setCheckinId(cId);
+    setPessoas(lista);
+    setSessaoAberta(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   const presentes = pessoas.filter(p => p.presente).length;
@@ -391,8 +412,8 @@ export default function Chamada() {
               {historico.map(h => (
                 <Card key={h.id}>
                   <CardContent className="py-3 px-4">
-                    <div className="flex items-center justify-between">
-                      <div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
                         <p className="text-sm font-medium">
                           {format(new Date(h.data + 'T12:00:00'), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                         </p>
@@ -400,13 +421,22 @@ export default function Chamada() {
                           {h.ensino_turmas?.nome}
                         </p>
                       </div>
-                      <div className="flex gap-3 text-xs">
-                        <span className="flex items-center gap-1 text-green-600 font-medium">
-                          <UserCheck className="w-3.5 h-3.5" />{h.presentes}
-                        </span>
-                        <span className="flex items-center gap-1 text-red-400">
-                          <UserX className="w-3.5 h-3.5" />{h.ausentes}
-                        </span>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex gap-3 text-xs">
+                          <span className="flex items-center gap-1 text-green-600 font-medium">
+                            <UserCheck className="w-3.5 h-3.5" />{h.presentes}
+                          </span>
+                          <span className="flex items-center gap-1 text-red-400">
+                            <UserX className="w-3.5 h-3.5" />{h.ausentes}
+                          </span>
+                        </div>
+                        <Button
+                          size="sm" variant="outline"
+                          className="text-promessa-700 border-promessa-300 hover:bg-promessa-50"
+                          onClick={() => carregarCheckin(h.id, h.data)}
+                        >
+                          <Pencil className="w-3.5 h-3.5 mr-1" />Editar
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

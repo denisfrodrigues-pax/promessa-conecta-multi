@@ -8,7 +8,7 @@ import { NavLink } from "@/components/NavLink";
 import {
   LayoutDashboard, Users, CalendarDays, Bell, BarChart3,
   FolderOpen, Home, Loader2, ArrowLeft, Music2, ListMusic, UserCheck, History,
-  Baby, ClipboardCheck, MessageCircle, BookOpenCheck,
+  Baby, ClipboardCheck, MessageCircle, BookOpenCheck, GraduationCap, Network,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -155,13 +155,9 @@ export default function LeaderMinisterioLayout() {
 
   const mcaNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
-    { icon: Baby, label: "Crianças", path: `${basePath}/criancas` },
-    { icon: Users, label: "Salas", path: `${basePath}/salas` },
-    { icon: ClipboardCheck, label: "Check-in", path: `${basePath}/checkin` },
+    { icon: GraduationCap, label: "Gestão", path: `${basePath}/kids` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
-    { icon: BookOpenCheck, label: "Planos de Aula", path: `${basePath}/planos` },
-    { icon: MessageCircle, label: "Comunicação", path: `${basePath}/comunicacao` },
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
     { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
     { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
@@ -179,12 +175,23 @@ export default function LeaderMinisterioLayout() {
     { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
   ];
 
+  const pequenosGruposNavItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
+    { icon: Network, label: "Grupos", path: `${basePath}/grupos` },
+    { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
+    { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
+    { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
+    { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
+    { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
+  ];
+
   const navBySlug: Record<string, typeof defaultNavItems> = {
     musica: musicaNavItems,
     celebracao: celebracaoNavItems,
     recepcao: recepcaoNavItems,
     mca: mcaNavItems,
     ensino: ensinoNavItems,
+    'pequenos-grupos': pequenosGruposNavItems,
   };
 
   const navItems = navBySlug[ministerio.tipo ?? ''] ?? defaultNavItems;

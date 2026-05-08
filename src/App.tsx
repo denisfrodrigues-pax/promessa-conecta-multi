@@ -107,6 +107,7 @@ const Contribuir = lazy(() => import("@/pages/member/Contribuir"));
 const AppHome = lazy(() => import("@/pages/app/AppHome"));
 const AppCalendario = lazy(() => import("@/pages/app/Calendario"));
 const VoluntariosDoDia = lazy(() => import("@/pages/app/VoluntariosDoDia"));
+const MeuEnsino = lazy(() => import("@/pages/app/MeuEnsino"));
 
 // Kids Panel
 const KidsCheckinPanel = lazy(() => import("@/pages/kids/KidsCheckinPanel"));
@@ -139,6 +140,9 @@ const LeaderCelebracaoCultos = lazy(() => import("@/pages/leader/celebracao/Cult
 const LeaderCelebracaoCultoDetalhe = lazy(() => import("@/pages/leader/celebracao/CultoDetalhe"));
 const LeaderRecepcaoVisitantesDia = lazy(() => import("@/pages/leader/recepcao/VisitantesDia"));
 const LeaderRecepcaoVisitantesHistorico = lazy(() => import("@/pages/leader/recepcao/VisitantesHistorico"));
+const LeaderMcaKidsHub = lazy(() => import("@/pages/leader/mca/KidsHub"));
+const LeaderPgGruposHub = lazy(() => import("@/pages/leader/pequenos-grupos/GruposHub"));
+const LeaderPgGrupoDetalhe = lazy(() => import("@/pages/leader/pequenos-grupos/GrupoDetalhe"));
 const LeaderMcaSalas = lazy(() => import("@/pages/leader/mca/Salas"));
 const LeaderMcaCriancas = lazy(() => import("@/pages/leader/mca/Criancas"));
 const LeaderMcaCheckin = lazy(() => import("@/pages/leader/mca/Checkin"));
@@ -250,6 +254,7 @@ const App = () => (
               <Route path="contribuir" element={<Contribuir />} />
               <Route path="calendario" element={<AppCalendario />} />
               <Route path="voluntarios-do-dia" element={<VoluntariosDoDia />} />
+              <Route path="meu-ensino" element={<MeuEnsino />} />
             </Route>
 
             {/* Redirects legados */}
@@ -360,7 +365,11 @@ const App = () => (
               {/* Recepção */}
               <Route path="visitantes-dia" element={<LeaderRecepcaoVisitantesDia />} />
               <Route path="visitantes" element={<LeaderRecepcaoVisitantesHistorico />} />
+              {/* Pequenos Grupos */}
+              <Route path="grupos" element={<LeaderPgGruposHub />} />
+              <Route path="grupos/grupo/:grupoId" element={<LeaderPgGrupoDetalhe />} />
               {/* MCA */}
+              <Route path="kids" element={<LeaderMcaKidsHub />} />
               <Route path="salas" element={<LeaderMcaSalas />} />
               <Route path="criancas" element={<LeaderMcaCriancas />} />
               <Route path="checkin" element={<LeaderMcaCheckin />} />

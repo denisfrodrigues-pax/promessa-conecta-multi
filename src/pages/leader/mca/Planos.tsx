@@ -36,8 +36,9 @@ interface Plano {
 interface PlanoForm { titulo: string; data_aula: string; sala_id: string }
 const EMPTY: PlanoForm = { titulo: '', data_aula: '', sala_id: '' };
 
-export default function Planos() {
-  const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
+export default function Planos({ ministerioId: propMid }: { ministerioId?: string } = {}) {
+  const ctx = useOutletContext<{ ministerioId: string } | null>();
+  const ministerioId = propMid ?? ctx?.ministerioId ?? '';
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
