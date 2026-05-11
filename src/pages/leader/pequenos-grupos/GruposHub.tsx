@@ -10,8 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
+import { BaseFotoUpload } from '@/components/base/BaseFotoUpload';
 import { toast } from 'sonner';
 import {
   Network, Users, Target, Clock, MapPin, ChevronRight, Plus, Search, Loader2,
@@ -32,7 +36,23 @@ interface Grupo {
 const DIAS_SEMANA = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
 
 const formVazio = () => ({
-  nome: '', descricao: '', dia_semana: '', horario: '', local: '', capacidade: '20',
+  nome: '',
+  descricao: '',
+  dia_semana: '',
+  horario: '',
+  local: '',
+  rua: '',
+  numero: '',
+  bairro: '',
+  cidade: '',
+  uf: '',
+  capacidade: '20',
+  foto_url: '',
+  anfitrioes: '',
+  whatsapp_lider: '',
+  observacoes: '',
+  visibilidade: 'privado',
+  status: 'ativo',
 });
 
 export default function GruposHub() {
@@ -80,9 +100,18 @@ export default function GruposHub() {
         dia_semana: f.dia_semana || null,
         horario: f.horario || null,
         local: f.local.trim() || null,
+        rua: f.rua.trim() || null,
+        numero: f.numero.trim() || null,
+        bairro: f.bairro.trim() || null,
+        cidade: f.cidade.trim() || null,
+        uf: f.uf.trim() || null,
         capacidade: parseInt(f.capacidade) || 20,
-        status: 'ativo',
-        visibilidade: 'privado',
+        foto_url: f.foto_url || null,
+        anfitrioes: f.anfitrioes.trim() || null,
+        whatsapp_lider: f.whatsapp_lider.trim() || null,
+        observacoes: f.observacoes.trim() || null,
+        visibilidade: f.visibilidade,
+        status: f.status,
         ministerio_id: ministerioId,
       });
       if (error) throw error;
@@ -93,7 +122,7 @@ export default function GruposHub() {
       setModalAberto(false);
       setForm(formVazio());
     },
-    onError: () => toast.error('Erro ao criar grupo'),
+    onError: (e: any) => toast.error('Erro ao criar grupo: ' + (e?.message ?? '')),
   });
 
   const gruposFiltrados = grupos.filter((g) => {
@@ -105,6 +134,8 @@ export default function GruposHub() {
 
   const totalMembros = grupos.reduce((s, g) => s + g.membros_count, 0);
   const totalCapacidade = grupos.reduce((s, g) => s + (g.capacidade ?? 20), 0);
+
+  const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
   return (
     <div className="space-y-6">
@@ -279,7 +310,7 @@ export default function GruposHub() {
 
       {/* Modal: Criar Grupo */}
       <Dialog open={modalAberto} onOpenChange={(v) => { setModalAberto(v); if (!v) setForm(formVazio()); }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Network className="w-4 h-4" />
@@ -287,70 +318,189 @@ export default function GruposHub() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div>
-              <Label>Nome *</Label>
-              <Input
-                value={form.nome}
-                onChange={(e) => setForm((p) => ({ ...p, nome: e.target.value }))}
-                placeholder="Nome do grupo"
-              />
+          <div className="space-y-5">
+            {/* Foto */}
+            <BaseFotoUpload
+              currentUrl={form.foto_url || null}
+              baseId="new"
+              onUploadComplete={(url) => set('foto_url', url)}
+            />
+
+            {/* Básico */}
+            <div className="space-y-3">
+              <div>
+                <Label>Nome *</Label>
+                <Input
+                  value={form.nome}
+                  onChange={(e) => set('nome', e.target.value)}
+                  placeholder="Nome do grupo"
+                />
+              </div>
+
+              <div>
+                <Label>Descrição</Label>
+                <Textarea
+                  value={form.descricao}
+                  onChange={(e) => set('descricao', e.target.value)}
+                  placeholder="Uma breve descrição do grupo..."
+                  rows={2}
+                />
+              </div>
             </div>
 
-            <div>
-              <Label>Descrição</Label>
-              <Textarea
-                value={form.descricao}
-                onChange={(e) => setForm((p) => ({ ...p, descricao: e.target.value }))}
-                placeholder="Uma breve descrição do grupo..."
-                rows={2}
-              />
-            </div>
-
+            {/* Horário */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Dia da semana</Label>
-                <select
-                  value={form.dia_semana}
-                  onChange={(e) => setForm((p) => ({ ...p, dia_semana: e.target.value }))}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <option value="">Selecione</option>
-                  {DIAS_SEMANA.map((d) => <option key={d} value={d}>{d}</option>)}
-                </select>
+                <Select value={form.dia_semana} onValueChange={(v) => set('dia_semana', v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DIAS_SEMANA.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Horário</Label>
                 <Input
                   type="time"
                   value={form.horario}
-                  onChange={(e) => setForm((p) => ({ ...p, horario: e.target.value }))}
+                  onChange={(e) => set('horario', e.target.value)}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 sm:col-span-1">
-                <Label>Local</Label>
+            {/* Local */}
+            <div>
+              <Label>Nome do Local</Label>
+              <Input
+                value={form.local}
+                onChange={(e) => set('local', e.target.value)}
+                placeholder="Ex: Casa do João, Salão da Igreja..."
+              />
+            </div>
+
+            {/* Endereço */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-muted-foreground">Endereço completo</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <Label>Rua</Label>
+                  <Input
+                    value={form.rua}
+                    onChange={(e) => set('rua', e.target.value)}
+                    placeholder="Rua / Av."
+                  />
+                </div>
+                <div>
+                  <Label>Número</Label>
+                  <Input
+                    value={form.numero}
+                    onChange={(e) => set('numero', e.target.value)}
+                    placeholder="Nº"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Bairro</Label>
+                  <Input
+                    value={form.bairro}
+                    onChange={(e) => set('bairro', e.target.value)}
+                    placeholder="Bairro"
+                  />
+                </div>
+                <div>
+                  <Label>Cidade</Label>
+                  <Input
+                    value={form.cidade}
+                    onChange={(e) => set('cidade', e.target.value)}
+                    placeholder="Cidade"
+                  />
+                </div>
+              </div>
+              <div className="w-24">
+                <Label>UF</Label>
                 <Input
-                  value={form.local}
-                  onChange={(e) => setForm((p) => ({ ...p, local: e.target.value }))}
-                  placeholder="Endereço ou nome do local"
+                  value={form.uf}
+                  onChange={(e) => set('uf', e.target.value.toUpperCase().slice(0, 2))}
+                  placeholder="SP"
+                  maxLength={2}
                 />
               </div>
+            </div>
+
+            {/* Liderança */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Anfitriões</Label>
+                <Input
+                  value={form.anfitrioes}
+                  onChange={(e) => set('anfitrioes', e.target.value)}
+                  placeholder="Nome(s) do(s) anfitrião(ões)"
+                />
+              </div>
+              <div>
+                <Label>WhatsApp do Líder</Label>
+                <Input
+                  value={form.whatsapp_lider}
+                  onChange={(e) => set('whatsapp_lider', e.target.value)}
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
+            </div>
+
+            {/* Capacidade + Visibilidade + Status */}
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <Label>Capacidade</Label>
                 <Input
                   type="number"
                   min="1"
                   value={form.capacidade}
-                  onChange={(e) => setForm((p) => ({ ...p, capacidade: e.target.value }))}
+                  onChange={(e) => set('capacidade', e.target.value)}
                 />
               </div>
+              <div>
+                <Label>Visibilidade</Label>
+                <Select value={form.visibilidade} onValueChange={(v) => set('visibilidade', v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="publico">Público</SelectItem>
+                    <SelectItem value="privado">Privado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={(v) => set('status', v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Observações */}
+            <div>
+              <Label>Observações</Label>
+              <Textarea
+                value={form.observacoes}
+                onChange={(e) => set('observacoes', e.target.value)}
+                placeholder="Informações adicionais sobre o grupo..."
+                rows={2}
+              />
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="mt-2">
             <Button variant="outline" onClick={() => setModalAberto(false)}>Cancelar</Button>
             <Button
               disabled={!form.nome.trim() || criarMutation.isPending}
