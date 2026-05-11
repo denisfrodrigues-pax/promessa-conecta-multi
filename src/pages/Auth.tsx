@@ -13,9 +13,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from 'sonner';
 import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, Church, Users, Heart, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
+import { getEmailByCPF } from '@/utils/auth';
+
+const isCPF = (value: string) =>
+  /^[\d.\-]+$/.test(value.trim()) && value.replace(/\D/g, '').length === 11;
 
 const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
+  emailOrCpf: z.string().min(3, 'Informe seu CPF ou e-mail'),
   password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
 });
 
@@ -36,7 +40,7 @@ const forgotPasswordSchema = z.object({
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [loginData, setLoginData] = useState({ emailOrCpf: '', password: '' });
   const [signupData, setSignupData] = useState({ nome: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -65,7 +69,7 @@ export default function Auth() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-    
+
     try {
       loginSchema.parse(loginData);
     } catch (err) {
@@ -82,18 +86,29 @@ export default function Auth() {
     }
 
     setIsLoading(true);
-    const { error } = await signIn(loginData.email, loginData.password);
+
+    let emailResolvido = loginData.emailOrCpf.trim();
+    if (isCPF(emailResolvido)) {
+      const found = await getEmailByCPF(emailResolvido);
+      if (!found) {
+        toast.error('CPF não encontrado no sistema.');
+        setIsLoading(false);
+        return;
+      }
+      emailResolvido = found;
+    }
+
+    const { error } = await signIn(emailResolvido, loginData.password);
     setIsLoading(false);
 
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
-        toast.error('Email ou senha incorretos');
+        toast.error('E-mail/CPF ou senha incorretos');
       } else {
         toast.error('Erro ao fazer login. Tente novamente.');
       }
     } else {
       toast.success('Bem-vindo de volta!');
-      // Redirect will be handled by useEffect when roles are loaded
     }
   };
 
@@ -348,7 +363,7 @@ export default function Auth() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">ou entre com email</span>
+                <span className="bg-background px-2 text-muted-foreground">ou entre com CPF ou e-mail</span>
               </div>
             </div>
 
@@ -372,20 +387,24 @@ export default function Auth() {
                 <form onSubmit={handleLogin} className="space-y-5">
                   <div className="space-y-2">
                     <Label htmlFor="login-email" className="text-foreground font-medium">
-                      Email
+                      CPF ou E-mail
                     </Label>
                     <div className="relative group">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      {isCPF(loginData.emailOrCpf) ? (
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      ) : (
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      )}
                       <Input
                         id="login-email"
-                        type="email"
-                        placeholder="seu@email.com"
+                        type="text"
+                        placeholder="000.000.000-00 ou email@exemplo.com"
                         className="pl-11 h-12 bg-muted/30 border-border focus:border-primary focus:ring-primary"
-                        value={loginData.email}
-                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        value={loginData.emailOrCpf}
+                        onChange={(e) => setLoginData({ ...loginData, emailOrCpf: e.target.value })}
                       />
                     </div>
-                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                    {errors.emailOrCpf && <p className="text-sm text-destructive">{errors.emailOrCpf}</p>}
                   </div>
 
                   <div className="space-y-2">
