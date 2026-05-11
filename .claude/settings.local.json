@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed 's/:$//')",
+      "Bash(sed 's/^      //')",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(xargs -I {} basename {})",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(python3 -c ' *)",
+      "Bash(grep -o '\"role\":\"user\",\"content\":\\\\[{\"type\":\"text\",\"text\":\"[^\"]*\"' /c/Users/DenisFR/.claude/projects/c--Users-DenisFR-unum-church-growth-suite-promessa-conecta/8182da07-92a2-4e6d-9cf4-b6a37218725f.jsonl)"
+    ]
+  }
+}

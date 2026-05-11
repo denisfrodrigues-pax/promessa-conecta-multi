@@ -11,8 +11,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { 
-  ArrowLeft, Save, Upload, MessageCircle, User, Phone, Mail, MapPin, 
+import { Switch } from '@/components/ui/switch';
+import {
+  ArrowLeft, Save, Upload, MessageCircle, User, Phone, Mail, MapPin,
   Calendar, Heart, Clock, Home, Users, AlertCircle, Plus, History, Link2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -224,6 +225,38 @@ const estadoCivilOptions = [
   { value: 'casado', label: 'Casado(a)' },
   { value: 'divorciado', label: 'Divorciado(a)' },
   { value: 'viuvo', label: 'Viúvo(a)' },
+  { value: 'separado', label: 'Separado(a)' },
+  { value: 'uniao_estavel', label: 'União Estável' },
+];
+
+const SITUACAO_MIN_OPTIONS = [
+  { value: 'ativo', label: 'Membro Ativo' },
+  { value: 'em_disciplina', label: 'Membro em Disciplina' },
+  { value: 'frequentador', label: 'Frequentador' },
+];
+
+const ORDENACAO_MIN_OPTIONS = [
+  { value: 'nenhum', label: 'Nenhum' },
+  { value: 'pastor_parcial', label: 'Pastor Tempo Parcial' },
+  { value: 'pastor_integral', label: 'Pastor Tempo Integral' },
+  { value: 'missionaria_parcial', label: 'Missionária Tempo Parcial' },
+  { value: 'missionaria_integral', label: 'Missionária Tempo Integral' },
+  { value: 'presbitero', label: 'Presbítero' },
+  { value: 'diacono', label: 'Diácono(isa)' },
+  { value: 'jubilado', label: 'Jubilado(a)' },
+];
+
+const ORIGEM_MIN_OPTIONS = [
+  { value: 'promessista_nato', label: 'Promessista Nato' },
+  { value: 'transferencia_denominacao', label: 'Transferência de outra denominação' },
+  { value: 'transferencia_iap', label: 'Transferência de outra IAP' },
+  { value: 'neopentecostal', label: 'Igreja Neopentecostal' },
+  { value: 'reformada', label: 'Igreja Reformada' },
+  { value: 'pentecostal', label: 'Pentecostal' },
+  { value: 'sabatista', label: 'Sabatista' },
+  { value: 'catolica', label: 'Igreja Católica' },
+  { value: 'outras_religioes', label: 'Outras religiões' },
+  { value: 'sem_religiao', label: 'Sem religião anterior' },
 ];
 
 // Helper functions (cleanPhone imported from formatters)
@@ -304,6 +337,24 @@ export default function MembroDetalhes() {
     observacoes: '',
   });
 
+  const [ministerialData, setMinisterialData] = useState({
+    situacao_ministerial: 'ativo',
+    data_situacao_inicio: '',
+    situacao_observacao: '',
+    origem_membro: '',
+    data_batismo_agua: '',
+    pastor_oficiante: '',
+    batismo_espirito_santo: false,
+    data_batismo_espirito: '',
+    ordenacao_funcao: 'nenhum',
+    data_ordenacao_inicio: '',
+    data_ordenacao_fim: '',
+    ordenacao_observacao: '',
+    observacoes_pastorais: '',
+  });
+  const setMin = (field: string, value: unknown) =>
+    setMinisterialData((prev) => ({ ...prev, [field]: value }));
+
   useEffect(() => {
     if (id) {
       fetchMembro();
@@ -378,6 +429,21 @@ export default function MembroDetalhes() {
         data_batismo: combinedBatismo,
         status: data.status || 'ativo',
         observacoes: data.observacoes || '',
+      });
+      setMinisterialData({
+        situacao_ministerial: (data as any).situacao_ministerial || 'ativo',
+        data_situacao_inicio: (data as any).data_situacao_inicio || '',
+        situacao_observacao: (data as any).situacao_observacao || '',
+        origem_membro: (data as any).origem_membro || '',
+        data_batismo_agua: (data as any).data_batismo_agua || '',
+        pastor_oficiante: (data as any).pastor_oficiante || '',
+        batismo_espirito_santo: (data as any).batismo_espirito_santo || false,
+        data_batismo_espirito: (data as any).data_batismo_espirito || '',
+        ordenacao_funcao: (data as any).ordenacao_funcao || 'nenhum',
+        data_ordenacao_inicio: (data as any).data_ordenacao_inicio || '',
+        data_ordenacao_fim: (data as any).data_ordenacao_fim || '',
+        ordenacao_observacao: (data as any).ordenacao_observacao || '',
+        observacoes_pastorais: (data as any).observacoes_pastorais || '',
       });
       setFotoPreview(combinedFoto);
     } catch (error) {
@@ -595,6 +661,20 @@ export default function MembroDetalhes() {
       const updateData: Record<string, unknown> = {
         status: formData.status,
         observacoes: formData.observacoes.trim() || null,
+        // Dados ministeriais - sempre editáveis pelo admin independente de user_id
+        situacao_ministerial: ministerialData.situacao_ministerial || null,
+        data_situacao_inicio: ministerialData.data_situacao_inicio || null,
+        situacao_observacao: ministerialData.situacao_observacao.trim() || null,
+        origem_membro: ministerialData.origem_membro || null,
+        data_batismo_agua: ministerialData.data_batismo_agua || null,
+        pastor_oficiante: ministerialData.pastor_oficiante.trim() || null,
+        batismo_espirito_santo: ministerialData.batismo_espirito_santo,
+        data_batismo_espirito: ministerialData.data_batismo_espirito || null,
+        ordenacao_funcao: ministerialData.ordenacao_funcao || 'nenhum',
+        data_ordenacao_inicio: ministerialData.data_ordenacao_inicio || null,
+        data_ordenacao_fim: ministerialData.data_ordenacao_fim || null,
+        ordenacao_observacao: ministerialData.ordenacao_observacao.trim() || null,
+        observacoes_pastorais: ministerialData.observacoes_pastorais.trim() || null,
       };
 
       // DADOS PESSOAIS - APENAS quando NÃO vinculado a perfil
@@ -1316,6 +1396,129 @@ export default function MembroDetalhes() {
           </Card>
         </div>
       )}
+
+      {/* Dados Ministeriais — sempre editáveis pelo admin */}
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Heart className="w-4 h-4 text-primary" />
+            Dados Ministeriais
+            <Badge variant="default" className="text-xs font-normal">editável</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Situação */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Situação</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Situação Ministerial</Label>
+                <Select value={ministerialData.situacao_ministerial} onValueChange={(v) => setMin('situacao_ministerial', v)} disabled={!isEditing}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {SITUACAO_MIN_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Data de Início</Label>
+                <Input type="date" value={ministerialData.data_situacao_inicio} onChange={(e) => setMin('data_situacao_inicio', e.target.value)} disabled={!isEditing} />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Observação</Label>
+                <Textarea value={ministerialData.situacao_observacao} onChange={(e) => setMin('situacao_observacao', e.target.value)} disabled={!isEditing} rows={2} placeholder="Observações..." />
+              </div>
+            </div>
+          </div>
+
+          {/* Origem */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Origem</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Como chegou à igreja</Label>
+                <Select value={ministerialData.origem_membro} onValueChange={(v) => setMin('origem_membro', v)} disabled={!isEditing}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {ORIGEM_MIN_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Batismo */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Batismo</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Data do Batismo em Água</Label>
+                <Input type="date" value={ministerialData.data_batismo_agua} onChange={(e) => setMin('data_batismo_agua', e.target.value)} disabled={!isEditing} />
+              </div>
+              <div className="space-y-2">
+                <Label>Pastor Oficiante</Label>
+                <Input value={ministerialData.pastor_oficiante} onChange={(e) => setMin('pastor_oficiante', e.target.value)} disabled={!isEditing} placeholder="Nome do pastor" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={ministerialData.batismo_espirito_santo}
+                    onCheckedChange={(v) => setMin('batismo_espirito_santo', v)}
+                    disabled={!isEditing}
+                  />
+                  <Label>Recebeu o Batismo no Espírito Santo</Label>
+                </div>
+              </div>
+              {ministerialData.batismo_espirito_santo && (
+                <div className="space-y-2">
+                  <Label>Data do Batismo no Espírito Santo</Label>
+                  <Input type="date" value={ministerialData.data_batismo_espirito} onChange={(e) => setMin('data_batismo_espirito', e.target.value)} disabled={!isEditing} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Ordenação */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Ordenação</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Função</Label>
+                <Select value={ministerialData.ordenacao_funcao} onValueChange={(v) => setMin('ordenacao_funcao', v)} disabled={!isEditing}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ORDENACAO_MIN_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Data de Início</Label>
+                <Input type="date" value={ministerialData.data_ordenacao_inicio} onChange={(e) => setMin('data_ordenacao_inicio', e.target.value)} disabled={!isEditing} />
+              </div>
+              <div className="space-y-2">
+                <Label>Data de Término (opcional)</Label>
+                <Input type="date" value={ministerialData.data_ordenacao_fim} onChange={(e) => setMin('data_ordenacao_fim', e.target.value)} disabled={!isEditing} />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Observação</Label>
+                <Textarea value={ministerialData.ordenacao_observacao} onChange={(e) => setMin('ordenacao_observacao', e.target.value)} disabled={!isEditing} rows={2} placeholder="Observações sobre a ordenação..." />
+              </div>
+            </div>
+          </div>
+
+          {/* Observações Pastorais */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Observações Pastorais</h4>
+            <Textarea
+              value={ministerialData.observacoes_pastorais}
+              onChange={(e) => setMin('observacoes_pastorais', e.target.value)}
+              disabled={!isEditing}
+              rows={4}
+              placeholder="Informações confidenciais de acompanhamento pastoral..."
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Histórico de Bases */}
       <Card>
