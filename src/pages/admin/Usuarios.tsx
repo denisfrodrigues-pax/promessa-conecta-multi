@@ -152,14 +152,29 @@ export default function Usuarios() {
     if (pendingRoles.length === 0) return;
     setSavingRoleFor(userId);
     try {
-      await supabase.from('user_roles').delete().eq('user_id', userId);
-      const { error } = await supabase.from('user_roles').insert(
-        pendingRoles.map((role) => ({ user_id: userId, role: role as 'admin' | 'lider' | 'financeiro' | 'voluntario' | 'membro' | 'visitante' }))
-      );
-      if (error) throw error;
+      const currentRoles = getUserRoles(userId);
+      const toRemove = currentRoles.filter((r) => !pendingRoles.includes(r));
+      const toAdd = pendingRoles.filter((r) => !currentRoles.includes(r));
+
+      if (toRemove.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId)
+          .in('role', toRemove);
+        if (deleteError) throw deleteError;
+      }
+
+      if (toAdd.length > 0) {
+        const { error: insertError } = await supabase
+          .from('user_roles')
+          .insert(toAdd.map((role) => ({ user_id: userId, role: role as 'admin' | 'lider' | 'financeiro' | 'voluntario' | 'membro' | 'visitante' })));
+        if (insertError) throw insertError;
+      }
+
       setRoles((prev) => [
-        ...prev.filter((r) => r.user_id !== userId),
-        ...pendingRoles.map((role) => ({ user_id: userId, role })),
+        ...prev.filter((r) => !(r.user_id === userId && toRemove.includes(r.role))),
+        ...toAdd.map((role) => ({ user_id: userId, role })),
       ]);
       const labels = pendingRoles.map(getRoleLabel).join(', ');
       toast.success(`Funções de ${userName} atualizadas: ${labels}`);
