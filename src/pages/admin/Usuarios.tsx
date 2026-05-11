@@ -13,7 +13,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield, UserX, UserPlus, Trash2, Loader2, Pencil } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
@@ -477,21 +476,6 @@ export default function Usuarios() {
                             <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
                             <span className="text-xs text-muted-foreground">Salvando...</span>
                           </div>
-                        ) : user.user_id === currentUser?.id ? (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex flex-wrap gap-1 cursor-not-allowed">
-                                  {getUserRoles(user.user_id).map((role) => (
-                                    <Badge key={role} variant={getRoleBadgeVariant(role)} className="opacity-60">
-                                      {getRoleLabel(role)}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>Você não pode alterar seu próprio role</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
                         ) : (
                           <Popover
                             open={openRolePopover === user.user_id}
@@ -519,24 +503,29 @@ export default function Usuarios() {
                                 Funções
                               </p>
                               <div className="space-y-2">
-                                {ROLE_OPTIONS.map((option) => (
-                                  <label key={option.value} className="flex items-center gap-2 cursor-pointer select-none">
-                                    <Checkbox
-                                      checked={pendingRoles.includes(option.value)}
-                                      onCheckedChange={(checked) => {
-                                        if (!checked && pendingRoles.length === 1) return;
-                                        setPendingRoles((prev) =>
-                                          checked
-                                            ? [...prev, option.value]
-                                            : prev.filter((r) => r !== option.value)
-                                        );
-                                      }}
-                                    />
-                                    <Badge variant={getRoleBadgeVariant(option.value)} className="text-xs pointer-events-none">
-                                      {option.label}
-                                    </Badge>
-                                  </label>
-                                ))}
+                                {ROLE_OPTIONS.map((option) => {
+                                  const isOwnAdmin = user.user_id === currentUser?.id && option.value === 'admin';
+                                  return (
+                                    <label key={option.value} className={`flex items-center gap-2 select-none ${isOwnAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                                      <Checkbox
+                                        checked={pendingRoles.includes(option.value)}
+                                        disabled={isOwnAdmin}
+                                        onCheckedChange={(checked) => {
+                                          if (!checked && pendingRoles.length === 1) return;
+                                          setPendingRoles((prev) =>
+                                            checked
+                                              ? [...prev, option.value]
+                                              : prev.filter((r) => r !== option.value)
+                                          );
+                                        }}
+                                      />
+                                      <Badge variant={getRoleBadgeVariant(option.value)} className={`text-xs pointer-events-none ${isOwnAdmin ? 'opacity-70' : ''}`}>
+                                        {option.label}
+                                      </Badge>
+                                      {isOwnAdmin && <span className="text-[10px] text-muted-foreground">fixo</span>}
+                                    </label>
+                                  );
+                                })}
                               </div>
                               <Button
                                 size="sm"
