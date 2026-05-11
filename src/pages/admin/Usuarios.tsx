@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield, UserX, UserPlus, Trash2 } from 'lucide-react';
+import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield, UserX, UserPlus, Trash2, Loader2, Pencil } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface User {
@@ -37,12 +38,13 @@ interface MembroVinculado {
 }
 
 export default function Usuarios() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [membrosVinculados, setMembrosVinculados] = useState<MembroVinculado[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [savingRoleFor, setSavingRoleFor] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deactivatingUser, setDeactivatingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
@@ -128,6 +130,25 @@ export default function Usuarios() {
   const getUserRole = (userId: string) => {
     const userRole = roles.find((r) => r.user_id === userId);
     return userRole?.role || 'membro';
+  };
+
+  const handleInlineRoleChange = async (userId: string, userName: string, newRole: string) => {
+    setSavingRoleFor(userId);
+    try {
+      await supabase.from('user_roles').delete().eq('user_id', userId);
+      const { error } = await supabase.from('user_roles').insert({
+        user_id: userId,
+        role: newRole as 'admin' | 'lider' | 'financeiro' | 'voluntario' | 'membro' | 'visitante',
+      });
+      if (error) throw error;
+      setRoles(prev => [...prev.filter(r => r.user_id !== userId), { user_id: userId, role: newRole }]);
+      toast.success(`Role de ${userName} atualizado para ${getRoleLabel(newRole)}`);
+    } catch (error) {
+      console.error('Error updating role:', error);
+      toast.error('Erro ao atualizar role');
+    } finally {
+      setSavingRoleFor(null);
+    }
   };
 
   const getRoleBadgeVariant = (role: string): "admin" | "lider" | "voluntario" | "membro" | "secondary" => {
@@ -429,9 +450,46 @@ export default function Usuarios() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getRoleBadgeVariant(getUserRole(user.user_id))}>
-                          {getRoleLabel(getUserRole(user.user_id))}
-                        </Badge>
+                        {savingRoleFor === user.user_id ? (
+                          <div className="flex items-center gap-1.5">
+                            <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">Salvando...</span>
+                          </div>
+                        ) : user.user_id === currentUser?.id ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  <Badge variant={getRoleBadgeVariant(getUserRole(user.user_id))} className="cursor-not-allowed opacity-60">
+                                    {getRoleLabel(getUserRole(user.user_id))}
+                                  </Badge>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>Você não pode alterar seu próprio role</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <Select
+                            value={getUserRole(user.user_id)}
+                            onValueChange={(newRole) => handleInlineRoleChange(user.user_id, user.nome, newRole)}
+                          >
+                            <SelectTrigger className="border-0 h-auto w-auto p-0 shadow-none focus:ring-0 [&>svg]:hidden group/rolebadge">
+                              <div className="flex items-center gap-1 cursor-pointer">
+                                <Badge variant={getRoleBadgeVariant(getUserRole(user.user_id))}>
+                                  {getRoleLabel(getUserRole(user.user_id))}
+                                </Badge>
+                                <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover/rolebadge:opacity-100 transition-opacity" />
+                              </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="membro">Membro</SelectItem>
+                              <SelectItem value="financeiro">Financeiro</SelectItem>
+                              <SelectItem value="lider">Líder</SelectItem>
+                              <SelectItem value="voluntario">Voluntário</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </TableCell>
                       <TableCell>{getStatusBadge(user.status)}</TableCell>
                       <TableCell className="text-muted-foreground">

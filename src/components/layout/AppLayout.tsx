@@ -25,36 +25,12 @@ export default function AppLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
 
-  // Determine panel route based on role
-  const getPanelRoute = () => {
-    if (roles.includes('admin')) {
-      return '/admin/dashboard';
-    } else if (roles.includes('financeiro')) {
-      return '/financeiro';
-    } else if (roles.includes('lider')) {
-      return '/leader';
-    } else if (roles.includes('voluntario')) {
-      return '/voluntario';
-    }
-    return null;
-  };
-
-  // Determine panel label based on role
-  const getPanelLabel = () => {
-    if (roles.includes('admin')) {
-      return 'Painel Admin';
-    } else if (roles.includes('financeiro')) {
-      return 'Painel Financeiro';
-    } else if (roles.includes('lider')) {
-      return 'Painel Líder';
-    } else if (roles.includes('voluntario')) {
-      return 'Painel Voluntário';
-    }
-    return null;
-  };
-
-  const panelRoute = getPanelRoute();
-  const panelLabel = getPanelLabel();
+  const panelItems = [
+    roles.includes('admin')      && { route: '/admin/dashboard', label: 'Painel Admin' },
+    roles.includes('financeiro') && { route: '/financeiro',      label: 'Painel Financeiro' },
+    roles.includes('lider')      && { route: '/leader/hub',      label: 'Painel Líder' },
+    roles.includes('voluntario') && { route: '/voluntario',      label: 'Painel Voluntário' },
+  ].filter(Boolean) as { route: string; label: string }[];
   
   const navItems = [
     { icon: Home, label: 'Início', path: '/app' },
@@ -111,18 +87,19 @@ export default function AppLayout() {
                 </NavLink>
               ))}
 
-              {/* Panel Button - only for admin/lider/voluntario */}
-              {panelRoute && (
+              {/* Panel Buttons - one per elevated role */}
+              {panelItems.map((item) => (
                 <Button
+                  key={item.route}
                   variant="outline"
                   size="sm"
                   className="ml-2 border-promessa-300 text-promessa-700 hover:bg-promessa-50"
-                  onClick={() => navigate(panelRoute)}
+                  onClick={() => navigate(item.route)}
                 >
                   <LayoutDashboard className="h-4 w-4 mr-2" />
-                  {panelLabel}
+                  {item.label}
                 </Button>
-              )}
+              ))}
             </nav>
 
             {/* User Avatar & Mobile Menu Toggle */}
@@ -175,20 +152,18 @@ export default function AppLayout() {
                 </NavLink>
               ))}
 
-              {/* Panel Button - Mobile */}
-              {panelRoute && (
+              {/* Panel Buttons - Mobile */}
+              {panelItems.map((item) => (
                 <Button
+                  key={item.route}
                   variant="outline"
-                  className="w-full mt-3 border-promessa-300 text-promessa-700 hover:bg-promessa-50"
-                  onClick={() => {
-                    navigate(panelRoute);
-                    setMobileMenuOpen(false);
-                  }}
+                  className="w-full mt-2 border-promessa-300 text-promessa-700 hover:bg-promessa-50"
+                  onClick={() => { navigate(item.route); setMobileMenuOpen(false); }}
                 >
                   <LayoutDashboard className="h-4 w-4 mr-2" />
-                  {panelLabel}
+                  {item.label}
                 </Button>
-              )}
+              ))}
 
               {/* User info on mobile */}
               <div className="pt-3 mt-3 border-t border-border">
