@@ -13,8 +13,10 @@ import {
   Home,
   User,
   BookOpenCheck,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -87,19 +89,29 @@ export default function AppLayout() {
                 </NavLink>
               ))}
 
-              {/* Panel Buttons - one per elevated role */}
-              {panelItems.map((item) => (
-                <Button
-                  key={item.route}
-                  variant="outline"
-                  size="sm"
-                  className="ml-2 border-promessa-300 text-promessa-700 hover:bg-promessa-50"
-                  onClick={() => navigate(item.route)}
-                >
-                  <LayoutDashboard className="h-4 w-4 mr-2" />
-                  {item.label}
-                </Button>
-              ))}
+              {/* Panel Dropdown */}
+              {panelItems.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="ml-2 border-promessa-300 text-promessa-700 hover:bg-promessa-50"
+                    >
+                      <LayoutDashboard className="h-4 w-4 mr-2" />
+                      Painéis
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {panelItems.map((item) => (
+                      <DropdownMenuItem key={item.route} onClick={() => navigate(item.route)}>
+                        {item.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </nav>
 
             {/* User Avatar & Mobile Menu Toggle */}
@@ -152,18 +164,28 @@ export default function AppLayout() {
                 </NavLink>
               ))}
 
-              {/* Panel Buttons - Mobile */}
-              {panelItems.map((item) => (
-                <Button
-                  key={item.route}
-                  variant="outline"
-                  className="w-full mt-2 border-promessa-300 text-promessa-700 hover:bg-promessa-50"
-                  onClick={() => { navigate(item.route); setMobileMenuOpen(false); }}
-                >
-                  <LayoutDashboard className="h-4 w-4 mr-2" />
-                  {item.label}
-                </Button>
-              ))}
+              {/* Panel Dropdown - Mobile */}
+              {panelItems.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full mt-2 border-promessa-300 text-promessa-700 hover:bg-promessa-50"
+                    >
+                      <LayoutDashboard className="h-4 w-4 mr-2" />
+                      Painéis
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-full">
+                    {panelItems.map((item) => (
+                      <DropdownMenuItem key={item.route} onClick={() => { navigate(item.route); setMobileMenuOpen(false); }}>
+                        {item.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
 
               {/* User info on mobile */}
               <div className="pt-3 mt-3 border-t border-border">
