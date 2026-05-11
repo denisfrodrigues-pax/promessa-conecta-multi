@@ -16,6 +16,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { BaseFotoUpload } from '@/components/base/BaseFotoUpload';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import {
   Network, Users, Target, Clock, MapPin, ChevronRight, Plus, Search, Loader2,
@@ -59,6 +60,7 @@ export default function GruposHub() {
   const navigate = useNavigate();
   const { ministerioId } = useOutletContext<{ ministerioId: string }>();
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
 
   const [busca, setBusca] = useState('');
   const [filtroDia, setFiltroDia] = useState('');
@@ -113,6 +115,7 @@ export default function GruposHub() {
         visibilidade: f.visibilidade,
         status: f.status,
         ministerio_id: ministerioId,
+        lider_id: profile?.id ?? null,
       });
       if (error) throw error;
     },
