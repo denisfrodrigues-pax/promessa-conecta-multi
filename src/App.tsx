@@ -16,7 +16,6 @@ import RequireMinistry from "@/components/routes/RequireMinistry";
 import AdminLayout from "@/components/layout/AdminLayout";
 import LeaderLayout from "@/components/layout/LeaderLayout";
 import LeaderMinisterioLayout from "@/components/layout/LeaderMinisterioLayout";
-import KidsLayout from "@/components/layout/KidsLayout";
 import MinisterioLayout from "@/components/layout/MinisterioLayout";
 import VoluntarioLayout from "@/components/layout/VoluntarioLayout";
 import VolunteerMinisterioLayout from "@/components/layout/VolunteerMinisterioLayout";
@@ -59,14 +58,6 @@ const AdminAuditoria = lazy(() => import("@/pages/admin/Auditoria"));
 const AdminConfiguracoes = lazy(() => import("@/pages/admin/Configuracoes"));
 const WhatsAppTest = lazy(() => import("@/pages/admin/WhatsAppTest"));
 
-// Admin — Kids
-const KidsCheckins = lazy(() => import("@/pages/admin/kids/KidsCheckins"));
-const KidsCheckinDetalhes = lazy(() => import("@/pages/admin/kids/KidsCheckinDetalhes"));
-const KidsCriancas = lazy(() => import("@/pages/admin/kids/KidsCriancas"));
-const KidsResponsaveis = lazy(() => import("@/pages/admin/kids/KidsResponsaveis"));
-const KidsSalas = lazy(() => import("@/pages/admin/kids/KidsSalas"));
-const KidsRelatorio = lazy(() => import("@/pages/admin/kids/KidsRelatorio"));
-
 // Admin — Financeiro
 const FinanceiroDashboard = lazy(() => import("@/pages/admin/financeiro/FinanceiroDashboard"));
 const Transacoes = lazy(() => import("@/pages/admin/financeiro/Transacoes"));
@@ -82,7 +73,6 @@ const RelatorioVisitantes = lazy(() => import("@/pages/admin/relatorios/Relatori
 const RelatorioBases = lazy(() => import("@/pages/admin/relatorios/RelatorioBases"));
 const RelatorioMembros = lazy(() => import("@/pages/admin/relatorios/RelatorioMembros"));
 const RelatorioFinanceiro = lazy(() => import("@/pages/admin/relatorios/RelatorioFinanceiro"));
-const RelatorioKids = lazy(() => import("@/pages/admin/relatorios/RelatorioKids"));
 const RelatorioComunicacoes = lazy(() => import("@/pages/admin/relatorios/RelatorioComunicacoes"));
 
 // Member
@@ -108,9 +98,6 @@ const AppHome = lazy(() => import("@/pages/app/AppHome"));
 const AppCalendario = lazy(() => import("@/pages/app/Calendario"));
 const VoluntariosDoDia = lazy(() => import("@/pages/app/VoluntariosDoDia"));
 const MeuEnsino = lazy(() => import("@/pages/app/MeuEnsino"));
-
-// Kids Panel
-const KidsCheckinPanel = lazy(() => import("@/pages/kids/KidsCheckinPanel"));
 
 // Ministério Modular
 const MinisterioHome = lazy(() => import("@/pages/ministerio/MinisterioHome"));
@@ -166,8 +153,6 @@ const TrilhaAmarServir = lazy(() => import("@/pages/institutional/TrilhaAmarServ
 const BasesPublicas = lazy(() => import("@/pages/institutional/BasesPublicas"));
 const SejaVoluntario = lazy(() => import("@/pages/institutional/SejaVoluntario"));
 const CadastroInfantil = lazy(() => import("@/pages/institutional/CadastroInfantil"));
-const CheckinKids = lazy(() => import("@/pages/institutional/CheckinKids"));
-
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Despacho de rotas compartilhadas entre ministérios com slug diferente
@@ -231,7 +216,6 @@ const App = () => (
             <Route path="/bases-publicas" element={<BasesPublicas />} />
             <Route path="/seja-voluntario" element={<SejaVoluntario />} />
             <Route path="/cadastro-infantil" element={<CadastroInfantil />} />
-            <Route path="/check-in-kids" element={<CheckinKids />} />
             <Route path="/contato" element={<Contato />} />
             <Route path="/contato/:section" element={<Contato />} />
 
@@ -295,14 +279,6 @@ const App = () => (
               <Route path="bases/relatorio" element={<AdminBaseRelatorio />} />
               <Route path="bases/:id" element={<AdminBaseDetalhes />} />
               <Route path="acompanhamento" element={<AdminAcompanhamento />} />
-              {/* Kids */}
-              <Route path="kids" element={<KidsCheckins />} />
-              <Route path="kids/checkins" element={<KidsCheckins />} />
-              <Route path="kids/checkins/:id" element={<KidsCheckinDetalhes />} />
-              <Route path="kids/criancas" element={<KidsCriancas />} />
-              <Route path="kids/responsaveis" element={<KidsResponsaveis />} />
-              <Route path="kids/salas" element={<KidsSalas />} />
-              <Route path="kids/relatorio" element={<KidsRelatorio />} />
               {/* Financeiro */}
               <Route path="financeiro" element={<FinanceiroDashboard />} />
               <Route path="financeiro/transacoes" element={<Transacoes />} />
@@ -318,7 +294,6 @@ const App = () => (
               <Route path="relatorios/bases" element={<RelatorioBases />} />
               <Route path="relatorios/membros" element={<RelatorioMembros />} />
               <Route path="relatorios/financeiro" element={<RelatorioFinanceiro />} />
-              <Route path="relatorios/kids" element={<RelatorioKids />} />
               <Route path="relatorios/comunicacoes" element={<RelatorioComunicacoes />} />
               {/* Config & Audit */}
               <Route path="auditoria" element={<AdminAuditoria />} />
@@ -388,16 +363,6 @@ const App = () => (
 
             <Route path="/volunteer/:slug" element={<PrivateRoute allowedRoles={["voluntario", "admin", "lider"]}><VolunteerMinisterioLayout /></PrivateRoute>}>
               <Route index element={<VolunteerMinisterioDashboard />} />
-            </Route>
-
-            {/* ── KIDS PANEL ───────────────────────────────────────────────── */}
-            <Route path="/kids" element={
-              <PrivateRoute allowedRoles={["admin", "lider", "voluntario"]}>
-                <RequireMinistry slug="kids"><KidsLayout /></RequireMinistry>
-              </PrivateRoute>
-            }>
-              <Route index element={<Navigate to="/kids/check-in" replace />} />
-              <Route path="check-in" element={<KidsCheckinPanel />} />
             </Route>
 
             {/* ── MINISTÉRIO MODULAR ───────────────────────────────────────── */}

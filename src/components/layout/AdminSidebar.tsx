@@ -12,7 +12,6 @@ import {
   Bell,
   Music,
   ClipboardList,
-  Baby,
   Settings,
   LogOut,
   ChevronLeft,
@@ -22,9 +21,6 @@ import {
   UserPlus,
   Network,
   BarChart3,
-  CheckSquare,
-  User,
-  MapPin,
   FileText,
   Wallet,
   ArrowLeftRight,
@@ -87,19 +83,6 @@ const menuItems: MenuItem[] = [
     ]
   },
   { icon: Bell, label: 'Notificações', path: '/admin/notificacoes', showBadge: true },
-  // === KIDS ===
-  { 
-    icon: Baby, 
-    label: 'Kids', 
-    path: '/admin/kids',
-    submenu: [
-      { icon: CheckSquare, label: 'Check-ins', path: '/admin/kids' },
-      { icon: Baby, label: 'Crianças', path: '/admin/kids/criancas' },
-      { icon: User, label: 'Responsáveis', path: '/admin/kids/responsaveis' },
-      { icon: MapPin, label: 'Salas', path: '/admin/kids/salas' },
-      { icon: FileText, label: 'Relatório', path: '/admin/kids/relatorio' },
-    ]
-  },
   // === FINANCEIRO ===
   {
     icon: Wallet,
@@ -125,7 +108,6 @@ const menuItems: MenuItem[] = [
       { icon: Network, label: 'Bases', path: '/admin/relatorios/bases' },
       { icon: Users, label: 'Membros', path: '/admin/relatorios/membros' },
       { icon: Wallet, label: 'Financeiro', path: '/admin/relatorios/financeiro' },
-      { icon: Baby, label: 'Kids', path: '/admin/relatorios/kids' },
       { icon: MessageCircle, label: 'Comunicações', path: '/admin/relatorios/comunicacoes' },
     ]
   },

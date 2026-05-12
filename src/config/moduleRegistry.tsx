@@ -1,15 +1,10 @@
 import { lazy, ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Baby, Music, BookOpen, Users, Heart, Calendar, Home } from "lucide-react";
+import { Music, Users, Heart, Calendar, Home } from "lucide-react";
 
 // Lazy-loaded module components
-const KidsCheckinPanel = lazy(() => import("@/pages/kids/KidsCheckinPanel"));
 const RepertorioMusicas = lazy(() => import("@/pages/ministerio/RepertorioMusicas"));
 const MinisterioEscalas = lazy(() => import("@/pages/ministerio/MinisterioEscalas"));
-const KidsCriancas = lazy(() => import("@/pages/admin/kids/KidsCriancas"));
-const KidsSalas = lazy(() => import("@/pages/admin/kids/KidsSalas"));
-const KidsResponsaveis = lazy(() => import("@/pages/admin/kids/KidsResponsaveis"));
-const KidsRelatorio = lazy(() => import("@/pages/admin/kids/KidsRelatorio"));
 const LeaderMinhaEquipe = lazy(() => import("@/pages/leader/MinhaEquipe"));
 const LeaderDashboard = lazy(() => import("@/pages/leader/Dashboard"));
 export interface ModuleDefinition {
@@ -26,36 +21,6 @@ export interface ModuleDefinition {
  * Add new modules here as they are developed.
  */
 const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
-  "check-in": {
-    component: KidsCheckinPanel,
-    defaultIcon: Baby,
-    defaultName: "Check-in",
-  },
-
-  criancas: {
-    component: KidsCriancas,
-    defaultIcon: Baby,
-    defaultName: "Crianças",
-  },
-
-  salas: {
-    component: KidsSalas,
-    defaultIcon: Users,
-    defaultName: "Salas",
-  },
-
-  responsaveis: {
-    component: KidsResponsaveis,
-    defaultIcon: Heart,
-    defaultName: "Responsáveis",
-  },
-
-  "relatorio-kids": {
-    component: KidsRelatorio,
-    defaultIcon: BookOpen,
-    defaultName: "Relatório",
-  },
-
   equipe: {
     component: LeaderMinhaEquipe,
     defaultIcon: Users,
@@ -85,9 +50,7 @@ const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
  * Icon name (string from DB) → Lucide icon component
  */
 const ICON_MAP: Record<string, LucideIcon> = {
-  Baby,
   Music,
-  BookOpen,
   Users,
   Heart,
   Calendar,
