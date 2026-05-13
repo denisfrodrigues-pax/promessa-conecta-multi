@@ -1,853 +1,506 @@
 import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from '@/components/ui/sheet';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Calendar, 
-  Save, 
-  LogOut, 
-  Bell, 
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  Pencil,
+  LogOut,
+  Bell,
   BellOff,
-  CreditCard,
-  GraduationCap,
-  Briefcase,
-  Church,
+  Camera,
   Loader2,
-  Search,
-  Camera
+  Lock,
+  ChevronRight,
+  CreditCard,
 } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { ChurchLogo } from '@/components/ChurchLogo';
+import { cn } from '@/lib/utils';
 
-interface ProfileFormData {
+interface ProfileData {
   nome: string;
-  cpf: string;
-  data_nascimento: string;
   telefone: string;
-  sexo: string;
-  estado_civil: string;
-  naturalidade: string;
-  cep: string;
-  logradouro: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  grau_instrucao: string;
-  formacao: string;
-  profissao: string;
-  pcd: string;
-  batizado_aguas: boolean;
-  data_batismo: string;
+  data_nascimento: string;
+  cpf: string;
 }
 
-const GRAUS_INSTRUCAO = [
-  { value: 'fundamental_incompleto', label: 'Ensino Fundamental Incompleto' },
-  { value: 'fundamental_completo', label: 'Ensino Fundamental Completo' },
-  { value: 'medio_incompleto', label: 'Ensino Médio Incompleto' },
-  { value: 'medio_completo', label: 'Ensino Médio Completo' },
-  { value: 'superior_incompleto', label: 'Ensino Superior Incompleto' },
-  { value: 'superior_completo', label: 'Ensino Superior Completo' },
-  { value: 'pos_graduacao', label: 'Pós-Graduação' },
-  { value: 'mestrado', label: 'Mestrado' },
-  { value: 'doutorado', label: 'Doutorado' },
-];
+function formatPhone(value: string) {
+  const n = value.replace(/\D/g, '');
+  if (n.length <= 10) {
+    return n.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
+  }
+  return n
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2')
+    .slice(0, 15);
+}
 
-const TIPOS_PCD = [
-  { value: 'nenhuma', label: 'Nenhuma' },
-  { value: 'fisica', label: 'Deficiência Física' },
-  { value: 'visual', label: 'Deficiência Visual' },
-  { value: 'auditiva', label: 'Deficiência Auditiva' },
-  { value: 'intelectual', label: 'Deficiência Intelectual' },
-  { value: 'multipla', label: 'Deficiência Múltipla' },
-  { value: 'tea', label: 'Transtorno do Espectro Autista (TEA)' },
-];
+function formatCPFMasked(cpf: string) {
+  const n = cpf.replace(/\D/g, '');
+  if (n.length !== 11) return cpf;
+  return `***.***.${n.slice(6, 9)}-**`;
+}
 
-const ESTADOS_CIVIS = [
-  { value: 'solteiro', label: 'Solteiro(a)' },
-  { value: 'casado', label: 'Casado(a)' },
-  { value: 'divorciado', label: 'Divorciado(a)' },
-  { value: 'viuvo', label: 'Viúvo(a)' },
-  { value: 'uniao_estavel', label: 'União Estável' },
-];
+function formatDate(dateStr: string) {
+  if (!dateStr) return '—';
+  const [y, m, d] = dateStr.split('-');
+  if (!y || !m || !d) return dateStr;
+  return `${d}/${m}/${y}`;
+}
 
-const UFS = [
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 
-  'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 
-  'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
-];
+interface InfoRowProps {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  last?: boolean;
+}
+
+function InfoRow({ icon: Icon, label, value, last }: InfoRowProps) {
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-4 px-4 py-3.5',
+        !last && 'border-b border-gray-100'
+      )}
+    >
+      <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center flex-shrink-0">
+        <Icon className="w-4 h-4 text-[#1a5c38]" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] text-gray-400 uppercase tracking-wide font-medium leading-none mb-0.5">
+          {label}
+        </p>
+        <p className="text-[15px] text-gray-800 truncate">{value || '—'}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function MemberPerfil() {
   const { profile, signOut, user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [loadingCep, setLoadingCep] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [formData, setFormData] = useState<ProfileFormData>({
+  const [editOpen, setEditOpen] = useState(false);
+  const [editNome, setEditNome] = useState('');
+  const [editTelefone, setEditTelefone] = useState('');
+
+  const [profileData, setProfileData] = useState<ProfileData>({
     nome: '',
-    cpf: '',
-    data_nascimento: '',
     telefone: '',
-    sexo: '',
-    estado_civil: '',
-    naturalidade: '',
-    cep: '',
-    logradouro: '',
-    numero: '',
-    complemento: '',
-    bairro: '',
-    cidade: '',
-    uf: '',
-    grau_instrucao: '',
-    formacao: '',
-    profissao: '',
-    pcd: '',
-    batizado_aguas: false,
-    data_batismo: '',
+    data_nascimento: '',
+    cpf: '',
   });
 
-  const { 
-    isSupported: pushSupported, 
-    isSubscribed: pushEnabled, 
+  const {
+    isSupported: pushSupported,
+    isSubscribed: pushEnabled,
     isLoading: pushLoading,
     permission: pushPermission,
-    toggleSubscription 
+    toggleSubscription,
   } = usePushNotifications();
 
-  // Load avatar URL
   useEffect(() => {
-    if (profile?.foto_url) {
-      setAvatarUrl(profile.foto_url);
-    }
+    if (profile?.foto_url) setAvatarUrl(profile.foto_url);
   }, [profile?.foto_url]);
 
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
-
-    // Validate file type
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      toast.error('Formato inválido. Use apenas JPG ou PNG.');
-      return;
-    }
-
-    // Validate file size (2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Imagem muito grande. Máximo 2MB.');
-      return;
-    }
-
-    // Show preview immediately
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setAvatarPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // Upload to Supabase Storage
-    setUploadingAvatar(true);
-    try {
-      const fileExt = file.type === 'image/png' ? 'png' : 'jpg';
-      const filePath = `${user.id}/avatar.${fileExt}`;
-
-      // Upload with upsert to overwrite existing
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { 
-          upsert: true,
-          contentType: file.type 
-        });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-
-      // Update profile with new avatar URL
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ foto_url: publicUrl })
-        .eq('id', profile?.id);
-
-      if (updateError) throw updateError;
-
-      setAvatarUrl(publicUrl);
-      setAvatarPreview(null);
-      toast.success('Foto atualizada com sucesso!');
-    } catch (error: any) {
-      console.error('Error uploading avatar:', error);
-      toast.error('Erro ao atualizar foto');
-      setAvatarPreview(null);
-    } finally {
-      setUploadingAvatar(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  // Load full profile data from DB — AuthContext only fetches a subset of columns,
-  // so extended fields (cpf, address, etc.) must be fetched directly.
   useEffect(() => {
     if (!user?.id) return;
     supabase
       .from('profiles')
-      .select('*')
+      .select('nome, telefone, data_nascimento, cpf, foto_url')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return;
         const p = data as any;
-        setFormData({
+        setProfileData({
           nome: p.nome || '',
-          cpf: p.cpf ? formatCPF(p.cpf) : '',
-          data_nascimento: p.data_nascimento || '',
           telefone: p.telefone ? formatPhone(p.telefone) : '',
-          sexo: p.sexo || '',
-          estado_civil: p.estado_civil || '',
-          naturalidade: p.naturalidade || '',
-          cep: p.cep ? formatCEP(p.cep) : '',
-          logradouro: p.logradouro || '',
-          numero: p.numero || '',
-          complemento: p.complemento || '',
-          bairro: p.bairro || '',
-          cidade: p.cidade || '',
-          uf: p.uf || '',
-          grau_instrucao: p.grau_instrucao || '',
-          formacao: p.formacao || '',
-          profissao: p.profissao || '',
-          pcd: p.pcd || '',
-          batizado_aguas: p.batizado_aguas || false,
-          data_batismo: p.data_batismo || '',
+          data_nascimento: p.data_nascimento || '',
+          cpf: p.cpf || '',
         });
         if (p.foto_url) setAvatarUrl(p.foto_url);
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    return numbers
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-      .slice(0, 14);
-  };
+  const handleAvatarClick = () => fileInputRef.current?.click();
 
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 10) {
-      return numbers
-        .replace(/(\d{2})(\d)/, '($1) $2')
-        .replace(/(\d{4})(\d)/, '$1-$2');
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      toast.error('Use apenas JPG ou PNG.');
+      return;
     }
-    return numbers
-      .replace(/(\d{2})(\d)/, '($1) $2')
-      .replace(/(\d{5})(\d)/, '$1-$2')
-      .slice(0, 15);
-  };
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Imagem muito grande. Máximo 2MB.');
+      return;
+    }
 
-  const formatCEP = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    return numbers.replace(/(\d{5})(\d)/, '$1-$2').slice(0, 9);
-  };
+    const reader = new FileReader();
+    reader.onloadend = () => setAvatarPreview(reader.result as string);
+    reader.readAsDataURL(file);
 
-  const fetchAddressByCep = async (cep: string) => {
-    const cleanCep = cep.replace(/\D/g, '');
-    if (cleanCep.length !== 8) return;
-
-    setLoadingCep(true);
+    setUploadingAvatar(true);
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-      const data = await response.json();
-      
-      if (data.erro) {
-        toast.error('CEP não encontrado');
-        return;
-      }
+      const ext = file.type === 'image/png' ? 'png' : 'jpg';
+      const filePath = `${user.id}/avatar.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
 
-      setFormData(prev => ({
-        ...prev,
-        logradouro: data.logradouro || '',
-        bairro: data.bairro || '',
-        cidade: data.localidade || '',
-        uf: data.uf || '',
-        complemento: data.complemento || prev.complemento,
-      }));
-      toast.success('Endereço preenchido automaticamente');
-    } catch (error) {
-      console.error('Error fetching CEP:', error);
-      toast.error('Erro ao buscar CEP');
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+      const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ foto_url: publicUrl })
+        .eq('id', profile?.id);
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      setAvatarPreview(null);
+      toast.success('Foto atualizada!');
+    } catch {
+      toast.error('Erro ao atualizar foto');
+      setAvatarPreview(null);
     } finally {
-      setLoadingCep(false);
+      setUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const handleCepBlur = () => {
-    if (formData.cep.replace(/\D/g, '').length === 8) {
-      fetchAddressByCep(formData.cep);
-    }
+  const openEdit = () => {
+    setEditNome(profileData.nome);
+    setEditTelefone(profileData.telefone);
+    setEditOpen(true);
   };
 
   const handleSave = async () => {
     if (!profile) return;
-
-    // Validation
-    if (!formData.nome.trim()) {
+    if (!editNome.trim()) {
       toast.error('Nome é obrigatório');
       return;
     }
-    if (!formData.cpf || formData.cpf.replace(/\D/g, '').length !== 11) {
-      toast.error('CPF inválido');
-      return;
-    }
-    if (!formData.data_nascimento) {
-      toast.error('Data de nascimento é obrigatória');
-      return;
-    }
-    if (!formData.telefone || formData.telefone.replace(/\D/g, '').length < 10) {
-      toast.error('Telefone inválido');
-      return;
-    }
-
     setLoading(true);
     try {
       const { error } = await supabase
         .from('profiles')
         .update({
-          nome: formData.nome,
-          cpf: formData.cpf.replace(/\D/g, ''),
-          data_nascimento: formData.data_nascimento || null,
-          telefone: formData.telefone || null,
-          sexo: formData.sexo || null,
-          estado_civil: formData.estado_civil || null,
-          naturalidade: formData.naturalidade || null,
-          cep: formData.cep.replace(/\D/g, '') || null,
-          logradouro: formData.logradouro || null,
-          numero: formData.numero || null,
-          complemento: formData.complemento || null,
-          bairro: formData.bairro || null,
-          cidade: formData.cidade || null,
-          uf: formData.uf || null,
-          grau_instrucao: formData.grau_instrucao || null,
-          formacao: formData.formacao || null,
-          profissao: formData.profissao || null,
-          pcd: formData.pcd || null,
-          batizado_aguas: formData.batizado_aguas,
-          data_batismo: formData.batizado_aguas && formData.data_batismo ? formData.data_batismo : null,
+          nome: editNome.trim(),
+          telefone: editTelefone ? editTelefone.replace(/\D/g, '') : null,
         })
         .eq('id', profile.id);
-
       if (error) throw error;
-      toast.success('Perfil atualizado com sucesso!');
-    } catch (error: any) {
-      console.error('Error updating profile:', error);
-      if (error.message?.includes('profiles_cpf_unique')) {
-        toast.error('Este CPF já está cadastrado');
-      } else {
-        toast.error('Erro ao atualizar perfil');
-      }
+      setProfileData((prev) => ({
+        ...prev,
+        nome: editNome.trim(),
+        telefone: editTelefone,
+      }));
+      setEditOpen(false);
+      toast.success('Perfil atualizado!');
+    } catch {
+      toast.error('Erro ao atualizar perfil');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePushToggle = async () => {
-    await toggleSubscription();
+  const handlePasswordReset = async () => {
+    if (!profile?.email) return;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        profile.email,
+        { redirectTo: `${window.location.origin}/app/perfil` }
+      );
+      if (error) throw error;
+      toast.success('Link de redefinição enviado para seu e-mail');
+    } catch {
+      toast.error('Erro ao enviar link de redefinição');
+    }
   };
 
+  const displayName = profileData.nome || profile?.nome || '';
+  const avatarSrc = avatarPreview || avatarUrl;
+
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-3xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold tracking-tight">Meu Perfil</h1>
-        <p className="text-muted-foreground mt-1">Gerencie suas informações pessoais</p>
+    <div className="min-h-screen bg-[#f2f4f7]">
+      {/* ── Header ── */}
+      <div
+        className="relative"
+        style={{
+          background: 'linear-gradient(160deg, #1a5c38 0%, #2d8a57 100%)',
+          minHeight: 180,
+          paddingBottom: 52,
+        }}
+      >
+        {/* Logo top-left */}
+        <div className="absolute top-4 left-4 opacity-80">
+          <ChurchLogo size={26} maxWidth={72} />
+        </div>
+
+        {/* Name + email centred */}
+        <div className="flex flex-col items-center pt-12 px-8 text-center">
+          <h1 className="text-white font-bold text-[22px] leading-tight line-clamp-2">
+            {displayName}
+          </h1>
+          <p className="text-white/70 text-[13px] mt-1 truncate max-w-[260px]">
+            {profile?.email}
+          </p>
+        </div>
+
+        {/* Avatar — overflows header bottom */}
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-1/2 z-10">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+          <button
+            onClick={handleAvatarClick}
+            disabled={uploadingAvatar}
+            className="relative w-[90px] h-[90px] rounded-full overflow-hidden border-[3px] border-white shadow-xl bg-gradient-to-br from-[#2d8a57] to-[#1a5c38] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+            aria-label="Alterar foto de perfil"
+          >
+            {avatarSrc ? (
+              <img
+                src={avatarSrc}
+                alt={displayName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="flex items-center justify-center w-full h-full text-[34px] font-bold text-white">
+                {displayName.charAt(0).toUpperCase() || '?'}
+              </span>
+            )}
+            {/* Camera overlay */}
+            <div className="absolute inset-0 bg-black/40 flex items-end justify-center pb-2">
+              {uploadingAvatar ? (
+                <Loader2 className="w-4 h-4 text-white animate-spin" />
+              ) : (
+                <Camera className="w-4 h-4 text-white" />
+              )}
+            </div>
+          </button>
+        </div>
       </div>
 
-      {/* Profile Header */}
-      <Card className="shadow-card border-0 mb-6 overflow-hidden">
-        <div className="h-24 bg-gradient-to-r from-promessa to-promessa-dark" />
-        <CardContent className="p-6 pt-0">
-          <div className="flex items-end gap-4 -mt-12">
-            <div className="relative group">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png"
-                className="hidden"
-                onChange={handleFileSelect}
-              />
-              <button
-                onClick={handleAvatarClick}
-                disabled={uploadingAvatar}
-                className="relative w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-4 border-background bg-gradient-to-br from-promessa-light to-promessa focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-              >
-                {(avatarPreview || avatarUrl) ? (
-                  <img
-                    src={avatarPreview || avatarUrl || ''}
-                    alt={profile?.nome || 'Avatar'}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="flex items-center justify-center w-full h-full text-4xl font-bold text-white">
-                    {profile?.nome?.charAt(0).toUpperCase()}
-                  </span>
-                )}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  {uploadingAvatar ? (
-                    <Loader2 className="w-6 h-6 text-white animate-spin" />
-                  ) : (
-                    <Camera className="w-6 h-6 text-white" />
-                  )}
-                </div>
-              </button>
-              <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1.5 shadow-md">
-                <Camera className="w-3 h-3 text-primary-foreground" />
-              </div>
-            </div>
-            <div className="pb-2 flex-1">
-              <h2 className="text-xl font-display font-bold">{profile?.nome}</h2>
-              <p className="text-muted-foreground">{profile?.email}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Clique na foto para alterar (JPG/PNG, máx 2MB)
-              </p>
-            </div>
+      {/* ── Body ── */}
+      <div className="pt-14 pb-28 px-4 max-w-md mx-auto space-y-3">
+        {/* Card: Informações Pessoais */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
+            <span className="text-[15px] font-semibold text-gray-800">
+              Informações Pessoais
+            </span>
+            <button
+              onClick={openEdit}
+              className="flex items-center gap-1.5 text-[13px] font-medium text-[#1a5c38] active:opacity-70"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Editar
+            </button>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Notifications Settings */}
-      <Card className="shadow-card mb-6">
-        <CardHeader className="pb-4">
-          <CardTitle className="font-display text-lg flex items-center gap-2">
-            <Bell className="w-5 h-5" />
-            Notificações
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                {pushEnabled ? (
-                  <Bell className="w-4 h-4 text-primary" />
-                ) : (
-                  <BellOff className="w-4 h-4 text-muted-foreground" />
-                )}
-                <Label htmlFor="push-notifications" className="font-medium">
-                  Notificações Push
-                </Label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {!pushSupported 
-                  ? 'Não suportado neste navegador'
-                  : pushPermission === 'denied'
-                  ? 'Permissão negada. Habilite nas configurações do navegador.'
-                  : pushEnabled 
-                  ? 'Você receberá alertas de escalas, eventos e avisos'
-                  : 'Receba alertas de escalas, eventos e avisos'}
+          <InfoRow icon={User} label="Nome" value={displayName} />
+          <InfoRow icon={Mail} label="E-mail" value={profile?.email || ''} />
+          <InfoRow
+            icon={Phone}
+            label="Telefone"
+            value={profileData.telefone || '—'}
+          />
+          {profileData.data_nascimento && (
+            <InfoRow
+              icon={Calendar}
+              label="Nascimento"
+              value={formatDate(profileData.data_nascimento)}
+            />
+          )}
+          {profileData.cpf && (
+            <InfoRow
+              icon={CreditCard}
+              label="CPF"
+              value={formatCPFMasked(profileData.cpf)}
+              last
+            />
+          )}
+          {!profileData.cpf && !profileData.data_nascimento && (
+            <div className="px-4 py-3.5 border-t border-gray-100">
+              <p className="text-[12px] text-gray-400 text-center">
+                Dados adicionais gerenciados pelo administrador
               </p>
+            </div>
+          )}
+        </div>
+
+        {/* Card: Notificações */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+            <span className="text-[15px] font-semibold text-gray-800">
+              Notificações
+            </span>
+          </div>
+          <div className="flex items-center justify-between px-4 py-4">
+            <div className="flex items-start gap-3 flex-1 min-w-0 pr-4">
+              <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center flex-shrink-0 mt-0.5">
+                {pushEnabled ? (
+                  <Bell className="w-4 h-4 text-[#1a5c38]" />
+                ) : (
+                  <BellOff className="w-4 h-4 text-gray-400" />
+                )}
+              </div>
+              <div>
+                <p className="text-[14px] font-medium text-gray-800">
+                  Notificações Push
+                </p>
+                <p className="text-[12px] text-gray-400 mt-0.5 leading-snug">
+                  {!pushSupported
+                    ? 'Não suportado neste navegador'
+                    : pushPermission === 'denied'
+                    ? 'Permissão negada — habilite nas configurações do navegador'
+                    : pushEnabled
+                    ? 'Alertas de escalas, eventos e avisos ativos'
+                    : 'Ative para receber alertas de escalas e avisos'}
+                </p>
+              </div>
             </div>
             <Switch
-              id="push-notifications"
               checked={pushEnabled}
-              onCheckedChange={handlePushToggle}
+              onCheckedChange={toggleSubscription}
               disabled={!pushSupported || pushLoading || pushPermission === 'denied'}
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Profile Form */}
-      <Card className="shadow-card">
-        <CardHeader className="pb-4">
-          <CardTitle className="font-display text-lg flex items-center gap-2">
-            <User className="w-5 h-5" />
-            Dados Pessoais
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Required Fields */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <span className="text-destructive">*</span>
-              <span>Campos obrigatórios</span>
+        {/* Card: Segurança */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+            <span className="text-[15px] font-semibold text-gray-800">
+              Segurança
+            </span>
+          </div>
+          <button
+            onClick={handlePasswordReset}
+            className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 active:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center">
+                <Lock className="w-4 h-4 text-[#1a5c38]" />
+              </div>
+              <span className="text-[14px] font-medium text-gray-800">
+                Alterar senha
+              </span>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="nome">
-                  Nome Completo <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="nome"
-                    className="pl-10"
-                    value={formData.nome}
-                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                    placeholder="Seu nome completo"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cpf">
-                  CPF <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="cpf"
-                    className="pl-10"
-                    value={formData.cpf}
-                    onChange={(e) => setFormData({ ...formData, cpf: formatCPF(e.target.value) })}
-                    placeholder="000.000.000-00"
-                    maxLength={14}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="data_nascimento">
-                  Data de Nascimento <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="data_nascimento"
-                    type="date"
-                    className="pl-10"
-                    value={formData.data_nascimento}
-                    onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  E-mail <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    className="pl-10 bg-muted"
-                    value={profile?.email || ''}
-                    disabled
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">O email não pode ser alterado</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="telefone">
-                  Telefone <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="telefone"
-                    className="pl-10"
-                    placeholder="(00) 00000-0000"
-                    value={formData.telefone}
-                    onChange={(e) => setFormData({ ...formData, telefone: formatPhone(e.target.value) })}
-                    maxLength={15}
-                  />
-                </div>
-              </div>
+            <ChevronRight className="w-4 h-4 text-gray-300" />
+          </button>
+          <button
+            onClick={signOut}
+            className="w-full flex items-center gap-3 px-4 py-4 active:bg-red-50 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
+              <LogOut className="w-4 h-4 text-red-500" />
             </div>
+            <span className="text-[14px] font-medium text-red-500">
+              Sair da conta
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Edit Sheet ── */}
+      <Sheet open={editOpen} onOpenChange={setEditOpen}>
+        <SheetContent
+          side="bottom"
+          className="rounded-t-2xl pb-safe-area-inset-bottom"
+        >
+          <SheetHeader className="mb-5">
+            <SheetTitle className="text-left">Editar Perfil</SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mb-6">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-nome" className="text-[13px] text-gray-500">
+                Nome completo
+              </Label>
+              <Input
+                id="edit-nome"
+                value={editNome}
+                onChange={(e) => setEditNome(e.target.value)}
+                placeholder="Seu nome completo"
+                className="h-11 text-[15px]"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="edit-telefone"
+                className="text-[13px] text-gray-500"
+              >
+                Telefone
+              </Label>
+              <Input
+                id="edit-telefone"
+                value={editTelefone}
+                onChange={(e) =>
+                  setEditTelefone(formatPhone(e.target.value))
+                }
+                placeholder="(00) 00000-0000"
+                maxLength={15}
+                inputMode="tel"
+                className="h-11 text-[15px]"
+              />
+            </div>
+            <p className="text-[11px] text-gray-400">
+              CPF, data de nascimento e outros dados são gerenciados pelo
+              administrador.
+            </p>
           </div>
 
-          <Separator />
-
-          {/* Optional Fields - Personal */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Informações Adicionais</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="sexo">Gênero</Label>
-                <Select value={formData.sexo} onValueChange={(v) => setFormData({ ...formData, sexo: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="masculino">Masculino</SelectItem>
-                    <SelectItem value="feminino">Feminino</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="estado_civil">Estado Civil</Label>
-                <Select value={formData.estado_civil} onValueChange={(v) => setFormData({ ...formData, estado_civil: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ESTADOS_CIVIS.map((ec) => (
-                      <SelectItem key={ec.value} value={ec.value}>{ec.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="naturalidade">Naturalidade</Label>
-                <Input
-                  id="naturalidade"
-                  value={formData.naturalidade}
-                  onChange={(e) => setFormData({ ...formData, naturalidade: e.target.value })}
-                  placeholder="Cidade/Estado de nascimento"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="pcd">PCD (Pessoa com Deficiência)</Label>
-                <Select value={formData.pcd} onValueChange={(v) => setFormData({ ...formData, pcd: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIPOS_PCD.map((pcd) => (
-                      <SelectItem key={pcd.value} value={pcd.value}>{pcd.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Address */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              Endereço
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="cep">CEP</Label>
-                <div className="relative">
-                  <Input
-                    id="cep"
-                    value={formData.cep}
-                    onChange={(e) => setFormData({ ...formData, cep: formatCEP(e.target.value) })}
-                    onBlur={handleCepBlur}
-                    placeholder="00000-000"
-                    maxLength={9}
-                  />
-                  {loadingCep && (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="logradouro">Logradouro</Label>
-                <Input
-                  id="logradouro"
-                  value={formData.logradouro}
-                  onChange={(e) => setFormData({ ...formData, logradouro: e.target.value })}
-                  placeholder="Rua, Avenida, etc."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="numero">Número</Label>
-                <Input
-                  id="numero"
-                  value={formData.numero}
-                  onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
-                  placeholder="Nº"
-                />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="complemento">Complemento</Label>
-                <Input
-                  id="complemento"
-                  value={formData.complemento}
-                  onChange={(e) => setFormData({ ...formData, complemento: e.target.value })}
-                  placeholder="Apto, Bloco, etc."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bairro">Bairro</Label>
-                <Input
-                  id="bairro"
-                  value={formData.bairro}
-                  onChange={(e) => setFormData({ ...formData, bairro: e.target.value })}
-                  placeholder="Bairro"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cidade">Cidade</Label>
-                <Input
-                  id="cidade"
-                  value={formData.cidade}
-                  onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
-                  placeholder="Cidade"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="uf">UF</Label>
-                <Select value={formData.uf} onValueChange={(v) => setFormData({ ...formData, uf: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="UF" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {UFS.map((uf) => (
-                      <SelectItem key={uf} value={uf}>{uf}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Education & Work */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <GraduationCap className="w-4 h-4" />
-              Formação e Trabalho
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="grau_instrucao">Grau de Instrução</Label>
-                <Select value={formData.grau_instrucao} onValueChange={(v) => setFormData({ ...formData, grau_instrucao: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GRAUS_INSTRUCAO.map((gi) => (
-                      <SelectItem key={gi.value} value={gi.value}>{gi.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="formacao">Formação</Label>
-                <Input
-                  id="formacao"
-                  value={formData.formacao}
-                  onChange={(e) => setFormData({ ...formData, formacao: e.target.value })}
-                  placeholder="Ex: Administração, Engenharia..."
-                />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="profissao" className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4" />
-                  Profissão
-                </Label>
-                <Input
-                  id="profissao"
-                  value={formData.profissao}
-                  onChange={(e) => setFormData({ ...formData, profissao: e.target.value })}
-                  placeholder="Sua profissão atual"
-                />
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Church Info */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Church className="w-4 h-4" />
-              Informações da Igreja
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Batizado nas Águas</Label>
-                <div className="flex items-center gap-3 pt-2">
-                  <Switch
-                    id="batizado_aguas"
-                    checked={formData.batizado_aguas}
-                    onCheckedChange={(checked) => setFormData({ ...formData, batizado_aguas: checked })}
-                  />
-                  <Label htmlFor="batizado_aguas" className="font-normal">
-                    {formData.batizado_aguas ? 'Sim' : 'Não'}
-                  </Label>
-                </div>
-              </div>
-
-              {formData.batizado_aguas && (
-                <div className="space-y-2">
-                  <Label htmlFor="data_batismo">Data do Batismo</Label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="data_batismo"
-                      type="date"
-                      className="pl-10"
-                      value={formData.data_batismo}
-                      onChange={(e) => setFormData({ ...formData, data_batismo: e.target.value })}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <Button onClick={handleSave} disabled={loading} className="flex-1">
+          <SheetFooter className="flex-row gap-3">
+            <Button
+              variant="outline"
+              className="flex-1 h-11"
+              onClick={() => setEditOpen(false)}
+              disabled={loading}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="flex-1 h-11 bg-[#1a5c38] hover:bg-[#164d30] text-white"
+              onClick={handleSave}
+              disabled={loading}
+            >
               {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Salvando...
-                </>
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Salvar Alterações
-                </>
+                'Salvar'
               )}
             </Button>
-            <Button variant="outline" onClick={signOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
