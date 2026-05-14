@@ -111,6 +111,7 @@ interface InfoRowProps {
 }
 
 function InfoRow({ icon: Icon, label, value, last }: InfoRowProps) {
+  const isEmpty = !value || value === '—';
   return (
     <div
       className={cn(
@@ -125,7 +126,9 @@ function InfoRow({ icon: Icon, label, value, last }: InfoRowProps) {
         <p className="text-[11px] text-gray-400 uppercase tracking-wide font-medium leading-none mb-0.5">
           {label}
         </p>
-        <p className="text-[14px] text-gray-800 break-words">{value || '—'}</p>
+        <p className={cn('text-[14px] break-words', isEmpty ? 'text-gray-300 italic' : 'text-gray-800')}>
+          {isEmpty ? 'Não informado' : value}
+        </p>
       </div>
     </div>
   );
@@ -401,21 +404,20 @@ export default function MemberPerfil() {
 
   // ── Save helpers ──────────────────────────────────────────────────────────
 
-  async function saveProfileFields(fields: Partial<Record<string, unknown>>) {
+  async function saveProfileFields(fields: Record<string, string | boolean | null>) {
     const { error } = await supabase
       .from('profiles')
-      .update(fields)
+      .update(fields as any)
       .eq('id', profile!.id);
     if (error) throw error;
   }
 
-  async function saveMembrosFields(fields: Partial<Record<string, unknown>>) {
-    // Try update first; if no row, ignore (admin manages membros creation)
+  async function saveMembrosFields(fields: Record<string, string | boolean | null>) {
+    // Non-fatal: member may not have a membros row yet (admin creates it)
     await supabase
       .from('membros')
-      .update(fields)
+      .update(fields as any)
       .eq('user_id', profile!.id);
-    // Errors here are non-fatal (may not have a membros record)
   }
 
   // ── Section saves ─────────────────────────────────────────────────────────
@@ -632,19 +634,19 @@ export default function MemberPerfil() {
               } />
               <InfoRow icon={User} label="Estado Civil" value={labelFor(ESTADOS_CIVIS, data.estado_civil)} />
               <InfoRow icon={MapPin} label="Nacionalidade" value={data.nacionalidade} />
-              <InfoRow icon={MapPin} label="Naturalidade" value={data.naturalidade} last />
-              {data.cpf && (
-                <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                    <CreditCard className="w-4 h-4 text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-gray-400 uppercase tracking-wide font-medium leading-none mb-0.5">CPF</p>
-                    <p className="text-[14px] text-gray-500">{formatCPFMasked(data.cpf)}</p>
-                    <p className="text-[10px] text-gray-400">Alterado apenas pelo administrador</p>
-                  </div>
+              <InfoRow icon={MapPin} label="Naturalidade" value={data.naturalidade} />
+              <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-4">
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <CreditCard className="w-4 h-4 text-gray-400" />
                 </div>
-              )}
+                <div>
+                  <p className="text-[11px] text-gray-400 uppercase tracking-wide font-medium leading-none mb-0.5">CPF</p>
+                  <p className={cn('text-[14px]', data.cpf ? 'text-gray-500' : 'text-gray-300 italic')}>
+                    {data.cpf ? formatCPFMasked(data.cpf) : 'Não informado'}
+                  </p>
+                  <p className="text-[10px] text-gray-400">Alterado apenas pelo administrador</p>
+                </div>
+              </div>
             </>
           ) : (
             <div className="px-4 py-4 space-y-3">
