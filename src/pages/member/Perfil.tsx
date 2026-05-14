@@ -33,6 +33,8 @@ import {
   X,
   Check,
   Search,
+  Users,
+  Globe,
 } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { ChurchLogo } from '@/components/ChurchLogo';
@@ -238,6 +240,10 @@ interface ProfileState {
   // membros-only
   nacionalidade: string;
   genero: string; // mirrors sexo for membros
+  nome_mae: string;
+  nome_pai: string;
+  pais: string;
+  curso: string;
 }
 
 const EMPTY_PROFILE: ProfileState = {
@@ -245,6 +251,7 @@ const EMPTY_PROFILE: ProfileState = {
   naturalidade: '', cep: '', logradouro: '', numero: '', complemento: '',
   bairro: '', cidade: '', uf: '', grau_instrucao: '', formacao: '',
   profissao: '', cpf: '', nacionalidade: '', genero: '',
+  nome_mae: '', nome_pai: '', pais: 'Brasil', curso: '',
 };
 
 export default function MemberPerfil() {
@@ -254,6 +261,8 @@ export default function MemberPerfil() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [paiMaePromessista, setPaiMaePromessista] = useState(false);
 
   // draft state per section
   const [draftPersonal, setDraftPersonal] = useState<Partial<ProfileState>>({});
@@ -315,7 +324,7 @@ export default function MemberPerfil() {
     // Load membros (extra fields not in profiles)
     supabase
       .from('membros')
-      .select('nacionalidade, genero, rua, estado')
+      .select('nacionalidade, genero, rua, estado, nome_mae, nome_pai, pai_mae_promessista, pais, curso')
       .eq('user_id', profile.id)
       .maybeSingle()
       .then(({ data: m }) => {
@@ -328,7 +337,12 @@ export default function MemberPerfil() {
           // prefer profiles data but fall back to membros if empty
           logradouro: prev.logradouro || mb.rua || '',
           uf: prev.uf || mb.estado || '',
+          nome_mae: mb.nome_mae || '',
+          nome_pai: mb.nome_pai || '',
+          pais: mb.pais || 'Brasil',
+          curso: mb.curso || '',
         }));
+        setPaiMaePromessista(!!mb.pai_mae_promessista);
       });
   }, [user?.id, profile?.id]);
 
@@ -482,6 +496,7 @@ export default function MemberPerfil() {
         bairro: d.bairro ?? (data.bairro || null),
         cidade: d.cidade ?? (data.cidade || null),
         estado: d.uf ?? (data.uf || null),
+        pais: d.pais ?? (data.pais || null),
       });
       setData((prev) => ({ ...prev, ...d }));
       setEditingAddress(false);
@@ -507,6 +522,7 @@ export default function MemberPerfil() {
       await saveMembrosFields({
         grau_instrucao: d.grau_instrucao ?? (data.grau_instrucao || null),
         profissao: d.profissao ?? (data.profissao || null),
+        curso: d.curso ?? (data.curso || null),
       });
       setData((prev) => ({ ...prev, ...d }));
       setEditingFormation(false);
@@ -723,6 +739,16 @@ export default function MemberPerfil() {
           )}
         </SectionCard>
 
+        {/* ── Família ────────────────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+            <span className="text-[15px] font-semibold text-gray-800">Família</span>
+          </div>
+          <InfoRow icon={Users} label="Nome da Mãe" value={data.nome_mae} />
+          <InfoRow icon={Users} label="Nome do Pai" value={data.nome_pai} />
+          <InfoRow icon={Users} label="Pais Promessistas" value={paiMaePromessista ? 'Sim' : 'Não'} last />
+        </div>
+
         {/* ── Endereço ───────────────────────────────────────────────────── */}
         <SectionCard
           title="Endereço"
@@ -742,7 +768,8 @@ export default function MemberPerfil() {
               <InfoRow icon={MapPin} label="Bairro" value={data.bairro} />
               <InfoRow icon={MapPin} label="Cidade / Estado" value={
                 [data.cidade, data.uf].filter(Boolean).join(' — ') || undefined
-              } last />
+              } />
+              <InfoRow icon={Globe} label="País" value={data.pais} last />
             </>
           ) : (
             <div className="px-4 py-4 space-y-3">
@@ -829,6 +856,14 @@ export default function MemberPerfil() {
                   </Select>
                 </Field>
               </div>
+              <Field label="País">
+                <Input
+                  value={av('pais')}
+                  onChange={(e) => ad('pais', e.target.value)}
+                  placeholder="Brasil"
+                  className="h-10"
+                />
+              </Field>
             </div>
           )}
         </SectionCard>
@@ -846,6 +881,7 @@ export default function MemberPerfil() {
             <>
               <InfoRow icon={GraduationCap} label="Grau de instrução" value={labelFor(GRAUS, data.grau_instrucao)} />
               <InfoRow icon={GraduationCap} label="Formação" value={data.formacao} />
+              <InfoRow icon={GraduationCap} label="Curso" value={data.curso} />
               <InfoRow icon={Briefcase} label="Profissão" value={data.profissao} last />
             </>
           ) : (
@@ -862,11 +898,19 @@ export default function MemberPerfil() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Formação / Curso">
+              <Field label="Formação">
                 <Input
                   value={fv('formacao')}
                   onChange={(e) => fd('formacao', e.target.value)}
                   placeholder="Ex: Administração, Engenharia..."
+                  className="h-10"
+                />
+              </Field>
+              <Field label="Curso">
+                <Input
+                  value={fv('curso')}
+                  onChange={(e) => fd('curso', e.target.value)}
+                  placeholder="Curso técnico ou superior"
                   className="h-10"
                 />
               </Field>

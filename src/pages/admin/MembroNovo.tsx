@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, ArrowRight, Save, Upload, User, Search, Loader2, ChevronRight } from 'lucide-react';
@@ -15,7 +14,7 @@ import { toast } from 'sonner';
 import { formatPhoneBR } from '@/lib/formatters';
 import { buscarCep } from '@/utils/cep';
 
-// ─── Options ───────────────────────────────────────────────────────────────
+// ─── Options ──────────────────────────────────────────────────────────────────
 
 const GENERO_OPTIONS = [
   { value: 'masculino', label: 'Masculino' },
@@ -93,13 +92,13 @@ const STATUS_OPTIONS = [
 
 const ABAS = [
   'Identificação',
-  'Complemento',
-  'Sit. Ministerial',
-  'Origem e Batismo',
-  'Observações',
+  'Imagem/Outros',
+  'Notificação',
+  'Ordenação',
+  'Origem/Batismo',
 ];
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const formatCpf = (v: string) => {
   const n = v.replace(/\D/g, '').slice(0, 11);
@@ -118,7 +117,7 @@ const formatCep = (v: string) => {
 const getInitials = (nome: string) =>
   nome.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
 
-// ─── Component ──────────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function MembroNovo() {
   const navigate = useNavigate();
@@ -135,7 +134,7 @@ export default function MembroNovo() {
   const [fotoFile, setFotoFile] = useState<File | null>(null);
 
   const [form, setForm] = useState({
-    // Aba 1
+    // ── Aba 1: Identificação ──────────────────────────────────────────────
     nome: '',
     cpf: '',
     data_nascimento: '',
@@ -145,6 +144,11 @@ export default function MembroNovo() {
     estado_civil: '',
     nacionalidade: 'Brasileiro(a)',
     naturalidade: '',
+    // Família
+    nome_mae: '',
+    nome_pai: '',
+    pai_mae_promessista: 'nao' as 'sim' | 'nao',
+    // Endereço
     cep: '',
     rua: '',
     numero: '',
@@ -152,27 +156,33 @@ export default function MembroNovo() {
     bairro: '',
     cidade: '',
     estado: '',
-    // Aba 2
+    pais: 'Brasil',
+    // ── Aba 2: Imagem/Outros ──────────────────────────────────────────────
     grau_instrucao: '',
+    curso: '',
     profissao: '',
     pcd: 'Nenhum',
-    // Aba 3
+    // ── Aba 3: Notificação ────────────────────────────────────────────────
     situacao_ministerial: 'ativo',
     data_situacao_inicio: '',
+    data_situacao_fim: '',
     situacao_observacao: '',
+    status: 'ativo',
+    observacoes_pastorais: '',
+    // ── Aba 4: Ordenação ──────────────────────────────────────────────────
     ordenacao_funcao: 'nenhum',
     data_ordenacao_inicio: '',
     data_ordenacao_fim: '',
     ordenacao_observacao: '',
-    // Aba 4
+    // ── Aba 5: Origem/Batismo ─────────────────────────────────────────────
     origem_membro: '',
-    data_batismo_agua: '',
+    igreja_anterior: '',
+    data_recebimento: '',
+    local_batismo: '',
     pastor_oficiante: '',
-    batismo_espirito_santo: false,
+    data_batismo_agua: '',
+    batismo_espirito_santo: 'nao' as 'sim' | 'nao',
     data_batismo_espirito: '',
-    // Aba 5
-    observacoes_pastorais: '',
-    status: 'ativo',
   });
 
   const set = (field: string, value: unknown) =>
@@ -185,7 +195,11 @@ export default function MembroNovo() {
   const fetchVisitante = async (id: string) => {
     setLoadingVisitante(true);
     try {
-      const { data, error } = await supabase.from('visitantes').select('*').eq('id', id).maybeSingle();
+      const { data, error } = await supabase
+        .from('visitantes')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
       if (error || !data) return;
       let obs = data.observacoes || '';
       if (data.culto) obs = obs ? `${obs}\n\nCulto visitado: ${data.culto}` : `Culto visitado: ${data.culto}`;
@@ -210,7 +224,13 @@ export default function MembroNovo() {
     const resultado = await buscarCep(form.cep);
     setBuscandoCep(false);
     if (!resultado) { toast.error('CEP não encontrado'); return; }
-    setForm((prev) => ({ ...prev, rua: resultado.rua, bairro: resultado.bairro, cidade: resultado.cidade, estado: resultado.estado }));
+    setForm((prev) => ({
+      ...prev,
+      rua: resultado.rua,
+      bairro: resultado.bairro,
+      cidade: resultado.cidade,
+      estado: resultado.estado,
+    }));
   };
 
   const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,11 +249,17 @@ export default function MembroNovo() {
     try {
       const ext = fotoFile.name.split('.').pop();
       const fileName = `${membroId}.${ext}`;
-      const { error } = await supabase.storage.from('membros_fotos').upload(fileName, fotoFile, { upsert: true });
+      const { error } = await supabase.storage
+        .from('membros_fotos')
+        .upload(fileName, fotoFile, { upsert: true });
       if (error) throw error;
       const { data } = supabase.storage.from('membros_fotos').getPublicUrl(fileName);
       return data.publicUrl;
-    } catch { return null; } finally { setUploading(false); }
+    } catch {
+      return null;
+    } finally {
+      setUploading(false);
+    }
   };
 
   const avancar = () => {
@@ -245,29 +271,37 @@ export default function MembroNovo() {
   const handleSubmit = async () => {
     if (!form.nome.trim()) { toast.error('Nome é obrigatório'); setAbaAtual(0); return; }
     if (form.email.trim()) {
-      const { data: dup } = await supabase.from('membros').select('id, nome').eq('email', form.email.trim()).maybeSingle();
+      const { data: dup } = await supabase
+        .from('membros')
+        .select('id, nome')
+        .eq('email', form.email.trim())
+        .maybeSingle();
       if (dup) { toast.error(`Já existe um membro com este e-mail: ${dup.nome}`); setAbaAtual(0); return; }
     }
     setLoading(true);
     try {
-      const enderecoLegado = [form.rua, form.numero, form.bairro, form.cidade, form.estado].filter(Boolean).join(', ');
+      const enderecoLegado = [form.rua, form.numero, form.bairro, form.cidade, form.estado]
+        .filter(Boolean).join(', ');
+
       const { data: membro, error } = await supabase
         .from('membros')
         .insert({
+          // Identificação
           nome: form.nome.trim(),
-          telefone: form.telefone.trim() || null,
-          email: form.email.trim() || null,
-          data_nascimento: form.data_nascimento || null,
-          endereco: enderecoLegado || null,
-          estado_civil: form.estado_civil || null,
-          data_batismo: form.data_batismo_agua || null,
-          status: form.status,
-          observacoes: form.observacoes_pastorais.trim() || null,
-          // Novos campos
           cpf: form.cpf.trim() || null,
+          email: form.email.trim() || null,
+          telefone: form.telefone.trim() || null,
+          data_nascimento: form.data_nascimento || null,
           genero: form.genero || null,
+          estado_civil: form.estado_civil || null,
           nacionalidade: form.nacionalidade.trim() || null,
           naturalidade: form.naturalidade.trim() || null,
+          // Família
+          nome_mae: form.nome_mae.trim() || null,
+          nome_pai: form.nome_pai.trim() || null,
+          pai_mae_promessista: form.pai_mae_promessista === 'sim',
+          // Endereço
+          endereco: enderecoLegado || null,
           cep: form.cep.trim() || null,
           rua: form.rua.trim() || null,
           numero: form.numero.trim() || null,
@@ -275,32 +309,47 @@ export default function MembroNovo() {
           bairro: form.bairro.trim() || null,
           cidade: form.cidade.trim() || null,
           estado: form.estado.trim() || null,
+          pais: form.pais.trim() || 'Brasil',
+          // Formação
           grau_instrucao: form.grau_instrucao || null,
+          curso: form.curso.trim() || null,
           profissao: form.profissao.trim() || null,
           pcd: form.pcd || 'Nenhum',
+          // Situação
+          status: form.status,
           situacao_ministerial: form.situacao_ministerial || 'ativo',
           data_situacao_inicio: form.data_situacao_inicio || null,
+          data_situacao_fim: form.data_situacao_fim || null,
           situacao_observacao: form.situacao_observacao.trim() || null,
-          origem_membro: form.origem_membro || null,
-          data_batismo_agua: form.data_batismo_agua || null,
-          pastor_oficiante: form.pastor_oficiante.trim() || null,
-          batismo_espirito_santo: form.batismo_espirito_santo,
-          data_batismo_espirito: form.data_batismo_espirito || null,
+          observacoes_pastorais: form.observacoes_pastorais.trim() || null,
+          // Ordenação
           ordenacao_funcao: form.ordenacao_funcao || 'nenhum',
           data_ordenacao_inicio: form.data_ordenacao_inicio || null,
           data_ordenacao_fim: form.data_ordenacao_fim || null,
           ordenacao_observacao: form.ordenacao_observacao.trim() || null,
-          observacoes_pastorais: form.observacoes_pastorais.trim() || null,
+          // Origem / Batismo
+          origem_membro: form.origem_membro || null,
+          igreja_anterior: form.origem_membro !== 'promessista_nato' ? (form.igreja_anterior.trim() || null) : null,
+          data_recebimento: form.data_recebimento || null,
+          local_batismo: form.local_batismo.trim() || null,
+          pastor_oficiante: form.pastor_oficiante.trim() || null,
+          data_batismo: form.data_batismo_agua || null,
+          data_batismo_agua: form.data_batismo_agua || null,
+          batismo_espirito_santo: form.batismo_espirito_santo === 'sim',
+          data_batismo_espirito: form.batismo_espirito_santo === 'sim' ? (form.data_batismo_espirito || null) : null,
         })
         .select()
         .single();
+
       if (error) throw error;
 
       if (fotoFile && membro) {
         const url = await uploadFoto(membro.id);
         if (url) await supabase.from('membros').update({ foto_perfil: url }).eq('id', membro.id);
       }
-      if (fromVisitante) await supabase.from('visitantes').update({ status: 'concluido' }).eq('id', fromVisitante);
+      if (fromVisitante) {
+        await supabase.from('visitantes').update({ status: 'concluido' }).eq('id', fromVisitante);
+      }
 
       toast.success('Membro criado com sucesso!');
       navigate('/admin/membros');
@@ -356,21 +405,23 @@ export default function MembroNovo() {
             <span className={`text-xs hidden sm:inline truncate ${i === abaAtual ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
               {aba}
             </span>
-            {i < ABAS.length - 1 && <ChevronRight className="w-3 h-3 text-muted-foreground/40 flex-shrink-0" />}
+            {i < ABAS.length - 1 && (
+              <ChevronRight className="w-3 h-3 text-muted-foreground/40 flex-shrink-0" />
+            )}
           </div>
         ))}
       </div>
 
-      {/* Conteúdo da Aba */}
+      {/* Conteúdo da aba */}
       <Card>
         <CardContent className="pt-6 space-y-6">
 
-          {/* ── ABA 1: Identificação ──────────────────────────────────── */}
+          {/* ── ABA 1: Identificação ───────────────────────────────────── */}
           {abaAtual === 0 && (
             <>
               <Section title="Dados Pessoais">
                 <Row2>
-                  <Field label="Nome Completo *">
+                  <Field label="Nome Completo *" className="sm:col-span-2">
                     <Input value={form.nome} onChange={(e) => set('nome', e.target.value)} placeholder="Nome completo" />
                   </Field>
                   <Field label="CPF">
@@ -400,6 +451,25 @@ export default function MembroNovo() {
                 </Row2>
               </Section>
 
+              <Section title="Família">
+                <Row2>
+                  <Field label="Nome da Mãe">
+                    <Input value={form.nome_mae} onChange={(e) => set('nome_mae', e.target.value)} placeholder="Nome da mãe" />
+                  </Field>
+                  <Field label="Nome do Pai">
+                    <Input value={form.nome_pai} onChange={(e) => set('nome_pai', e.target.value)} placeholder="Nome do pai" />
+                  </Field>
+                  <Field label="Pai ou Mãe Promessista?">
+                    <SelectField
+                      value={form.pai_mae_promessista}
+                      onValueChange={(v) => set('pai_mae_promessista', v)}
+                      options={[{ value: 'nao', label: 'Não' }, { value: 'sim', label: 'Sim' }]}
+                      placeholder="Selecione"
+                    />
+                  </Field>
+                </Row2>
+              </Section>
+
               <Section title="Endereço">
                 <div className="flex gap-2 items-end">
                   <div className="flex-1 space-y-1">
@@ -412,7 +482,7 @@ export default function MembroNovo() {
                   </Button>
                 </div>
                 <Row2>
-                  <Field label="Rua / Avenida" className="col-span-2 sm:col-span-1">
+                  <Field label="Rua / Avenida" className="sm:col-span-2">
                     <Input value={form.rua} onChange={(e) => set('rua', e.target.value)} placeholder="Rua, Avenida, etc." />
                   </Field>
                   <Field label="Número">
@@ -430,39 +500,39 @@ export default function MembroNovo() {
                   <Field label="Estado (UF)">
                     <Input value={form.estado} onChange={(e) => set('estado', e.target.value.toUpperCase().slice(0, 2))} placeholder="SP" maxLength={2} />
                   </Field>
+                  <Field label="País">
+                    <Input value={form.pais} onChange={(e) => set('pais', e.target.value)} placeholder="Brasil" />
+                  </Field>
                 </Row2>
               </Section>
             </>
           )}
 
-          {/* ── ABA 2: Complemento ────────────────────────────────────── */}
+          {/* ── ABA 2: Imagem/Outros ───────────────────────────────────── */}
           {abaAtual === 1 && (
             <>
-              <Section title="Formação e Trabalho">
-                <Row2>
-                  <Field label="Grau de Instrução">
-                    <SelectField value={form.grau_instrucao} onValueChange={(v) => set('grau_instrucao', v)} options={GRAU_INSTRUCAO_OPTIONS} placeholder="Selecione" />
-                  </Field>
-                  <Field label="Profissão">
-                    <Input value={form.profissao} onChange={(e) => set('profissao', e.target.value)} placeholder="Ex: Engenheiro, Professor..." />
-                  </Field>
-                  <Field label="PCD (Pessoa com Deficiência)">
-                    <SelectField value={form.pcd} onValueChange={(v) => set('pcd', v)} options={PCD_OPTIONS} placeholder="Selecione" />
-                  </Field>
-                </Row2>
-              </Section>
-
-              <Section title="Foto">
+              <Section title="Imagem">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   <Avatar className="w-24 h-24">
-                    <AvatarImage src={fotoPreview || undefined} />
                     <AvatarFallback className="bg-primary/10 text-primary text-2xl">
                       {form.nome ? getInitials(form.nome) : <User className="w-10 h-10" />}
                     </AvatarFallback>
+                    <AvatarImage src={fotoPreview || undefined} />
                   </Avatar>
                   <div className="space-y-2">
-                    <input ref={fotoInputRef} type="file" accept="image/*" className="hidden" onChange={handleFotoChange} />
-                    <Button type="button" variant="outline" size="sm" onClick={() => fotoInputRef.current?.click()}>
+                    <input
+                      ref={fotoInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFotoChange}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fotoInputRef.current?.click()}
+                    >
                       <Upload className="w-4 h-4 mr-2" />
                       {fotoFile ? 'Trocar foto' : 'Selecionar foto'}
                     </Button>
@@ -470,107 +540,132 @@ export default function MembroNovo() {
                   </div>
                 </div>
               </Section>
+
+              <Section title="Outros">
+                <Row2>
+                  <Field label="Grau de Instrução">
+                    <SelectField value={form.grau_instrucao} onValueChange={(v) => set('grau_instrucao', v)} options={GRAU_INSTRUCAO_OPTIONS} placeholder="Selecione" />
+                  </Field>
+                  <Field label="Curso">
+                    <Input value={form.curso} onChange={(e) => set('curso', e.target.value)} placeholder="Ex: Administração, Engenharia..." />
+                  </Field>
+                  <Field label="Profissão">
+                    <Input value={form.profissao} onChange={(e) => set('profissao', e.target.value)} placeholder="Ex: Professor, Médico..." />
+                  </Field>
+                  <Field label="PCD (Pessoa com Deficiência)">
+                    <SelectField value={form.pcd} onValueChange={(v) => set('pcd', v)} options={PCD_OPTIONS} placeholder="Selecione" />
+                  </Field>
+                </Row2>
+              </Section>
             </>
           )}
 
-          {/* ── ABA 3: Situação Ministerial ────────────────────────────── */}
+          {/* ── ABA 3: Notificação (Situação Ministerial) ─────────────── */}
           {abaAtual === 2 && (
             <>
-              <Section title="Situação">
+              <Section title="Notificação Ministerial">
                 <Row2>
                   <Field label="Situação">
                     <SelectField value={form.situacao_ministerial} onValueChange={(v) => set('situacao_ministerial', v)} options={SITUACAO_OPTIONS} placeholder="Selecione" />
                   </Field>
-                  <Field label="Data de Início da Situação">
+                  <Field label="Início">
                     <Input type="date" value={form.data_situacao_inicio} onChange={(e) => set('data_situacao_inicio', e.target.value)} />
                   </Field>
-                  <Field label="Observação" className="col-span-2">
-                    <Textarea value={form.situacao_observacao} onChange={(e) => set('situacao_observacao', e.target.value)} rows={3} placeholder="Observações sobre a situação..." />
+                  <Field label="Término">
+                    <Input type="date" value={form.data_situacao_fim} onChange={(e) => set('data_situacao_fim', e.target.value)} />
+                  </Field>
+                  <Field label="Observação" className="sm:col-span-2">
+                    <Textarea value={form.situacao_observacao} onChange={(e) => set('situacao_observacao', e.target.value)} rows={3} placeholder="Observações sobre a situação ministerial..." />
                   </Field>
                 </Row2>
               </Section>
 
-              <Section title="Ordenação">
+              <Section title="Dados Administrativos">
                 <Row2>
-                  <Field label="Função">
-                    <SelectField value={form.ordenacao_funcao} onValueChange={(v) => set('ordenacao_funcao', v)} options={ORDENACAO_OPTIONS} placeholder="Selecione" />
-                  </Field>
-                  <Field label="Data de Início da Ordenação">
-                    <Input type="date" value={form.data_ordenacao_inicio} onChange={(e) => set('data_ordenacao_inicio', e.target.value)} />
-                  </Field>
-                  <Field label="Data de Término (opcional)">
-                    <Input type="date" value={form.data_ordenacao_fim} onChange={(e) => set('data_ordenacao_fim', e.target.value)} />
-                  </Field>
-                  <Field label="Observação" className="col-span-2">
-                    <Textarea value={form.ordenacao_observacao} onChange={(e) => set('ordenacao_observacao', e.target.value)} rows={3} placeholder="Observações sobre a ordenação..." />
+                  <Field label="Status do Membro">
+                    <SelectField value={form.status} onValueChange={(v) => set('status', v)} options={STATUS_OPTIONS} placeholder="Selecione" />
                   </Field>
                 </Row2>
+                <Field label="Observações Pastorais">
+                  <Textarea
+                    value={form.observacoes_pastorais}
+                    onChange={(e) => set('observacoes_pastorais', e.target.value)}
+                    rows={4}
+                    placeholder="Informações confidenciais de acompanhamento pastoral..."
+                  />
+                </Field>
               </Section>
             </>
           )}
 
-          {/* ── ABA 4: Origem e Batismo ────────────────────────────────── */}
+          {/* ── ABA 4: Ordenação ──────────────────────────────────────── */}
           {abaAtual === 3 && (
+            <Section title="Ordenação Ministerial">
+              <Row2>
+                <Field label="Função">
+                  <SelectField value={form.ordenacao_funcao} onValueChange={(v) => set('ordenacao_funcao', v)} options={ORDENACAO_OPTIONS} placeholder="Selecione" />
+                </Field>
+                <Field label="Início">
+                  <Input type="date" value={form.data_ordenacao_inicio} onChange={(e) => set('data_ordenacao_inicio', e.target.value)} />
+                </Field>
+                <Field label="Término (opcional)">
+                  <Input type="date" value={form.data_ordenacao_fim} onChange={(e) => set('data_ordenacao_fim', e.target.value)} />
+                </Field>
+                <Field label="Observação" className="sm:col-span-2">
+                  <Textarea value={form.ordenacao_observacao} onChange={(e) => set('ordenacao_observacao', e.target.value)} rows={3} placeholder="Observações sobre a ordenação..." />
+                </Field>
+              </Row2>
+            </Section>
+          )}
+
+          {/* ── ABA 5: Origem / Batismo ────────────────────────────────── */}
+          {abaAtual === 4 && (
             <>
-              <Section title="Origem">
+              <Section title="Origem Membro e Batismos">
                 <Row2>
-                  <Field label="Como chegou à igreja">
+                  <Field label="Origem">
                     <SelectField value={form.origem_membro} onValueChange={(v) => set('origem_membro', v)} options={ORIGEM_OPTIONS} placeholder="Selecione" />
+                  </Field>
+                  {form.origem_membro && form.origem_membro !== 'promessista_nato' && (
+                    <Field label="Igreja anterior">
+                      <Input value={form.igreja_anterior} onChange={(e) => set('igreja_anterior', e.target.value)} placeholder="Nome da igreja de origem" />
+                    </Field>
+                  )}
+                  <Field label="Data de recebimento">
+                    <Input type="date" value={form.data_recebimento} onChange={(e) => set('data_recebimento', e.target.value)} />
                   </Field>
                 </Row2>
               </Section>
 
               <Section title="Batismo em Água">
                 <Row2>
-                  <Field label="Data do Batismo">
-                    <Input type="date" value={form.data_batismo_agua} onChange={(e) => set('data_batismo_agua', e.target.value)} />
+                  <Field label="Local do Batismo">
+                    <Input value={form.local_batismo} onChange={(e) => set('local_batismo', e.target.value)} placeholder="Local onde foi batizado" />
                   </Field>
                   <Field label="Pastor Oficiante">
                     <Input value={form.pastor_oficiante} onChange={(e) => set('pastor_oficiante', e.target.value)} placeholder="Nome do pastor" />
+                  </Field>
+                  <Field label="Data do Batismo">
+                    <Input type="date" value={form.data_batismo_agua} onChange={(e) => set('data_batismo_agua', e.target.value)} />
                   </Field>
                 </Row2>
               </Section>
 
               <Section title="Batismo no Espírito Santo">
-                <div className="flex items-center gap-3 mb-4">
-                  <Switch
-                    id="batismo_espirito"
-                    checked={form.batismo_espirito_santo}
-                    onCheckedChange={(v) => set('batismo_espirito_santo', v)}
-                  />
-                  <Label htmlFor="batismo_espirito">Recebeu o Batismo no Espírito Santo</Label>
-                </div>
-                {form.batismo_espirito_santo && (
-                  <Row2>
+                <Row2>
+                  <Field label="Batizado no Espírito Santo">
+                    <SelectField
+                      value={form.batismo_espirito_santo}
+                      onValueChange={(v) => set('batismo_espirito_santo', v)}
+                      options={[{ value: 'nao', label: 'Não' }, { value: 'sim', label: 'Sim' }]}
+                      placeholder="Selecione"
+                    />
+                  </Field>
+                  {form.batismo_espirito_santo === 'sim' && (
                     <Field label="Data do Batismo no Espírito Santo">
                       <Input type="date" value={form.data_batismo_espirito} onChange={(e) => set('data_batismo_espirito', e.target.value)} />
                     </Field>
-                  </Row2>
-                )}
-              </Section>
-            </>
-          )}
-
-          {/* ── ABA 5: Observações ────────────────────────────────────── */}
-          {abaAtual === 4 && (
-            <>
-              <Section title="Observações Pastorais">
-                <Field label="">
-                  <Textarea
-                    value={form.observacoes_pastorais}
-                    onChange={(e) => set('observacoes_pastorais', e.target.value)}
-                    rows={6}
-                    placeholder="Informações confidenciais de acompanhamento pastoral..."
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Informações confidenciais de acompanhamento pastoral</p>
-                </Field>
-              </Section>
-
-              <Section title="Status">
-                <Row2>
-                  <Field label="Status do Membro">
-                    <SelectField value={form.status} onValueChange={(v) => set('status', v)} options={STATUS_OPTIONS} placeholder="Selecione" />
-                  </Field>
+                  )}
                 </Row2>
               </Section>
             </>
@@ -581,7 +676,11 @@ export default function MembroNovo() {
 
       {/* Navegação */}
       <div className="flex justify-between">
-        <Button type="button" variant="outline" onClick={abaAtual === 0 ? () => navigate('/admin/membros') : voltar}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={abaAtual === 0 ? () => navigate('/admin/membros') : voltar}
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           {abaAtual === 0 ? 'Cancelar' : 'Voltar'}
         </Button>
@@ -595,7 +694,9 @@ export default function MembroNovo() {
             </Button>
           ) : (
             <Button type="button" onClick={handleSubmit} disabled={loading || uploading}>
-              {loading || uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              {loading || uploading
+                ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                : <Save className="w-4 h-4 mr-2" />}
               Salvar Membro
             </Button>
           )}
@@ -605,12 +706,14 @@ export default function MembroNovo() {
   );
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">{title}</h3>
+      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">
+        {title}
+      </h3>
       {children}
     </div>
   );
@@ -620,7 +723,17 @@ function Row2({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{children}</div>;
 }
 
-function Field({ label, children, hint, className }: { label: string; children: React.ReactNode; hint?: string; className?: string }) {
+function Field({
+  label,
+  children,
+  hint,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  hint?: string;
+  className?: string;
+}) {
   return (
     <div className={`space-y-1 ${className ?? ''}`}>
       {label && <Label className="text-sm">{label}</Label>}
@@ -630,7 +743,12 @@ function Field({ label, children, hint, className }: { label: string; children: 
   );
 }
 
-function SelectField({ value, onValueChange, options, placeholder }: {
+function SelectField({
+  value,
+  onValueChange,
+  options,
+  placeholder,
+}: {
   value: string;
   onValueChange: (v: string) => void;
   options: { value: string; label: string }[];
@@ -643,7 +761,9 @@ function SelectField({ value, onValueChange, options, placeholder }: {
       </SelectTrigger>
       <SelectContent>
         {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+          <SelectItem key={o.value} value={o.value}>
+            {o.label}
+          </SelectItem>
         ))}
       </SelectContent>
     </Select>

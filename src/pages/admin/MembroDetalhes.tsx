@@ -340,9 +340,13 @@ export default function MembroDetalhes() {
   const [ministerialData, setMinisterialData] = useState({
     situacao_ministerial: 'ativo',
     data_situacao_inicio: '',
+    data_situacao_fim: '',
     situacao_observacao: '',
     origem_membro: '',
+    igreja_anterior: '',
+    data_recebimento: '',
     data_batismo_agua: '',
+    local_batismo: '',
     pastor_oficiante: '',
     batismo_espirito_santo: false,
     data_batismo_espirito: '',
@@ -351,6 +355,11 @@ export default function MembroDetalhes() {
     data_ordenacao_fim: '',
     ordenacao_observacao: '',
     observacoes_pastorais: '',
+    nome_mae: '',
+    nome_pai: '',
+    pai_mae_promessista: false,
+    pais: 'Brasil',
+    curso: '',
   });
   const setMin = (field: string, value: unknown) =>
     setMinisterialData((prev) => ({ ...prev, [field]: value }));
@@ -433,9 +442,13 @@ export default function MembroDetalhes() {
       setMinisterialData({
         situacao_ministerial: (data as any).situacao_ministerial || 'ativo',
         data_situacao_inicio: (data as any).data_situacao_inicio || '',
+        data_situacao_fim: (data as any).data_situacao_fim || '',
         situacao_observacao: (data as any).situacao_observacao || '',
         origem_membro: (data as any).origem_membro || '',
+        igreja_anterior: (data as any).igreja_anterior || '',
+        data_recebimento: (data as any).data_recebimento || '',
         data_batismo_agua: (data as any).data_batismo_agua || '',
+        local_batismo: (data as any).local_batismo || '',
         pastor_oficiante: (data as any).pastor_oficiante || '',
         batismo_espirito_santo: (data as any).batismo_espirito_santo || false,
         data_batismo_espirito: (data as any).data_batismo_espirito || '',
@@ -444,6 +457,11 @@ export default function MembroDetalhes() {
         data_ordenacao_fim: (data as any).data_ordenacao_fim || '',
         ordenacao_observacao: (data as any).ordenacao_observacao || '',
         observacoes_pastorais: (data as any).observacoes_pastorais || '',
+        nome_mae: (data as any).nome_mae || '',
+        nome_pai: (data as any).nome_pai || '',
+        pai_mae_promessista: (data as any).pai_mae_promessista || false,
+        pais: (data as any).pais || 'Brasil',
+        curso: (data as any).curso || '',
       });
       setFotoPreview(combinedFoto);
     } catch (error) {
@@ -664,9 +682,13 @@ export default function MembroDetalhes() {
         // Dados ministeriais - sempre editáveis pelo admin independente de user_id
         situacao_ministerial: ministerialData.situacao_ministerial || null,
         data_situacao_inicio: ministerialData.data_situacao_inicio || null,
+        data_situacao_fim: ministerialData.data_situacao_fim || null,
         situacao_observacao: ministerialData.situacao_observacao.trim() || null,
         origem_membro: ministerialData.origem_membro || null,
+        igreja_anterior: ministerialData.igreja_anterior.trim() || null,
+        data_recebimento: ministerialData.data_recebimento || null,
         data_batismo_agua: ministerialData.data_batismo_agua || null,
+        local_batismo: ministerialData.local_batismo.trim() || null,
         pastor_oficiante: ministerialData.pastor_oficiante.trim() || null,
         batismo_espirito_santo: ministerialData.batismo_espirito_santo,
         data_batismo_espirito: ministerialData.data_batismo_espirito || null,
@@ -675,6 +697,11 @@ export default function MembroDetalhes() {
         data_ordenacao_fim: ministerialData.data_ordenacao_fim || null,
         ordenacao_observacao: ministerialData.ordenacao_observacao.trim() || null,
         observacoes_pastorais: ministerialData.observacoes_pastorais.trim() || null,
+        nome_mae: ministerialData.nome_mae.trim() || null,
+        nome_pai: ministerialData.nome_pai.trim() || null,
+        pai_mae_promessista: ministerialData.pai_mae_promessista,
+        pais: ministerialData.pais || null,
+        curso: ministerialData.curso.trim() || null,
       };
 
       // DADOS PESSOAIS - APENAS quando NÃO vinculado a perfil
@@ -1097,9 +1124,21 @@ export default function MembroDetalhes() {
                     <Label className="text-muted-foreground text-xs">Estado</Label>
                     <p className="font-medium">{profileData.uf || '–'}</p>
                   </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">País</Label>
+                    <p className="font-medium">{ministerialData.pais || '–'}</p>
+                  </div>
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm">Endereço não informado</p>
+                <div className="space-y-1">
+                  <p className="text-muted-foreground text-sm">Endereço não informado</p>
+                  {ministerialData.pais && (
+                    <div className="mt-2">
+                      <Label className="text-muted-foreground text-xs">País</Label>
+                      <p className="font-medium">{ministerialData.pais}</p>
+                    </div>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
@@ -1126,12 +1165,43 @@ export default function MembroDetalhes() {
                   <p className="font-medium">{profileData.formacao || '–'}</p>
                 </div>
                 <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Curso</Label>
+                  <p className="font-medium">{ministerialData.curso || '–'}</p>
+                </div>
+                <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs">Profissão</Label>
                   <p className="font-medium">{profileData.profissao || '–'}</p>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs">PCD</Label>
                   <p className="font-medium">{profileData.pcd || 'Não informado'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Família */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Users className="w-4 h-4" />
+                Família
+                <Badge variant="outline" className="text-xs font-normal">editável pelo admin</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Nome da Mãe</Label>
+                  <p className="font-medium">{ministerialData.nome_mae || '–'}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Nome do Pai</Label>
+                  <p className="font-medium">{ministerialData.nome_pai || '–'}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Pais Promessistas</Label>
+                  <p className="font-medium">{ministerialData.pai_mae_promessista ? 'Sim' : 'Não'}</p>
                 </div>
               </div>
             </CardContent>
@@ -1424,6 +1494,10 @@ export default function MembroDetalhes() {
                 <Label>Data de Início</Label>
                 <Input type="date" value={ministerialData.data_situacao_inicio} onChange={(e) => setMin('data_situacao_inicio', e.target.value)} disabled={!isEditing} />
               </div>
+              <div className="space-y-2">
+                <Label>Data de Fim (opcional)</Label>
+                <Input type="date" value={ministerialData.data_situacao_fim} onChange={(e) => setMin('data_situacao_fim', e.target.value)} disabled={!isEditing} />
+              </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>Observação</Label>
                 <Textarea value={ministerialData.situacao_observacao} onChange={(e) => setMin('situacao_observacao', e.target.value)} disabled={!isEditing} rows={2} placeholder="Observações..." />
@@ -1444,6 +1518,16 @@ export default function MembroDetalhes() {
                   </SelectContent>
                 </Select>
               </div>
+              {ministerialData.origem_membro && ministerialData.origem_membro !== 'promessista_nato' && (
+                <div className="space-y-2">
+                  <Label>Igreja Anterior</Label>
+                  <Input value={ministerialData.igreja_anterior} onChange={(e) => setMin('igreja_anterior', e.target.value)} disabled={!isEditing} placeholder="Nome da igreja anterior" />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label>Data de Recebimento</Label>
+                <Input type="date" value={ministerialData.data_recebimento} onChange={(e) => setMin('data_recebimento', e.target.value)} disabled={!isEditing} />
+              </div>
             </div>
           </div>
 
@@ -1454,6 +1538,10 @@ export default function MembroDetalhes() {
               <div className="space-y-2">
                 <Label>Data do Batismo em Água</Label>
                 <Input type="date" value={ministerialData.data_batismo_agua} onChange={(e) => setMin('data_batismo_agua', e.target.value)} disabled={!isEditing} />
+              </div>
+              <div className="space-y-2">
+                <Label>Local do Batismo</Label>
+                <Input value={ministerialData.local_batismo} onChange={(e) => setMin('local_batismo', e.target.value)} disabled={!isEditing} placeholder="Local onde foi batizado" />
               </div>
               <div className="space-y-2">
                 <Label>Pastor Oficiante</Label>
@@ -1502,6 +1590,46 @@ export default function MembroDetalhes() {
               <div className="space-y-2 md:col-span-2">
                 <Label>Observação</Label>
                 <Textarea value={ministerialData.ordenacao_observacao} onChange={(e) => setMin('ordenacao_observacao', e.target.value)} disabled={!isEditing} rows={2} placeholder="Observações sobre a ordenação..." />
+              </div>
+            </div>
+          </div>
+
+          {/* Família */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Família</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Nome da Mãe</Label>
+                <Input value={ministerialData.nome_mae} onChange={(e) => setMin('nome_mae', e.target.value)} disabled={!isEditing} placeholder="Nome completo da mãe" />
+              </div>
+              <div className="space-y-2">
+                <Label>Nome do Pai</Label>
+                <Input value={ministerialData.nome_pai} onChange={(e) => setMin('nome_pai', e.target.value)} disabled={!isEditing} placeholder="Nome completo do pai" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={ministerialData.pai_mae_promessista}
+                    onCheckedChange={(v) => setMin('pai_mae_promessista', v)}
+                    disabled={!isEditing}
+                  />
+                  <Label>Pai ou Mãe é Promessista</Label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Dados Adicionais */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Dados Adicionais</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>País</Label>
+                <Input value={ministerialData.pais} onChange={(e) => setMin('pais', e.target.value)} disabled={!isEditing} placeholder="Brasil" />
+              </div>
+              <div className="space-y-2">
+                <Label>Curso</Label>
+                <Input value={ministerialData.curso} onChange={(e) => setMin('curso', e.target.value)} disabled={!isEditing} placeholder="Curso de graduação ou técnico" />
               </div>
             </div>
           </div>
