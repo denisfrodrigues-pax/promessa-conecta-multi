@@ -434,20 +434,20 @@ export default function MemberPerfil() {
       await saveProfileFields({
         nome: d.nome ?? data.nome,
         telefone: d.telefone ? String(d.telefone).replace(/\D/g, '') : (data.telefone ? data.telefone.replace(/\D/g, '') : null),
-        data_nascimento: d.data_nascimento ?? data.data_nascimento || null,
-        sexo: d.sexo ?? data.sexo || null,
-        estado_civil: d.estado_civil ?? data.estado_civil || null,
-        naturalidade: d.naturalidade ?? data.naturalidade || null,
+        data_nascimento: d.data_nascimento ?? (data.data_nascimento || null),
+        sexo: d.sexo ?? (data.sexo || null),
+        estado_civil: d.estado_civil ?? (data.estado_civil || null),
+        naturalidade: d.naturalidade ?? (data.naturalidade || null),
       });
       // Sync to membros
       await saveMembrosFields({
         nome: d.nome ?? data.nome,
         telefone: d.telefone ? String(d.telefone).replace(/\D/g, '') : (data.telefone?.replace(/\D/g, '') || null),
-        data_nascimento: d.data_nascimento ?? data.data_nascimento || null,
-        genero: d.sexo ?? data.sexo || null,
-        estado_civil: d.estado_civil ?? data.estado_civil || null,
-        naturalidade: d.naturalidade ?? data.naturalidade || null,
-        nacionalidade: d.nacionalidade ?? data.nacionalidade || null,
+        data_nascimento: d.data_nascimento ?? (data.data_nascimento || null),
+        genero: d.sexo ?? (data.sexo || null),
+        estado_civil: d.estado_civil ?? (data.estado_civil || null),
+        naturalidade: d.naturalidade ?? (data.naturalidade || null),
+        nacionalidade: d.nacionalidade ?? (data.nacionalidade || null),
       });
       setData((prev) => ({ ...prev, ...d }));
       setEditingPersonal(false);
@@ -467,21 +467,21 @@ export default function MemberPerfil() {
     try {
       await saveProfileFields({
         cep: d.cep ? String(d.cep).replace(/\D/g, '') : (data.cep?.replace(/\D/g, '') || null),
-        logradouro: d.logradouro ?? data.logradouro || null,
-        numero: d.numero ?? data.numero || null,
-        complemento: d.complemento ?? data.complemento || null,
-        bairro: d.bairro ?? data.bairro || null,
-        cidade: d.cidade ?? data.cidade || null,
-        uf: d.uf ?? data.uf || null,
+        logradouro: d.logradouro ?? (data.logradouro || null),
+        numero: d.numero ?? (data.numero || null),
+        complemento: d.complemento ?? (data.complemento || null),
+        bairro: d.bairro ?? (data.bairro || null),
+        cidade: d.cidade ?? (data.cidade || null),
+        uf: d.uf ?? (data.uf || null),
       });
       await saveMembrosFields({
         cep: d.cep ? String(d.cep).replace(/\D/g, '') : (data.cep?.replace(/\D/g, '') || null),
-        rua: d.logradouro ?? data.logradouro || null,
-        numero: d.numero ?? data.numero || null,
-        complemento: d.complemento ?? data.complemento || null,
-        bairro: d.bairro ?? data.bairro || null,
-        cidade: d.cidade ?? data.cidade || null,
-        estado: d.uf ?? data.uf || null,
+        rua: d.logradouro ?? (data.logradouro || null),
+        numero: d.numero ?? (data.numero || null),
+        complemento: d.complemento ?? (data.complemento || null),
+        bairro: d.bairro ?? (data.bairro || null),
+        cidade: d.cidade ?? (data.cidade || null),
+        estado: d.uf ?? (data.uf || null),
       });
       setData((prev) => ({ ...prev, ...d }));
       setEditingAddress(false);
@@ -500,13 +500,13 @@ export default function MemberPerfil() {
     setSavingFormation(true);
     try {
       await saveProfileFields({
-        grau_instrucao: d.grau_instrucao ?? data.grau_instrucao || null,
-        formacao: d.formacao ?? data.formacao || null,
-        profissao: d.profissao ?? data.profissao || null,
+        grau_instrucao: d.grau_instrucao ?? (data.grau_instrucao || null),
+        formacao: d.formacao ?? (data.formacao || null),
+        profissao: d.profissao ?? (data.profissao || null),
       });
       await saveMembrosFields({
-        grau_instrucao: d.grau_instrucao ?? data.grau_instrucao || null,
-        profissao: d.profissao ?? data.profissao || null,
+        grau_instrucao: d.grau_instrucao ?? (data.grau_instrucao || null),
+        profissao: d.profissao ?? (data.profissao || null),
       });
       setData((prev) => ({ ...prev, ...d }));
       setEditingFormation(false);
