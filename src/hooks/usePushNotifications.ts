@@ -25,7 +25,11 @@ export function usePushNotifications() {
 
   // Check if push notifications are supported
   useEffect(() => {
-    const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    const supported =
+      'serviceWorker' in navigator &&
+      'PushManager' in window &&
+      'Notification' in window &&
+      window.location.protocol === 'https:';
     setIsSupported(supported);
     
     if (supported) {
@@ -71,8 +75,9 @@ export function usePushNotifications() {
 
   // Subscribe to push notifications
   const subscribe = useCallback(async (): Promise<boolean> => {
-    if (!isSupported || !user || !VAPID_PUBLIC_KEY) {
-      toast.error('Push notifications não estão disponíveis');
+    if (!isSupported || !user) return false;
+    if (!VAPID_PUBLIC_KEY) {
+      toast.error('Configuração de notificações incompleta. Contate o administrador.');
       return false;
     }
 

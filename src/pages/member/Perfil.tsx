@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ import {
   Search,
   Users,
   Globe,
+  Droplets,
 } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { ChurchLogo } from '@/components/ChurchLogo';
@@ -56,10 +58,31 @@ function formatCEP(v: string) {
   return v.replace(/\D/g, '').replace(/(\d{5})(\d)/, '$1-$2').slice(0, 9);
 }
 
+function formatCPF(v: string) {
+  const n = v.replace(/\D/g, '').slice(0, 11);
+  if (n.length <= 3) return n;
+  if (n.length <= 6) return `${n.slice(0, 3)}.${n.slice(3)}`;
+  if (n.length <= 9) return `${n.slice(0, 3)}.${n.slice(3, 6)}.${n.slice(6)}`;
+  return `${n.slice(0, 3)}.${n.slice(3, 6)}.${n.slice(6, 9)}-${n.slice(9)}`;
+}
+
 function formatCPFMasked(cpf: string) {
   const n = cpf.replace(/\D/g, '');
   if (n.length !== 11) return cpf;
   return `***.${n.slice(3, 6)}.${n.slice(6, 9)}-**`;
+}
+
+function validateCPF(cpf: string): boolean {
+  const n = cpf.replace(/\D/g, '');
+  if (n.length !== 11 || /^(\d)\1+$/.test(n)) return false;
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += +n[i] * (10 - i);
+  let d1 = (s * 10) % 11; if (d1 >= 10) d1 = 0;
+  if (d1 !== +n[9]) return false;
+  s = 0;
+  for (let i = 0; i < 10; i++) s += +n[i] * (11 - i);
+  let d2 = (s * 10) % 11; if (d2 >= 10) d2 = 0;
+  return d2 === +n[10];
 }
 
 function formatDate(d: string) {
@@ -97,6 +120,19 @@ const UFS = [
   'RS','RO','RR','SC','SP','SE','TO',
 ];
 
+const ORIGENS = [
+  { v: 'promessista_nato', l: 'Promessista Nato' },
+  { v: 'transferencia_denominacao', l: 'Transferência de outra denominação' },
+  { v: 'transferencia_iap', l: 'Transferência de outra IAP' },
+  { v: 'neopentecostal', l: 'Igreja Neopentecostal' },
+  { v: 'reformada', l: 'Igreja Reformada' },
+  { v: 'pentecostal', l: 'Pentecostal' },
+  { v: 'sabatista', l: 'Sabatista' },
+  { v: 'catolica', l: 'Igreja Católica' },
+  { v: 'outras_religioes', l: 'Outras religiões' },
+  { v: 'sem_religiao', l: 'Sem religião anterior' },
+];
+
 const SITUACAO_MIN_LABELS: Record<string, string> = {
   ativo: 'Membro Ativo',
   em_disciplina: 'Membro em Disciplina',
@@ -114,18 +150,9 @@ const ORDENACAO_LABELS: Record<string, string> = {
   jubilado: 'Jubilado(a)',
 };
 
-const ORIGEM_LABELS: Record<string, string> = {
-  promessista_nato: 'Promessista Nato',
-  transferencia_denominacao: 'Transferência de outra denominação',
-  transferencia_iap: 'Transferência de outra IAP',
-  neopentecostal: 'Igreja Neopentecostal',
-  reformada: 'Igreja Reformada',
-  pentecostal: 'Pentecostal',
-  sabatista: 'Sabatista',
-  catolica: 'Igreja Católica',
-  outras_religioes: 'Outras religiões',
-  sem_religiao: 'Sem religião anterior',
-};
+const ORIGEM_LABELS: Record<string, string> = Object.fromEntries(
+  ORIGENS.map((o) => [o.v, o.l])
+);
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
 
@@ -145,12 +172,7 @@ interface InfoRowProps {
 function InfoRow({ icon: Icon, label, value, last }: InfoRowProps) {
   const isEmpty = !value || value === '—';
   return (
-    <div
-      className={cn(
-        'flex items-center gap-4 px-4 py-3.5',
-        !last && 'border-b border-gray-100'
-      )}
-    >
+    <div className={cn('flex items-center gap-4 px-4 py-3.5', !last && 'border-b border-gray-100')}>
       <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center flex-shrink-0">
         <Icon className="w-4 h-4 text-[#1a5c38]" />
       </div>
@@ -178,15 +200,7 @@ interface SectionCardProps {
   children: React.ReactNode;
 }
 
-function SectionCard({
-  title,
-  editing,
-  saving,
-  onEdit,
-  onSave,
-  onCancel,
-  children,
-}: SectionCardProps) {
+function SectionCard({ title, editing, saving, onEdit, onSave, onCancel, children }: SectionCardProps) {
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
@@ -214,11 +228,7 @@ function SectionCard({
               disabled={saving}
               className="flex items-center gap-1.5 text-[13px] font-semibold text-white bg-[#1a5c38] px-3 py-1.5 rounded-full active:opacity-80"
             >
-              {saving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Check className="w-3.5 h-3.5" />
-              )}
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
               Salvar
             </button>
           </div>
@@ -249,7 +259,6 @@ function Field({ label, children, className }: FieldProps) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 interface ProfileState {
-  // profiles table
   nome: string;
   telefone: string;
   data_nascimento: string;
@@ -267,9 +276,8 @@ interface ProfileState {
   formacao: string;
   profissao: string;
   cpf: string;
-  // membros-only
   nacionalidade: string;
-  genero: string; // mirrors sexo for membros
+  genero: string;
   nome_mae: string;
   nome_pai: string;
   pais: string;
@@ -309,6 +317,7 @@ export default function MemberPerfil() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [activeTab, setActiveTab] = useState('pessoal');
   const [paiMaePromessista, setPaiMaePromessista] = useState(false);
   const [membroData, setMembroData] = useState<MinisterialData | null>(null);
 
@@ -316,16 +325,19 @@ export default function MemberPerfil() {
   const [draftPersonal, setDraftPersonal] = useState<Partial<ProfileState>>({});
   const [draftAddress, setDraftAddress] = useState<Partial<ProfileState>>({});
   const [draftFormation, setDraftFormation] = useState<Partial<ProfileState>>({});
+  const [draftBatismo, setDraftBatismo] = useState<Partial<MinisterialData>>({});
 
   // editing flags
   const [editingPersonal, setEditingPersonal] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
   const [editingFormation, setEditingFormation] = useState(false);
+  const [editingBatismo, setEditingBatismo] = useState(false);
 
   // saving flags
   const [savingPersonal, setSavingPersonal] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
   const [savingFormation, setSavingFormation] = useState(false);
+  const [savingBatismo, setSavingBatismo] = useState(false);
   const [loadingCep, setLoadingCep] = useState(false);
 
   const { isSupported: pushSupported, isSubscribed: pushEnabled,
@@ -337,7 +349,6 @@ export default function MemberPerfil() {
   useEffect(() => {
     if (!user?.id || !profile?.id) return;
 
-    // Load profiles
     supabase
       .from('profiles')
       .select('*')
@@ -369,7 +380,6 @@ export default function MemberPerfil() {
         if (d.foto_url) setAvatarUrl(d.foto_url);
       });
 
-    // Load membros (extra fields not in profiles)
     supabase
       .from('membros')
       .select(`
@@ -389,7 +399,6 @@ export default function MemberPerfil() {
           ...prev,
           nacionalidade: mb.nacionalidade || '',
           genero: mb.genero || '',
-          // prefer profiles data but fall back to membros if empty
           logradouro: prev.logradouro || mb.rua || '',
           uf: prev.uf || mb.estado || '',
           nome_mae: mb.nome_mae || '',
@@ -441,9 +450,7 @@ export default function MemberPerfil() {
         .from('avatars')
         .upload(filePath, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
       const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
       const { error: upProfile } = await supabase
         .from('profiles')
@@ -498,7 +505,6 @@ export default function MemberPerfil() {
   }
 
   async function saveMembrosFields(fields: Record<string, string | boolean | null>) {
-    // Non-fatal: member may not have a membros row yet (admin creates it)
     await supabase
       .from('membros')
       .update(fields as any)
@@ -514,17 +520,27 @@ export default function MemberPerfil() {
       toast.error('Nome é obrigatório');
       return;
     }
+    if (d.cpf !== undefined) {
+      const cleanCpf = String(d.cpf).replace(/\D/g, '');
+      if (cleanCpf && !validateCPF(cleanCpf)) {
+        toast.error('CPF inválido');
+        return;
+      }
+    }
     setSavingPersonal(true);
     try {
+      const cpfClean = d.cpf !== undefined
+        ? (String(d.cpf).replace(/\D/g, '') || null)
+        : (data.cpf?.replace(/\D/g, '') || null);
       await saveProfileFields({
         nome: d.nome ?? data.nome,
-        telefone: d.telefone ? String(d.telefone).replace(/\D/g, '') : (data.telefone ? data.telefone.replace(/\D/g, '') : null),
+        telefone: d.telefone ? String(d.telefone).replace(/\D/g, '') : (data.telefone?.replace(/\D/g, '') || null),
         data_nascimento: d.data_nascimento ?? (data.data_nascimento || null),
         sexo: d.sexo ?? (data.sexo || null),
         estado_civil: d.estado_civil ?? (data.estado_civil || null),
         naturalidade: d.naturalidade ?? (data.naturalidade || null),
+        cpf: cpfClean,
       });
-      // Sync to membros
       await saveMembrosFields({
         nome: d.nome ?? data.nome,
         telefone: d.telefone ? String(d.telefone).replace(/\D/g, '') : (data.telefone?.replace(/\D/g, '') || null),
@@ -533,6 +549,7 @@ export default function MemberPerfil() {
         estado_civil: d.estado_civil ?? (data.estado_civil || null),
         naturalidade: d.naturalidade ?? (data.naturalidade || null),
         nacionalidade: d.nacionalidade ?? (data.nacionalidade || null),
+        cpf: cpfClean,
       });
       setData((prev) => ({ ...prev, ...d }));
       setEditingPersonal(false);
@@ -606,6 +623,37 @@ export default function MemberPerfil() {
     }
   };
 
+  const saveBatismo = async () => {
+    if (!profile) return;
+    const d = draftBatismo;
+    setSavingBatismo(true);
+    try {
+      const fields = {
+        origem_membro: d.origem_membro !== undefined ? (d.origem_membro || null) : (membroData?.origem_membro ?? null),
+        igreja_anterior: d.igreja_anterior !== undefined ? (d.igreja_anterior || null) : (membroData?.igreja_anterior ?? null),
+        data_recebimento: d.data_recebimento !== undefined ? (d.data_recebimento || null) : (membroData?.data_recebimento ?? null),
+        local_batismo: d.local_batismo !== undefined ? (d.local_batismo || null) : (membroData?.local_batismo ?? null),
+        pastor_oficiante: d.pastor_oficiante !== undefined ? (d.pastor_oficiante || null) : (membroData?.pastor_oficiante ?? null),
+        data_batismo_agua: d.data_batismo_agua !== undefined ? (d.data_batismo_agua || null) : (membroData?.data_batismo_agua ?? null),
+        batismo_espirito_santo: d.batismo_espirito_santo !== undefined ? d.batismo_espirito_santo : (membroData?.batismo_espirito_santo ?? null),
+        data_batismo_espirito: d.data_batismo_espirito !== undefined ? (d.data_batismo_espirito || null) : (membroData?.data_batismo_espirito ?? null),
+      };
+      const { error } = await supabase
+        .from('membros')
+        .update(fields as any)
+        .eq('user_id', profile.id);
+      if (error) throw error;
+      setMembroData((prev) => prev ? { ...prev, ...fields } : prev);
+      setEditingBatismo(false);
+      setDraftBatismo({});
+      toast.success('Dados de batismo salvos!');
+    } catch {
+      toast.error('Erro ao salvar dados de batismo');
+    } finally {
+      setSavingBatismo(false);
+    }
+  };
+
   const handlePasswordReset = async () => {
     if (!profile?.email) return;
     try {
@@ -620,13 +668,16 @@ export default function MemberPerfil() {
     }
   };
 
-  // helpers for draft updates
+  // ── Draft helpers ─────────────────────────────────────────────────────────
+
   const pd = (key: keyof ProfileState, val: string) =>
     setDraftPersonal((p) => ({ ...p, [key]: val }));
   const ad = (key: keyof ProfileState, val: string) =>
     setDraftAddress((p) => ({ ...p, [key]: val }));
   const fd = (key: keyof ProfileState, val: string) =>
     setDraftFormation((p) => ({ ...p, [key]: val }));
+  const bd = (key: keyof MinisterialData, val: string | boolean | null) =>
+    setDraftBatismo((p) => ({ ...p, [key]: val }));
 
   // merged view values (draft takes priority when editing)
   const pv = (key: keyof ProfileState) =>
@@ -635,6 +686,16 @@ export default function MemberPerfil() {
     String(editingAddress ? (draftAddress[key] ?? data[key]) : data[key]) || '';
   const fv = (key: keyof ProfileState) =>
     String(editingFormation ? (draftFormation[key] ?? data[key]) : data[key]) || '';
+  const bv = (key: keyof MinisterialData): string => {
+    const draft = draftBatismo[key];
+    const stored = membroData?.[key];
+    if (editingBatismo && draft !== undefined) return String(draft ?? '');
+    return String(stored ?? '');
+  };
+  const bvBool = (key: keyof MinisterialData): boolean | null => {
+    if (editingBatismo && draftBatismo[key] !== undefined) return draftBatismo[key] as boolean | null;
+    return (membroData?.[key] as boolean | null) ?? null;
+  };
 
   const displayName = data.nome || profile?.nome || '';
   const avatarSrc = avatarPreview || avatarUrl;
@@ -644,32 +705,17 @@ export default function MemberPerfil() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div
         className="relative"
-        style={{
-          background: 'linear-gradient(160deg, #1a5c38 0%, #2d8a57 100%)',
-          minHeight: 180,
-          paddingBottom: 52,
-        }}
+        style={{ background: 'linear-gradient(160deg, #1a5c38 0%, #2d8a57 100%)', minHeight: 180, paddingBottom: 52 }}
       >
         <div className="absolute top-4 left-4 opacity-80">
           <ChurchLogo size={26} maxWidth={72} />
         </div>
         <div className="flex flex-col items-center pt-12 px-8 text-center">
-          <h1 className="text-white font-bold text-[22px] leading-tight line-clamp-2">
-            {displayName}
-          </h1>
-          <p className="text-white/70 text-[13px] mt-1 truncate max-w-[260px]">
-            {profile?.email}
-          </p>
+          <h1 className="text-white font-bold text-[22px] leading-tight line-clamp-2">{displayName}</h1>
+          <p className="text-white/70 text-[13px] mt-1 truncate max-w-[260px]">{profile?.email}</p>
         </div>
-        {/* Avatar */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-1/2 z-10">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png"
-            className="hidden"
-            onChange={handleFileSelect}
-          />
+          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleFileSelect} />
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingAvatar}
@@ -684,443 +730,431 @@ export default function MemberPerfil() {
               </span>
             )}
             <div className="absolute inset-0 bg-black/40 flex items-end justify-center pb-2">
-              {uploadingAvatar ? (
-                <Loader2 className="w-4 h-4 text-white animate-spin" />
-              ) : (
-                <Camera className="w-4 h-4 text-white" />
-              )}
+              {uploadingAvatar
+                ? <Loader2 className="w-4 h-4 text-white animate-spin" />
+                : <Camera className="w-4 h-4 text-white" />}
             </div>
           </button>
         </div>
       </div>
 
       {/* ── Body ───────────────────────────────────────────────────────────── */}
-      <div className="pt-14 pb-28 px-4 max-w-md mx-auto space-y-3">
+      <div className="pt-14 pb-28 px-4 max-w-md mx-auto">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
 
-        {/* ── Dados Pessoais ─────────────────────────────────────────────── */}
-        <SectionCard
-          title="Dados Pessoais"
-          editing={editingPersonal}
-          saving={savingPersonal}
-          onEdit={() => {
-            setDraftPersonal({});
-            setEditingPersonal(true);
-          }}
-          onSave={savePersonal}
-          onCancel={() => { setEditingPersonal(false); setDraftPersonal({}); }}
-        >
-          {!editingPersonal ? (
-            <>
-              <InfoRow icon={User} label="Nome" value={data.nome} />
-              <InfoRow icon={Mail} label="E-mail" value={profile?.email} />
-              <InfoRow icon={Phone} label="Telefone" value={data.telefone} />
-              <InfoRow icon={Calendar} label="Nascimento" value={formatDate(data.data_nascimento)} />
-              <InfoRow icon={User} label="Gênero" value={
-                data.sexo === 'masculino' ? 'Masculino' :
-                data.sexo === 'feminino' ? 'Feminino' : undefined
-              } />
-              <InfoRow icon={User} label="Estado Civil" value={labelFor(ESTADOS_CIVIS, data.estado_civil)} />
-              <InfoRow icon={MapPin} label="Nacionalidade" value={data.nacionalidade} />
-              <InfoRow icon={MapPin} label="Naturalidade" value={data.naturalidade} />
-              <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                  <CreditCard className="w-4 h-4 text-gray-400" />
+          {/* ── Tab List ────────────────────────────────────────────────── */}
+          <TabsList className="flex w-full overflow-x-auto bg-white shadow-sm rounded-2xl mb-3 h-auto p-1 gap-0.5">
+            {[
+              { value: 'pessoal', label: 'Pessoal' },
+              { value: 'endereco', label: 'Endereço' },
+              { value: 'formacao', label: 'Formação' },
+              { value: 'ministerial', label: 'Ministerial' },
+              { value: 'batismo', label: 'Batismo' },
+              { value: 'conta', label: 'Conta' },
+            ].map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="flex-1 text-[11px] py-2 px-1 whitespace-nowrap min-w-0"
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {/* ── Tab: Pessoal ──────────────────────────────────────────────── */}
+          <TabsContent value="pessoal" className="space-y-3 mt-0">
+
+            <SectionCard
+              title="Dados Pessoais"
+              editing={editingPersonal}
+              saving={savingPersonal}
+              onEdit={() => { setDraftPersonal({}); setEditingPersonal(true); }}
+              onSave={savePersonal}
+              onCancel={() => { setEditingPersonal(false); setDraftPersonal({}); }}
+            >
+              {!editingPersonal ? (
+                <>
+                  <InfoRow icon={User} label="Nome" value={data.nome} />
+                  <InfoRow icon={Mail} label="E-mail" value={profile?.email} />
+                  <InfoRow icon={Phone} label="Telefone" value={data.telefone} />
+                  <InfoRow icon={Calendar} label="Nascimento" value={formatDate(data.data_nascimento)} />
+                  <InfoRow icon={User} label="Gênero" value={
+                    data.sexo === 'masculino' ? 'Masculino' :
+                    data.sexo === 'feminino' ? 'Feminino' : undefined
+                  } />
+                  <InfoRow icon={User} label="Estado Civil" value={labelFor(ESTADOS_CIVIS, data.estado_civil)} />
+                  <InfoRow icon={MapPin} label="Nacionalidade" value={data.nacionalidade} />
+                  <InfoRow icon={MapPin} label="Naturalidade" value={data.naturalidade} />
+                  <InfoRow icon={CreditCard} label="CPF" value={data.cpf ? formatCPFMasked(data.cpf) : undefined} last />
+                </>
+              ) : (
+                <div className="px-4 py-4 space-y-3">
+                  <Field label="Nome completo">
+                    <Input value={pv('nome')} onChange={(e) => pd('nome', e.target.value)} placeholder="Seu nome completo" className="h-10" />
+                  </Field>
+                  <Field label="E-mail">
+                    <Input value={profile?.email || ''} disabled className="h-10 bg-gray-50 text-gray-400" />
+                    <p className="text-[11px] text-gray-400">Não pode ser alterado</p>
+                  </Field>
+                  <Field label="Telefone">
+                    <Input
+                      value={pv('telefone')}
+                      onChange={(e) => pd('telefone', formatPhone(e.target.value))}
+                      placeholder="(00) 00000-0000"
+                      inputMode="tel"
+                      maxLength={15}
+                      className="h-10"
+                    />
+                  </Field>
+                  <Field label="Data de nascimento">
+                    <Input type="date" value={pv('data_nascimento')} onChange={(e) => pd('data_nascimento', e.target.value)} className="h-10" />
+                  </Field>
+                  <Field label="Gênero">
+                    <Select value={pv('sexo')} onValueChange={(v) => pd('sexo', v)}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="masculino">Masculino</SelectItem>
+                        <SelectItem value="feminino">Feminino</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Estado civil">
+                    <Select value={pv('estado_civil')} onValueChange={(v) => pd('estado_civil', v)}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        {ESTADOS_CIVIS.map((ec) => <SelectItem key={ec.v} value={ec.v}>{ec.l}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Nacionalidade">
+                    <Input value={pv('nacionalidade')} onChange={(e) => pd('nacionalidade', e.target.value)} placeholder="Ex: Brasileiro(a)" className="h-10" />
+                  </Field>
+                  <Field label="Naturalidade">
+                    <Input value={pv('naturalidade')} onChange={(e) => pd('naturalidade', e.target.value)} placeholder="Cidade/Estado de nascimento" className="h-10" />
+                  </Field>
+                  <Field label="CPF">
+                    <Input
+                      value={pv('cpf')}
+                      onChange={(e) => pd('cpf', formatCPF(e.target.value))}
+                      placeholder="000.000.000-00"
+                      inputMode="numeric"
+                      maxLength={14}
+                      className="h-10"
+                    />
+                  </Field>
                 </div>
-                <div>
-                  <p className="text-[11px] text-gray-400 uppercase tracking-wide font-medium leading-none mb-0.5">CPF</p>
-                  <p className={cn('text-[14px]', data.cpf ? 'text-gray-500' : 'text-gray-300 italic')}>
-                    {data.cpf ? formatCPFMasked(data.cpf) : 'Não informado'}
-                  </p>
-                  <p className="text-[10px] text-gray-400">Alterado apenas pelo administrador</p>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="px-4 py-4 space-y-3">
-              <Field label="Nome completo">
-                <Input
-                  value={pv('nome')}
-                  onChange={(e) => pd('nome', e.target.value)}
-                  placeholder="Seu nome completo"
-                  className="h-10"
-                />
-              </Field>
-              <Field label="E-mail">
-                <Input value={profile?.email || ''} disabled className="h-10 bg-gray-50 text-gray-400" />
-                <p className="text-[11px] text-gray-400">Não pode ser alterado</p>
-              </Field>
-              <Field label="Telefone">
-                <Input
-                  value={pv('telefone')}
-                  onChange={(e) => pd('telefone', formatPhone(e.target.value))}
-                  placeholder="(00) 00000-0000"
-                  inputMode="tel"
-                  maxLength={15}
-                  className="h-10"
-                />
-              </Field>
-              <Field label="Data de nascimento">
-                <Input
-                  type="date"
-                  value={pv('data_nascimento')}
-                  onChange={(e) => pd('data_nascimento', e.target.value)}
-                  className="h-10"
-                />
-              </Field>
-              <Field label="Gênero">
-                <Select value={pv('sexo')} onValueChange={(v) => pd('sexo', v)}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="masculino">Masculino</SelectItem>
-                    <SelectItem value="feminino">Feminino</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Estado civil">
-                <Select value={pv('estado_civil')} onValueChange={(v) => pd('estado_civil', v)}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ESTADOS_CIVIS.map((ec) => (
-                      <SelectItem key={ec.v} value={ec.v}>{ec.l}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Nacionalidade">
-                <Input
-                  value={pv('nacionalidade')}
-                  onChange={(e) => pd('nacionalidade', e.target.value)}
-                  placeholder="Ex: Brasileiro(a)"
-                  className="h-10"
-                />
-              </Field>
-              <Field label="Naturalidade">
-                <Input
-                  value={pv('naturalidade')}
-                  onChange={(e) => pd('naturalidade', e.target.value)}
-                  placeholder="Cidade/Estado de nascimento"
-                  className="h-10"
-                />
-              </Field>
-            </div>
-          )}
-        </SectionCard>
-
-        {/* ── Família ────────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-            <span className="text-[15px] font-semibold text-gray-800">Família</span>
-          </div>
-          <InfoRow icon={Users} label="Nome da Mãe" value={data.nome_mae} />
-          <InfoRow icon={Users} label="Nome do Pai" value={data.nome_pai} />
-          <InfoRow icon={Users} label="Pais Promessistas" value={paiMaePromessista ? 'Sim' : 'Não'} last />
-        </div>
-
-        {/* ── Endereço ───────────────────────────────────────────────────── */}
-        <SectionCard
-          title="Endereço"
-          editing={editingAddress}
-          saving={savingAddress}
-          onEdit={() => { setDraftAddress({}); setEditingAddress(true); }}
-          onSave={saveAddress}
-          onCancel={() => { setEditingAddress(false); setDraftAddress({}); }}
-        >
-          {!editingAddress ? (
-            <>
-              <InfoRow icon={MapPin} label="CEP" value={data.cep} />
-              <InfoRow icon={MapPin} label="Logradouro" value={data.logradouro} />
-              <InfoRow icon={MapPin} label="Número / Complemento" value={
-                [data.numero, data.complemento].filter(Boolean).join(', ') || undefined
-              } />
-              <InfoRow icon={MapPin} label="Bairro" value={data.bairro} />
-              <InfoRow icon={MapPin} label="Cidade / Estado" value={
-                [data.cidade, data.uf].filter(Boolean).join(' — ') || undefined
-              } />
-              <InfoRow icon={Globe} label="País" value={data.pais} last />
-            </>
-          ) : (
-            <div className="px-4 py-4 space-y-3">
-              <Field label="CEP">
-                <div className="flex gap-2">
-                  <Input
-                    value={av('cep')}
-                    onChange={(e) => ad('cep', formatCEP(e.target.value))}
-                    onBlur={() => fetchCep(av('cep'))}
-                    placeholder="00000-000"
-                    maxLength={9}
-                    inputMode="numeric"
-                    className="h-10 flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10 flex-shrink-0"
-                    onClick={() => fetchCep(av('cep'))}
-                    disabled={loadingCep}
-                  >
-                    {loadingCep ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Search className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-              </Field>
-              <Field label="Rua / Avenida">
-                <Input
-                  value={av('logradouro')}
-                  onChange={(e) => ad('logradouro', e.target.value)}
-                  placeholder="Nome da rua"
-                  className="h-10"
-                />
-              </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Número">
-                  <Input
-                    value={av('numero')}
-                    onChange={(e) => ad('numero', e.target.value)}
-                    placeholder="Nº"
-                    className="h-10"
-                  />
-                </Field>
-                <Field label="Complemento">
-                  <Input
-                    value={av('complemento')}
-                    onChange={(e) => ad('complemento', e.target.value)}
-                    placeholder="Apto, Bloco..."
-                    className="h-10"
-                  />
-                </Field>
-              </div>
-              <Field label="Bairro">
-                <Input
-                  value={av('bairro')}
-                  onChange={(e) => ad('bairro', e.target.value)}
-                  placeholder="Bairro"
-                  className="h-10"
-                />
-              </Field>
-              <div className="grid grid-cols-3 gap-3">
-                <Field label="Cidade" className="col-span-2">
-                  <Input
-                    value={av('cidade')}
-                    onChange={(e) => ad('cidade', e.target.value)}
-                    placeholder="Cidade"
-                    className="h-10"
-                  />
-                </Field>
-                <Field label="UF">
-                  <Select value={av('uf')} onValueChange={(v) => ad('uf', v)}>
-                    <SelectTrigger className="h-10">
-                      <SelectValue placeholder="UF" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {UFS.map((uf) => (
-                        <SelectItem key={uf} value={uf}>{uf}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              </div>
-              <Field label="País">
-                <Input
-                  value={av('pais')}
-                  onChange={(e) => ad('pais', e.target.value)}
-                  placeholder="Brasil"
-                  className="h-10"
-                />
-              </Field>
-            </div>
-          )}
-        </SectionCard>
-
-        {/* ── Formação ───────────────────────────────────────────────────── */}
-        <SectionCard
-          title="Formação e Trabalho"
-          editing={editingFormation}
-          saving={savingFormation}
-          onEdit={() => { setDraftFormation({}); setEditingFormation(true); }}
-          onSave={saveFormation}
-          onCancel={() => { setEditingFormation(false); setDraftFormation({}); }}
-        >
-          {!editingFormation ? (
-            <>
-              <InfoRow icon={GraduationCap} label="Grau de instrução" value={labelFor(GRAUS, data.grau_instrucao)} />
-              <InfoRow icon={GraduationCap} label="Formação" value={data.formacao} />
-              <InfoRow icon={GraduationCap} label="Curso" value={data.curso} />
-              <InfoRow icon={Briefcase} label="Profissão" value={data.profissao} last />
-            </>
-          ) : (
-            <div className="px-4 py-4 space-y-3">
-              <Field label="Grau de instrução">
-                <Select value={fv('grau_instrucao')} onValueChange={(v) => fd('grau_instrucao', v)}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GRAUS.map((g) => (
-                      <SelectItem key={g.v} value={g.v}>{g.l}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Formação">
-                <Input
-                  value={fv('formacao')}
-                  onChange={(e) => fd('formacao', e.target.value)}
-                  placeholder="Ex: Administração, Engenharia..."
-                  className="h-10"
-                />
-              </Field>
-              <Field label="Curso">
-                <Input
-                  value={fv('curso')}
-                  onChange={(e) => fd('curso', e.target.value)}
-                  placeholder="Curso técnico ou superior"
-                  className="h-10"
-                />
-              </Field>
-              <Field label="Profissão">
-                <Input
-                  value={fv('profissao')}
-                  onChange={(e) => fd('profissao', e.target.value)}
-                  placeholder="Sua profissão atual"
-                  className="h-10"
-                />
-              </Field>
-            </div>
-          )}
-        </SectionCard>
-
-        {/* ── Situação Ministerial ────────────────────────────────────────── */}
-        <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
-            <span className="text-[15px] font-semibold text-gray-800">Situação Ministerial</span>
-            <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
-          </div>
-          {membroData && (membroData.situacao_ministerial || membroData.data_situacao_inicio || membroData.situacao_observacao) ? (
-            <>
-              <InfoRow icon={User} label="Situação" value={membroData.situacao_ministerial ? (SITUACAO_MIN_LABELS[membroData.situacao_ministerial] || membroData.situacao_ministerial) : undefined} />
-              <InfoRow icon={Calendar} label="Desde" value={formatDate(membroData.data_situacao_inicio || '')} />
-              <InfoRow icon={User} label="Observação" value={membroData.situacao_observacao || undefined} last />
-            </>
-          ) : (
-            <p className="px-4 py-4 text-[13px] text-gray-400 italic">Nenhuma informação registrada ainda</p>
-          )}
-        </div>
-
-        {/* ── Ordenação ───────────────────────────────────────────────────── */}
-        <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
-            <span className="text-[15px] font-semibold text-gray-800">Ordenação</span>
-            <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
-          </div>
-          {membroData && membroData.ordenacao_funcao && membroData.ordenacao_funcao !== 'nenhum' ? (
-            <>
-              <InfoRow icon={User} label="Função" value={ORDENACAO_LABELS[membroData.ordenacao_funcao] || membroData.ordenacao_funcao} />
-              <InfoRow icon={Calendar} label="Desde" value={formatDate(membroData.data_ordenacao_inicio || '')} />
-              <InfoRow icon={Calendar} label="Até" value={formatDate(membroData.data_ordenacao_fim || '')} last />
-            </>
-          ) : (
-            <p className="px-4 py-4 text-[13px] text-gray-400 italic">Nenhuma informação registrada ainda</p>
-          )}
-        </div>
-
-        {/* ── Origem e Batismo ────────────────────────────────────────────── */}
-        <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
-            <span className="text-[15px] font-semibold text-gray-800">Origem e Batismo</span>
-            <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
-          </div>
-          {membroData && (membroData.origem_membro || membroData.data_batismo_agua || membroData.data_recebimento) ? (
-            <>
-              <InfoRow icon={MapPin} label="Como chegou" value={membroData.origem_membro ? (ORIGEM_LABELS[membroData.origem_membro] || membroData.origem_membro) : undefined} />
-              {membroData.igreja_anterior && (
-                <InfoRow icon={MapPin} label="Igreja anterior" value={membroData.igreja_anterior} />
               )}
-              <InfoRow icon={Calendar} label="Data de recebimento" value={formatDate(membroData.data_recebimento || '')} />
-              <InfoRow icon={Calendar} label="Batismo em Água" value={formatDate(membroData.data_batismo_agua || '')} />
-              <InfoRow icon={User} label="Pastor Oficiante" value={membroData.pastor_oficiante || undefined} />
-              <InfoRow icon={MapPin} label="Local do Batismo" value={membroData.local_batismo || undefined} />
-              <InfoRow icon={User} label="Batismo no Espírito Santo" value={
-                membroData.batismo_espirito_santo === null ? undefined :
-                membroData.batismo_espirito_santo ? 'Sim' : 'Não'
-              } />
-              <InfoRow icon={Calendar} label="Data Batismo Espírito" value={formatDate(membroData.data_batismo_espirito || '')} last />
-            </>
-          ) : (
-            <p className="px-4 py-4 text-[13px] text-gray-400 italic">Nenhuma informação registrada ainda</p>
-          )}
-        </div>
+            </SectionCard>
 
-        {/* ── Notificações ───────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-            <span className="text-[15px] font-semibold text-gray-800">Notificações</span>
-          </div>
-          <div className="flex items-center justify-between px-4 py-4">
-            <div className="flex items-start gap-3 flex-1 min-w-0 pr-4">
-              <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center flex-shrink-0 mt-0.5">
-                {pushEnabled ? (
-                  <Bell className="w-4 h-4 text-[#1a5c38]" />
-                ) : (
-                  <BellOff className="w-4 h-4 text-gray-400" />
-                )}
+            {/* Família — read only */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+                <span className="text-[15px] font-semibold text-gray-800">Família</span>
               </div>
-              <div>
-                <p className="text-[14px] font-medium text-gray-800">Notificações Push</p>
-                <p className="text-[12px] text-gray-400 mt-0.5 leading-snug">
-                  {!pushSupported
-                    ? 'Não suportado neste navegador'
-                    : pushPermission === 'denied'
-                    ? 'Permissão negada — habilite nas configurações do navegador'
-                    : pushEnabled
-                    ? 'Alertas de escalas, eventos e avisos ativos'
-                    : 'Ative para receber alertas de escalas e avisos'}
-                </p>
+              <InfoRow icon={Users} label="Nome da Mãe" value={data.nome_mae} />
+              <InfoRow icon={Users} label="Nome do Pai" value={data.nome_pai} />
+              <InfoRow icon={Users} label="Pais Promessistas" value={paiMaePromessista ? 'Sim' : 'Não'} last />
+            </div>
+
+          </TabsContent>
+
+          {/* ── Tab: Endereço ─────────────────────────────────────────────── */}
+          <TabsContent value="endereco" className="mt-0">
+            <SectionCard
+              title="Endereço"
+              editing={editingAddress}
+              saving={savingAddress}
+              onEdit={() => { setDraftAddress({}); setEditingAddress(true); }}
+              onSave={saveAddress}
+              onCancel={() => { setEditingAddress(false); setDraftAddress({}); }}
+            >
+              {!editingAddress ? (
+                <>
+                  <InfoRow icon={MapPin} label="CEP" value={data.cep} />
+                  <InfoRow icon={MapPin} label="Logradouro" value={data.logradouro} />
+                  <InfoRow icon={MapPin} label="Número / Complemento" value={
+                    [data.numero, data.complemento].filter(Boolean).join(', ') || undefined
+                  } />
+                  <InfoRow icon={MapPin} label="Bairro" value={data.bairro} />
+                  <InfoRow icon={MapPin} label="Cidade / Estado" value={
+                    [data.cidade, data.uf].filter(Boolean).join(' — ') || undefined
+                  } />
+                  <InfoRow icon={Globe} label="País" value={data.pais} last />
+                </>
+              ) : (
+                <div className="px-4 py-4 space-y-3">
+                  <Field label="CEP">
+                    <div className="flex gap-2">
+                      <Input
+                        value={av('cep')}
+                        onChange={(e) => ad('cep', formatCEP(e.target.value))}
+                        onBlur={() => fetchCep(av('cep'))}
+                        placeholder="00000-000"
+                        maxLength={9}
+                        inputMode="numeric"
+                        className="h-10 flex-1"
+                      />
+                      <Button type="button" variant="outline" size="icon" className="h-10 w-10 flex-shrink-0" onClick={() => fetchCep(av('cep'))} disabled={loadingCep}>
+                        {loadingCep ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </Field>
+                  <Field label="Rua / Avenida">
+                    <Input value={av('logradouro')} onChange={(e) => ad('logradouro', e.target.value)} placeholder="Nome da rua" className="h-10" />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Número">
+                      <Input value={av('numero')} onChange={(e) => ad('numero', e.target.value)} placeholder="Nº" className="h-10" />
+                    </Field>
+                    <Field label="Complemento">
+                      <Input value={av('complemento')} onChange={(e) => ad('complemento', e.target.value)} placeholder="Apto, Bloco..." className="h-10" />
+                    </Field>
+                  </div>
+                  <Field label="Bairro">
+                    <Input value={av('bairro')} onChange={(e) => ad('bairro', e.target.value)} placeholder="Bairro" className="h-10" />
+                  </Field>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Field label="Cidade" className="col-span-2">
+                      <Input value={av('cidade')} onChange={(e) => ad('cidade', e.target.value)} placeholder="Cidade" className="h-10" />
+                    </Field>
+                    <Field label="UF">
+                      <Select value={av('uf')} onValueChange={(v) => ad('uf', v)}>
+                        <SelectTrigger className="h-10"><SelectValue placeholder="UF" /></SelectTrigger>
+                        <SelectContent>{UFS.map((uf) => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
+                  <Field label="País">
+                    <Input value={av('pais')} onChange={(e) => ad('pais', e.target.value)} placeholder="Brasil" className="h-10" />
+                  </Field>
+                </div>
+              )}
+            </SectionCard>
+          </TabsContent>
+
+          {/* ── Tab: Formação ─────────────────────────────────────────────── */}
+          <TabsContent value="formacao" className="mt-0">
+            <SectionCard
+              title="Formação e Trabalho"
+              editing={editingFormation}
+              saving={savingFormation}
+              onEdit={() => { setDraftFormation({}); setEditingFormation(true); }}
+              onSave={saveFormation}
+              onCancel={() => { setEditingFormation(false); setDraftFormation({}); }}
+            >
+              {!editingFormation ? (
+                <>
+                  <InfoRow icon={GraduationCap} label="Grau de instrução" value={labelFor(GRAUS, data.grau_instrucao)} />
+                  <InfoRow icon={GraduationCap} label="Formação" value={data.formacao} />
+                  <InfoRow icon={GraduationCap} label="Curso" value={data.curso} />
+                  <InfoRow icon={Briefcase} label="Profissão" value={data.profissao} last />
+                </>
+              ) : (
+                <div className="px-4 py-4 space-y-3">
+                  <Field label="Grau de instrução">
+                    <Select value={fv('grau_instrucao')} onValueChange={(v) => fd('grau_instrucao', v)}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>{GRAUS.map((g) => <SelectItem key={g.v} value={g.v}>{g.l}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Formação">
+                    <Input value={fv('formacao')} onChange={(e) => fd('formacao', e.target.value)} placeholder="Ex: Administração, Engenharia..." className="h-10" />
+                  </Field>
+                  <Field label="Curso">
+                    <Input value={fv('curso')} onChange={(e) => fd('curso', e.target.value)} placeholder="Curso técnico ou superior" className="h-10" />
+                  </Field>
+                  <Field label="Profissão">
+                    <Input value={fv('profissao')} onChange={(e) => fd('profissao', e.target.value)} placeholder="Sua profissão atual" className="h-10" />
+                  </Field>
+                </div>
+              )}
+            </SectionCard>
+          </TabsContent>
+
+          {/* ── Tab: Ministerial (somente leitura) ────────────────────────── */}
+          <TabsContent value="ministerial" className="space-y-3 mt-0">
+
+            <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+              <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
+                <span className="text-[15px] font-semibold text-gray-800">Situação Ministerial</span>
+                <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
+              </div>
+              {membroData && (membroData.situacao_ministerial || membroData.data_situacao_inicio || membroData.situacao_observacao) ? (
+                <>
+                  <InfoRow icon={User} label="Situação" value={membroData.situacao_ministerial ? (SITUACAO_MIN_LABELS[membroData.situacao_ministerial] || membroData.situacao_ministerial) : undefined} />
+                  <InfoRow icon={Calendar} label="Desde" value={formatDate(membroData.data_situacao_inicio || '')} />
+                  <InfoRow icon={User} label="Observação" value={membroData.situacao_observacao || undefined} last />
+                </>
+              ) : (
+                <p className="px-4 py-4 text-[13px] text-gray-400 italic">Nenhuma informação registrada ainda</p>
+              )}
+            </div>
+
+            <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+              <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
+                <span className="text-[15px] font-semibold text-gray-800">Ordenação</span>
+                <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
+              </div>
+              {membroData && membroData.ordenacao_funcao && membroData.ordenacao_funcao !== 'nenhum' ? (
+                <>
+                  <InfoRow icon={User} label="Função" value={ORDENACAO_LABELS[membroData.ordenacao_funcao] || membroData.ordenacao_funcao} />
+                  <InfoRow icon={Calendar} label="Desde" value={formatDate(membroData.data_ordenacao_inicio || '')} />
+                  <InfoRow icon={Calendar} label="Até" value={formatDate(membroData.data_ordenacao_fim || '')} last />
+                </>
+              ) : (
+                <p className="px-4 py-4 text-[13px] text-gray-400 italic">Nenhuma informação registrada ainda</p>
+              )}
+            </div>
+
+          </TabsContent>
+
+          {/* ── Tab: Batismo (editável) ────────────────────────────────────── */}
+          <TabsContent value="batismo" className="mt-0">
+            <SectionCard
+              title="Origem e Batismo"
+              editing={editingBatismo}
+              saving={savingBatismo}
+              onEdit={() => { setDraftBatismo({}); setEditingBatismo(true); }}
+              onSave={saveBatismo}
+              onCancel={() => { setEditingBatismo(false); setDraftBatismo({}); }}
+            >
+              {!editingBatismo ? (
+                <>
+                  <InfoRow icon={MapPin} label="Como chegou" value={membroData?.origem_membro ? (ORIGEM_LABELS[membroData.origem_membro] || membroData.origem_membro) : undefined} />
+                  {membroData?.igreja_anterior && (
+                    <InfoRow icon={MapPin} label="Igreja anterior" value={membroData.igreja_anterior} />
+                  )}
+                  <InfoRow icon={Calendar} label="Data de recebimento" value={formatDate(membroData?.data_recebimento || '')} />
+                  <InfoRow icon={Droplets} label="Batismo em Água" value={formatDate(membroData?.data_batismo_agua || '')} />
+                  <InfoRow icon={User} label="Pastor Oficiante" value={membroData?.pastor_oficiante || undefined} />
+                  <InfoRow icon={MapPin} label="Local do Batismo" value={membroData?.local_batismo || undefined} />
+                  <InfoRow icon={Droplets} label="Batismo no Espírito Santo" value={
+                    membroData?.batismo_espirito_santo === null || membroData?.batismo_espirito_santo === undefined
+                      ? undefined
+                      : membroData.batismo_espirito_santo ? 'Sim' : 'Não'
+                  } />
+                  {membroData?.batismo_espirito_santo && (
+                    <InfoRow icon={Calendar} label="Data Batismo Espírito" value={formatDate(membroData.data_batismo_espirito || '')} last />
+                  )}
+                  {!membroData?.batismo_espirito_santo && (
+                    <div className="h-1" />
+                  )}
+                </>
+              ) : (
+                <div className="px-4 py-4 space-y-3">
+                  <Field label="Como chegou à igreja">
+                    <Select value={bv('origem_membro')} onValueChange={(v) => bd('origem_membro', v)}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        {ORIGENS.map((o) => <SelectItem key={o.v} value={o.v}>{o.l}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Igreja anterior">
+                    <Input value={bv('igreja_anterior')} onChange={(e) => bd('igreja_anterior', e.target.value)} placeholder="Nome da igreja anterior" className="h-10" />
+                  </Field>
+                  <Field label="Data de recebimento">
+                    <Input type="date" value={bv('data_recebimento')} onChange={(e) => bd('data_recebimento', e.target.value)} className="h-10" />
+                  </Field>
+                  <Field label="Local do Batismo">
+                    <Input value={bv('local_batismo')} onChange={(e) => bd('local_batismo', e.target.value)} placeholder="Local onde foi batizado" className="h-10" />
+                  </Field>
+                  <Field label="Pastor Oficiante">
+                    <Input value={bv('pastor_oficiante')} onChange={(e) => bd('pastor_oficiante', e.target.value)} placeholder="Nome do pastor" className="h-10" />
+                  </Field>
+                  <Field label="Data do Batismo em Água">
+                    <Input type="date" value={bv('data_batismo_agua')} onChange={(e) => bd('data_batismo_agua', e.target.value)} className="h-10" />
+                  </Field>
+                  <Field label="Batizado no Espírito Santo">
+                    <Select
+                      value={bvBool('batismo_espirito_santo') === null ? '' : bvBool('batismo_espirito_santo') ? 'sim' : 'nao'}
+                      onValueChange={(v) => bd('batismo_espirito_santo', v === '' ? null : v === 'sim')}
+                    >
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sim">Sim</SelectItem>
+                        <SelectItem value="nao">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  {bvBool('batismo_espirito_santo') === true && (
+                    <Field label="Data Batismo no Espírito Santo">
+                      <Input type="date" value={bv('data_batismo_espirito')} onChange={(e) => bd('data_batismo_espirito', e.target.value)} className="h-10" />
+                    </Field>
+                  )}
+                </div>
+              )}
+            </SectionCard>
+          </TabsContent>
+
+          {/* ── Tab: Conta ────────────────────────────────────────────────── */}
+          <TabsContent value="conta" className="space-y-3 mt-0">
+
+            {/* Notificações */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+                <span className="text-[15px] font-semibold text-gray-800">Notificações</span>
+              </div>
+              <div className="flex items-center justify-between px-4 py-4">
+                <div className="flex items-start gap-3 flex-1 min-w-0 pr-4">
+                  <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center flex-shrink-0 mt-0.5">
+                    {pushEnabled
+                      ? <Bell className="w-4 h-4 text-[#1a5c38]" />
+                      : <BellOff className="w-4 h-4 text-gray-400" />}
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-medium text-gray-800">Notificações Push</p>
+                    <p className="text-[12px] text-gray-400 mt-0.5 leading-snug">
+                      {!pushSupported
+                        ? 'Requer HTTPS e browser compatível'
+                        : pushPermission === 'denied'
+                        ? 'Permissão negada — habilite nas configurações do navegador'
+                        : pushEnabled
+                        ? 'Alertas de escalas, eventos e avisos ativos'
+                        : 'Ative para receber alertas de escalas e avisos'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={pushEnabled}
+                  onCheckedChange={toggleSubscription}
+                  disabled={!pushSupported || pushLoading || pushPermission === 'denied'}
+                />
               </div>
             </div>
-            <Switch
-              checked={pushEnabled}
-              onCheckedChange={toggleSubscription}
-              disabled={!pushSupported || pushLoading || pushPermission === 'denied'}
-            />
-          </div>
-        </div>
 
-        {/* ── Segurança ──────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-            <span className="text-[15px] font-semibold text-gray-800">Segurança</span>
-          </div>
-          <button
-            onClick={handlePasswordReset}
-            className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 active:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center">
-                <Lock className="w-4 h-4 text-[#1a5c38]" />
+            {/* Segurança */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+                <span className="text-[15px] font-semibold text-gray-800">Segurança</span>
               </div>
-              <span className="text-[14px] font-medium text-gray-800">Alterar senha</span>
+              <button
+                onClick={handlePasswordReset}
+                className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 active:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center">
+                    <Lock className="w-4 h-4 text-[#1a5c38]" />
+                  </div>
+                  <span className="text-[14px] font-medium text-gray-800">Alterar senha</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-300" />
+              </button>
+              <button
+                onClick={signOut}
+                className="w-full flex items-center gap-3 px-4 py-4 active:bg-red-50 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
+                  <LogOut className="w-4 h-4 text-red-500" />
+                </div>
+                <span className="text-[14px] font-medium text-red-500">Sair da conta</span>
+              </button>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-300" />
-          </button>
-          <button
-            onClick={signOut}
-            className="w-full flex items-center gap-3 px-4 py-4 active:bg-red-50 transition-colors"
-          >
-            <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
-              <LogOut className="w-4 h-4 text-red-500" />
-            </div>
-            <span className="text-[14px] font-medium text-red-500">Sair da conta</span>
-          </button>
-        </div>
 
+          </TabsContent>
+
+        </Tabs>
       </div>
     </div>
   );
