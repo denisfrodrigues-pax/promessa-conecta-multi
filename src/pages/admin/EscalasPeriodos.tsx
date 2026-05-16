@@ -19,7 +19,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, ChevronRight, Lock, LockOpen, Trash2, Calendar, Loader2 } from 'lucide-react';
+import { Plus, ChevronRight, Lock, LockOpen, Trash2, Calendar, Loader2, Search } from 'lucide-react';
 
 interface Periodo {
   id: string;
@@ -42,6 +42,7 @@ export default function AdminEscalasPeriodos() {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
 
+  const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toDelete, setToDelete] = useState<Periodo | null>(null);
   const [form, setForm] = useState({
@@ -73,8 +74,8 @@ export default function AdminEscalasPeriodos() {
         .from('periodos_escala')
         .select('id, nome, mes, ano, status, created_at')
         .eq('church_id', churchId!)
-        .order('ano', { ascending: false })
-        .order('mes', { ascending: false });
+        .order('ano', { ascending: true })
+        .order('mes', { ascending: true });
       if (error) throw error;
       return data as Periodo[];
     },
@@ -151,6 +152,16 @@ export default function AdminEscalasPeriodos() {
         </Button>
       </div>
 
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar período..."
+          className="pl-9"
+        />
+      </div>
+
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -166,9 +177,19 @@ export default function AdminEscalasPeriodos() {
             </Button>
           </CardContent>
         </Card>
-      ) : (
+      ) : (() => {
+        const filtered = periodos.filter(p =>
+          p.nome.toLowerCase().includes(search.toLowerCase())
+        );
+        return filtered.length === 0 ? (
+          <Card>
+            <CardContent className="py-10 text-center">
+              <p className="text-muted-foreground">Nenhum período encontrado para "{search}".</p>
+            </CardContent>
+          </Card>
+        ) : (
         <div className="space-y-2">
-          {periodos.map((p) => (
+          {filtered.map((p) => (
             <Card key={p.id}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
@@ -222,7 +243,8 @@ export default function AdminEscalasPeriodos() {
             </Card>
           ))}
         </div>
-      )}
+        );
+      })()}
 
       {/* ── Modal Criar ──────────────────────────────────────────────────────── */}
       <Dialog open={isModalOpen} onOpenChange={(open) => { if (!open) setIsModalOpen(false); }}>
