@@ -232,10 +232,11 @@ export default function LeaderEscalas() {
       if (enviarNotificacao) {
         await supabase.functions.invoke('send-notification', {
           body: {
-            target: 'ministerio',
-            ministerio_id: ministerioId,
-            title: `Escala atualizada: ${ev.titulo}`,
-            body: `A escala para ${ev.titulo} (${format(new Date(ev.data_evento + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}) foi atualizada. Verifique sua convocação.`,
+            titulo: isEditMode ? `Escala atualizada: ${ev.titulo}` : `Nova escala: ${ev.titulo}`,
+            mensagem: `A escala para ${ev.titulo} (${format(new Date(ev.data_evento + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}) foi ${isEditMode ? 'atualizada' : 'criada'}. Verifique sua convocação.`,
+            tipo: 'nova_escala',
+            send_to_ministerio: ministerioId,
+            url: '/app/escalas',
           },
         });
         await supabase

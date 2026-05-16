@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import webpush from "npm:web-push@3.6.7";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,12 +13,12 @@ interface NotificationRequest {
   tipo: 'sistema' | 'escala' | 'ministerio' | 'aviso_admin' | 'nova_escala' | 'lembrete' | 'status_alterado';
   ministerio_id?: string;
   escala_id?: string;
+  url?: string;
   send_to_all?: boolean;
   send_to_ministerio?: string;
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -25,37 +26,35 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
+    const vapidPublic = Deno.env.get('VAPID_PUBLIC_KEY')!;
+    const vapidPrivate = Deno.env.get('VAPID_PRIVATE_KEY')!;
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get authorization header
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
-    }
+    webpush.setVapidDetails(
+      'mailto:contato@promessahortolandia.com.br',
+      vapidPublic,
+      vapidPrivate,
+    );
 
-    // Verify the user
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) throw new Error('No authorization header');
+
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      throw new Error('Unauthorized');
-    }
+    if (authError || !user) throw new Error('Unauthorized');
 
-    // Get user's role
     const { data: userRoles } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
 
-    const isAdmin = userRoles?.some(r => r.role === 'admin');
-    const isLeader = userRoles?.some(r => r.role === 'lider');
+    const isAdmin = userRoles?.some((r: { role: string }) => r.role === 'admin');
+    const isLeader = userRoles?.some((r: { role: string }) => r.role === 'lider');
 
-    // Parse request body
     const body: NotificationRequest = await req.json();
     console.log('Received notification request:', body);
 
-    // Validate required fields
     if (!body.titulo || !body.mensagem || !body.tipo) {
       throw new Error('Missing required fields: titulo, mensagem, tipo');
     }
@@ -63,20 +62,15 @@ Deno.serve(async (req) => {
     let targetUserIds: string[] = [];
 
     if (body.send_to_all) {
-      // Only admins can send to all
-      if (!isAdmin) {
-        throw new Error('Only admins can send notifications to all users');
-      }
-      
+      if (!isAdmin) throw new Error('Only admins can send notifications to all users');
+
       const { data: allProfiles } = await supabase
         .from('profiles')
         .select('id');
-      
+
       targetUserIds = (allProfiles || []).map((p: { id: string }) => p.id);
     } else if (body.send_to_ministerio) {
-      // Leaders can only send to their own ministry
       if (!isAdmin) {
-        // Check if user is leader of this ministry
         const { data: userProfile } = await supabase
           .from('profiles')
           .select('id')
@@ -94,12 +88,9 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Get all volunteers from the ministry
       const { data: volunteers } = await supabase
         .from('ministerio_voluntarios')
-        .select(`
-          profile:profiles!ministerio_voluntarios_user_id_fkey(id)
-        `)
+        .select(`profile:profiles!ministerio_voluntarios_user_id_fkey(id)`)
         .eq('ministerio_id', body.send_to_ministerio)
         .eq('ativo', true);
 
@@ -107,12 +98,8 @@ Deno.serve(async (req) => {
         .filter((v: { profile: { id: string }[] | null }) => v.profile && v.profile.length > 0)
         .map((v: { profile: { id: string }[] }) => v.profile[0].id);
     } else if (body.user_id) {
-      // Sending to specific user
-      if (!isAdmin && !isLeader) {
-        throw new Error('Only admins and leaders can send notifications');
-      }
+      if (!isAdmin && !isLeader) throw new Error('Only admins and leaders can send notifications');
 
-      // If leader, verify the user is in their ministry
       if (!isAdmin && isLeader) {
         const { data: userProfile } = await supabase
           .from('profiles')
@@ -127,7 +114,6 @@ Deno.serve(async (req) => {
 
         const ministryIds = (leaderMinistries || []).map((m: { id: string }) => m.id);
 
-        // Check if target user is in leader's ministry
         const { data: targetVolunteer } = await supabase
           .from('ministerio_voluntarios')
           .select('ministerio_id')
@@ -147,7 +133,7 @@ Deno.serve(async (req) => {
 
     console.log(`Sending notification to ${targetUserIds.length} users`);
 
-    // Create notifications
+    // ── Insert in-app notifications ─────────────────────────────────────────
     const notifications = targetUserIds.map(userId => ({
       voluntario_id: userId,
       titulo: body.titulo,
@@ -166,25 +152,59 @@ Deno.serve(async (req) => {
       throw insertError;
     }
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Notification sent to ${targetUserIds.length} user(s)` 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+    // ── Send push notifications ─────────────────────────────────────────────
+    const pushPayload = JSON.stringify({
+      title: body.titulo,
+      body: body.mensagem,
+      url: body.url || '/app/notificacoes',
+    });
+
+    let pushSent = 0;
+    let pushFailed = 0;
+
+    for (const userId of targetUserIds) {
+      const { data: subscriptions } = await supabase
+        .from('push_subscriptions')
+        .select('id, endpoint, p256dh, auth')
+        .eq('user_id', userId);
+
+      for (const sub of subscriptions || []) {
+        try {
+          await webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            pushPayload,
+          );
+          pushSent++;
+        } catch (err) {
+          console.error(`Push failed for subscription ${sub.id}:`, err);
+          pushFailed++;
+          // Remove expired/invalid subscriptions (410 Gone)
+          if ((err as { statusCode?: number }).statusCode === 410) {
+            await supabase.from('push_subscriptions').delete().eq('id', sub.id);
+          }
+        }
       }
+    }
+
+    console.log(`Push: ${pushSent} sent, ${pushFailed} failed`);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Notification sent to ${targetUserIds.length} user(s)`,
+        push: { sent: pushSent, failed: pushFailed },
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 },
     );
   } catch (error) {
     console.error('Error in send-notification function:', error);
     const err = error as Error;
     return new Response(
       JSON.stringify({ error: err.message }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: err.message === 'Unauthorized' ? 401 : 400 
-      }
+        status: err.message === 'Unauthorized' ? 401 : 400,
+      },
     );
   }
 });
