@@ -1,4 +1,3 @@
-npm warn exec The following package was not found and will be installed: supabase@2.98.2
 export type Json =
   | string
   | number
@@ -1963,13 +1962,16 @@ export type Database = {
           complemento: string | null
           cpf: string | null
           created_at: string | null
+          curso: string | null
           data_batismo: string | null
           data_batismo_agua: string | null
           data_batismo_espirito: string | null
           data_nascimento: string | null
           data_ordenacao_fim: string | null
           data_ordenacao_inicio: string | null
+          data_recebimento: string | null
           data_registro: string | null
+          data_situacao_fim: string | null
           data_situacao_inicio: string | null
           email: string | null
           endereco: string | null
@@ -1979,15 +1981,21 @@ export type Database = {
           genero: string | null
           grau_instrucao: string | null
           id: string
+          igreja_anterior: string | null
+          local_batismo: string | null
           nacionalidade: string | null
           naturalidade: string | null
           nome: string
+          nome_mae: string | null
+          nome_pai: string | null
           numero: string | null
           observacoes: string | null
           observacoes_pastorais: string | null
           ordenacao_funcao: string | null
           ordenacao_observacao: string | null
           origem_membro: string | null
+          pai_mae_promessista: boolean | null
+          pais: string | null
           pastor_oficiante: string | null
           pcd: string | null
           profissao: string | null
@@ -2007,13 +2015,16 @@ export type Database = {
           complemento?: string | null
           cpf?: string | null
           created_at?: string | null
+          curso?: string | null
           data_batismo?: string | null
           data_batismo_agua?: string | null
           data_batismo_espirito?: string | null
           data_nascimento?: string | null
           data_ordenacao_fim?: string | null
           data_ordenacao_inicio?: string | null
+          data_recebimento?: string | null
           data_registro?: string | null
+          data_situacao_fim?: string | null
           data_situacao_inicio?: string | null
           email?: string | null
           endereco?: string | null
@@ -2023,15 +2034,21 @@ export type Database = {
           genero?: string | null
           grau_instrucao?: string | null
           id?: string
+          igreja_anterior?: string | null
+          local_batismo?: string | null
           nacionalidade?: string | null
           naturalidade?: string | null
           nome: string
+          nome_mae?: string | null
+          nome_pai?: string | null
           numero?: string | null
           observacoes?: string | null
           observacoes_pastorais?: string | null
           ordenacao_funcao?: string | null
           ordenacao_observacao?: string | null
           origem_membro?: string | null
+          pai_mae_promessista?: boolean | null
+          pais?: string | null
           pastor_oficiante?: string | null
           pcd?: string | null
           profissao?: string | null
@@ -2051,13 +2068,16 @@ export type Database = {
           complemento?: string | null
           cpf?: string | null
           created_at?: string | null
+          curso?: string | null
           data_batismo?: string | null
           data_batismo_agua?: string | null
           data_batismo_espirito?: string | null
           data_nascimento?: string | null
           data_ordenacao_fim?: string | null
           data_ordenacao_inicio?: string | null
+          data_recebimento?: string | null
           data_registro?: string | null
+          data_situacao_fim?: string | null
           data_situacao_inicio?: string | null
           email?: string | null
           endereco?: string | null
@@ -2067,15 +2087,21 @@ export type Database = {
           genero?: string | null
           grau_instrucao?: string | null
           id?: string
+          igreja_anterior?: string | null
+          local_batismo?: string | null
           nacionalidade?: string | null
           naturalidade?: string | null
           nome?: string
+          nome_mae?: string | null
+          nome_pai?: string | null
           numero?: string | null
           observacoes?: string | null
           observacoes_pastorais?: string | null
           ordenacao_funcao?: string | null
           ordenacao_observacao?: string | null
           origem_membro?: string | null
+          pai_mae_promessista?: boolean | null
+          pais?: string | null
           pastor_oficiante?: string | null
           pcd?: string | null
           profissao?: string | null

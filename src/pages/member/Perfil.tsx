@@ -97,6 +97,36 @@ const UFS = [
   'RS','RO','RR','SC','SP','SE','TO',
 ];
 
+const SITUACAO_MIN_LABELS: Record<string, string> = {
+  ativo: 'Membro Ativo',
+  em_disciplina: 'Membro em Disciplina',
+  frequentador: 'Frequentador',
+};
+
+const ORDENACAO_LABELS: Record<string, string> = {
+  nenhum: 'Nenhum',
+  pastor_parcial: 'Pastor Tempo Parcial',
+  pastor_integral: 'Pastor Tempo Integral',
+  missionaria_parcial: 'Missionária Tempo Parcial',
+  missionaria_integral: 'Missionária Tempo Integral',
+  presbitero: 'Presbítero',
+  diacono: 'Diácono(isa)',
+  jubilado: 'Jubilado(a)',
+};
+
+const ORIGEM_LABELS: Record<string, string> = {
+  promessista_nato: 'Promessista Nato',
+  transferencia_denominacao: 'Transferência de outra denominação',
+  transferencia_iap: 'Transferência de outra IAP',
+  neopentecostal: 'Igreja Neopentecostal',
+  reformada: 'Igreja Reformada',
+  pentecostal: 'Pentecostal',
+  sabatista: 'Sabatista',
+  catolica: 'Igreja Católica',
+  outras_religioes: 'Outras religiões',
+  sem_religiao: 'Sem religião anterior',
+};
+
 // ─── Small helpers ────────────────────────────────────────────────────────────
 
 function labelFor(list: { v: string; l: string }[], val: string) {
@@ -254,6 +284,23 @@ const EMPTY_PROFILE: ProfileState = {
   nome_mae: '', nome_pai: '', pais: 'Brasil', curso: '',
 };
 
+interface MinisterialData {
+  situacao_ministerial: string | null;
+  data_situacao_inicio: string | null;
+  situacao_observacao: string | null;
+  ordenacao_funcao: string | null;
+  data_ordenacao_inicio: string | null;
+  data_ordenacao_fim: string | null;
+  origem_membro: string | null;
+  igreja_anterior: string | null;
+  data_recebimento: string | null;
+  data_batismo_agua: string | null;
+  pastor_oficiante: string | null;
+  local_batismo: string | null;
+  batismo_espirito_santo: boolean | null;
+  data_batismo_espirito: string | null;
+}
+
 export default function MemberPerfil() {
   const { profile, signOut, user } = useAuth();
   const [data, setData] = useState<ProfileState>(EMPTY_PROFILE);
@@ -263,6 +310,7 @@ export default function MemberPerfil() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [paiMaePromessista, setPaiMaePromessista] = useState(false);
+  const [membroData, setMembroData] = useState<MinisterialData | null>(null);
 
   // draft state per section
   const [draftPersonal, setDraftPersonal] = useState<Partial<ProfileState>>({});
@@ -324,7 +372,14 @@ export default function MemberPerfil() {
     // Load membros (extra fields not in profiles)
     supabase
       .from('membros')
-      .select('nacionalidade, genero, rua, estado, nome_mae, nome_pai, pai_mae_promessista, pais, curso')
+      .select(`
+        nacionalidade, genero, rua, estado, nome_mae, nome_pai, pai_mae_promessista, pais, curso,
+        situacao_ministerial, data_situacao_inicio, situacao_observacao,
+        ordenacao_funcao, data_ordenacao_inicio, data_ordenacao_fim,
+        origem_membro, igreja_anterior, data_recebimento,
+        data_batismo_agua, pastor_oficiante, local_batismo,
+        batismo_espirito_santo, data_batismo_espirito
+      `)
       .eq('user_id', profile.id)
       .maybeSingle()
       .then(({ data: m }) => {
@@ -343,6 +398,22 @@ export default function MemberPerfil() {
           curso: mb.curso || '',
         }));
         setPaiMaePromessista(!!mb.pai_mae_promessista);
+        setMembroData({
+          situacao_ministerial: mb.situacao_ministerial || null,
+          data_situacao_inicio: mb.data_situacao_inicio || null,
+          situacao_observacao: mb.situacao_observacao || null,
+          ordenacao_funcao: mb.ordenacao_funcao || null,
+          data_ordenacao_inicio: mb.data_ordenacao_inicio || null,
+          data_ordenacao_fim: mb.data_ordenacao_fim || null,
+          origem_membro: mb.origem_membro || null,
+          igreja_anterior: mb.igreja_anterior || null,
+          data_recebimento: mb.data_recebimento || null,
+          data_batismo_agua: mb.data_batismo_agua || null,
+          pastor_oficiante: mb.pastor_oficiante || null,
+          local_batismo: mb.local_batismo || null,
+          batismo_espirito_santo: mb.batismo_espirito_santo ?? null,
+          data_batismo_espirito: mb.data_batismo_espirito || null,
+        });
       });
   }, [user?.id, profile?.id]);
 
@@ -925,6 +996,67 @@ export default function MemberPerfil() {
             </div>
           )}
         </SectionCard>
+
+        {/* ── Situação Ministerial ────────────────────────────────────────── */}
+        <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
+            <span className="text-[15px] font-semibold text-gray-800">Situação Ministerial</span>
+            <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
+          </div>
+          {membroData && (membroData.situacao_ministerial || membroData.data_situacao_inicio || membroData.situacao_observacao) ? (
+            <>
+              <InfoRow icon={User} label="Situação" value={membroData.situacao_ministerial ? (SITUACAO_MIN_LABELS[membroData.situacao_ministerial] || membroData.situacao_ministerial) : undefined} />
+              <InfoRow icon={Calendar} label="Desde" value={formatDate(membroData.data_situacao_inicio || '')} />
+              <InfoRow icon={User} label="Observação" value={membroData.situacao_observacao || undefined} last />
+            </>
+          ) : (
+            <p className="px-4 py-4 text-[13px] text-gray-400 italic">Nenhuma informação registrada ainda</p>
+          )}
+        </div>
+
+        {/* ── Ordenação ───────────────────────────────────────────────────── */}
+        <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
+            <span className="text-[15px] font-semibold text-gray-800">Ordenação</span>
+            <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
+          </div>
+          {membroData && membroData.ordenacao_funcao && membroData.ordenacao_funcao !== 'nenhum' ? (
+            <>
+              <InfoRow icon={User} label="Função" value={ORDENACAO_LABELS[membroData.ordenacao_funcao] || membroData.ordenacao_funcao} />
+              <InfoRow icon={Calendar} label="Desde" value={formatDate(membroData.data_ordenacao_inicio || '')} />
+              <InfoRow icon={Calendar} label="Até" value={formatDate(membroData.data_ordenacao_fim || '')} last />
+            </>
+          ) : (
+            <p className="px-4 py-4 text-[13px] text-gray-400 italic">Nenhuma informação registrada ainda</p>
+          )}
+        </div>
+
+        {/* ── Origem e Batismo ────────────────────────────────────────────── */}
+        <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
+            <span className="text-[15px] font-semibold text-gray-800">Origem e Batismo</span>
+            <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
+          </div>
+          {membroData && (membroData.origem_membro || membroData.data_batismo_agua || membroData.data_recebimento) ? (
+            <>
+              <InfoRow icon={MapPin} label="Como chegou" value={membroData.origem_membro ? (ORIGEM_LABELS[membroData.origem_membro] || membroData.origem_membro) : undefined} />
+              {membroData.igreja_anterior && (
+                <InfoRow icon={MapPin} label="Igreja anterior" value={membroData.igreja_anterior} />
+              )}
+              <InfoRow icon={Calendar} label="Data de recebimento" value={formatDate(membroData.data_recebimento || '')} />
+              <InfoRow icon={Calendar} label="Batismo em Água" value={formatDate(membroData.data_batismo_agua || '')} />
+              <InfoRow icon={User} label="Pastor Oficiante" value={membroData.pastor_oficiante || undefined} />
+              <InfoRow icon={MapPin} label="Local do Batismo" value={membroData.local_batismo || undefined} />
+              <InfoRow icon={User} label="Batismo no Espírito Santo" value={
+                membroData.batismo_espirito_santo === null ? undefined :
+                membroData.batismo_espirito_santo ? 'Sim' : 'Não'
+              } />
+              <InfoRow icon={Calendar} label="Data Batismo Espírito" value={formatDate(membroData.data_batismo_espirito || '')} last />
+            </>
+          ) : (
+            <p className="px-4 py-4 text-[13px] text-gray-400 italic">Nenhuma informação registrada ainda</p>
+          )}
+        </div>
 
         {/* ── Notificações ───────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
