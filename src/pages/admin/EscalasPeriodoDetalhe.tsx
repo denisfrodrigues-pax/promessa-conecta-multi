@@ -21,7 +21,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import {
-  Plus, Trash2, Bell, CheckSquare, ArrowLeft, Calendar, Clock, Loader2, ChevronDown, ChevronUp,
+  Plus, Trash2, Bell, CheckSquare, ArrowLeft, Calendar, Clock, Loader2,
+  ChevronDown, ChevronUp, Pencil, Power,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -55,10 +56,11 @@ interface Evento {
   horario_inicio: string | null;
   horario_fim: string | null;
   descricao: string | null;
+  status: string;
   evento_ministerios: EventoMinisterio[];
 }
 
-const TIPOS_EVENTO = ['culto', 'ensaio', 'reuniao', 'conferencia', 'retiro', 'outro'];
+const TIPOS_EVENTO = ['culto', 'escola_biblica', 'ensaio', 'reuniao', 'conferencia', 'retiro', 'outro'];
 
 export default function AdminEscalasPeriodoDetalhe() {
   const { id: periodoId } = useParams<{ id: string }>();
@@ -76,8 +78,10 @@ export default function AdminEscalasPeriodoDetalhe() {
   });
 
   const [isEventoModalOpen, setIsEventoModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConvocacaoModalOpen, setIsConvocacaoModalOpen] = useState(false);
   const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
+  const [editingEvento, setEditingEvento] = useState<Evento | null>(null);
   const [toDelete, setToDelete] = useState<Evento | null>(null);
   const [expandedEventos, setExpandedEventos] = useState<Set<string>>(new Set());
 
@@ -114,7 +118,7 @@ export default function AdminEscalasPeriodoDetalhe() {
       const { data, error } = await supabase
         .from('eventos_escala')
         .select(`
-          id, titulo, tipo, data_evento, horario_inicio, horario_fim, descricao,
+          id, titulo, tipo, data_evento, horario_inicio, horario_fim, descricao, status,
           evento_ministerios(id, ministerio_id, status, notificacao_enviada, ministerios(nome))
         `)
         .eq('periodo_id', periodoId!)
@@ -191,6 +195,61 @@ export default function AdminEscalasPeriodoDetalhe() {
     },
   });
 
+  // ── Update evento ──────────────────────────────────────────────────────────
+  const updateEventoMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingEvento) return;
+      const { error } = await supabase
+        .from('eventos_escala')
+        .update({
+          titulo: eventoForm.titulo.trim(),
+          tipo: eventoForm.tipo,
+          data_evento: eventoForm.data_evento,
+          horario_inicio: eventoForm.horario_inicio || null,
+          horario_fim: eventoForm.horario_fim || null,
+          descricao: eventoForm.descricao.trim() || null,
+        })
+        .eq('id', editingEvento.id);
+      if (error) throw error;
+
+      // Replace ministerios: delete all then re-insert
+      await supabase.from('evento_ministerios').delete().eq('evento_id', editingEvento.id);
+      if (selectedMinisterios.length > 0) {
+        const rows = selectedMinisterios.map((mid) => ({
+          evento_id: editingEvento.id,
+          ministerio_id: mid,
+        }));
+        const { error: emErr } = await supabase.from('evento_ministerios').insert(rows);
+        if (emErr) throw emErr;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eventos_escala', periodoId] });
+      toast.success('Evento atualizado!');
+      setIsEditModalOpen(false);
+      setEditingEvento(null);
+      resetEventoForm();
+    },
+    onError: (e: Error) => toast.error('Erro ao atualizar evento', { description: e.message }),
+  });
+
+  // ── Toggle status ativo/inativo ────────────────────────────────────────────
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ id, currentStatus }: { id: string; currentStatus: string }) => {
+      const newStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
+      const { error } = await supabase
+        .from('eventos_escala')
+        .update({ status: newStatus })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eventos_escala', periodoId] });
+      toast.success('Status do evento atualizado!');
+    },
+    onError: (e: Error) => toast.error('Erro ao alterar status', { description: e.message }),
+  });
+
   // ── Convocar ministérios ───────────────────────────────────────────────────
   const convocarMutation = useMutation({
     mutationFn: async ({ evento, ministerioIds }: { evento: Evento; ministerioIds: string[] }) => {
@@ -241,6 +300,20 @@ export default function AdminEscalasPeriodoDetalhe() {
   const resetEventoForm = () => {
     setEventoForm({ titulo: '', tipo: 'culto', data_evento: '', horario_inicio: '', horario_fim: '', descricao: '' });
     setSelectedMinisterios([]);
+  };
+
+  const openEditModal = (ev: Evento) => {
+    setEditingEvento(ev);
+    setEventoForm({
+      titulo: ev.titulo,
+      tipo: ev.tipo,
+      data_evento: ev.data_evento,
+      horario_inicio: ev.horario_inicio ?? '',
+      horario_fim: ev.horario_fim ?? '',
+      descricao: ev.descricao ?? '',
+    });
+    setSelectedMinisterios(ev.evento_ministerios.map((em) => em.ministerio_id));
+    setIsEditModalOpen(true);
   };
 
   const toggleMinisterio = (id: string) => {
@@ -334,8 +407,9 @@ export default function AdminEscalasPeriodoDetalhe() {
         <div className="space-y-3">
           {eventos.map((ev) => {
             const expanded = expandedEventos.has(ev.id);
+            const isInativo = ev.status === 'inativo';
             return (
-              <Card key={ev.id}>
+              <Card key={ev.id} className={isInativo ? 'opacity-60' : ''}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -344,7 +418,8 @@ export default function AdminEscalasPeriodoDetalhe() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium">{ev.titulo}</p>
-                        <Badge variant="outline" className="text-xs capitalize">{ev.tipo}</Badge>
+                        <Badge variant="outline" className="text-xs capitalize">{ev.tipo.replace('_', ' ')}</Badge>
+                        {isInativo && <Badge variant="secondary" className="text-xs bg-gray-200 text-gray-600">Inativo</Badge>}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                         <span className="flex items-center gap-1">
@@ -360,8 +435,8 @@ export default function AdminEscalasPeriodoDetalhe() {
                         <span>{ev.evento_ministerios.length} ministério(s)</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {periodo.status === 'aberto' && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      {periodo.status === 'aberto' && !isInativo && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -375,6 +450,24 @@ export default function AdminEscalasPeriodoDetalhe() {
                           Convocar
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="Editar evento"
+                        onClick={() => openEditModal(ev)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title={isInativo ? 'Ativar evento' : 'Inativar evento'}
+                        className={isInativo ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'}
+                        onClick={() => toggleStatusMutation.mutate({ id: ev.id, currentStatus: ev.status })}
+                        disabled={toggleStatusMutation.isPending}
+                      >
+                        <Power className="w-4 h-4" />
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -535,6 +628,95 @@ export default function AdminEscalasPeriodoDetalhe() {
               {createEventoMutation.isPending
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Criando...</>
                 : 'Criar evento'
+              }
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Modal Editar Evento ─────────────────────────────────────────────── */}
+      <Dialog open={isEditModalOpen} onOpenChange={(open) => { if (!open) { setIsEditModalOpen(false); setEditingEvento(null); resetEventoForm(); } }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar evento</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Título *</Label>
+              <Input
+                value={eventoForm.titulo}
+                onChange={(e) => setEventoForm({ ...eventoForm, titulo: e.target.value })}
+                disabled={updateEventoMutation.isPending}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Tipo *</Label>
+                <Select value={eventoForm.tipo} onValueChange={(v) => setEventoForm({ ...eventoForm, tipo: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {TIPOS_EVENTO.map((t) => (
+                      <SelectItem key={t} value={t} className="capitalize">{t.replace('_', ' ')}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Data *</Label>
+                <Input
+                  type="date"
+                  value={eventoForm.data_evento}
+                  onChange={(e) => setEventoForm({ ...eventoForm, data_evento: e.target.value })}
+                  disabled={updateEventoMutation.isPending}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Horário início</Label>
+                <Input type="time" value={eventoForm.horario_inicio} onChange={(e) => setEventoForm({ ...eventoForm, horario_inicio: e.target.value })} disabled={updateEventoMutation.isPending} />
+              </div>
+              <div className="space-y-2">
+                <Label>Horário fim</Label>
+                <Input type="time" value={eventoForm.horario_fim} onChange={(e) => setEventoForm({ ...eventoForm, horario_fim: e.target.value })} disabled={updateEventoMutation.isPending} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Descrição</Label>
+              <Textarea value={eventoForm.descricao} onChange={(e) => setEventoForm({ ...eventoForm, descricao: e.target.value })} rows={2} disabled={updateEventoMutation.isPending} />
+            </div>
+            <div className="space-y-2">
+              <Label>Ministérios convocados</Label>
+              <div className="border rounded-lg p-3 max-h-40 overflow-y-auto space-y-1">
+                {ministerios.map((m) => (
+                  <label key={m.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 px-2 py-1 rounded">
+                    <input
+                      type="checkbox"
+                      checked={selectedMinisterios.includes(m.id)}
+                      onChange={() => toggleMinisterio(m.id)}
+                      className="accent-primary"
+                    />
+                    <span className="text-sm">{m.nome}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setIsEditModalOpen(false); setEditingEvento(null); resetEventoForm(); }} disabled={updateEventoMutation.isPending}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (!eventoForm.titulo.trim()) { toast.error('Informe o título'); return; }
+                if (!eventoForm.data_evento) { toast.error('Informe a data'); return; }
+                updateEventoMutation.mutate();
+              }}
+              disabled={updateEventoMutation.isPending}
+            >
+              {updateEventoMutation.isPending
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Salvando...</>
+                : 'Salvar alterações'
               }
             </Button>
           </DialogFooter>
