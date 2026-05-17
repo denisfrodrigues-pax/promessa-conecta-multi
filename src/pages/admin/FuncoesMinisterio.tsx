@@ -271,6 +271,7 @@ export default function AdminFuncoesMinisterio() {
                     </div>
                   </div>
 
+                  <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -327,6 +328,7 @@ export default function AdminFuncoesMinisterio() {
                       )}
                     </TableBody>
                   </Table>
+                  </div>
                 </CardContent>
               </Card>
             </>

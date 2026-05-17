@@ -266,7 +266,7 @@ export default function MemberNotificacoes() {
       </Tabs>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="border-neutral-200">
+        <DialogContent className="border-neutral-200 max-w-lg mx-4 sm:mx-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-neutral-800">
               {selectedNotification && getNotificationIcon(selectedNotification.tipo)}

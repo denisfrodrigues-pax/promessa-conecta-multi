@@ -192,7 +192,7 @@ export default function AdminEscalasPeriodos() {
           {filtered.map((p) => (
             <Card key={p.id}>
               <CardContent className="p-4">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                     <Calendar className="w-5 h-5 text-primary" />
                   </div>
@@ -209,7 +209,7 @@ export default function AdminEscalasPeriodos() {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
                     <Button
                       size="sm"
                       variant="outline"

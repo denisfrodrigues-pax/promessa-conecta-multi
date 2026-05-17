@@ -355,6 +355,7 @@ export default function Transacoes() {
             </div>
           ) : (
             <>
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -411,6 +412,7 @@ export default function Transacoes() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
 
               {/* Paginação */}
               <div className="flex items-center justify-between mt-4">

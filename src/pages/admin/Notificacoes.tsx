@@ -608,6 +608,7 @@ export default function AdminNotificacoes() {
       {/* Table */}
       <Card>
         <CardContent className="p-0">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -723,6 +724,7 @@ export default function AdminNotificacoes() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

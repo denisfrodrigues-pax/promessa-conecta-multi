@@ -236,6 +236,7 @@ export default function MinhasFuncoes() {
             </div>
           </div>
 
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -292,6 +293,7 @@ export default function MinhasFuncoes() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

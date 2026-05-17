@@ -972,6 +972,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
         <TabsContent value="list">
           <Card>
             <CardContent className="p-0">
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -1066,6 +1067,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                   )}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

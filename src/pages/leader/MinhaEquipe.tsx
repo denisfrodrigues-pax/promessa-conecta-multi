@@ -518,6 +518,7 @@ export default function LeaderMinhaEquipe() {
               )}
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -584,6 +585,7 @@ export default function LeaderMinhaEquipe() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

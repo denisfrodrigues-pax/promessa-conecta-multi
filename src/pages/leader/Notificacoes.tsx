@@ -386,6 +386,7 @@ export default function LeaderNotificacoes() {
       {/* Table */}
       <Card className="border-neutral-200">
         <CardContent className="p-0">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="bg-neutral-50 hover:bg-neutral-50 border-neutral-200">
@@ -470,6 +471,7 @@ export default function LeaderNotificacoes() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

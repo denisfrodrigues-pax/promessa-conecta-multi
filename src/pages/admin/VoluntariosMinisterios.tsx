@@ -445,6 +445,7 @@ export default function AdminVoluntariosMinisterios() {
                 )}
               </div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -511,6 +512,7 @@ export default function AdminVoluntariosMinisterios() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

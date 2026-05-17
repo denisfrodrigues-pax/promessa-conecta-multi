@@ -236,6 +236,7 @@ export default function Categorias() {
                 <p className="text-muted-foreground">Nenhuma categoria encontrada</p>
               </div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -278,6 +279,7 @@ export default function Categorias() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </Tabs>
         </CardContent>

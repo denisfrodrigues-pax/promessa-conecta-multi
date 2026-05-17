@@ -443,7 +443,7 @@ export default function Usuarios() {
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-border/50 overflow-hidden">
+            <div className="rounded-xl border border-border/50 overflow-hidden overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30 hover:bg-muted/30">

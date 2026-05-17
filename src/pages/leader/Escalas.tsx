@@ -573,7 +573,7 @@ export default function LeaderEscalas() {
 
           <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
             {escalasRows.map((row, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_1fr_100px_36px] gap-2 items-end">
+              <div key={idx} className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_100px_36px] gap-2 items-end">
                 <div className="space-y-1">
                   {idx === 0 && <Label className="text-xs">Função *</Label>}
                   <Select value={row.funcao} onValueChange={(v) => updateRow(idx, 'funcao', v)}>
