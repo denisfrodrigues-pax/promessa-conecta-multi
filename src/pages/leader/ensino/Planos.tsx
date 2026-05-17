@@ -29,8 +29,8 @@ interface Plano {
   turma_id: string;
   titulo: string;
   data_aula: string;
+  objetivos: string | null;
   ensino_turmas: { nome: string } | null;
-  _arquivos_count?: number;
 }
 
 interface PlanoForm { titulo: string; data_aula: string; turma_id: string }
@@ -158,11 +158,16 @@ export default function Planos() {
                     <BookOpen className="w-4 h-4 text-promessa-500 shrink-0" />
                     <div className="min-w-0">
                       <p className="font-medium text-sm truncate">{p.titulo}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Calendar className="w-3 h-3" />
-                        {format(new Date(p.data_aula + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                        <Calendar className="w-3 h-3 shrink-0" />
+                        <span>{format(new Date(p.data_aula + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
                         <Badge variant="outline" className="text-xs py-0">{p.ensino_turmas?.nome}</Badge>
                       </div>
+                      {p.objetivos && (
+                        <p className="text-xs text-muted-foreground mt-1 truncate">
+                          {p.objetivos.length > 80 ? p.objetivos.slice(0, 80) + '…' : p.objetivos}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">

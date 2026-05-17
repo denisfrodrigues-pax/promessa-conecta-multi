@@ -6,15 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Paperclip, Trash2, Download, Upload, FileText, Loader2, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowLeft, Save, Paperclip, Trash2, Download, Upload, FileText, Loader2, Sparkles, Wand2, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import ReactMarkdown from 'react-markdown';
 
 interface Plano {
   id: string;
@@ -48,11 +50,13 @@ export default function PlanoDetalhe() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [form, setForm] = useState<{
     titulo: string; data_aula: string;
     objetivos: string; conteudo: string; anotacoes: string;
   } | null>(null);
   const [deleteArquivo, setDeleteArquivo] = useState<Arquivo | null>(null);
+  const [confirmDeletePlan, setConfirmDeletePlan] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [aiLoading, setAiLoading] = useState<'objetivos' | 'conteudo' | 'completo' | null>(null);
 
@@ -67,7 +71,6 @@ export default function PlanoDetalhe() {
     enabled: !!planoId,
   });
 
-  // Sync form when plano loads (including from cache on navigation)
   useEffect(() => {
     if (plano) {
       setForm({
@@ -107,8 +110,22 @@ export default function PlanoDetalhe() {
       qc.invalidateQueries({ queryKey: ['mca_plano', planoId] });
       qc.invalidateQueries({ queryKey: ['mca_planos'] });
       toast.success('Plano salvo');
+      setMode('view');
     },
     onError: () => toast.error('Erro ao salvar'),
+  });
+
+  const deletePlanMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await (supabase as any).from('mca_planos_aula').delete().eq('id', planoId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['mca_planos'] });
+      toast.success('Plano removido');
+      navigate(-1);
+    },
+    onError: () => toast.error('Erro ao remover plano'),
   });
 
   const deleteArquivoMutation = useMutation({
@@ -190,6 +207,19 @@ export default function PlanoDetalhe() {
     }
   }
 
+  function cancelEdit() {
+    if (plano) {
+      setForm({
+        titulo: plano.titulo,
+        data_aula: plano.data_aula,
+        objetivos: plano.objetivos ?? '',
+        conteudo: plano.conteudo ?? '',
+        anotacoes: plano.anotacoes ?? '',
+      });
+    }
+    setMode('view');
+  }
+
   if (isLoading || !form) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -198,20 +228,153 @@ export default function PlanoDetalhe() {
     );
   }
 
+  // ── VIEW MODE ───────────────────────────────────────────────────────────────
+  if (mode === 'view') {
+    return (
+      <div className="space-y-6 max-w-3xl">
+        <div className="flex items-start gap-3 flex-wrap">
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-4 h-4 mr-1" />Voltar
+          </Button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-promessa-900 leading-tight">{plano!.titulo}</h1>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <Badge variant="secondary">{plano!.mca_salas?.nome}</Badge>
+              <span className="text-sm text-muted-foreground">
+                {format(new Date(plano!.data_aula + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button size="sm" onClick={() => setMode('edit')}>
+              <Pencil className="w-4 h-4 mr-1" />Editar
+            </Button>
+            <Button size="sm" variant="ghost"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => setConfirmDeletePlan(true)}>
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        {plano!.objetivos && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Objetivos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="prose prose-sm max-w-none">
+                <ReactMarkdown>{plano!.objetivos}</ReactMarkdown>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {plano!.conteudo && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Conteúdo / Desenvolvimento</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="prose prose-sm max-w-none">
+                <ReactMarkdown>{plano!.conteudo}</ReactMarkdown>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {plano!.anotacoes && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Anotações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm whitespace-pre-wrap">{plano!.anotacoes}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Paperclip className="w-4 h-4" />
+              Materiais Anexados
+              {arquivos.length > 0 && (
+                <span className="text-muted-foreground font-normal text-sm">({arquivos.length})</span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {arquivos.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nenhum material anexado.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {arquivos.map(arq => (
+                  <div key={arq.id} className="flex items-center justify-between border rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileText className="w-4 h-4 text-promessa-500 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm truncate">{arq.nome}</p>
+                        {arq.tamanho_bytes && (
+                          <p className="text-xs text-muted-foreground">{formatBytes(arq.tamanho_bytes)}</p>
+                        )}
+                      </div>
+                    </div>
+                    <Button size="sm" variant="ghost" asChild>
+                      <a href={arq.arquivo_url} download={arq.nome} target="_blank" rel="noreferrer">
+                        <Download className="w-3.5 h-3.5" />
+                      </a>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <AlertDialog open={confirmDeletePlan} onOpenChange={setConfirmDeletePlan}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remover plano?</AlertDialogTitle>
+              <AlertDialogDescription>
+                O plano "{plano!.titulo}" e todos os arquivos anexados serão removidos permanentemente.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => deletePlanMutation.mutate()}
+                disabled={deletePlanMutation.isPending}>
+                {deletePlanMutation.isPending ? 'Removendo...' : 'Remover'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  }
+
+  // ── EDIT MODE ──────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6 max-w-3xl">
-      <div className="flex items-center gap-3 flex-wrap">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+      <div className="flex items-center gap-2 flex-wrap">
+        <Button variant="ghost" size="sm" onClick={cancelEdit}>
           <ArrowLeft className="w-4 h-4 mr-1" />Voltar
         </Button>
         <div className="flex-1 min-w-0">
+          <p className="font-medium truncate">{form.titulo || 'Editar plano'}</p>
           <p className="text-sm text-muted-foreground">
             {plano?.mca_salas?.nome} · {format(new Date(plano!.data_aula + 'T12:00:00'), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
           </p>
         </div>
+        <Button variant="outline" size="sm" onClick={cancelEdit}>
+          Cancelar
+        </Button>
         <Button
-          variant="outline"
-          size="sm"
+          variant="outline" size="sm"
           onClick={() => gerarComIA('completo')}
           disabled={!!aiLoading}
           className="text-promessa-700 border-promessa-300 hover:bg-promessa-50"
@@ -241,7 +404,6 @@ export default function PlanoDetalhe() {
             </div>
           </div>
 
-          {/* Objetivos */}
           <div>
             <div className="flex items-center justify-between mb-1">
               <Label>Objetivos</Label>
@@ -262,7 +424,6 @@ export default function PlanoDetalhe() {
               placeholder="O que as crianças aprenderão nesta aula..." rows={3} />
           </div>
 
-          {/* Conteúdo */}
           <div>
             <div className="flex items-center justify-between mb-1">
               <Label>Conteúdo / Desenvolvimento</Label>
@@ -292,7 +453,6 @@ export default function PlanoDetalhe() {
         </CardContent>
       </Card>
 
-      {/* Arquivos */}
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
