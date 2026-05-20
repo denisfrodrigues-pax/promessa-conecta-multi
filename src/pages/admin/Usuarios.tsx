@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield, UserX, UserPlus, Trash2, Loader2, Pencil } from 'lucide-react';
+import { Search, Download, Edit, MoreHorizontal, Users, UserCheck, Shield, UserX, UserPlus, Trash2, Loader2, Pencil, ChevronUp, ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -55,6 +55,10 @@ export default function Usuarios() {
   const [convertingUser, setConvertingUser] = useState<User | null>(null);
   const [converting, setConverting] = useState(false);
   const [editData, setEditData] = useState({ nome: '', telefone: '', status: '', role: '' });
+  const [sortConfig, setSortConfig] = useState<{ coluna: 'nome' | 'created_at'; direcao: 'asc' | 'desc' }>({ coluna: 'nome', direcao: 'asc' });
+  const [filterFuncoes, setFilterFuncoes] = useState<string[]>([]);
+  const [filterStatus, setFilterStatus] = useState<string[]>([]);
+  const [openFilterPopover, setOpenFilterPopover] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -63,7 +67,7 @@ export default function Usuarios() {
   const fetchUsers = async () => {
     try {
       const [usersRes, rolesRes, membrosRes] = await Promise.all([
-        supabase.from('profiles').select('*, foto_url').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('*, foto_url').order('nome', { ascending: true }),
         supabase.from('user_roles').select('user_id, role'),
         supabase.from('membros').select('id, user_id').not('user_id', 'is', null),
       ]);
@@ -340,11 +344,33 @@ export default function Usuarios() {
     toast.success('Arquivo CSV exportado');
   };
 
-  const filteredUsers = users.filter(
-    (user) =>
+  function toggleSort(coluna: 'nome' | 'created_at') {
+    setSortConfig(prev =>
+      prev.coluna === coluna
+        ? { ...prev, direcao: prev.direcao === 'asc' ? 'desc' : 'asc' }
+        : { coluna, direcao: 'asc' }
+    );
+  }
+
+  const filteredUsers = users
+    .filter(user =>
       user.nome.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase())
-  );
+    )
+    .filter(user => {
+      if (filterFuncoes.length === 0) return true;
+      const userRoles = getUserRoles(user.user_id);
+      return filterFuncoes.some(f => userRoles.includes(f));
+    })
+    .filter(user => filterStatus.length === 0 || filterStatus.includes(user.status))
+    .sort((a, b) => {
+      if (sortConfig.coluna === 'nome') {
+        const cmp = a.nome.localeCompare(b.nome, 'pt-BR');
+        return sortConfig.direcao === 'asc' ? cmp : -cmp;
+      }
+      const cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      return sortConfig.direcao === 'asc' ? cmp : -cmp;
+    });
 
   const stats = {
     total: users.length,
@@ -447,10 +473,120 @@ export default function Usuarios() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30 hover:bg-muted/30">
-                    <TableHead className="font-semibold">Usuário</TableHead>
-                    <TableHead className="font-semibold">Função</TableHead>
-                    <TableHead className="font-semibold">Status</TableHead>
-                    <TableHead className="font-semibold">Cadastro</TableHead>
+                    {/* USUÁRIO — ordenação A↕Z */}
+                    <TableHead
+                      className="font-semibold cursor-pointer select-none hover:text-foreground"
+                      onClick={() => toggleSort('nome')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Usuário
+                        {sortConfig.coluna === 'nome'
+                          ? sortConfig.direcao === 'asc'
+                            ? <ChevronUp className="w-3.5 h-3.5" />
+                            : <ChevronDown className="w-3.5 h-3.5" />
+                          : <ChevronUp className="w-3.5 h-3.5 opacity-30" />
+                        }
+                      </div>
+                    </TableHead>
+
+                    {/* FUNÇÃO — filtro por checkboxes */}
+                    <TableHead className="font-semibold">
+                      <Popover
+                        open={openFilterPopover === 'funcao'}
+                        onOpenChange={(o) => setOpenFilterPopover(o ? 'funcao' : null)}
+                      >
+                        <PopoverTrigger asChild>
+                          <div className="flex items-center gap-1 cursor-pointer hover:text-foreground select-none">
+                            {filterFuncoes.length > 0
+                              ? <Badge variant="secondary" className="text-xs font-normal">Função: {filterFuncoes.length}</Badge>
+                              : 'Função'
+                            }
+                            <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                          </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-44 p-3" align="start">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Filtrar por função</p>
+                          <div className="space-y-2">
+                            {ROLE_OPTIONS.map(opt => (
+                              <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                  checked={filterFuncoes.includes(opt.value)}
+                                  onCheckedChange={(checked) =>
+                                    setFilterFuncoes(prev => checked ? [...prev, opt.value] : prev.filter(f => f !== opt.value))
+                                  }
+                                />
+                                <span className="text-sm">{opt.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                          {filterFuncoes.length > 0 && (
+                            <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-xs" onClick={() => setFilterFuncoes([])}>
+                              Limpar filtro
+                            </Button>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    </TableHead>
+
+                    {/* STATUS — filtro por checkboxes */}
+                    <TableHead className="font-semibold">
+                      <Popover
+                        open={openFilterPopover === 'status'}
+                        onOpenChange={(o) => setOpenFilterPopover(o ? 'status' : null)}
+                      >
+                        <PopoverTrigger asChild>
+                          <div className="flex items-center gap-1 cursor-pointer hover:text-foreground select-none">
+                            {filterStatus.length > 0
+                              ? <Badge variant="secondary" className="text-xs font-normal">Status: {filterStatus.length}</Badge>
+                              : 'Status'
+                            }
+                            <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                          </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-40 p-3" align="start">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Filtrar por status</p>
+                          <div className="space-y-2">
+                            {[
+                              { value: 'ativo',    label: 'Ativo' },
+                              { value: 'inativo',  label: 'Inativo' },
+                              { value: 'pendente', label: 'Pendente' },
+                            ].map(opt => (
+                              <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                  checked={filterStatus.includes(opt.value)}
+                                  onCheckedChange={(checked) =>
+                                    setFilterStatus(prev => checked ? [...prev, opt.value] : prev.filter(s => s !== opt.value))
+                                  }
+                                />
+                                <span className="text-sm">{opt.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                          {filterStatus.length > 0 && (
+                            <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-xs" onClick={() => setFilterStatus([])}>
+                              Limpar filtro
+                            </Button>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    </TableHead>
+
+                    {/* CADASTRO — ordenação por data */}
+                    <TableHead
+                      className="font-semibold cursor-pointer select-none hover:text-foreground"
+                      onClick={() => toggleSort('created_at')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Cadastro
+                        {sortConfig.coluna === 'created_at'
+                          ? sortConfig.direcao === 'asc'
+                            ? <ChevronUp className="w-3.5 h-3.5" />
+                            : <ChevronDown className="w-3.5 h-3.5" />
+                          : <ChevronDown className="w-3.5 h-3.5 opacity-30" />
+                        }
+                      </div>
+                    </TableHead>
+
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
