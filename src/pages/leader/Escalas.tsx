@@ -53,7 +53,7 @@ interface EventoMinisterio {
     horario_inicio: string | null;
     horario_fim: string | null;
     descricao: string | null;
-    periodos_escala: { nome: string } | null;
+    periodos_escala: { nome: string; mes: number; ano: number } | null;
   } | null;
 }
 
@@ -123,7 +123,7 @@ export default function LeaderEscalas() {
           id, evento_id, ministerio_id, status, notificacao_enviada,
           eventos_escala(
             id, titulo, tipo, data_evento, horario_inicio, horario_fim, descricao,
-            periodos_escala(nome)
+            periodos_escala(nome, mes, ano)
           )
         `)
         .eq('ministerio_id', ministerioId)
@@ -373,6 +373,34 @@ export default function LeaderEscalas() {
     setEscalasRows((rows) => rows.filter((_, i) => i !== idx));
   };
 
+  // ── Group eventos by período ───────────────────────────────────────────────
+
+  type PeriodoGroup = {
+    nome: string;
+    mes: number | null;
+    ano: number | null;
+    eventos: EventoMinisterio[];
+  };
+
+  const periodoGroups: PeriodoGroup[] = (() => {
+    const sorted = [...eventosConvocados].sort((a, b) =>
+      (a.eventos_escala?.data_evento ?? '').localeCompare(b.eventos_escala?.data_evento ?? '')
+    );
+    const map = new Map<string, PeriodoGroup>();
+    const order: PeriodoGroup[] = [];
+    for (const em of sorted) {
+      const p = em.eventos_escala?.periodos_escala;
+      const key = p?.nome ?? '__sem_periodo__';
+      if (!map.has(key)) {
+        const g: PeriodoGroup = { nome: p?.nome ?? 'Sem período', mes: p?.mes ?? null, ano: p?.ano ?? null, eventos: [] };
+        map.set(key, g);
+        order.push(g);
+      }
+      map.get(key)!.eventos.push(em);
+    }
+    return order;
+  })();
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
@@ -416,78 +444,110 @@ export default function LeaderEscalas() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-3">
-              {eventosConvocados.map((em) => {
-                const ev = em.eventos_escala;
-                if (!ev) return null;
+            <div className="space-y-6">
+              {periodoGroups.map((group) => {
+                const pendentes = group.eventos.filter((e) => e.status === 'pendente').length;
+                const mesAno = group.mes && group.ano
+                  ? format(new Date(group.ano, group.mes - 1, 1), 'MMMM yyyy', { locale: ptBR })
+                  : null;
+
                 return (
-                  <Card key={em.id} className={em.status === 'pendente' ? 'border-yellow-200 bg-yellow-50/30' : ''}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                          <Calendar className="w-5 h-5 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium">{ev.titulo}</p>
-                            <Badge variant="outline" className="text-xs capitalize">{ev.tipo}</Badge>
-                            {eventoStatusBadge(em.status)}
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {format(new Date(ev.data_evento + 'T12:00:00'), 'EEEE, dd/MM/yyyy', { locale: ptBR })}
-                            </span>
-                            {ev.horario_inicio && (
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {ev.horario_inicio}{ev.horario_fim ? ` – ${ev.horario_fim}` : ''}
-                              </span>
-                            )}
-                            {ev.periodos_escala && (
-                              <span className="text-muted-foreground/70">{ev.periodos_escala.nome}</span>
-                            )}
-                          </div>
-                          {ev.descricao && (
-                            <p className="text-sm text-muted-foreground mt-1">{ev.descricao}</p>
-                          )}
-                        </div>
-                        <div className="shrink-0">
-                          {em.status === 'pendente' && (
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setEventoParaCriar(em);
-                                setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]);
-                              }}
-                            >
-                              <Plus className="w-4 h-4 mr-1" />
-                              Criar escala
-                            </Button>
-                          )}
-                          {em.status === 'escala_criada' && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-blue-600 font-medium">Escala enviada</span>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={loadingEscalasEvento}
-                                onClick={() => openEditModal(em)}
-                              >
-                                {loadingEscalasEvento
-                                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                                  : <><Pencil className="w-4 h-4 mr-1" />Editar</>
-                                }
-                              </Button>
-                            </div>
-                          )}
-                          {em.status === 'concluido' && (
-                            <span className="text-sm text-green-600 font-medium">Concluído</span>
-                          )}
-                        </div>
+                  <div key={group.nome}>
+                    {/* Cabeçalho do período */}
+                    <div className="flex items-center gap-3 mb-3 px-1">
+                      <div className="w-8 h-8 rounded-lg bg-promessa-100 flex items-center justify-center shrink-0">
+                        <CalendarDays className="w-4 h-4 text-promessa-600" />
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="flex-1 flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-sm text-foreground">{group.nome}</span>
+                        {mesAno && (
+                          <Badge variant="secondary" className="text-xs capitalize">{mesAno}</Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {group.eventos.length} evento{group.eventos.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      {pendentes > 0 && (
+                        <Badge className="bg-yellow-100 text-yellow-800 border border-yellow-200 text-xs shrink-0">
+                          {pendentes} pendente{pendentes > 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Eventos do período */}
+                    <div className="space-y-2 pl-2 border-l-2 border-promessa-100 ml-4">
+                      {group.eventos.map((em) => {
+                        const ev = em.eventos_escala;
+                        if (!ev) return null;
+                        return (
+                          <Card key={em.id} className={em.status === 'pendente' ? 'border-yellow-200 bg-yellow-50/30' : ''}>
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                                  <Calendar className="w-5 h-5 text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <p className="font-medium">{ev.titulo}</p>
+                                    <Badge variant="outline" className="text-xs capitalize">{ev.tipo}</Badge>
+                                    {eventoStatusBadge(em.status)}
+                                  </div>
+                                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
+                                    <span className="flex items-center gap-1">
+                                      <Calendar className="w-3 h-3" />
+                                      {format(new Date(ev.data_evento + 'T12:00:00'), 'EEEE, dd/MM/yyyy', { locale: ptBR })}
+                                    </span>
+                                    {ev.horario_inicio && (
+                                      <span className="flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        {ev.horario_inicio}{ev.horario_fim ? ` – ${ev.horario_fim}` : ''}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {ev.descricao && (
+                                    <p className="text-sm text-muted-foreground mt-1">{ev.descricao}</p>
+                                  )}
+                                </div>
+                                <div className="shrink-0">
+                                  {em.status === 'pendente' && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        setEventoParaCriar(em);
+                                        setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]);
+                                      }}
+                                    >
+                                      <Plus className="w-4 h-4 mr-1" />
+                                      Criar escala
+                                    </Button>
+                                  )}
+                                  {em.status === 'escala_criada' && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm text-blue-600 font-medium">Escala enviada</span>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={loadingEscalasEvento}
+                                        onClick={() => openEditModal(em)}
+                                      >
+                                        {loadingEscalasEvento
+                                          ? <Loader2 className="w-4 h-4 animate-spin" />
+                                          : <><Pencil className="w-4 h-4 mr-1" />Editar</>
+                                        }
+                                      </Button>
+                                    </div>
+                                  )}
+                                  {em.status === 'concluido' && (
+                                    <span className="text-sm text-green-600 font-medium">Concluído</span>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>
