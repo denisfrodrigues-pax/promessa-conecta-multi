@@ -30,6 +30,7 @@ import {
   Home,
   Briefcase,
   MessageCircle,
+  BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -113,6 +114,7 @@ const menuItems: MenuItem[] = [
   },
   { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },
   { icon: Bell, label: 'Avisos', path: '/admin/avisos' },
+  { icon: BookOpen, label: 'Devocionais', path: '/admin/devocionais' },
   { icon: Shield, label: 'Auditoria', path: '/admin/auditoria' },
   { icon: Settings, label: 'Configurações', path: '/admin/configuracoes' },
 ];

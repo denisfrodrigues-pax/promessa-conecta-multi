@@ -56,6 +56,7 @@ const AdminBaseDetalhes = lazy(() => import("@/pages/admin/BaseDetalhes"));
 const AdminBaseRelatorio = lazy(() => import("@/pages/admin/BaseRelatorio"));
 const AdminAcompanhamento = lazy(() => import("@/pages/admin/Acompanhamento"));
 const AdminAuditoria = lazy(() => import("@/pages/admin/Auditoria"));
+const AdminDevocionais = lazy(() => import("@/pages/admin/Devocionais"));
 const AdminConfiguracoes = lazy(() => import("@/pages/admin/Configuracoes"));
 const WhatsAppTest = lazy(() => import("@/pages/admin/WhatsAppTest"));
 
@@ -296,6 +297,8 @@ const App = () => (
               <Route path="relatorios/membros" element={<RelatorioMembros />} />
               <Route path="relatorios/financeiro" element={<RelatorioFinanceiro />} />
               <Route path="relatorios/comunicacoes" element={<RelatorioComunicacoes />} />
+              {/* Devocionais */}
+              <Route path="devocionais" element={<AdminDevocionais />} />
               {/* Config & Audit */}
               <Route path="auditoria" element={<AdminAuditoria />} />
               <Route path="configuracoes" element={<AdminConfiguracoes />} />

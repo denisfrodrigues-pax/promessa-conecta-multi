@@ -9,6 +9,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import familiaPastoral from "@/assets/familia-pastoral.png";
+import DevocionaldaSemana from "@/components/app/DevocionaldaSemana";
 
 export default function AppHome() {
   const { profile } = useAuth();
@@ -36,6 +37,17 @@ export default function AppHome() {
           <p className="text-lg md:text-xl text-muted-foreground font-normal max-w-xl mx-auto leading-relaxed">
             Você faz parte dessa missão. Juntos, amamos e servimos a Deus e às pessoas.
           </p>
+        </div>
+      </section>
+
+      {/* ============================================
+          SEÇÃO: DEVOCIONAL DA SEMANA
+      ============================================ */}
+      <section className="py-10 md:py-12 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto">
+            <DevocionaldaSemana />
+          </div>
         </div>
       </section>
 
