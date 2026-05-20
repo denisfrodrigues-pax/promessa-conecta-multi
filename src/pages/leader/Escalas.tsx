@@ -22,7 +22,7 @@ import {
 import { toast } from 'sonner';
 import {
   Calendar, Clock, Users, Plus, Trash2, Bell, CheckCircle,
-  AlertCircle, XCircle, Loader2, CalendarDays, Pencil,
+  AlertCircle, XCircle, Loader2, CalendarDays, Pencil, ChevronRight, ChevronDown,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -110,6 +110,16 @@ export default function LeaderEscalas() {
   // Delete state
   const [toDelete, setToDelete] = useState<Escala | null>(null);
   const [deleteEscalaConfirm, setDeleteEscalaConfirm] = useState(false);
+
+  // Accordion state — todos começam fechados
+  const [periodosAbertos, setPeriodosAbertos] = useState<Set<string>>(new Set());
+  const togglePeriodo = (key: string) => {
+    setPeriodosAbertos(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
 
   // ── Queries ────────────────────────────────────────────────────────────────
 
@@ -453,10 +463,17 @@ export default function LeaderEscalas() {
 
                 return (
                   <div key={group.nome}>
-                    {/* Cabeçalho do período */}
-                    <div className="flex items-center gap-3 mb-3 px-1">
-                      <div className="w-8 h-8 rounded-lg bg-promessa-100 flex items-center justify-center shrink-0">
-                        <CalendarDays className="w-4 h-4 text-promessa-600" />
+                    {/* Cabeçalho clicável do período */}
+                    <div
+                      className="flex items-center gap-2 mb-1 px-1 py-2 rounded-lg hover:bg-muted/40 cursor-pointer select-none transition-colors"
+                      onClick={() => togglePeriodo(group.nome)}
+                    >
+                      {periodosAbertos.has(group.nome)
+                        ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                        : <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                      }
+                      <div className="w-7 h-7 rounded-lg bg-promessa-100 flex items-center justify-center shrink-0">
+                        <CalendarDays className="w-3.5 h-3.5 text-promessa-600" />
                       </div>
                       <div className="flex-1 flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-sm text-foreground">{group.nome}</span>
@@ -474,8 +491,9 @@ export default function LeaderEscalas() {
                       )}
                     </div>
 
-                    {/* Eventos do período */}
-                    <div className="space-y-2 pl-2 border-l-2 border-promessa-100 ml-4">
+                    {/* Eventos do período — visíveis apenas quando aberto */}
+                    {periodosAbertos.has(group.nome) && (
+                    <div className="space-y-2 pl-2 border-l-2 border-promessa-100 ml-4 mt-2">
                       {group.eventos.map((em) => {
                         const ev = em.eventos_escala;
                         if (!ev) return null;
@@ -547,6 +565,7 @@ export default function LeaderEscalas() {
                         );
                       })}
                     </div>
+                    )}
                   </div>
                 );
               })}
