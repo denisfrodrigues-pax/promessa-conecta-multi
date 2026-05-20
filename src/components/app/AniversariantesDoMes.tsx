@@ -8,7 +8,7 @@ interface MembroAniversario {
   id: string;
   nome: string;
   data_nascimento: string;
-  foto_perfil: string | null;
+  profiles: { foto_url: string | null } | null;
   telefone: string | null;
 }
 
@@ -22,7 +22,7 @@ export default function AniversariantesDoMes() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from('membros')
-        .select('id, nome, data_nascimento, foto_perfil, telefone')
+        .select('id, nome, data_nascimento, telefone, profiles!membros_user_id_fkey(foto_url)')
         .in('status', ['ativo', 'frequentador'])
         .not('data_nascimento', 'is', null);
       if (!data) return [];
@@ -69,8 +69,8 @@ export default function AniversariantesDoMes() {
                 <div className={`w-14 h-14 rounded-full overflow-hidden border-2 flex-shrink-0 ${
                   isHoje ? 'border-promessa-400' : 'border-border'
                 }`}>
-                  {m.foto_perfil ? (
-                    <img src={m.foto_perfil} alt={primeiroNome} className="w-full h-full object-cover" />
+                  {m.profiles?.foto_url ? (
+                    <img src={m.profiles.foto_url} alt={primeiroNome} className="w-full h-full object-cover" />
                   ) : (
                     <div className={`w-full h-full flex items-center justify-center text-xl font-bold ${
                       isHoje ? 'bg-promessa-100 text-promessa-700' : 'bg-muted text-muted-foreground'

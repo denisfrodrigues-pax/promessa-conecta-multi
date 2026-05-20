@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChevronRight } from "lucide-react";
+import { getMinisterioIconConfig } from "@/utils/ministerioIcons";
 
 interface LedMinistry {
   ministerio_id: string;
   nome: string;
   slug: string | null;
+  tipo: string | null;
 }
 
 export default function LeaderHub() {
@@ -32,7 +36,7 @@ export default function LeaderHub() {
       if (isAdmin) {
         const { data, error } = await supabase
           .from("ministerios")
-          .select("id, nome, slug")
+          .select("id, nome, slug, tipo")
           .eq("ativo", true)
           .order("nome");
 
@@ -45,6 +49,7 @@ export default function LeaderHub() {
               ministerio_id: m.id,
               nome: m.nome,
               slug: m.slug,
+              tipo: (m as any).tipo ?? null,
             })),
           );
         }
@@ -78,7 +83,7 @@ export default function LeaderHub() {
 
       const { data: ministerios, error: errMinisterios } = await supabase
         .from("ministerios")
-        .select("id, nome, slug")
+        .select("id, nome, slug, tipo")
         .in("id", ids)
         .eq("ativo", true)
         .order("nome");
@@ -92,6 +97,7 @@ export default function LeaderHub() {
             ministerio_id: m.id,
             nome: m.nome,
             slug: m.slug,
+            tipo: (m as any).tipo ?? null,
           })),
         );
       }
@@ -123,20 +129,29 @@ export default function LeaderHub() {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Hub do Líder</h1>
 
-      <div className="flex flex-wrap gap-4">
-        {ledMinistries.map((m) => (
-          <button
-            key={m.ministerio_id}
-            onClick={() => {
-              if (!m.slug) return;
-              navigate(`/leader/${m.slug}`);
-            }}
-            className="rounded-xl border border-border bg-card p-5 min-w-[200px] text-left hover:shadow-md transition-shadow cursor-pointer"
-          >
-            <h3 className="font-semibold text-lg">{m.nome}</h3>
-            <p className="text-sm text-muted-foreground mt-1">Acessar</p>
-          </button>
-        ))}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {ledMinistries.map((m) => {
+          const config = getMinisterioIconConfig(m.tipo);
+          const Icon = config.icon;
+          return (
+            <Card
+              key={m.ministerio_id}
+              className="hover:shadow-md transition-shadow cursor-pointer group"
+              onClick={() => { if (m.slug) navigate(`/leader/${m.slug}`); }}
+            >
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${config.color}`}>
+                  <Icon className="w-6 h-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground truncate">{m.nome}</p>
+                  <p className="text-sm text-muted-foreground">Acessar como líder</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

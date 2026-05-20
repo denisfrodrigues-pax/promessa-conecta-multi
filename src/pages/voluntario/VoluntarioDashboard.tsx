@@ -1,28 +1,28 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth, MyMinistry } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Baby, Music, BookOpen, Users, Heart, ChevronRight } from 'lucide-react';
+import { Heart, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Map ministry slugs to icons and routes
-const SLUG_CONFIG: Record<string, { icon: typeof Baby; color: string }> = {
-  kids: { icon: Baby, color: 'text-pink-600 bg-pink-100' },
-  louvor: { icon: Music, color: 'text-purple-600 bg-purple-100' },
-  ensino: { icon: BookOpen, color: 'text-blue-600 bg-blue-100' },
-  recepcao: { icon: Users, color: 'text-green-600 bg-green-100' },
-};
-
-const DEFAULT_CONFIG = { icon: Heart, color: 'text-amber-600 bg-amber-100' };
-
-const getMinistryConfig = (slug: string | null) => {
-  if (!slug) return DEFAULT_CONFIG;
-  return SLUG_CONFIG[slug] ?? DEFAULT_CONFIG;
-};
+import { getMinisterioIconConfig } from '@/utils/ministerioIcons';
 
 export default function VoluntarioDashboard() {
   const { profile, myMinistries, myMinistriesLoading } = useAuth();
   const navigate = useNavigate();
+
+  const ministerioIds = myMinistries.map((m) => m.ministerio_id);
+  const { data: tiposData = [] } = useQuery({
+    queryKey: ['ministerios-tipos', ministerioIds.join(',')],
+    queryFn: async () => {
+      const { data } = await supabase.from('ministerios').select('id, tipo').in('id', ministerioIds);
+      return (data ?? []) as { id: string; tipo: string | null }[];
+    },
+    enabled: ministerioIds.length > 0,
+    staleTime: Infinity,
+  });
+  const tipoMap: Record<string, string | null> = Object.fromEntries(tiposData.map((m) => [m.id, m.tipo]));
 
   const handleMinistryClick = (ministry: MyMinistry) => {
     if (ministry.slug) {
@@ -66,7 +66,7 @@ export default function VoluntarioDashboard() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {myMinistries.map(ministry => {
-            const config = getMinistryConfig(ministry.slug);
+            const config = getMinisterioIconConfig(tipoMap[ministry.ministerio_id]);
             const Icon = config.icon;
             return (
               <Card

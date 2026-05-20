@@ -113,6 +113,9 @@ export default function LeaderEscalas() {
 
   // Accordion state — todos começam fechados
   const [periodosAbertos, setPeriodosAbertos] = useState<Set<string>>(new Set());
+
+  // Confirmações dialog state
+  const [confirmacaoEvento, setConfirmacaoEvento] = useState<EventoMinisterio | null>(null);
   const togglePeriodo = (key: string) => {
     setPeriodosAbertos(prev => {
       const next = new Set(prev);
@@ -174,6 +177,21 @@ export default function LeaderEscalas() {
       if (error) throw error;
       return (data ?? []).flatMap((d) => (d.profiles ? [d.profiles as Voluntario] : []));
     },
+  });
+
+  const { data: confirmacoes = [], isFetching: loadingConfirmacoes } = useQuery({
+    queryKey: ['escalas_confirmacoes', ministerioId, confirmacaoEvento?.eventos_escala?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('escalas')
+        .select('id, funcao, status, confirmado_em, justificativa, voluntario:profiles!escalas_voluntario_id_fkey(nome)')
+        .eq('ministerio_id', ministerioId)
+        .eq('evento_escala_id', confirmacaoEvento!.eventos_escala!.id)
+        .order('funcao');
+      if (error) throw error;
+      return data as Array<{ id: string; funcao: string; status: string; confirmado_em: string | null; justificativa: string | null; voluntario: { nome: string } | null }>;
+    },
+    enabled: !!confirmacaoEvento?.eventos_escala?.id,
   });
 
   const { data: funcoes = [] } = useQuery({
@@ -540,8 +558,15 @@ export default function LeaderEscalas() {
                                     </Button>
                                   )}
                                   {em.status === 'escala_criada' && (
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm text-blue-600 font-medium">Escala enviada</span>
+                                    <div className="flex items-center gap-2 flex-wrap justify-end">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => setConfirmacaoEvento(em)}
+                                      >
+                                        <Users className="w-4 h-4 mr-1" />
+                                        Confirmações
+                                      </Button>
                                       <Button
                                         size="sm"
                                         variant="outline"
@@ -747,6 +772,62 @@ export default function LeaderEscalas() {
               }
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Modal: Confirmações dos Voluntários ─────────────────────────────── */}
+      <Dialog open={!!confirmacaoEvento} onOpenChange={(open) => { if (!open) setConfirmacaoEvento(null); }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Confirmações — {confirmacaoEvento?.eventos_escala?.titulo}
+            </DialogTitle>
+            {confirmacaoEvento?.eventos_escala && (
+              <p className="text-sm text-muted-foreground">
+                {format(new Date(confirmacaoEvento.eventos_escala.data_evento + 'T12:00:00'), 'EEEE, dd/MM/yyyy', { locale: ptBR })}
+              </p>
+            )}
+          </DialogHeader>
+          {loadingConfirmacoes ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : confirmacoes.length === 0 ? (
+            <p className="text-center text-muted-foreground py-6">Nenhum voluntário escalado.</p>
+          ) : (
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+              {confirmacoes.map((c) => (
+                <div key={c.id} className="flex items-center gap-3 p-3 rounded-lg border border-border">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">{c.voluntario?.nome ?? 'Voluntário'}</p>
+                    <p className="text-xs text-muted-foreground">{c.funcao}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <div className="flex items-center gap-1.5">
+                      {statusIcon(c.status)}
+                      <Badge
+                        variant={c.status === 'confirmado' ? 'default' : c.status === 'ausente' ? 'destructive' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {c.status === 'confirmado' ? 'Confirmado' : c.status === 'ausente' ? 'Ausente' : 'Pendente'}
+                      </Badge>
+                    </div>
+                    {c.confirmado_em && (
+                      <p className="text-[10px] text-muted-foreground">
+                        {format(new Date(c.confirmado_em), "dd/MM 'às' HH:mm", { locale: ptBR })}
+                      </p>
+                    )}
+                    {c.justificativa && (
+                      <p className="text-[10px] text-muted-foreground italic truncate max-w-[140px]" title={c.justificativa}>
+                        "{c.justificativa}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
