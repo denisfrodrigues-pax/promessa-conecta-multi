@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { ChurchLogo } from '@/components/ChurchLogo';
@@ -59,9 +59,9 @@ export default function AppLayout() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <NavLink to="/app" className="flex items-center gap-2">
+            <Link to="/" title="Ir para o site da igreja" className="flex items-center gap-2">
               <ChurchLogo size={36} maxWidth={140} />
-            </NavLink>
+            </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-1">
