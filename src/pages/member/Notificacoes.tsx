@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,16 +7,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useNotifications, Notification, NotificationType } from '@/hooks/useNotifications';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Bell, Calendar, AlertCircle, CheckCircle, Clock, Check, Users, Megaphone, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+const ESCALA_TIPOS: NotificationType[] = ['nova_escala', 'escala', 'lembrete'];
+
 export default function MemberNotificacoes() {
   const { notifications, loading, markAsRead, markAllAsRead, deleteNotification, unreadCount } = useNotifications();
+  const navigate = useNavigate();
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [ministerioSlug, setMinisterioSlug] = useState<string | null>(null);
 
   const handleMarkAllAsRead = async () => {
     await markAllAsRead();
@@ -25,8 +31,17 @@ export default function MemberNotificacoes() {
   const handleOpenNotification = async (notification: Notification) => {
     setSelectedNotification(notification);
     setIsDialogOpen(true);
+    setMinisterioSlug(null);
     if (!notification.lido) {
       await markAsRead(notification.id);
+    }
+    if (notification.ministerio_id && ESCALA_TIPOS.includes(notification.tipo)) {
+      const { data } = await supabase
+        .from('ministerios')
+        .select('slug')
+        .eq('id', notification.ministerio_id)
+        .maybeSingle();
+      setMinisterioSlug((data as any)?.slug ?? null);
     }
   };
 
@@ -286,6 +301,20 @@ export default function MemberNotificacoes() {
                     locale: ptBR,
                   })}
               </p>
+              {ESCALA_TIPOS.includes(selectedNotification.tipo) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-2 border-promessa-300 text-promessa-700 hover:bg-promessa-50"
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    navigate(ministerioSlug ? `/volunteer/${ministerioSlug}` : '/app/escalas');
+                  }}
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Ver escala
+                </Button>
+              )}
             </div>
           )}
         </DialogContent>

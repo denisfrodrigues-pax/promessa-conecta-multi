@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import familiaPastoral from "@/assets/familia-pastoral.png";
 import DevocionaldaSemana from "@/components/app/DevocionaldaSemana";
+import AniversariantesDoMes from "@/components/app/AniversariantesDoMes";
 
 export default function AppHome() {
   const { profile } = useAuth();
@@ -50,6 +51,11 @@ export default function AppHome() {
           </div>
         </div>
       </section>
+
+      {/* ============================================
+          SEÇÃO: ANIVERSARIANTES DO MÊS
+      ============================================ */}
+      <AniversariantesDoMes />
 
       {/* ============================================
           SEÇÃO: QUEM SOMOS (RESUMO)

@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, Users, LayoutDashboard, Clock, CheckCircle2, AlertCircle, BookOpen, FileText, Download, Loader2 } from "lucide-react";
+import {
+  CalendarDays, Users, LayoutDashboard, Clock, CheckCircle2, AlertCircle,
+  BookOpen, FileText, Download, Loader2, Music, Palette,
+} from "lucide-react";
 import { parseLocalDate } from "@/lib/dateUtils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -23,7 +26,31 @@ interface OutletCtx {
 export default function VolunteerMinisterioDashboard() {
   const { ministerioId, ministerioNome, papel, filosofiaPdf } = useOutletContext<OutletCtx>();
   const { profile } = useAuth();
+  const qc = useQueryClient();
   const [tab, setTab] = useState("resumo");
+
+  const handleTabChange = (value: string) => {
+    if (value === "resumo") {
+      qc.invalidateQueries({ queryKey: ["volunteer-next-escala", ministerioId, profile?.id] });
+    }
+    setTab(value);
+  };
+
+  // Tipo do ministério (para exibir seção de música)
+  const { data: ministerioInfo } = useQuery({
+    queryKey: ["ministerio-info", ministerioId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("ministerios")
+        .select("tipo")
+        .eq("id", ministerioId)
+        .maybeSingle();
+      return data as { tipo: string } | null;
+    },
+    staleTime: Infinity,
+    enabled: !!ministerioId,
+  });
+  const isMusica = ministerioInfo?.tipo === "musica";
 
   // Próxima escala do voluntário
   const { data: proximaEscala, isLoading: loadingEscala } = useQuery({
@@ -44,6 +71,59 @@ export default function VolunteerMinisterioDashboard() {
     enabled: !!profile?.id && !!ministerioId,
   });
 
+  // Próximo evento do ministério de música
+  const { data: proximoEventoMusica, isLoading: loadingEventoMusica } = useQuery({
+    queryKey: ["musica-vol-proximo-evento", ministerioId],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { data } = await (supabase as any)
+        .from("evento_ministerios")
+        .select(`id, evento_id, eventos_escala(id, titulo, data_evento, horario_inicio)`)
+        .eq("ministerio_id", ministerioId);
+      const future = ((data ?? []) as any[])
+        .filter((em: any) => em.eventos_escala?.data_evento >= today)
+        .sort((a: any, b: any) =>
+          (a.eventos_escala?.data_evento ?? "").localeCompare(b.eventos_escala?.data_evento ?? "")
+        );
+      return future[0] ?? null;
+    },
+    enabled: !!ministerioId && isMusica === true,
+  });
+
+  const proximoEventoId = (proximoEventoMusica as any)?.evento_id ?? null;
+
+  // Músicas do próximo culto
+  const { data: musicasCulto = [], isLoading: loadingMusicas } = useQuery({
+    queryKey: ["musica-vol-musicas-culto", proximoEventoId],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("musicas_culto")
+        .select(`
+          id, ordem, titulo_avulso, artista_avulso,
+          link_youtube, link_spotify, link_deezer, link_cifraclub,
+          musicas_repertorio(titulo, artista, tom, link_youtube, link_spotify, link_deezer, link_cifraclub)
+        `)
+        .eq("evento_id", proximoEventoId)
+        .eq("ministerio_id", ministerioId)
+        .order("ordem", { ascending: true });
+      return (data ?? []) as any[];
+    },
+    enabled: !!proximoEventoId && isMusica === true,
+  });
+
+  // Paleta do próximo culto
+  const { data: paletaCulto, isLoading: loadingPaleta } = useQuery({
+    queryKey: ["musica-vol-paleta", proximoEventoId],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("culto_paleta_cores")
+        .select("cor_primaria, cor_secundaria, cor_acento, observacao")
+        .eq("evento_id", proximoEventoId)
+        .maybeSingle();
+      return data as { cor_primaria: string | null; cor_secundaria: string | null; cor_acento: string | null; observacao: string | null } | null;
+    },
+    enabled: !!proximoEventoId && isMusica === true,
+  });
 
   // Equipe do ministério
   const { data: equipe, isLoading: loadingEquipe } = useQuery({
@@ -87,7 +167,7 @@ export default function VolunteerMinisterioDashboard() {
 
   return (
     <div className="space-y-6">
-      <Tabs value={tab} onValueChange={setTab}>
+      <Tabs value={tab} onValueChange={handleTabChange}>
         <TabsList className="w-full grid grid-cols-4">
           <TabsTrigger value="resumo" className="gap-1.5">
             <LayoutDashboard className="w-4 h-4 hidden sm:block" />
@@ -110,6 +190,7 @@ export default function VolunteerMinisterioDashboard() {
         {/* RESUMO */}
         <TabsContent value="resumo">
           <div className="space-y-4">
+            {/* Próxima Escala */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Próxima Escala</CardTitle>
@@ -155,6 +236,132 @@ export default function VolunteerMinisterioDashboard() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Seção exclusiva do Ministério de Música */}
+            {isMusica && (
+              <>
+                {/* Músicas do Próximo Culto */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        <Music className="w-4 h-4 text-promessa-600" />
+                        Músicas do Próximo Culto
+                      </span>
+                      {(proximoEventoMusica as any)?.eventos_escala?.data_evento && (
+                        <span className="text-sm font-normal text-muted-foreground">
+                          {format(
+                            parseLocalDate((proximoEventoMusica as any).eventos_escala.data_evento),
+                            "dd/MM",
+                          )}
+                          {(proximoEventoMusica as any)?.eventos_escala?.titulo && (
+                            <span className="ml-1 hidden sm:inline">
+                              · {(proximoEventoMusica as any).eventos_escala.titulo}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingEventoMusica || loadingMusicas ? (
+                      <Skeleton className="h-20 w-full" />
+                    ) : !proximoEventoMusica ? (
+                      <p className="text-muted-foreground text-sm">Nenhum evento agendado.</p>
+                    ) : musicasCulto.length === 0 ? (
+                      <p className="text-muted-foreground text-sm">Músicas ainda não definidas pelo líder.</p>
+                    ) : (
+                      <div className="divide-y divide-border">
+                        {musicasCulto.map((mc: any) => {
+                          const rep = mc.musicas_repertorio;
+                          const titulo = rep?.titulo ?? mc.titulo_avulso ?? "Sem título";
+                          const artista = rep?.artista ?? mc.artista_avulso ?? "";
+                          const tom = rep?.tom;
+                          const yt = mc.link_youtube ?? rep?.link_youtube;
+                          const sp = mc.link_spotify ?? rep?.link_spotify;
+                          const dz = mc.link_deezer ?? rep?.link_deezer;
+                          const cf = mc.link_cifraclub ?? rep?.link_cifraclub;
+                          return (
+                            <div key={mc.id} className="flex items-center gap-2 py-2">
+                              <span className="text-xs text-muted-foreground w-5 text-right flex-shrink-0">
+                                {mc.ordem}.
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{titulo}</p>
+                                {artista && (
+                                  <p className="text-xs text-muted-foreground truncate">{artista}</p>
+                                )}
+                              </div>
+                              {tom && (
+                                <Badge variant="outline" className="text-[10px] px-1 flex-shrink-0">
+                                  {tom}
+                                </Badge>
+                              )}
+                              <div className="flex items-center gap-1.5 flex-shrink-0 text-xs font-medium">
+                                {yt && (
+                                  <a href={yt} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-600">YT</a>
+                                )}
+                                {sp && (
+                                  <a href={sp} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700">SP</a>
+                                )}
+                                {dz && (
+                                  <a href={dz} target="_blank" rel="noopener noreferrer" className="text-purple-500 hover:text-purple-600">DZ</a>
+                                )}
+                                {cf && (
+                                  <a href={cf} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600">CF</a>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Identidade Visual / Paleta */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Palette className="w-4 h-4 text-promessa-600" />
+                      Identidade Visual
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {!proximoEventoMusica ? (
+                      <p className="text-muted-foreground text-sm">Nenhum evento agendado.</p>
+                    ) : loadingPaleta ? (
+                      <Skeleton className="h-14 w-full" />
+                    ) : !paletaCulto ? (
+                      <p className="text-muted-foreground text-sm">Paleta não definida ainda.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-4">
+                          {[
+                            { label: "Primária", color: paletaCulto.cor_primaria },
+                            { label: "Secundária", color: paletaCulto.cor_secundaria },
+                            { label: "Acento", color: paletaCulto.cor_acento },
+                          ]
+                            .filter(c => c.color)
+                            .map(({ label, color }) => (
+                              <div key={label} className="flex flex-col items-center gap-1.5">
+                                <div
+                                  className="w-10 h-10 rounded-full border border-border shadow-sm"
+                                  style={{ backgroundColor: color! }}
+                                />
+                                <span className="text-[10px] text-muted-foreground">{label}</span>
+                              </div>
+                            ))}
+                        </div>
+                        {paletaCulto.observacao && (
+                          <p className="text-xs text-muted-foreground">{paletaCulto.observacao}</p>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </div>
         </TabsContent>
 
@@ -213,6 +420,7 @@ export default function VolunteerMinisterioDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
+
         {/* FILOSOFIA / DOCUMENTOS */}
         <TabsContent value="filosofia">
           {loadingDocs ? (
