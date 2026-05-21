@@ -21,13 +21,21 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown,
   FileDown, Loader2, Clock, Megaphone, ListOrdered,
-  Users, Music2, Image, ExternalLink, Pencil,
+  Users, Music2, Image, ExternalLink, Pencil, GripVertical,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import ResumoVisual from '@/components/celebracao/ResumoVisual';
+import {
+  DndContext, closestCenter, type DragEndEvent,
+  PointerSensor, TouchSensor, useSensor, useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext, verticalListSortingStrategy, arrayMove, useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface OutletCtx {
   ministerioId: string;
@@ -138,6 +146,84 @@ const emptyItemForm = {
 };
 
 const emptyAvisoForm = { titulo: '', conteudo: '' };
+
+// ── Sortable liturgia item (DnD) ─────────────────────────────────────────────
+interface SortableLiturgiaItemProps {
+  item: LiturgiaItem;
+  idx: number;
+  total: number;
+  onEdit: (item: LiturgiaItem) => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onDelete: () => void;
+}
+
+function SortableLiturgiaItem({ item, idx, total, onEdit, onMoveUp, onMoveDown, onDelete }: SortableLiturgiaItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2 p-3 rounded-lg border bg-card hover:bg-muted/40 transition-colors"
+    >
+      <button
+        type="button"
+        className="cursor-grab touch-none text-muted-foreground hover:text-foreground shrink-0"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+      <span className="text-sm font-mono text-muted-foreground w-5 text-center shrink-0">{idx + 1}</span>
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(item)}>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tipoColor(item.tipo)}`}>
+            {tipoLabel(item.tipo)}
+          </span>
+          {item.origem === 'musica' && (
+            <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 border border-amber-200">Música</span>
+          )}
+          {item.origem === 'equipe' && (
+            <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 border border-blue-200">Equipe</span>
+          )}
+          <p className="font-medium text-sm truncate">{item.titulo}</p>
+        </div>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+          {item.responsavel && <span>{item.responsavel}</span>}
+          {item.duracao_minutos && (
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {item.duracao_minutos} min
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === 0} onClick={onMoveUp}>
+          <ChevronUp className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === total - 1} onClick={onMoveDown}>
+          <ChevronDown className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(item)}>
+          <Pencil className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive"
+          onClick={onDelete}
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export default function CultoDetalhe() {
   const { ministerioId, ministerioNome } = useOutletContext<OutletCtx>();
@@ -566,6 +652,20 @@ export default function CultoDetalhe() {
     reorderMutation.mutate(lista.map((it, i) => ({ id: it.id, ordem: i + 1 })));
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !itens) return;
+    const oldIdx = itens.findIndex(i => i.id === active.id);
+    const newIdx = itens.findIndex(i => i.id === over.id);
+    if (oldIdx === -1 || newIdx === -1) return;
+    reorderMutation.mutate(arrayMove(itens, oldIdx, newIdx).map((it, i) => ({ id: it.id, ordem: i + 1 })));
+  };
+
   const moverAviso = (index: number, direcao: 'up' | 'down') => {
     if (!avisosCulto) return;
     const lista = [...avisosCulto];
@@ -604,37 +704,281 @@ export default function CultoDetalhe() {
     }
   };
 
-  const exportarPDF = async () => {
-    if (!resumoRef.current || !evento) return;
+  const exportarPDF = () => {
+    if (!evento) return;
     setExportingPdf(true);
     try {
-      const el = resumoRef.current;
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        width: el.scrollWidth,
-        height: el.scrollHeight,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-      const pageW = pdf.internal.pageSize.getWidth();   // 297mm
-      const pageH = pdf.internal.pageSize.getHeight();  // 210mm
+      const PW = pdf.internal.pageSize.getWidth();
+      const PH = pdf.internal.pageSize.getHeight();
+      const ML = 16;
+      const CW = PW - ML * 2;
 
-      // Scale image to fit page width
-      const totalImgH = (canvas.height / canvas.width) * pageW;
-      const pages = Math.ceil(totalImgH / pageH);
+      // ── Colors ──────────────────────────────────────────────
+      type RGB = [number, number, number];
+      const DARK_GRN: RGB = [26, 46, 26];
+      const MID_GRN:  RGB = [39, 63, 39];
+      const ACC_GRN:  RGB = [74, 222, 128];
+      const HDR_GRN:  RGB = [134, 239, 172];
+      const YEL:      RGB = [253, 224, 71];
+      const WHT:      RGB = [255, 255, 255];
+      const MUT:      RGB = [160, 200, 160];
+      const DIM:      RGB = [100, 140, 100];
 
-      for (let i = 0; i < pages; i++) {
-        if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, -(i * pageH), pageW, totalImgH);
+      let y = 0;
+
+      const fillBg = () => {
+        pdf.setFillColor(...DARK_GRN);
+        pdf.rect(0, 0, PW, PH, 'F');
+      };
+
+      const newPage = () => {
+        pdf.addPage();
+        fillBg();
+        y = 15;
+      };
+
+      const checkY = (need: number) => {
+        if (y + need > PH - 14) newPage();
+      };
+
+      const sectionHdr = (label: string, clr: RGB, lineClr: RGB) => {
+        checkY(13);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(8);
+        pdf.setTextColor(...clr);
+        pdf.text(label, ML, y);
+        const lw = pdf.getTextWidth(label) + 5;
+        pdf.setDrawColor(...lineClr);
+        pdf.setLineWidth(0.3);
+        pdf.line(ML + lw, y - 1, ML + CW, y - 1);
+        y += 8;
+      };
+
+      // ── PAGE 1 ──────────────────────────────────────────────
+      fillBg();
+      pdf.setFillColor(...MID_GRN);
+      pdf.rect(0, 0, PW, 44, 'F');
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8);
+      pdf.setTextColor(...ACC_GRN);
+      pdf.text((config?.nome_igreja ?? 'Igreja').toUpperCase(), ML, 10);
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(20);
+      pdf.setTextColor(...WHT);
+      const titleLines = pdf.splitTextToSize(evento.titulo, CW * 0.72);
+      pdf.text(titleLines.slice(0, 2), ML, 26);
+
+      const dataStrPdf = format(parseISO(evento.data_evento), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR });
+      const horaPdf = evento.horario_inicio ? evento.horario_inicio.slice(0, 5) : null;
+      const dateText = dataStrPdf.charAt(0).toUpperCase() + dataStrPdf.slice(1) + (horaPdf ? `   ·   ${horaPdf}` : '');
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(...MUT);
+      pdf.text(dateText, ML, 38);
+
+      y = 54;
+
+      // ── LITURGIA ────────────────────────────────────────────
+      if ((itens ?? []).length > 0) {
+        sectionHdr('ORDEM DE LITURGIA', HDR_GRN, DIM);
+        (itens ?? []).forEach((item, idx) => {
+          checkY(8);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(8);
+          pdf.setTextColor(...HDR_GRN);
+          pdf.text(`${idx + 1}.`, ML, y);
+
+          const tipoStr = tipoLabel(item.tipo);
+          const bW = pdf.getTextWidth(tipoStr) + 4;
+          pdf.setFillColor(39, 70, 39);
+          pdf.rect(ML + 7, y - 4, bW, 5, 'F');
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(6.5);
+          pdf.setTextColor(...ACC_GRN);
+          pdf.text(tipoStr, ML + 9, y);
+
+          const textX = ML + bW + 12;
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(9);
+          pdf.setTextColor(...WHT);
+          const titleMaxW = CW - (textX - ML) - 40;
+          pdf.text(pdf.splitTextToSize(item.titulo, titleMaxW)[0], textX, y);
+
+          const rightParts: string[] = [];
+          if (item.responsavel) rightParts.push(item.responsavel);
+          if (item.duracao_minutos) rightParts.push(`${item.duracao_minutos}min`);
+          if (rightParts.length) {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(7.5);
+            pdf.setTextColor(...MUT);
+            pdf.text(rightParts.join(' · '), ML + CW, y, { align: 'right' });
+          }
+          y += 7;
+        });
+        y += 5;
       }
 
-      const nomeArquivo = `resumo-culto-${format(parseISO(evento.data_evento), 'yyyy-MM-dd')}.pdf`;
-      pdf.save(nomeArquivo);
-    } catch {
+      // ── MÚSICAS ─────────────────────────────────────────────
+      if (cardMusicas.length > 0) {
+        sectionHdr('MÚSICAS', HDR_GRN, DIM);
+        cardMusicas.forEach((m) => {
+          checkY(8);
+          pdf.setFillColor(...ACC_GRN);
+          pdf.rect(ML, y - 4.5, 2, 5.5, 'F');
+
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(8);
+          pdf.setTextColor(...ACC_GRN);
+          pdf.text(`${m.ordem}`, ML + 4, y);
+
+          const tomW = m.tom ? pdf.getTextWidth(m.tom) + 6 : 0;
+          const titleMaxW = CW - 16 - tomW;
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(9);
+          pdf.setTextColor(...WHT);
+          pdf.text(pdf.splitTextToSize(m.titulo, titleMaxW)[0], ML + 14, y);
+
+          if (m.artista) {
+            pdf.setFont('helvetica', 'italic');
+            pdf.setFontSize(7.5);
+            pdf.setTextColor(...MUT);
+            pdf.text(pdf.splitTextToSize(m.artista, titleMaxW)[0], ML + 14, y + 4);
+          }
+
+          if (m.tom) {
+            pdf.setFillColor(39, 70, 39);
+            pdf.rect(ML + CW - tomW + 2, y - 4, tomW, 5.5, 'F');
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(7);
+            pdf.setTextColor(...ACC_GRN);
+            pdf.text(m.tom, ML + CW - tomW + 4, y);
+          }
+          y += m.artista ? 10 : 7;
+        });
+        y += 5;
+      }
+
+      // ── AVISOS ──────────────────────────────────────────────
+      const avsPdf = (avisosCulto ?? []).filter(a => a.avisos)
+        .map(a => ({ titulo: a.avisos!.titulo, conteudo: a.avisos!.conteudo }));
+      if (avsPdf.length > 0) {
+        sectionHdr('AVISOS', HDR_GRN, DIM);
+        avsPdf.forEach((av) => {
+          checkY(10);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(9);
+          pdf.setTextColor(...WHT);
+          pdf.text(pdf.splitTextToSize(av.titulo, CW)[0], ML + 3, y);
+          y += 5;
+          if (av.conteudo) {
+            pdf.splitTextToSize(av.conteudo, CW - 3).forEach((ln: string) => {
+              checkY(5);
+              pdf.setFont('helvetica', 'normal');
+              pdf.setFontSize(8);
+              pdf.setTextColor(...MUT);
+              pdf.text(ln, ML + 3, y);
+              y += 4.5;
+            });
+          }
+          y += 4;
+        });
+        y += 2;
+      }
+
+      // ── EQUIPE ──────────────────────────────────────────────
+      const confEq = cardEquipe
+        .map(g => ({ ...g, membros: g.membros.filter(m => m.status === 'confirmado') }))
+        .filter(g => g.membros.length > 0);
+      const pendEq = cardEquipe
+        .map(g => ({ ...g, membros: g.membros.filter(m => m.status === 'pendente') }))
+        .filter(g => g.membros.length > 0);
+
+      if (confEq.length > 0) {
+        sectionHdr('CONFIRMADOS', HDR_GRN, DIM);
+        confEq.forEach((grupo) => {
+          checkY(7);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(7);
+          pdf.setTextColor(...ACC_GRN);
+          pdf.text(grupo.nome.toUpperCase(), ML, y);
+          y += 5;
+          grupo.membros.forEach((m) => {
+            checkY(6);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8.5);
+            pdf.setTextColor(...ACC_GRN);
+            pdf.text('✓', ML + 2, y);
+            pdf.setTextColor(...WHT);
+            pdf.text(m.nome, ML + 9, y);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(7.5);
+            pdf.setTextColor(...MUT);
+            pdf.text(m.funcao, ML + CW, y, { align: 'right' });
+            y += 5.5;
+          });
+          y += 3;
+        });
+        y += 4;
+      }
+
+      if (pendEq.length > 0) {
+        sectionHdr('PENDENTES', YEL, [180, 160, 40]);
+        pendEq.forEach((grupo) => {
+          checkY(7);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(7);
+          pdf.setTextColor(...YEL);
+          pdf.text(grupo.nome.toUpperCase(), ML, y);
+          y += 5;
+          grupo.membros.forEach((m) => {
+            checkY(6);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8.5);
+            pdf.setTextColor(...YEL);
+            pdf.text('○', ML + 2, y);
+            pdf.setTextColor(190, 210, 190);
+            pdf.text(m.nome, ML + 9, y);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(7.5);
+            pdf.setTextColor(...MUT);
+            pdf.text(m.funcao, ML + CW, y, { align: 'right' });
+            y += 5.5;
+          });
+          y += 3;
+        });
+        y += 4;
+      }
+
+      // ── OBSERVAÇÕES ─────────────────────────────────────────
+      if (liturgia?.observacoes_gerais) {
+        sectionHdr('OBSERVAÇÕES', MUT, DIM);
+        pdf.splitTextToSize(liturgia.observacoes_gerais, CW).forEach((ln: string) => {
+          checkY(5);
+          pdf.setFont('helvetica', 'italic');
+          pdf.setFontSize(9);
+          pdf.setTextColor(...MUT);
+          pdf.text(ln, ML, y);
+          y += 5;
+        });
+      }
+
+      // ── RODAPÉ ──────────────────────────────────────────────
+      const lastH = pdf.internal.pageSize.getHeight();
+      pdf.setDrawColor(...DIM);
+      pdf.setLineWidth(0.2);
+      pdf.line(ML, lastH - 12, ML + CW, lastH - 12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
+      pdf.setTextColor(...DIM);
+      pdf.text(config?.nome_igreja ?? '', ML, lastH - 7);
+      pdf.text('Promessa Conecta', ML + CW, lastH - 7, { align: 'right' });
+
+      pdf.save(`resumo-culto-${format(parseISO(evento.data_evento), 'yyyy-MM-dd')}.pdf`);
+    } catch (e) {
+      console.error(e);
       toast.error('Erro ao gerar PDF');
     } finally {
       setExportingPdf(false);
@@ -861,56 +1205,22 @@ export default function CultoDetalhe() {
                   </Button>
                 </div>
               )}
-              {itens.map((item, idx) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/40 cursor-pointer transition-colors"
-                  onClick={() => openEditItem(item)}
-                >
-                  <span className="text-sm font-mono text-muted-foreground w-5 text-center">{idx + 1}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tipoColor(item.tipo)}`}>
-                        {tipoLabel(item.tipo)}
-                      </span>
-                      {item.origem === 'musica' && (
-                        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 border border-amber-200">
-                          Música
-                        </span>
-                      )}
-                      {item.origem === 'equipe' && (
-                        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 border border-blue-200">
-                          Equipe
-                        </span>
-                      )}
-                      <p className="font-medium text-sm truncate">{item.titulo}</p>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                      {item.responsavel && <span>{item.responsavel}</span>}
-                      {item.duracao_minutos && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {item.duracao_minutos} min
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === 0} onClick={() => moverItem(idx, 'up')}>
-                      <ChevronUp className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === itens.length - 1} onClick={() => moverItem(idx, 'down')}>
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive"
-                      onClick={() => setDeleteTarget(item.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={itens.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                  {itens.map((item, idx) => (
+                    <SortableLiturgiaItem
+                      key={item.id}
+                      item={item}
+                      idx={idx}
+                      total={itens.length}
+                      onEdit={openEditItem}
+                      onMoveUp={() => moverItem(idx, 'up')}
+                      onMoveDown={() => moverItem(idx, 'down')}
+                      onDelete={() => setDeleteTarget(item.id)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             </div>
           )}
         </CardContent>
@@ -1165,6 +1475,13 @@ export default function CultoDetalhe() {
           <ResumoVisual
             ref={resumoRef}
             evento={evento}
+            itens={(itens ?? []).map(it => ({
+              ordem: it.ordem,
+              tipo: it.tipo,
+              titulo: it.titulo,
+              responsavel: it.responsavel,
+              duracao_minutos: it.duracao_minutos,
+            }))}
             musicas={cardMusicas}
             equipe={cardEquipe}
             avisos={(avisosCulto ?? [])

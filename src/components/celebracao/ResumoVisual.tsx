@@ -2,6 +2,20 @@ import { forwardRef } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+interface LiturgiaItemCard {
+  ordem: number;
+  tipo: string;
+  titulo: string;
+  responsavel: string | null;
+  duracao_minutos: number | null;
+}
+
+const TIPO_LABELS: Record<string, string> = {
+  abertura: 'Abertura', louvor: 'Louvor', oracao: 'Oração',
+  palavra: 'Palavra', aviso: 'Aviso', oferta: 'Oferta',
+  encerramento: 'Encerramento', outro: 'Outro',
+};
+
 interface MusicaCard {
   ordem: number;
   titulo: string;
@@ -27,6 +41,7 @@ interface AvisoCard {
 
 interface ResumoVisualProps {
   evento: { titulo: string; data_evento: string; horario_inicio?: string | null };
+  itens?: LiturgiaItemCard[];
   musicas: MusicaCard[];
   equipe: GrupoMinisterio[];
   avisos?: AvisoCard[];
@@ -51,7 +66,7 @@ function SectionHeader({ label, color, lineColor }: { label: string; color: stri
 }
 
 const ResumoVisual = forwardRef<HTMLDivElement, ResumoVisualProps>(
-  ({ evento, musicas, equipe, avisos, observacoesGerais, logoUrl, nomeIgreja }, ref) => {
+  ({ evento, itens, musicas, equipe, avisos, observacoesGerais, logoUrl, nomeIgreja }, ref) => {
     const PAD = 64;
 
     const dataStr = format(parseISO(evento.data_evento), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR });
@@ -65,6 +80,10 @@ const ResumoVisual = forwardRef<HTMLDivElement, ResumoVisualProps>(
       .map(g => ({ ...g, membros: g.membros.filter(m => m.status === 'pendente') }))
       .filter(g => g.membros.length > 0);
 
+    const confirmedTotal = confirmedEquipe.reduce((acc, g) => acc + g.membros.length, 0);
+    const equipeVertical = confirmedTotal < 3;
+
+    const hasItens = (itens ?? []).length > 0;
     const hasMusicas = musicas.length > 0;
     const hasAvisos = avisos && avisos.length > 0;
     const hasEquipe = confirmedEquipe.length > 0 || pendingEquipe.length > 0;
@@ -154,6 +173,58 @@ const ResumoVisual = forwardRef<HTMLDivElement, ResumoVisualProps>(
 
         {/* ── DIVISOR ────────────────────────────────────────────────────── */}
         <div style={{ height: 1, background: 'rgba(255,255,255,0.15)', marginBottom: 40 }} />
+
+        {/* ── ORDEM DE LITURGIA ──────────────────────────────────────────── */}
+        {hasItens && (
+          <div style={{ marginBottom: 40 }}>
+            <SectionHeader label="ORDEM DE LITURGIA" color={G_HEADER} lineColor="rgba(134,239,172,0.45)" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              {(itens ?? []).map((item, i) => (
+                <div key={i} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 14,
+                  padding: '10px 16px',
+                  background: 'rgba(255,255,255,0.05)',
+                  borderLeft: `3px solid rgba(74,222,128,0.4)`,
+                  borderRadius: '0 8px 8px 0',
+                }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: G_ACCENT, minWidth: 22, flexShrink: 0 }}>
+                    {item.ordem}
+                  </span>
+                  <div style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: 'rgba(134,239,172,0.75)',
+                    background: 'rgba(74,222,128,0.12)',
+                    padding: '2px 8px',
+                    borderRadius: 4,
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap' as const,
+                  }}>
+                    {TIPO_LABELS[item.tipo] ?? item.tipo}
+                  </div>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: '#ffffff', flex: 1 }}>
+                    {item.titulo}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                    {item.responsavel && (
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{item.responsavel}</span>
+                    )}
+                    {item.duracao_minutos && (
+                      <span style={{
+                        fontSize: 11, color: G_ACCENT, background: 'rgba(74,222,128,0.1)',
+                        padding: '1px 6px', borderRadius: 4,
+                      }}>
+                        {item.duracao_minutos}min
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── MÚSICAS + AVISOS (2 colunas) ───────────────────────────────── */}
         {(hasMusicas || hasAvisos) && (
@@ -261,9 +332,15 @@ const ResumoVisual = forwardRef<HTMLDivElement, ResumoVisualProps>(
           </div>
         )}
 
-        {/* ── EQUIPE: CONFIRMADOS + PENDENTES (2 colunas) ───────────────── */}
+        {/* ── EQUIPE: CONFIRMADOS + PENDENTES ───────────────────────────── */}
         {hasEquipe && (
-          <div style={{ display: 'flex', gap: 40, marginBottom: 40, alignItems: 'flex-start' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: equipeVertical ? 'column' : 'row',
+            gap: 40,
+            marginBottom: 40,
+            alignItems: 'flex-start',
+          }}>
 
             {confirmedEquipe.length > 0 && (
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -272,30 +349,20 @@ const ResumoVisual = forwardRef<HTMLDivElement, ResumoVisualProps>(
                   {confirmedEquipe.map((grupo, gi) => (
                     <div key={gi}>
                       <div style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: 2,
+                        fontSize: 11, fontWeight: 700, letterSpacing: 2,
                         textTransform: 'uppercase' as const,
-                        color: 'rgba(134,239,172,0.8)',
-                        marginBottom: 7,
+                        color: 'rgba(134,239,172,0.8)', marginBottom: 7,
                       }}>
                         {grupo.nome}
                       </div>
                       {grupo.membros.map((m, mi) => (
                         <div key={mi} style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 10,
-                          marginBottom: 5,
-                          paddingLeft: 4,
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          marginBottom: 5, paddingLeft: 4,
                         }}>
                           <span style={{ fontSize: 12, color: G_ACCENT, flexShrink: 0 }}>✓</span>
-                          <span style={{ fontSize: 15, fontWeight: 600, color: '#ffffff', flex: 1 }}>
-                            {m.nome}
-                          </span>
-                          <span style={{ fontSize: 12, color: '#888888', flexShrink: 0 }}>
-                            {m.funcao}
-                          </span>
+                          <span style={{ fontSize: 15, fontWeight: 600, color: '#ffffff', flex: 1 }}>{m.nome}</span>
+                          <span style={{ fontSize: 12, color: '#888888', flexShrink: 0 }}>{m.funcao}</span>
                         </div>
                       ))}
                     </div>
@@ -311,30 +378,20 @@ const ResumoVisual = forwardRef<HTMLDivElement, ResumoVisualProps>(
                   {pendingEquipe.map((grupo, gi) => (
                     <div key={gi}>
                       <div style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: 2,
+                        fontSize: 11, fontWeight: 700, letterSpacing: 2,
                         textTransform: 'uppercase' as const,
-                        color: 'rgba(253,224,71,0.8)',
-                        marginBottom: 7,
+                        color: 'rgba(253,224,71,0.8)', marginBottom: 7,
                       }}>
                         {grupo.nome}
                       </div>
                       {grupo.membros.map((m, mi) => (
                         <div key={mi} style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 10,
-                          marginBottom: 5,
-                          paddingLeft: 4,
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          marginBottom: 5, paddingLeft: 4,
                         }}>
                           <span style={{ fontSize: 12, color: YELLOW, flexShrink: 0 }}>⏳</span>
-                          <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.75)', flex: 1 }}>
-                            {m.nome}
-                          </span>
-                          <span style={{ fontSize: 12, color: '#888888', flexShrink: 0 }}>
-                            {m.funcao}
-                          </span>
+                          <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.75)', flex: 1 }}>{m.nome}</span>
+                          <span style={{ fontSize: 12, color: '#888888', flexShrink: 0 }}>{m.funcao}</span>
                         </div>
                       ))}
                     </div>
@@ -343,9 +400,8 @@ const ResumoVisual = forwardRef<HTMLDivElement, ResumoVisualProps>(
               </div>
             )}
 
-            {/* preenche coluna vazia se só há confirmados ou só há pendentes */}
-            {confirmedEquipe.length > 0 && pendingEquipe.length === 0 && <div style={{ flex: 1 }} />}
-            {confirmedEquipe.length === 0 && pendingEquipe.length > 0 && <div style={{ flex: 1 }} />}
+            {!equipeVertical && confirmedEquipe.length > 0 && pendingEquipe.length === 0 && <div style={{ flex: 1 }} />}
+            {!equipeVertical && confirmedEquipe.length === 0 && pendingEquipe.length > 0 && <div style={{ flex: 1 }} />}
           </div>
         )}
 
@@ -389,4 +445,4 @@ const ResumoVisual = forwardRef<HTMLDivElement, ResumoVisualProps>(
 
 ResumoVisual.displayName = 'ResumoVisual';
 export default ResumoVisual;
-export type { ResumoVisualProps, MusicaCard, GrupoMinisterio, MembroCard, AvisoCard };
+export type { ResumoVisualProps, LiturgiaItemCard, MusicaCard, GrupoMinisterio, MembroCard, AvisoCard };
