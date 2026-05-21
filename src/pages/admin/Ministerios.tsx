@@ -34,6 +34,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Music, User, ShieldCheck, PowerOff, Power } from 'lucide-react';
+import { getMinisterioIconConfig } from '@/utils/ministerioIcons';
 
 interface Ministerio {
   id: string;
@@ -328,12 +329,22 @@ export default function AdminMinisterios() {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      {ministerio.is_core
-                        ? <ShieldCheck className="w-5 h-5 text-primary" />
-                        : <Music className="w-5 h-5 text-primary" />
+                    {(() => {
+                      if (ministerio.is_core) {
+                        return (
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-5 h-5 text-primary" />
+                          </div>
+                        );
                       }
-                    </div>
+                      const ic = getMinisterioIconConfig(ministerio.tipo);
+                      const Icon = ic.icon;
+                      return (
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${ic.color}`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                      );
+                    })()}
                     <div className="min-w-0">
                       <CardTitle className="text-base leading-tight">{ministerio.nome}</CardTitle>
                       <div className="flex items-center gap-1.5 mt-1 flex-wrap">

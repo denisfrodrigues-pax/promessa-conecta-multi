@@ -60,12 +60,16 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
       .map(g => ({ ...g, membros: g.membros.filter(m => m.status === 'confirmado') }))
       .filter(g => g.membros.length > 0);
 
+    const pendingEquipe = equipe
+      .map(g => ({ ...g, membros: g.membros.filter(m => m.status === 'pendente') }))
+      .filter(g => g.membros.length > 0);
+
     return (
       <div ref={ref} style={{
         position: 'relative',
         width: W,
         height: H,
-        background: 'linear-gradient(145deg, #0f0c29 0%, #302b63 55%, #24243e 100%)',
+        background: 'linear-gradient(145deg, #1a2e1a 0%, #273f27 55%, #1a2e1a 100%)',
         fontFamily: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
         color: '#ffffff',
         overflow: 'hidden',
@@ -75,22 +79,22 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
         flexDirection: 'column',
       }}>
 
-        {/* Ambient glow — top-center gold */}
+        {/* Ambient glow — top-center green */}
         <div style={{
           position: 'absolute',
           top: -120, left: '50%', transform: 'translateX(-50%)',
           width: 900, height: 700,
           borderRadius: '50%',
-          background: 'radial-gradient(ellipse, rgba(255,210,0,0.07) 0%, transparent 65%)',
+          background: 'radial-gradient(ellipse, rgba(90,140,98,0.12) 0%, transparent 65%)',
           pointerEvents: 'none',
         }} />
-        {/* Ambient glow — bottom-right deep purple */}
+        {/* Ambient glow — bottom-right dark green */}
         <div style={{
           position: 'absolute',
           bottom: -250, right: -250,
           width: 700, height: 700,
           borderRadius: '50%',
-          background: 'radial-gradient(ellipse, rgba(30,20,80,0.9) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(10,30,12,0.9) 0%, transparent 70%)',
           pointerEvents: 'none',
         }} />
 
@@ -157,18 +161,18 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
           marginRight: px,
           marginBottom: sz(44),
           borderRadius: sz(16),
-          background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+          background: 'linear-gradient(135deg, #4a7851 0%, #5a8a62 100%)',
           padding: `${sz(32)}px ${sz(44)}px`,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           textAlign: 'center' as const,
-          boxShadow: '0 8px 40px rgba(247,151,30,0.3)',
+          boxShadow: '0 8px 40px rgba(74,120,81,0.4)',
         }}>
           <div style={{
             fontSize: sz(66),
             fontWeight: 900,
-            color: '#0a0a0a',
+            color: '#ffffff',
             lineHeight: 1.05,
             marginBottom: sz(14),
             letterSpacing: -1,
@@ -178,7 +182,7 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
 
           <div style={{
             fontSize: sz(27),
-            color: '#1a1a1a',
+            color: 'rgba(255,255,255,0.85)',
             fontWeight: 500,
             textTransform: 'capitalize' as const,
             marginBottom: horaStr ? sz(16) : 0,
@@ -188,8 +192,8 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
 
           {horaStr && (
             <div style={{
-              background: 'rgba(255,255,255,0.82)',
-              color: '#0a0a0a',
+              background: 'rgba(255,255,255,0.2)',
+              color: '#ffffff',
               fontWeight: 700,
               fontSize: sz(23),
               padding: `${sz(6)}px ${sz(24)}px`,
@@ -218,12 +222,12 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                   fontSize: sz(17),
                   fontWeight: 800,
                   letterSpacing: Math.max(2, sz(4)),
-                  color: '#ffd200',
+                  color: '#86efac',
                   whiteSpace: 'nowrap' as const,
                 }}>MÚSICAS</span>
                 <div style={{
                   flex: 1, height: 1,
-                  background: 'linear-gradient(90deg, rgba(255,210,0,0.45) 0%, transparent 100%)',
+                  background: 'linear-gradient(90deg, rgba(134,239,172,0.45) 0%, transparent 100%)',
                 }} />
               </div>
 
@@ -231,7 +235,7 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                 {musicas.slice(0, 8).map((m, i) => (
                   <div key={i} style={{
                     background: 'rgba(255,255,255,0.07)',
-                    borderLeft: `3px solid #ffd200`,
+                    borderLeft: `3px solid #4ade80`,
                     borderRadius: `0 ${sz(10)}px ${sz(10)}px 0`,
                     padding: `${sz(16)}px ${sz(24)}px`,
                     display: 'flex',
@@ -241,7 +245,7 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                     <span style={{
                       fontSize: sz(16),
                       fontWeight: 700,
-                      color: '#ffd200',
+                      color: '#4ade80',
                       minWidth: sz(24),
                       textAlign: 'right' as const,
                       flexShrink: 0,
@@ -275,9 +279,9 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                     </div>
                     {m.tom && (
                       <div style={{
-                        background: 'rgba(255,210,0,0.13)',
-                        border: '1px solid rgba(255,210,0,0.38)',
-                        color: '#ffd200',
+                        background: 'rgba(74,222,128,0.13)',
+                        border: '1px solid rgba(74,222,128,0.38)',
+                        color: '#4ade80',
                         fontSize: sz(13),
                         fontWeight: 700,
                         padding: `${sz(3)}px ${sz(10)}px`,
@@ -303,12 +307,12 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                   fontSize: sz(17),
                   fontWeight: 800,
                   letterSpacing: Math.max(2, sz(4)),
-                  color: '#ffd200',
+                  color: '#86efac',
                   whiteSpace: 'nowrap' as const,
                 }}>AVISOS</span>
                 <div style={{
                   flex: 1, height: 1,
-                  background: 'linear-gradient(90deg, rgba(255,210,0,0.45) 0%, transparent 100%)',
+                  background: 'linear-gradient(90deg, rgba(134,239,172,0.45) 0%, transparent 100%)',
                 }} />
               </div>
 
@@ -316,7 +320,7 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                 {avisos.map((a, i) => (
                   <div key={i} style={{
                     background: 'rgba(255,255,255,0.05)',
-                    borderLeft: `3px solid rgba(255,210,0,0.5)`,
+                    borderLeft: `3px solid rgba(74,222,128,0.5)`,
                     borderRadius: `0 ${sz(10)}px ${sz(10)}px 0`,
                     padding: `${sz(14)}px ${sz(20)}px`,
                   }}>
@@ -348,7 +352,7 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
             </div>
           )}
 
-          {/* ── Equipe do Dia ────────────────────────────────────────────── */}
+          {/* ── Equipe do Dia — Confirmados ──────────────────────────────── */}
           {confirmedEquipe.length > 0 && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: sz(14), marginBottom: sz(16) }}>
@@ -356,12 +360,12 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                   fontSize: sz(17),
                   fontWeight: 800,
                   letterSpacing: Math.max(2, sz(4)),
-                  color: '#ffd200',
+                  color: '#86efac',
                   whiteSpace: 'nowrap' as const,
-                }}>EQUIPE DO DIA</span>
+                }}>CONFIRMADOS</span>
                 <div style={{
                   flex: 1, height: 1,
-                  background: 'linear-gradient(90deg, rgba(255,210,0,0.45) 0%, transparent 100%)',
+                  background: 'linear-gradient(90deg, rgba(134,239,172,0.45) 0%, transparent 100%)',
                 }} />
               </div>
 
@@ -373,7 +377,7 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                       fontWeight: 700,
                       letterSpacing: Math.max(1, sz(2)),
                       textTransform: 'uppercase' as const,
-                      color: 'rgba(255,210,0,0.8)',
+                      color: 'rgba(134,239,172,0.8)',
                       marginBottom: sz(8),
                     }}>
                       {grupo.nome}
@@ -391,6 +395,68 @@ const CardCulto = forwardRef<HTMLDivElement, CardCultoProps>(
                           fontSize: sz(21),
                           fontWeight: 600,
                           color: '#ffffff',
+                          flex: 1,
+                        }}>
+                          {m.nome}
+                        </span>
+                        <span style={{
+                          fontSize: sz(15),
+                          color: '#888888',
+                          flexShrink: 0,
+                        }}>
+                          {m.funcao}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Equipe do Dia — Pendentes ────────────────────────────────── */}
+          {pendingEquipe.length > 0 && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: sz(14), marginBottom: sz(16) }}>
+                <span style={{
+                  fontSize: sz(17),
+                  fontWeight: 800,
+                  letterSpacing: Math.max(2, sz(4)),
+                  color: '#fde047',
+                  whiteSpace: 'nowrap' as const,
+                }}>PENDENTES</span>
+                <div style={{
+                  flex: 1, height: 1,
+                  background: 'linear-gradient(90deg, rgba(253,224,71,0.4) 0%, transparent 100%)',
+                }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: sz(16) }}>
+                {pendingEquipe.map((grupo, gi) => (
+                  <div key={gi}>
+                    <div style={{
+                      fontSize: sz(13),
+                      fontWeight: 700,
+                      letterSpacing: Math.max(1, sz(2)),
+                      textTransform: 'uppercase' as const,
+                      color: 'rgba(253,224,71,0.8)',
+                      marginBottom: sz(8),
+                    }}>
+                      {grupo.nome}
+                    </div>
+                    {grupo.membros.map((m, mi) => (
+                      <div key={mi} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: sz(12),
+                        marginBottom: sz(7),
+                        paddingLeft: sz(4),
+                      }}>
+                        <span style={{ fontSize: sz(13), color: '#fde047', flexShrink: 0 }}>⏳</span>
+                        <span style={{
+                          fontSize: sz(21),
+                          fontWeight: 600,
+                          color: 'rgba(255,255,255,0.75)',
                           flex: 1,
                         }}>
                           {m.nome}
