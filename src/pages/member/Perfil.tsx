@@ -333,12 +333,21 @@ export default function MemberPerfil() {
   const [editingFormation, setEditingFormation] = useState(false);
   const [editingBatismo, setEditingBatismo] = useState(false);
 
+  // editing flags — família
+  const [editingFamilia, setEditingFamilia] = useState(false);
+  const [savingFamilia, setSavingFamilia] = useState(false);
+  const [draftFamilia, setDraftFamilia] = useState({ nome_mae: '', nome_pai: '', pai_mae_promessista: false });
+
   // saving flags
   const [savingPersonal, setSavingPersonal] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
   const [savingFormation, setSavingFormation] = useState(false);
   const [savingBatismo, setSavingBatismo] = useState(false);
   const [loadingCep, setLoadingCep] = useState(false);
+
+  // config
+  const [membrosEditamPerfil, setMembrosEditamPerfil] = useState(true);
+  const [notificacoesPushAtivas, setNotificacoesPushAtivas] = useState(false);
 
   const { isSupported: pushSupported, isSubscribed: pushEnabled,
     isLoading: pushLoading, permission: pushPermission, toggleSubscription } =
@@ -348,6 +357,17 @@ export default function MemberPerfil() {
 
   useEffect(() => {
     if (!user?.id || !profile?.id) return;
+
+    supabase
+      .from('configuracoes_instituicao')
+      .select('membros_editam_perfil, notificacoes_push')
+      .single()
+      .then(({ data: cfg }) => {
+        if (!cfg) return;
+        const c = cfg as any;
+        setMembrosEditamPerfil(c.membros_editam_perfil ?? true);
+        setNotificacoesPushAtivas(c.notificacoes_push ?? false);
+      });
 
     supabase
       .from('profiles')
@@ -654,6 +674,30 @@ export default function MemberPerfil() {
     }
   };
 
+  const saveFamilia = async () => {
+    if (!profile) return;
+    setSavingFamilia(true);
+    try {
+      const { error } = await supabase
+        .from('membros')
+        .update({
+          nome_mae: draftFamilia.nome_mae.trim() || null,
+          nome_pai: draftFamilia.nome_pai.trim() || null,
+          pai_mae_promessista: draftFamilia.pai_mae_promessista,
+        })
+        .eq('user_id', profile.id);
+      if (error) throw error;
+      setData((prev) => ({ ...prev, nome_mae: draftFamilia.nome_mae, nome_pai: draftFamilia.nome_pai }));
+      setPaiMaePromessista(draftFamilia.pai_mae_promessista);
+      setEditingFamilia(false);
+      toast.success('Dados de família salvos!');
+    } catch {
+      toast.error('Erro ao salvar dados de família');
+    } finally {
+      setSavingFamilia(false);
+    }
+  };
+
   const handlePasswordReset = async () => {
     if (!profile?.email) return;
     try {
@@ -847,15 +891,67 @@ export default function MemberPerfil() {
               )}
             </SectionCard>
 
-            {/* Família — read only */}
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-                <span className="text-[15px] font-semibold text-gray-800">Família</span>
+            {/* Família */}
+            {membrosEditamPerfil ? (
+              <SectionCard
+                title="Família"
+                editing={editingFamilia}
+                saving={savingFamilia}
+                onEdit={() => {
+                  setDraftFamilia({ nome_mae: data.nome_mae, nome_pai: data.nome_pai, pai_mae_promessista: paiMaePromessista });
+                  setEditingFamilia(true);
+                }}
+                onSave={saveFamilia}
+                onCancel={() => { setEditingFamilia(false); }}
+              >
+                {!editingFamilia ? (
+                  <>
+                    <InfoRow icon={Users} label="Nome da Mãe" value={data.nome_mae} />
+                    <InfoRow icon={Users} label="Nome do Pai" value={data.nome_pai} />
+                    <InfoRow icon={Users} label="Pais Promessistas" value={paiMaePromessista ? 'Sim' : 'Não'} last />
+                  </>
+                ) : (
+                  <div className="px-4 py-4 space-y-3">
+                    <Field label="Nome da Mãe">
+                      <Input
+                        value={draftFamilia.nome_mae}
+                        onChange={(e) => setDraftFamilia(p => ({ ...p, nome_mae: e.target.value }))}
+                        placeholder="Nome completo da mãe"
+                        className="h-10"
+                      />
+                    </Field>
+                    <Field label="Nome do Pai">
+                      <Input
+                        value={draftFamilia.nome_pai}
+                        onChange={(e) => setDraftFamilia(p => ({ ...p, nome_pai: e.target.value }))}
+                        placeholder="Nome completo do pai"
+                        className="h-10"
+                      />
+                    </Field>
+                    <Field label="Pais são Promessistas?">
+                      <div className="flex items-center gap-3 pt-1">
+                        <Switch
+                          checked={draftFamilia.pai_mae_promessista}
+                          onCheckedChange={(v) => setDraftFamilia(p => ({ ...p, pai_mae_promessista: v }))}
+                        />
+                        <span className="text-[14px] text-gray-700">
+                          {draftFamilia.pai_mae_promessista ? 'Sim' : 'Não'}
+                        </span>
+                      </div>
+                    </Field>
+                  </div>
+                )}
+              </SectionCard>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+                  <span className="text-[15px] font-semibold text-gray-800">Família</span>
+                </div>
+                <InfoRow icon={Users} label="Nome da Mãe" value={data.nome_mae} />
+                <InfoRow icon={Users} label="Nome do Pai" value={data.nome_pai} />
+                <InfoRow icon={Users} label="Pais Promessistas" value={paiMaePromessista ? 'Sim' : 'Não'} last />
               </div>
-              <InfoRow icon={Users} label="Nome da Mãe" value={data.nome_mae} />
-              <InfoRow icon={Users} label="Nome do Pai" value={data.nome_pai} />
-              <InfoRow icon={Users} label="Pais Promessistas" value={paiMaePromessista ? 'Sim' : 'Não'} last />
-            </div>
+            )}
 
           </TabsContent>
 
@@ -1096,32 +1192,47 @@ export default function MemberPerfil() {
               <div className="px-4 pt-4 pb-3 border-b border-gray-100">
                 <span className="text-[15px] font-semibold text-gray-800">Notificações</span>
               </div>
-              <div className="flex items-center justify-between px-4 py-4">
-                <div className="flex items-start gap-3 flex-1 min-w-0 pr-4">
-                  <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    {pushEnabled
-                      ? <Bell className="w-4 h-4 text-[#1a5c38]" />
-                      : <BellOff className="w-4 h-4 text-gray-400" />}
+              {!notificacoesPushAtivas ? (
+                <div className="flex items-start gap-3 px-4 py-4">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <BellOff className="w-4 h-4 text-gray-400" />
                   </div>
-                  <div>
-                    <p className="text-[14px] font-medium text-gray-800">Notificações Push</p>
-                    <p className="text-[12px] text-gray-400 mt-0.5 leading-snug">
-                      {!pushSupported
-                        ? 'Requer HTTPS e browser compatível'
-                        : pushPermission === 'denied'
-                        ? 'Permissão negada — habilite nas configurações do navegador'
-                        : pushEnabled
-                        ? 'Alertas de escalas, eventos e avisos ativos'
-                        : 'Ative para receber alertas de escalas e avisos'}
-                    </p>
-                  </div>
+                  <p className="text-[14px] text-gray-500 pt-1.5">Notificações push não disponíveis no momento.</p>
                 </div>
-                <Switch
-                  checked={pushEnabled}
-                  onCheckedChange={toggleSubscription}
-                  disabled={!pushSupported || pushLoading || pushPermission === 'denied'}
-                />
-              </div>
+              ) : (
+                <div className="flex items-center justify-between px-4 py-4">
+                  <div className="flex items-start gap-3 flex-1 min-w-0 pr-4">
+                    <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      {pushEnabled
+                        ? <Bell className="w-4 h-4 text-[#1a5c38]" />
+                        : <BellOff className="w-4 h-4 text-gray-400" />}
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-medium text-gray-800">Notificações Push</p>
+                      <p className="text-[12px] text-gray-400 mt-0.5 leading-snug">
+                        {!pushSupported
+                          ? 'Requer HTTPS e browser compatível'
+                          : pushPermission === 'denied'
+                          ? 'Permissão negada — habilite nas configurações do navegador'
+                          : pushEnabled
+                          ? 'Alertas de escalas, eventos e avisos ativos'
+                          : 'Ative para receber alertas de escalas e avisos'}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={pushEnabled}
+                    onCheckedChange={async () => {
+                      try {
+                        await toggleSubscription();
+                      } catch {
+                        toast.error('Não foi possível alterar as notificações. Verifique as permissões do navegador.');
+                      }
+                    }}
+                    disabled={!pushSupported || pushLoading || pushPermission === 'denied'}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Segurança */}
