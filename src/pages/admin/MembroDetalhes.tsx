@@ -355,6 +355,7 @@ export default function MembroDetalhes() {
     data_ordenacao_fim: '',
     ordenacao_observacao: '',
     observacoes_pastorais: '',
+    estado_civil: '',
     nome_mae: '',
     nome_pai: '',
     pai_mae_promessista: false,
@@ -457,6 +458,7 @@ export default function MembroDetalhes() {
         data_ordenacao_fim: (data as any).data_ordenacao_fim || '',
         ordenacao_observacao: (data as any).ordenacao_observacao || '',
         observacoes_pastorais: (data as any).observacoes_pastorais || '',
+        estado_civil: data.estado_civil || '',
         nome_mae: (data as any).nome_mae || '',
         nome_pai: (data as any).nome_pai || '',
         pai_mae_promessista: (data as any).pai_mae_promessista || false,
@@ -661,9 +663,9 @@ export default function MembroDetalhes() {
      * PROTEÇÃO CONTRA SOBRESCRITA ACIDENTAL
      * 
      * Quando user_id existe (isLinkedToProfile = true):
-     * - NÃO atualizar: nome, email, telefone, data_nascimento, endereco, 
-     *   estado_civil, data_batismo, foto_perfil
+     * - NÃO atualizar: nome, email, telefone, data_nascimento, endereco, data_batismo, foto_perfil
      * - Estes campos são gerenciados pelo usuário em seu perfil (profiles)
+     * - Exceção: estado_civil é sempre editável pelo admin (salvo em membros.estado_civil)
      * - Aqui atualizamos APENAS dados administrativos: status, observacoes
      */
     
@@ -697,6 +699,7 @@ export default function MembroDetalhes() {
         data_ordenacao_fim: ministerialData.data_ordenacao_fim || null,
         ordenacao_observacao: ministerialData.ordenacao_observacao.trim() || null,
         observacoes_pastorais: ministerialData.observacoes_pastorais.trim() || null,
+        estado_civil: ministerialData.estado_civil || null,
         nome_mae: ministerialData.nome_mae.trim() || null,
         nome_pai: ministerialData.nome_pai.trim() || null,
         pai_mae_promessista: ministerialData.pai_mae_promessista,
@@ -719,7 +722,6 @@ export default function MembroDetalhes() {
           email: formData.email.trim() || null,
           data_nascimento: formData.data_nascimento || null,
           endereco: formData.endereco.trim() || null,
-          estado_civil: formData.estado_civil || null,
           data_batismo: formData.data_batismo || null,
           foto_perfil: fotoUrl,
         });
@@ -1215,7 +1217,11 @@ export default function MembroDetalhes() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">Estado Civil</Label>
+                  <p className="font-medium">{estadoCivilLabels[ministerialData.estado_civil] || '–'}</p>
+                </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs">Nome da Mãe</Label>
                   <p className="font-medium">{ministerialData.nome_mae || '–'}</p>
@@ -1420,29 +1426,6 @@ export default function MembroDetalhes() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="estado_civil">
-                    <Heart className="w-4 h-4 inline mr-1" />
-                    Estado Civil
-                  </Label>
-                  <Select
-                    value={formData.estado_civil}
-                    onValueChange={(value) => setFormData({ ...formData, estado_civil: value })}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {estadoCivilOptions.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="data_batismo">
                     <Calendar className="w-4 h-4 inline mr-1" />
                     Data do Batismo
@@ -1623,6 +1606,15 @@ export default function MembroDetalhes() {
           <div className="space-y-3">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Família</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Estado Civil</Label>
+                <Select value={ministerialData.estado_civil} onValueChange={(v) => setMin('estado_civil', v)} disabled={!isEditing}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {estadoCivilOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label>Nome da Mãe</Label>
                 <Input value={ministerialData.nome_mae} onChange={(e) => setMin('nome_mae', e.target.value)} disabled={!isEditing} placeholder="Nome completo da mãe" />
