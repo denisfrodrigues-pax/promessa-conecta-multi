@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Switch } from '@/components/ui/switch';
 import {
   ArrowLeft, Save, Upload, MessageCircle, User, Phone, Mail, MapPin,
-  Calendar, Heart, Clock, Home, Users, AlertCircle, Plus, History, Link2
+  Calendar, Heart, Clock, Home, Users, AlertCircle, Plus, History, Link2, AlertTriangle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -864,6 +864,31 @@ export default function MembroDetalhes() {
           )}
         </div>
       </div>
+
+      {/* Incomplete profile banner */}
+      {(() => {
+        const missing: string[] = [];
+        if (!formData.telefone) missing.push('telefone');
+        if (!formData.data_nascimento) missing.push('data de nascimento');
+        if (missing.length === 0) return null;
+        return (
+          <div className="flex items-start gap-3 rounded-lg border border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-600 px-4 py-3 text-yellow-800 dark:text-yellow-300">
+            <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0 text-yellow-500" />
+            <div className="flex-1 text-sm">
+              <span className="font-medium">Cadastro incompleto:</span>{' '}
+              faltam {missing.join(' e ')}.
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-yellow-500 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-500 dark:text-yellow-300 dark:hover:bg-yellow-900/40 shrink-0"
+              onClick={() => setIsEditing(true)}
+            >
+              Completar cadastro
+            </Button>
+          </div>
+        );
+      })()}
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

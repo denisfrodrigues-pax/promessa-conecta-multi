@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Users, Eye, Search, X, Plus, Download, MessageCircle, 
-  UserCheck, Calendar, ChevronRight, BarChart3 
+import {
+  Users, Eye, Search, X, Plus, Download, MessageCircle,
+  UserCheck, Calendar, ChevronRight, BarChart3, AlertTriangle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -561,6 +561,17 @@ export default function Membros() {
                             title="Possui acesso ao sistema"
                           >
                             <UserCheck className="w-3 h-3" />
+                          </span>
+                        )}
+                        {(!membro.telefone || !membro.data_nascimento) && (
+                          <span
+                            className="text-yellow-500 flex-shrink-0"
+                            title={[
+                              !membro.telefone ? 'sem telefone' : '',
+                              !membro.data_nascimento ? 'sem data de nascimento' : '',
+                            ].filter(Boolean).join(', ')}
+                          >
+                            <AlertTriangle className="w-4 h-4" />
                           </span>
                         )}
                         {hasValidPhone(membro.telefone) && (

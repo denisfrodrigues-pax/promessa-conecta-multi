@@ -111,6 +111,7 @@ export default function AdminDashboard() {
   const [recentAcompanhamentos, setRecentAcompanhamentos] = useState<Acompanhamento[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [proximosEventos, setProximosEventos] = useState<ProximoEvento[]>([]);
+  const [membrosIncompletos, setMembrosIncompletos] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -135,6 +136,7 @@ export default function AdminDashboard() {
         recentAcompRes,
         chartDataRes,
         alertsData,
+        membrosIncompletosRes,
       ] = await Promise.all([
         // Visitantes no mês
         supabase
@@ -199,6 +201,12 @@ export default function AdminDashboard() {
         
         // Alerts
         fetchAlerts(),
+
+        // Membros com cadastro incompleto (sem telefone ou sem data_nascimento)
+        supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .or('telefone.is.null,telefone.eq.,data_nascimento.is.null'),
       ]);
 
       setStats({
@@ -214,6 +222,7 @@ export default function AdminDashboard() {
       setRecentAcompanhamentos(recentAcompRes.data as any || []);
       setChartData(chartDataRes);
       setAlerts(alertsData);
+      setMembrosIncompletos(membrosIncompletosRes.count || 0);
 
       // Próximos eventos
       const { data: eventosData } = await (supabase as any)
@@ -472,6 +481,20 @@ export default function AdminDashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Incomplete profiles warning */}
+      {!loading && membrosIncompletos > 0 && (
+        <Link to="/admin/membros" className="block">
+          <div className="flex items-center gap-3 rounded-lg border border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-600 px-4 py-3 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-yellow-500" />
+            <p className="flex-1 text-sm text-yellow-800 dark:text-yellow-300">
+              <span className="font-semibold">{membrosIncompletos} membro{membrosIncompletos !== 1 ? 's' : ''}</span>{' '}
+              com cadastro incompleto (sem telefone ou data de nascimento).
+            </p>
+            <ChevronRight className="w-4 h-4 text-yellow-600 shrink-0" />
+          </div>
+        </Link>
+      )}
 
       {/* Próximos Eventos */}
       <Card className="shadow-card">
