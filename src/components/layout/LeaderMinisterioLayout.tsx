@@ -124,11 +124,11 @@ export default function LeaderMinisterioLayout() {
   const musicaNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
     { icon: ListMusic, label: "Escala de Cultos", path: `${basePath}/escala-culto` },
-    { icon: Music2, label: "Repertório", path: `${basePath}/repertorio` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
+    { icon: Music2, label: "Repertório", path: `${basePath}/repertorio` },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
-    { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
     { icon: FolderOpen, label: "Documentos", path: `${basePath}/documentos` },
+    { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
     { icon: Bell, label: "Notificações", path: `${basePath}/notificacoes`, showBadge: true },
   ];
 

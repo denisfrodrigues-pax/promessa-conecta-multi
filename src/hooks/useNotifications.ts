@@ -140,22 +140,27 @@ export function useNotifications() {
     if (!profile?.id) return;
 
     const channel = supabase
-      .channel('notificacoes_changes')
+      .channel(`notificacoes_changes_${profile.id}`)
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'notificacoes',
           filter: `voluntario_id=eq.${profile.id}`,
         },
         (payload) => {
-          const newNotification = {
-            ...payload.new,
-            tipo: payload.new.tipo as NotificationType
-          } as Notification;
-          setNotifications((prev) => [newNotification, ...prev]);
-          setUnreadCount((prev) => prev + 1);
+          if (payload.eventType === 'INSERT') {
+            const newNotification = {
+              ...payload.new,
+              tipo: payload.new.tipo as NotificationType,
+            } as Notification;
+            setNotifications((prev) => [newNotification, ...prev]);
+            setUnreadCount((prev) => prev + 1);
+          } else {
+            // UPDATE (mark as read) or DELETE — refetch so all hook instances sync
+            fetchNotifications();
+          }
         }
       )
       .subscribe();
@@ -163,7 +168,7 @@ export function useNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id]);
+  }, [profile?.id, fetchNotifications]);
 
   return {
     notifications,
