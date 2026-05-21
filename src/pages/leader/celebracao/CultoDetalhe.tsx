@@ -27,7 +27,7 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import CardCulto from '@/components/celebracao/CardCulto';
+import ResumoVisual from '@/components/celebracao/ResumoVisual';
 
 interface OutletCtx {
   ministerioId: string;
@@ -145,7 +145,7 @@ export default function CultoDetalhe() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
-  const cardRef = useRef<HTMLDivElement>(null);
+  const resumoRef = useRef<HTMLDivElement>(null);
 
   const [showItemModal, setShowItemModal] = useState(false);
   const [editItem, setEditItem] = useState<LiturgiaItem | null>(null);
@@ -156,6 +156,7 @@ export default function CultoDetalhe() {
   const [showNovoAviso, setShowNovoAviso] = useState(false);
   const [novoAvisoForm, setNovoAvisoForm] = useState({ ...emptyAvisoForm });
   const [exportingImg, setExportingImg] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   // ─── Queries ──────────────────────────────────────────────────────────────
   const { data: evento } = useQuery({
@@ -574,178 +575,18 @@ export default function CultoDetalhe() {
     reorderAvisosMutation.mutate(lista.map((a, i) => ({ id: a.id, ordem: i + 1 })));
   };
 
-  const exportarPDF = () => {
-    if (!evento) return;
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = pdf.internal.pageSize.getWidth();
-    let y = 20;
-
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(16);
-    pdf.text(evento.titulo, W / 2, y, { align: 'center' });
-    y += 7;
-
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
-    const dataStr = format(parseISO(evento.data_evento), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR });
-    pdf.text(dataStr + (evento.horario_inicio ? ` · ${evento.horario_inicio.slice(0, 5)}` : ''), W / 2, y, { align: 'center' });
-    y += 5;
-
-    pdf.setFont('helvetica', 'italic');
-    pdf.setFontSize(9);
-    pdf.text(`Ministério: ${ministerioNome}`, W / 2, y, { align: 'center' });
-    y += 8;
-
-    pdf.setDrawColor(180, 180, 180);
-    pdf.line(14, y, W - 14, y);
-    y += 6;
-
-    // Liturgia
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(12);
-    pdf.text('Ordem de Liturgia', 14, y);
-    y += 7;
-
-    (itens ?? []).forEach((item, idx) => {
-      if (y > 265) { pdf.addPage(); y = 20; }
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(10);
-      pdf.text(`${idx + 1}. ${item.titulo}`, 14, y);
-      y += 5;
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(9);
-      const meta: string[] = [`Tipo: ${tipoLabel(item.tipo)}`];
-      if (item.responsavel) meta.push(`Responsável: ${item.responsavel}`);
-      if (item.duracao_minutos) meta.push(`Duração: ${item.duracao_minutos} min`);
-      pdf.setTextColor(100, 100, 100);
-      pdf.text(meta.join('   ·   '), 18, y);
-      pdf.setTextColor(0, 0, 0);
-      y += 4;
-      if (item.observacao) {
-        pdf.setFont('helvetica', 'italic');
-        pdf.setFontSize(8);
-        pdf.setTextColor(120, 120, 120);
-        pdf.text(item.observacao, 18, y);
-        pdf.setTextColor(0, 0, 0);
-        y += 4;
-      }
-      y += 2;
-    });
-
-    // Músicas
-    if ((musicasCulto ?? []).length > 0) {
-      if (y > 250) { pdf.addPage(); y = 20; }
-      pdf.setDrawColor(180, 180, 180);
-      pdf.line(14, y, W - 14, y);
-      y += 6;
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.text('Músicas do Culto', 14, y);
-      y += 7;
-      (musicasCulto ?? []).forEach((mc, idx) => {
-        if (y > 265) { pdf.addPage(); y = 20; }
-        const titulo = mc.musicas_repertorio?.titulo ?? mc.titulo_avulso ?? '—';
-        const artista = mc.musicas_repertorio?.artista ?? mc.artista_avulso ?? '';
-        const tom = mc.musicas_repertorio?.tom ?? '';
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(10);
-        pdf.text(`${idx + 1}. ${titulo}`, 14, y);
-        y += 5;
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(9);
-        pdf.setTextColor(100, 100, 100);
-        pdf.text([artista, tom ? `Tom: ${tom}` : ''].filter(Boolean).join('   ·   '), 18, y);
-        pdf.setTextColor(0, 0, 0);
-        y += 6;
-      });
-    }
-
-    // Equipe
-    if (equipePorMinisterio.length > 0) {
-      if (y > 250) { pdf.addPage(); y = 20; }
-      pdf.setDrawColor(180, 180, 180);
-      pdf.line(14, y, W - 14, y);
-      y += 6;
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.text('Equipe do Dia', 14, y);
-      y += 7;
-      equipePorMinisterio.forEach((grupo) => {
-        if (y > 265) { pdf.addPage(); y = 20; }
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(10);
-        pdf.setTextColor(60, 80, 120);
-        pdf.text(grupo.nome, 14, y);
-        pdf.setTextColor(0, 0, 0);
-        y += 5;
-        grupo.membros.forEach((m) => {
-          if (y > 265) { pdf.addPage(); y = 20; }
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(9);
-          pdf.text(`• ${m.voluntario_nome} — ${m.funcao} (${statusLabel[m.status] ?? m.status})`, 18, y);
-          y += 4;
-        });
-        y += 2;
-      });
-    }
-
-    // Avisos
-    const selecionados = (avisosCulto ?? []).filter((a) => a.avisos);
-    if (selecionados.length > 0) {
-      if (y > 250) { pdf.addPage(); y = 20; }
-      pdf.setDrawColor(180, 180, 180);
-      pdf.line(14, y, W - 14, y);
-      y += 6;
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.text('Avisos do Culto', 14, y);
-      y += 7;
-      selecionados.forEach((ac, idx) => {
-        if (y > 265) { pdf.addPage(); y = 20; }
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(10);
-        pdf.text(`${idx + 1}. ${ac.avisos!.titulo}`, 14, y);
-        y += 5;
-        const linhas = pdf.splitTextToSize(ac.avisos!.conteudo, W - 28);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(9);
-        pdf.setTextColor(80, 80, 80);
-        pdf.text(linhas, 18, y);
-        pdf.setTextColor(0, 0, 0);
-        y += linhas.length * 4 + 4;
-      });
-    }
-
-    if (liturgia?.observacoes_gerais) {
-      if (y > 250) { pdf.addPage(); y = 20; }
-      pdf.setDrawColor(180, 180, 180);
-      pdf.line(14, y, W - 14, y);
-      y += 6;
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(10);
-      pdf.text('Observações gerais', 14, y);
-      y += 5;
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(9);
-      const linhas = pdf.splitTextToSize(liturgia.observacoes_gerais, W - 28);
-      pdf.text(linhas, 14, y);
-    }
-
-    const nomeArquivo = `liturgia_${format(parseISO(evento.data_evento), 'yyyy-MM-dd')}.pdf`;
-    pdf.save(nomeArquivo);
-  };
-
   const exportarImagem = async () => {
-    if (!cardRef.current || !evento) return;
+    if (!resumoRef.current || !evento) return;
     setExportingImg(true);
     try {
-      const canvas = await html2canvas(cardRef.current, {
+      const el = resumoRef.current;
+      const canvas = await html2canvas(el, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: null,
-        width: 1080,
-        height: 1920,
+        width: el.scrollWidth,
+        height: el.scrollHeight,
       });
       canvas.toBlob((blob) => {
         if (!blob) return;
@@ -760,6 +601,43 @@ export default function CultoDetalhe() {
       toast.error('Erro ao gerar imagem');
     } finally {
       setExportingImg(false);
+    }
+  };
+
+  const exportarPDF = async () => {
+    if (!resumoRef.current || !evento) return;
+    setExportingPdf(true);
+    try {
+      const el = resumoRef.current;
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        width: el.scrollWidth,
+        height: el.scrollHeight,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const pageW = pdf.internal.pageSize.getWidth();   // 297mm
+      const pageH = pdf.internal.pageSize.getHeight();  // 210mm
+
+      // Scale image to fit page width
+      const totalImgH = (canvas.height / canvas.width) * pageW;
+      const pages = Math.ceil(totalImgH / pageH);
+
+      for (let i = 0; i < pages; i++) {
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, -(i * pageH), pageW, totalImgH);
+      }
+
+      const nomeArquivo = `resumo-culto-${format(parseISO(evento.data_evento), 'yyyy-MM-dd')}.pdf`;
+      pdf.save(nomeArquivo);
+    } catch {
+      toast.error('Erro ao gerar PDF');
+    } finally {
+      setExportingPdf(false);
     }
   };
 
@@ -809,8 +687,10 @@ export default function CultoDetalhe() {
               : <Image className="w-4 h-4 mr-1" />}
             Exportar Imagem
           </Button>
-          <Button variant="outline" size="sm" onClick={exportarPDF} disabled={!itens?.length}>
-            <FileDown className="w-4 h-4 mr-1" />
+          <Button variant="outline" size="sm" onClick={exportarPDF} disabled={exportingPdf}>
+            {exportingPdf
+              ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              : <FileDown className="w-4 h-4 mr-1" />}
             Exportar PDF
           </Button>
         </div>
@@ -1279,14 +1159,12 @@ export default function CultoDetalhe() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ── CardCulto off-screen para exportação de imagem ─────────────────── */}
+      {/* ── ResumoVisual off-screen para exportação de imagem e PDF ─────────── */}
       {evento && (
         <div style={{ position: 'fixed', top: -9999, left: -9999, zIndex: -1, pointerEvents: 'none' }}>
-          <CardCulto
-            ref={cardRef}
-            formato="stories"
+          <ResumoVisual
+            ref={resumoRef}
             evento={evento}
-            itens={itens ?? []}
             musicas={cardMusicas}
             equipe={cardEquipe}
             avisos={(avisosCulto ?? [])
