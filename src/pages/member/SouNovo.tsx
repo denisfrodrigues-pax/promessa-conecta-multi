@@ -179,9 +179,16 @@ export default function SouNovo() {
 
   return (
     <div className="pb-24 md:pb-6">
+      {/* Back link */}
+      <div className="container mx-auto px-4 pt-4">
+        <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6">
+          ← Voltar ao início
+        </Link>
+      </div>
+
       {/* Admin Back Button */}
       {isAdmin && (
-        <div className="container mx-auto px-4 pt-4">
+        <div className="container mx-auto px-4 pb-2">
           <Button asChild variant="outline" size="sm" className="gap-2">
             <Link to="/admin">
               <ArrowLeft className="w-4 h-4" />

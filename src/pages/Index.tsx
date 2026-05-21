@@ -11,7 +11,6 @@ import {
   Instagram, 
   Music2,
   Users,
-  Baby,
   Heart,
   HandHeart,
   ArrowRight,
@@ -266,7 +265,7 @@ export default function Index() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Voluntário */}
             <Card className="group bg-card border-border hover:border-promessa-300 transition-all duration-300 hover:shadow-elevated hover:-translate-y-1">
               <CardContent className="p-8 text-center">
@@ -311,27 +310,6 @@ export default function Index() {
               </CardContent>
             </Card>
             
-            {/* Cadastro Infantil */}
-            <Card className="group bg-card border-border hover:border-promessa-300 transition-all duration-300 hover:shadow-elevated hover:-translate-y-1">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-6 group-hover:bg-promessa-200 transition-colors">
-                  <Baby className="w-8 h-8 text-promessa-600" />
-                </div>
-                <h3 className="font-display font-semibold text-xl text-foreground mb-3">
-                  Cadastro Infantil
-                </h3>
-                <p className="text-muted-foreground text-sm mb-6">
-                  Cadastre seus filhos para participarem das atividades do nosso ministério Kids.
-                </p>
-                <Button 
-                  variant="outline" 
-                  className="w-full border-promessa-300 text-promessa-700 hover:bg-promessa-50"
-                  asChild
-                >
-                  <Link to="/cadastro-infantil">Cadastrar criança</Link>
-                </Button>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>

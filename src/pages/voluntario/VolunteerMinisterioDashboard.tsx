@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import AdminEscalas from "@/pages/admin/Escalas";
+import { YoutubeSvg, SpotifySvg, DeezerSvg, CifraclubSvg, PlatformLink } from "@/components/musica/PlatformLinks";
 
 interface OutletCtx {
   ministerioId: string;
@@ -554,11 +555,11 @@ export default function VolunteerMinisterioDashboard() {
                                     {tom}
                                   </Badge>
                                 )}
-                                <div className="flex items-center gap-1 flex-shrink-0 text-xs font-medium">
-                                  {yt && <a href={yt} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-600">YT</a>}
-                                  {sp && <a href={sp} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700">SP</a>}
-                                  {dz && <a href={dz} target="_blank" rel="noopener noreferrer" className="text-purple-500 hover:text-purple-600">DZ</a>}
-                                  {cf && <a href={cf} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600">CF</a>}
+                                <div className="flex items-center gap-0.5 flex-shrink-0">
+                                  <PlatformLink href={yt} title="YouTube" colorClass="text-red-500 hover:bg-red-50"><YoutubeSvg /></PlatformLink>
+                                  <PlatformLink href={sp} title="Spotify" colorClass="text-green-600 hover:bg-green-50"><SpotifySvg /></PlatformLink>
+                                  <PlatformLink href={dz} title="Deezer" colorClass="text-purple-600 hover:bg-purple-50"><DeezerSvg /></PlatformLink>
+                                  <PlatformLink href={cf} title="CifraClub" colorClass="text-orange-500 hover:bg-orange-50"><CifraclubSvg /></PlatformLink>
                                 </div>
                               </div>
                             );

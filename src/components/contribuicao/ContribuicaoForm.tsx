@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -123,6 +125,44 @@ export function ContribuicaoForm({
   const [copiedPix, setCopiedPix] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showComprovante, setShowComprovante] = useState(false);
+  const [comprovanteData, setComprovanteData] = useState<{
+    valor: string;
+    forma: string;
+    dataHora: string;
+    nome: string;
+  } | null>(null);
+  const comprovanteRef = useRef<HTMLDivElement>(null);
+
+  const WHATSAPP_SECRETARIA = '19995735855';
+
+  const formaLabel: Record<string, string> = {
+    pix: 'PIX',
+    cartao: 'Cartão',
+    boleto: 'Boleto',
+  };
+
+  const downloadComprovante = async () => {
+    if (!comprovanteRef.current || !comprovanteData) return;
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(comprovanteRef.current, { scale: 2, useCORS: true });
+      const link = document.createElement('a');
+      const slug = comprovanteData.dataHora.replace(/\//g, '').replace(' às ', '-').replace(':', 'h').replace(':', '');
+      link.download = `comprovante-contribuicao-${slug}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch {
+      toast.error('Erro ao gerar imagem');
+    }
+  };
+
+  const enviarWhatsApp = () => {
+    if (!comprovanteData) return;
+    const msg = `Olá! Gostaria de confirmar minha contribuição:\n• Valor: R$ ${comprovanteData.valor}\n• Forma: ${comprovanteData.forma}\n• Data: ${comprovanteData.dataHora}\n• Nome: ${comprovanteData.nome || 'Não informado'}\nAguardo confirmação. 🙏`;
+    const url = `https://wa.me/55${WHATSAPP_SECRETARIA}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
 
   const valorNumerico = parseFloat(valor.replace(',', '.')) || 0;
   const pixPayload = generatePixPayload(valorNumerico > 0 ? valorNumerico : undefined);
@@ -148,6 +188,19 @@ export function ContribuicaoForm({
 
     if (tipoContribuicao === 'especial' && !destinoContribuicao.trim()) {
       toast.error('Destino obrigatório', { description: 'Informe o destino da contribuição especial.' });
+      return;
+    }
+
+    // Usuário não autenticado: mostrar comprovante informal em vez de INSERT
+    if (!profileId && origem === 'publica') {
+      const dataHora = format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+      setComprovanteData({
+        valor: valorNumerico.toFixed(2).replace('.', ','),
+        forma: formaLabel[formaPagamento] ?? formaPagamento,
+        dataHora,
+        nome: nome.trim(),
+      });
+      setShowComprovante(true);
       return;
     }
 
@@ -224,6 +277,74 @@ export function ContribuicaoForm({
             </div>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (showComprovante && comprovanteData) {
+    return (
+      <div className="container max-w-lg mx-auto px-4 py-8">
+        {/* Comprovante capturável */}
+        <div ref={comprovanteRef} className="bg-white rounded-2xl overflow-hidden shadow-xl border border-border">
+          {/* Header verde */}
+          <div className="bg-green-500 px-6 py-5 text-white text-center">
+            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <h2 className="text-xl font-bold">Contribuição Registrada</h2>
+          </div>
+
+          <div className="p-6 space-y-4">
+            {/* Valor */}
+            <div className="text-center py-2">
+              <p className="text-sm text-muted-foreground">Valor</p>
+              <p className="text-4xl font-bold text-foreground mt-1">R$ {comprovanteData.valor}</p>
+            </div>
+
+            <hr className="border-border" />
+
+            {/* Detalhes */}
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Forma de pagamento</span>
+                <span className="font-medium">{comprovanteData.forma}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Data e hora</span>
+                <span className="font-medium">{comprovanteData.dataHora}</span>
+              </div>
+              {comprovanteData.nome && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Contribuinte</span>
+                  <span className="font-medium">{comprovanteData.nome}</span>
+                </div>
+              )}
+            </div>
+
+            <hr className="border-border" />
+
+            {/* Aviso */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
+              <p className="font-semibold text-yellow-800 mb-1">⚠️ Aviso importante</p>
+              <p className="text-yellow-700 leading-relaxed">
+                Este documento não possui validade fiscal. Sua contribuição será confirmada pelo departamento financeiro da Igreja da Promessa.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Botões de ação */}
+        <div className="mt-6 space-y-3">
+          <Button className="w-full" onClick={downloadComprovante}>
+            📥 Baixar comprovante
+          </Button>
+          <Button variant="outline" className="w-full border-green-500 text-green-700 hover:bg-green-50" onClick={enviarWhatsApp}>
+            💬 Enviar via WhatsApp
+          </Button>
+          <Button variant="ghost" className="w-full" onClick={() => { setShowComprovante(false); setComprovanteData(null); }}>
+            Fazer nova contribuição
+          </Button>
+        </div>
       </div>
     );
   }
