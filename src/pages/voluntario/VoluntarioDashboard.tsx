@@ -2,11 +2,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth, MyMinistry } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Heart, ChevronRight } from 'lucide-react';
+import { Heart, ChevronRight, CalendarDays, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { getMinisterioIconConfig } from '@/utils/ministerioIcons';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { parseLocalDate } from '@/lib/dateUtils';
 
 export default function VoluntarioDashboard() {
   const { profile, myMinistries, myMinistriesLoading } = useAuth();
@@ -23,6 +27,47 @@ export default function VoluntarioDashboard() {
     staleTime: Infinity,
   });
   const tipoMap: Record<string, string | null> = Object.fromEntries(tiposData.map((m) => [m.id, m.tipo]));
+
+  // Próximas 5 escalas do voluntário
+  const { data: proximasEscalas = [], isLoading: loadingProximas } = useQuery({
+    queryKey: ['voluntario-proximas-escalas', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      const today = new Date().toISOString().split('T')[0];
+      const { data } = await supabase
+        .from('escalas')
+        .select('id, data, funcao, status, ministerio_id, eventos_escala(titulo)')
+        .eq('voluntario_id', profile.id)
+        .gte('data', today)
+        .order('data', { ascending: true })
+        .limit(5);
+      return (data ?? []) as Array<{
+        id: string;
+        data: string;
+        funcao: string;
+        status: string;
+        ministerio_id: string;
+        eventos_escala: { titulo: string } | null;
+      }>;
+    },
+    enabled: !!profile?.id,
+  });
+
+  const ministerioNomeMap: Record<string, string> = Object.fromEntries(
+    myMinistries.map((m) => [m.ministerio_id, m.nome])
+  );
+
+  const statusIcon = (status: string) => {
+    if (status === 'confirmado') return <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0" />;
+    if (status === 'ausente') return <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />;
+    return <Clock className="w-3.5 h-3.5 text-yellow-500 shrink-0" />;
+  };
+
+  const statusLabel: Record<string, string> = {
+    confirmado: 'Confirmado',
+    pendente: 'Pendente',
+    ausente: 'Ausente',
+  };
 
   const handleMinistryClick = (ministry: MyMinistry) => {
     if (ministry.slug) {
@@ -58,7 +103,7 @@ export default function VoluntarioDashboard() {
             <Heart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Nenhum ministério vinculado</h3>
             <p className="text-muted-foreground max-w-md mx-auto">
-              Você ainda não está vinculado a um ministério ativo. 
+              Você ainda não está vinculado a um ministério ativo.
               Fale com a administração da igreja para ser adicionado.
             </p>
           </CardContent>
@@ -90,6 +135,56 @@ export default function VoluntarioDashboard() {
             );
           })}
         </div>
+      )}
+
+      {/* Próximas escalas */}
+      {(loadingProximas || proximasEscalas.length > 0) && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CalendarDays className="w-4 h-4 text-promessa-600" />
+              Próximas Escalas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {loadingProximas ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full" />)}
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {proximasEscalas.map((e) => (
+                  <div key={e.id} className="flex items-center gap-3 py-2.5">
+                    <div className="w-10 text-center shrink-0">
+                      <p className="text-sm font-bold text-promessa-700 leading-none">
+                        {format(parseLocalDate(e.data), 'dd')}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground uppercase">
+                        {format(parseLocalDate(e.data), 'MMM', { locale: ptBR })}
+                      </p>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {e.eventos_escala?.titulo ?? ministerioNomeMap[e.ministerio_id] ?? 'Escala'}
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="truncate">{ministerioNomeMap[e.ministerio_id]}</span>
+                        <span>·</span>
+                        <span className="truncate">{e.funcao}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {statusIcon(e.status)}
+                      <span className="text-xs text-muted-foreground hidden sm:block">
+                        {statusLabel[e.status] ?? e.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

@@ -31,7 +31,7 @@ export default function SejaVoluntario() {
     supabase
       .from('ministerios')
       .select('id, nome')
-      .eq('status', 'ativo')
+      .eq('ativo', true)
       .order('nome')
       .then(({ data }) => {
         setMinisterios(data || []);
