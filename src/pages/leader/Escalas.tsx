@@ -315,12 +315,30 @@ export default function LeaderEscalas() {
   // ── Delete escala ──────────────────────────────────────────────────────────
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, evento_escala_id }: { id: string; evento_escala_id: string | null }) => {
       const { error } = await supabase.from('escalas').delete().eq('id', id);
       if (error) throw error;
+
+      // Se era uma escala vinculada a evento, verifica se restam outras
+      if (evento_escala_id) {
+        const { data: restantes } = await supabase
+          .from('escalas')
+          .select('id')
+          .eq('ministerio_id', ministerioId)
+          .eq('evento_escala_id', evento_escala_id)
+          .limit(1);
+        if (!restantes || restantes.length === 0) {
+          await supabase
+            .from('evento_ministerios')
+            .update({ status: 'pendente' })
+            .eq('evento_id', evento_escala_id)
+            .eq('ministerio_id', ministerioId);
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['escalas_lider', ministerioId] });
+      queryClient.invalidateQueries({ queryKey: ['evento_ministerios_lider', ministerioId] });
       toast.success('Escala excluída');
       setToDelete(null);
     },
@@ -937,7 +955,7 @@ export default function LeaderEscalas() {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => toDelete && deleteMutation.mutate(toDelete.id)}
+              onClick={() => toDelete && deleteMutation.mutate({ id: toDelete.id, evento_escala_id: toDelete.evento_escala_id })}
               disabled={deleteMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
