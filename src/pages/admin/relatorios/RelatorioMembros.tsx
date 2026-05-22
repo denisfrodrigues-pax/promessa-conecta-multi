@@ -43,7 +43,7 @@ export default function RelatorioMembros() {
           .gte('created_at', startOfMonth(new Date()).toISOString()),
         supabase.from('membros').select('*', { count: 'exact', head: true }).neq('status', 'ativo'),
         supabase.from('membros').select('data_nascimento'),
-        supabase.from('criancas').select('*', { count: 'exact', head: true }),
+        supabase.from('mca_criancas').select('*', { count: 'exact', head: true }).eq('church_id', 'e19bf49a-4532-4fd9-98af-5b5682e50cd6'),
       ]);
       setTotalCriancas(criancasRes.count || 0);
 
