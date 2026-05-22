@@ -59,6 +59,7 @@ const AdminAuditoria = lazy(() => import("@/pages/admin/Auditoria"));
 const AdminDevocionais = lazy(() => import("@/pages/admin/Devocionais"));
 const AdminConfiguracoes = lazy(() => import("@/pages/admin/Configuracoes"));
 const WhatsAppTest = lazy(() => import("@/pages/admin/WhatsAppTest"));
+const AdminKids = lazy(() => import("@/pages/admin/Kids"));
 
 // Admin — Financeiro
 const FinanceiroDashboard = lazy(() => import("@/pages/admin/financeiro/FinanceiroDashboard"));
@@ -281,6 +282,7 @@ const App = () => (
               <Route path="bases/relatorio" element={<AdminBaseRelatorio />} />
               <Route path="bases/:id" element={<AdminBaseDetalhes />} />
               <Route path="acompanhamento" element={<AdminAcompanhamento />} />
+              <Route path="kids" element={<AdminKids />} />
               {/* Financeiro */}
               <Route path="financeiro" element={<FinanceiroDashboard />} />
               <Route path="financeiro/transacoes" element={<Transacoes />} />

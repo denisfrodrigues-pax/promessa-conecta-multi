@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Download, FileText, UserPlus, UserMinus, Calendar, MessageCircle, Loader2 } from 'lucide-react';
+import { Users, Download, FileText, UserPlus, UserMinus, Calendar, MessageCircle, Loader2, Baby } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subMonths, startOfMonth, endOfMonth, differenceInYears } from 'date-fns';
@@ -25,7 +25,8 @@ export default function RelatorioMembros() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 20;
-  const [kpis, setKpis] = useState({ ativos: 0, novosMes: 0, desligados: 0, idadeMedia: 0 });
+  const [kpis, setKpis] = useState({ ativos: 0, novosMes: 0, desligados: 0, idadeMedia: 0, criancas: 0 });
+  const [totalCriancas, setTotalCriancas] = useState(0);
   const [chartData, setChartData] = useState({ entradas: [] as any[], faixaEtaria: [] as any[], status: [] as any[] });
 
   useEffect(() => {
@@ -36,13 +37,15 @@ export default function RelatorioMembros() {
     setLoading(true);
     try {
       // KPIs
-      const [ativos, novosMes, desligados, todosData] = await Promise.all([
+      const [ativos, novosMes, desligados, todosData, criancasRes] = await Promise.all([
         supabase.from('membros').select('*', { count: 'exact', head: true }).eq('status', 'ativo'),
         supabase.from('membros').select('*', { count: 'exact', head: true })
           .gte('created_at', startOfMonth(new Date()).toISOString()),
         supabase.from('membros').select('*', { count: 'exact', head: true }).neq('status', 'ativo'),
         supabase.from('membros').select('data_nascimento'),
+        supabase.from('criancas').select('*', { count: 'exact', head: true }),
       ]);
+      setTotalCriancas(criancasRes.count || 0);
 
       // Idade média
       const idades = (todosData.data || [])
@@ -88,6 +91,7 @@ export default function RelatorioMembros() {
         else if (i <= 60) faixas['46-60']++;
         else faixas['60+']++;
       });
+      faixas['0-17'] += criancasRes.count || 0;
       const faixaEtaria = Object.entries(faixas).map(([name, value]) => ({ name, value }));
 
       // Status
@@ -149,7 +153,7 @@ export default function RelatorioMembros() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -190,6 +194,17 @@ export default function RelatorioMembros() {
               <div>
                 <p className="text-2xl font-bold">{kpis.idadeMedia}</p>
                 <p className="text-xs text-muted-foreground">Idade média</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Baby className="w-6 h-6 text-pink-500" />
+              <div>
+                <p className="text-2xl font-bold">{totalCriancas}</p>
+                <p className="text-xs text-muted-foreground">Crianças</p>
               </div>
             </div>
           </CardContent>

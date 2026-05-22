@@ -31,6 +31,7 @@ import {
   Briefcase,
   MessageCircle,
   BookOpen,
+  Baby,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -56,6 +57,7 @@ const menuItems: MenuItem[] = [
     submenu: [
       { icon: Users, label: 'Lista de Membros', path: '/admin/membros' },
       { icon: UserPlus, label: 'Visitantes', path: '/admin/visitantes' },
+      { icon: Baby, label: 'Kids', path: '/admin/kids' },
       { icon: FileText, label: 'Relatório Membros', path: '/admin/membros/relatorio' },
     ]
   },
