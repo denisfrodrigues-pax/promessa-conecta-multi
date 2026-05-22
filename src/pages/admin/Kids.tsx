@@ -83,8 +83,8 @@ function CriancaForm({ open, initial, turmas, responsaveis, onClose, onSaved }: 
       setForm({
         nome: initial?.nome ?? '',
         data_nascimento: initial?.data_nascimento ?? '',
-        responsavel_id: initial?.responsavel_id ?? '',
-        turma_id: initial?.turma_id ?? '',
+        responsavel_id: initial?.responsavel_id ?? 'none',
+        turma_id: initial?.turma_id ?? 'none',
         alergias: initial?.alergias ?? '',
         autorizacao_foto: initial?.autorizacao_foto ?? false,
         observacoes: initial?.observacoes ?? '',
@@ -101,8 +101,8 @@ function CriancaForm({ open, initial, turmas, responsaveis, onClose, onSaved }: 
       const payload = {
         nome: form.nome.trim(),
         data_nascimento: form.data_nascimento || null,
-        responsavel_id: form.responsavel_id || null,
-        turma_id: form.turma_id || null,
+        responsavel_id: form.responsavel_id === 'none' ? null : form.responsavel_id || null,
+        turma_id: form.turma_id === 'none' ? null : form.turma_id || null,
         alergias: form.alergias.trim() || null,
         autorizacao_foto: form.autorizacao_foto,
         observacoes: form.observacoes.trim() || null,
@@ -145,7 +145,8 @@ function CriancaForm({ open, initial, turmas, responsaveis, onClose, onSaved }: 
             <Select value={form.responsavel_id} onValueChange={v => set('responsavel_id', v)}>
               <SelectTrigger><SelectValue placeholder="Selecione um membro" /></SelectTrigger>
               <SelectContent>
-                {responsaveis.map(r => <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>)}
+                <SelectItem value="none">Sem responsável</SelectItem>
+                {responsaveis.filter(r => r.id).map(r => <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -154,8 +155,8 @@ function CriancaForm({ open, initial, turmas, responsaveis, onClose, onSaved }: 
             <Select value={form.turma_id} onValueChange={v => set('turma_id', v)}>
               <SelectTrigger><SelectValue placeholder="Sem turma" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sem turma</SelectItem>
-                {turmas.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
+                <SelectItem value="none">Sem turma</SelectItem>
+                {turmas.filter(t => t.id).map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -201,7 +202,7 @@ function TurmaForm({ open, initial, responsaveis, onClose, onSaved }: TurmaFormP
       setForm({
         nome: initial?.nome ?? '',
         faixa_etaria: initial?.faixa_etaria ?? '',
-        responsavel_id: initial?.responsavel_id ?? '',
+        responsavel_id: initial?.responsavel_id ?? 'none',
       });
     }
   }, [open, initial]);
@@ -215,7 +216,7 @@ function TurmaForm({ open, initial, responsaveis, onClose, onSaved }: TurmaFormP
       const payload = {
         nome: form.nome.trim(),
         faixa_etaria: form.faixa_etaria.trim() || null,
-        responsavel_id: form.responsavel_id || null,
+        responsavel_id: form.responsavel_id === 'none' ? null : form.responsavel_id || null,
       };
       if (editing) {
         const { error } = await supabase.from('turmas_infantil').update(payload).eq('id', initial!.id!);
@@ -255,8 +256,8 @@ function TurmaForm({ open, initial, responsaveis, onClose, onSaved }: TurmaFormP
             <Select value={form.responsavel_id} onValueChange={v => set('responsavel_id', v)}>
               <SelectTrigger><SelectValue placeholder="Selecione um membro" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhum</SelectItem>
-                {responsaveis.map(r => <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>)}
+                <SelectItem value="none">Nenhum</SelectItem>
+                {responsaveis.filter(r => r.id).map(r => <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
