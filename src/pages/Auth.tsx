@@ -133,17 +133,31 @@ export default function Auth() {
 
     setIsLoading(true);
     const { error } = await signUp(signupData.email, signupData.password, signupData.nome);
-    setIsLoading(false);
 
     if (error) {
+      setIsLoading(false);
       if (error.message.includes('User already registered')) {
         toast.error('Este email já está cadastrado');
       } else {
         toast.error('Erro ao criar conta. Tente novamente.');
       }
-    } else {
+      return;
+    }
+
+    // Conta criada — tentar login automático imediato
+    const { error: signInError } = await signIn(signupData.email, signupData.password);
+    setIsLoading(false);
+
+    if (!signInError) {
       toast.success('Conta criada com sucesso! Bem-vindo!');
-      // Redirect will be handled by useEffect when roles are loaded
+      // useEffect redireciona quando user for setado pelo AuthContext
+    } else if (
+      signInError.message?.toLowerCase().includes('not confirmed') ||
+      signInError.message?.toLowerCase().includes('não confirmado')
+    ) {
+      toast.success('Conta criada! Verifique seu email para confirmar e depois faça login.');
+    } else {
+      toast.success('Conta criada! Faça login para continuar.');
     }
   };
 
