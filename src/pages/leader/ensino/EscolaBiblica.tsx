@@ -31,7 +31,7 @@ interface Disciplina { id: string; ciclo_id: string; mes: number; eixo_tematico:
 interface Aula { id: string; disciplina_id: string; numero: number; titulo: string }
 interface Matricula { id: string; perfil_id: string; ciclo_id: string; ativo: boolean; perfis: { nome: string } | null }
 interface Presenca { id: string; perfil_id: string; aula_id: string; disciplina_id: string; presente: boolean }
-interface MembroDisp { id: string; nome: string; perfil_id: string | null }
+interface MembroDisp { id: string; nome: string | null }
 
 export default function EscolaBiblica() {
   const { profile } = useAuth();
@@ -94,11 +94,12 @@ export default function EscolaBiblica() {
     },
   });
 
+  // perfis.id = perfil_id em eb_matriculas
   const { data: membrosDisp = [] } = useQuery<MembroDisp[]>({
-    queryKey: ['membros_para_matricula'],
+    queryKey: ['perfis_lista'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('membros')
-        .select('id, nome, perfil_id').eq('status', 'ativo').order('nome');
+      const { data, error } = await supabase.from('perfis')
+        .select('id, nome').order('nome');
       if (error) throw error;
       return data || [];
     },
@@ -184,8 +185,9 @@ export default function EscolaBiblica() {
   }), [ciclos, relatorioDiscs, matriculas, aulas, presencas]);
 
   const enrolledPerfilIds = useMemo(() => matriculas.map(m => m.perfil_id), [matriculas]);
+  // perfis.id já é o perfil_id
   const membrosParaMatricula = useMemo(
-    () => membrosDisp.filter(m => m.perfil_id && !enrolledPerfilIds.includes(m.perfil_id)),
+    () => membrosDisp.filter(m => !enrolledPerfilIds.includes(m.id)),
     [membrosDisp, enrolledPerfilIds],
   );
 
@@ -218,12 +220,11 @@ export default function EscolaBiblica() {
 
   const handleMatricular = async () => {
     if (!matriculaCicloId || !matriculaMembroId) return;
-    const membro = membrosDisp.find(m => m.id === matriculaMembroId);
-    if (!membro?.perfil_id) { toast.error('Membro sem perfil vinculado'); return; }
+    // matriculaMembroId é perfis.id = perfil_id diretamente
     setSavingMatricula(true);
     try {
       const { error } = await supabase.from('eb_matriculas').insert({
-        perfil_id: membro.perfil_id,
+        perfil_id: matriculaMembroId,
         ciclo_id: matriculaCicloId,
         data_inicio: new Date().toISOString().slice(0, 10),
         ativo: true,

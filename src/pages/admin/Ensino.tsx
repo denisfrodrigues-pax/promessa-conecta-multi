@@ -30,7 +30,7 @@ export default function AdminEnsino() {
   });
 
   const { data: disciplinas = [] } = useQuery({
-    queryKey: ['eb_disciplinas'],
+    queryKey: ['eb_disciplinas_admin'],
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_disciplinas').select('id, ciclo_id, mes');
       if (error) throw error;
@@ -39,7 +39,7 @@ export default function AdminEnsino() {
   });
 
   const { data: aulas = [] } = useQuery({
-    queryKey: ['eb_aulas'],
+    queryKey: ['eb_aulas_admin'],
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_aulas').select('id, disciplina_id');
       if (error) throw error;
@@ -48,7 +48,7 @@ export default function AdminEnsino() {
   });
 
   const { data: matriculas = [] } = useQuery({
-    queryKey: ['eb_matriculas'],
+    queryKey: ['eb_matriculas_admin'],
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_matriculas')
         .select('id, perfil_id, ciclo_id').eq('ativo', true);
@@ -58,7 +58,7 @@ export default function AdminEnsino() {
   });
 
   const { data: presencas = [] } = useQuery({
-    queryKey: ['eb_presencas'],
+    queryKey: ['eb_presencas_admin'],
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_presencas')
         .select('perfil_id, aula_id, presente');
@@ -67,11 +67,12 @@ export default function AdminEnsino() {
     },
   });
 
+  // Usa perfis diretamente: id = perfil_id em eb_matriculas
   const { data: todosAtivos = [] } = useQuery({
-    queryKey: ['membros_ativos_basico'],
+    queryKey: ['perfis_lista'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('membros')
-        .select('id, nome, perfil_id').eq('status', 'ativo').order('nome');
+      const { data, error } = await supabase.from('perfis')
+        .select('id, nome').order('nome');
       if (error) throw error;
       return (data || []) as any[];
     },
@@ -80,7 +81,7 @@ export default function AdminEnsino() {
   const enrolledIds = useMemo(() => matriculas.map((m: any) => m.perfil_id), [matriculas]);
 
   const semMatricula = useMemo(
-    () => todosAtivos.filter((m: any) => m.perfil_id && !enrolledIds.includes(m.perfil_id)),
+    () => todosAtivos.filter((m: any) => !enrolledIds.includes(m.id)),
     [todosAtivos, enrolledIds],
   );
 
@@ -101,18 +102,17 @@ export default function AdminEnsino() {
 
   const handleMatricular = async () => {
     if (!cicloId || !membroId) return;
-    const membro = todosAtivos.find((m: any) => m.id === membroId);
-    if (!membro?.perfil_id) { toast.error('Membro sem perfil vinculado'); return; }
+    // membroId é perfis.id = perfil_id diretamente
     setSaving(true);
     try {
       const { error } = await supabase.from('eb_matriculas').insert({
-        perfil_id: membro.perfil_id,
+        perfil_id: membroId,
         ciclo_id: cicloId,
         data_inicio: new Date().toISOString().slice(0, 10),
         ativo: true,
       });
       if (error) throw error;
-      qc.invalidateQueries({ queryKey: ['eb_matriculas'] });
+      qc.invalidateQueries({ queryKey: ['eb_matriculas_admin'] });
       toast.success('Matrícula realizada com sucesso');
       setShowModal(false); setCicloId(''); setMembroId('');
     } catch {
