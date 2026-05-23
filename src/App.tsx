@@ -60,6 +60,7 @@ const AdminDevocionais = lazy(() => import("@/pages/admin/Devocionais"));
 const AdminConfiguracoes = lazy(() => import("@/pages/admin/Configuracoes"));
 const WhatsAppTest = lazy(() => import("@/pages/admin/WhatsAppTest"));
 const AdminKids = lazy(() => import("@/pages/admin/Kids"));
+const AdminEnsino = lazy(() => import("@/pages/admin/Ensino"));
 
 // Admin — Financeiro
 const FinanceiroDashboard = lazy(() => import("@/pages/admin/financeiro/FinanceiroDashboard"));
@@ -139,6 +140,7 @@ const LeaderMcaCheckin = lazy(() => import("@/pages/leader/mca/Checkin"));
 const LeaderMcaPlanos = lazy(() => import("@/pages/leader/mca/Planos"));
 const LeaderMcaPlanoDetalhe = lazy(() => import("@/pages/leader/mca/PlanoDetalhe"));
 const LeaderMcaComunicacao = lazy(() => import("@/pages/leader/mca/Comunicacao"));
+const LeaderEscolaBiblica = lazy(() => import("@/pages/leader/ensino/EscolaBiblica"));
 const LeaderEnsinoTurmas = lazy(() => import("@/pages/leader/ensino/Turmas"));
 const LeaderEnsinoPlanos = lazy(() => import("@/pages/leader/ensino/Planos"));
 const LeaderEnsinoPlanoDetalhe = lazy(() => import("@/pages/leader/ensino/PlanoDetalhe"));
@@ -283,6 +285,7 @@ const App = () => (
               <Route path="bases/:id" element={<AdminBaseDetalhes />} />
               <Route path="acompanhamento" element={<AdminAcompanhamento />} />
               <Route path="kids" element={<AdminKids />} />
+              <Route path="ensino" element={<AdminEnsino />} />
               {/* Financeiro */}
               <Route path="financeiro" element={<FinanceiroDashboard />} />
               <Route path="financeiro/transacoes" element={<Transacoes />} />
@@ -358,6 +361,7 @@ const App = () => (
               <Route path="planos/:planoId" element={<PlanoDetalheDispatch />} />
               <Route path="comunicacao" element={<LeaderMcaComunicacao />} />
               {/* Ensino */}
+              <Route path="escola-biblica" element={<LeaderEscolaBiblica />} />
               <Route path="turmas" element={<LeaderEnsinoTurmas />} />
               <Route path="chamada" element={<LeaderEnsinoChamada />} />
             </Route>

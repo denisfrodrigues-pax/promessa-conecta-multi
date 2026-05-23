@@ -32,6 +32,7 @@ import {
   MessageCircle,
   BookOpen,
   Baby,
+  GraduationCap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -114,6 +115,7 @@ const menuItems: MenuItem[] = [
       { icon: MessageCircle, label: 'Comunicações', path: '/admin/relatorios/comunicacoes' },
     ]
   },
+  { icon: GraduationCap, label: 'Ensino', path: '/admin/ensino' },
   { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },
   { icon: Bell, label: 'Avisos', path: '/admin/avisos' },
   { icon: BookOpen, label: 'Devocionais', path: '/admin/devocionais' },

@@ -1,56 +1,108 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpenCheck, CheckCircle2, XCircle, TrendingUp, Users, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { Progress } from '@/components/ui/progress';
+import { BookOpenCheck, BookOpen } from 'lucide-react';
 
-interface RegistroEnsino {
-  turma_id: string;
-  turma_nome: string;
-  data_aula: string;
-  presente: boolean;
+const MES_ATUAL = new Date().getMonth() + 1;
+
+const MES_NOMES: Record<number, string> = {
+  1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril', 5: 'Maio', 6: 'Junho',
+  8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro',
+};
+
+type Status = 'Concluída' | 'Parcial' | 'Ausente' | 'Atual' | 'Próxima';
+
+interface DiscRow {
+  id: string; mes: number; titulo: string; eixo_tematico: string; subtitulo: string;
+  aulaCount: number; presentCount: number; status: Status;
 }
 
-interface EstatisticaTurma {
-  turma_id: string;
-  turma_nome: string;
-  total: number;
-  presentes: number;
-  percentual: number;
-  ultimo: string;
+interface EBData {
+  cicloNome: string; cicloSub: string;
+  discs: DiscRow[];
+  currentDisc: DiscRow | undefined;
+  currentAulas: any[];
+  currentPresences: any[];
 }
 
 export default function MeuEnsino() {
   const { profile } = useAuth();
 
-  const { data: registros = [], isLoading } = useQuery({
-    queryKey: ['meu_ensino', profile?.id],
+  const { data, isLoading } = useQuery<EBData | null>({
+    queryKey: ['meu_ensino_eb', profile?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_meu_ensino' as any);
-      if (error) throw error;
-      return (data ?? []) as RegistroEnsino[];
+      const { data: mats, error: mErr } = await supabase.from('eb_matriculas')
+        .select('ciclo_id, eb_ciclos(nome, subtitulo)')
+        .eq('perfil_id', profile!.id).eq('ativo', true).limit(1);
+      if (mErr) throw mErr;
+      if (!mats || mats.length === 0) return null;
+
+      const mat = mats[0] as any;
+      const ciclo = mat.eb_ciclos as any;
+
+      const { data: discs, error: dErr } = await supabase.from('eb_disciplinas')
+        .select('id, mes, titulo, eixo_tematico, subtitulo')
+        .eq('ciclo_id', mat.ciclo_id).order('mes');
+      if (dErr) throw dErr;
+
+      const discIds = (discs || []).map((d: any) => d.id);
+      if (discIds.length === 0) return { cicloNome: ciclo?.nome || '', cicloSub: ciclo?.subtitulo || '', discs: [], currentDisc: undefined, currentAulas: [], currentPresences: [] };
+
+      const { data: aulasList, error: aErr } = await supabase.from('eb_aulas')
+        .select('id, disciplina_id, numero, titulo').in('disciplina_id', discIds).order('numero');
+      if (aErr) throw aErr;
+
+      const aulaIds = (aulasList || []).map((a: any) => a.id);
+      const { data: presencas, error: pErr } = aulaIds.length > 0
+        ? await supabase.from('eb_presencas').select('aula_id, presente').eq('perfil_id', profile!.id).in('aula_id', aulaIds)
+        : { data: [], error: null };
+      if (pErr) throw pErr;
+
+      const discRows: DiscRow[] = (discs || []).map((d: any) => {
+        const da = (aulasList || []).filter((a: any) => a.disciplina_id === d.id);
+        const presentCount = da.filter((a: any) =>
+          (presencas || []).some((p: any) => p.aula_id === a.id && p.presente)
+        ).length;
+        let status: Status;
+        if (d.mes === MES_ATUAL) status = 'Atual';
+        else if (d.mes > MES_ATUAL) status = 'Próxima';
+        else if (presentCount >= 3) status = 'Concluída';
+        else if (presentCount >= 1) status = 'Parcial';
+        else status = 'Ausente';
+        return { id: d.id, mes: d.mes, titulo: d.titulo, eixo_tematico: d.eixo_tematico, subtitulo: d.subtitulo, aulaCount: da.length, presentCount, status };
+      });
+
+      const currentDisc = discRows.find(d => d.status === 'Atual');
+      const currentAulas = currentDisc
+        ? (aulasList || []).filter((a: any) => a.disciplina_id === currentDisc.id)
+        : [];
+      const currentPresences = currentDisc
+        ? (presencas || []).filter((p: any) => currentAulas.some((a: any) => a.id === p.aula_id))
+        : [];
+
+      return { cicloNome: ciclo?.nome || '', cicloSub: ciclo?.subtitulo || '', discs: discRows, currentDisc, currentAulas, currentPresences };
     },
     enabled: !!profile?.id,
   });
 
-  const estatisticas: EstatisticaTurma[] = Object.values(
-    registros.reduce((acc, r) => {
-      if (!acc[r.turma_id]) {
-        acc[r.turma_id] = { turma_id: r.turma_id, turma_nome: r.turma_nome, total: 0, presentes: 0, ultimo: r.data_aula };
-      }
-      acc[r.turma_id].total++;
-      if (r.presente) acc[r.turma_id].presentes++;
-      if (r.data_aula > acc[r.turma_id].ultimo) acc[r.turma_id].ultimo = r.data_aula;
-      return acc;
-    }, {} as Record<string, Omit<EstatisticaTurma, 'percentual'>>)
-  ).map(e => ({ ...e, percentual: e.total > 0 ? Math.round((e.presentes / e.total) * 100) : 0 }));
+  const statusStyle: Record<Status, { label: string; badge: string; row: string }> = {
+    'Concluída': { label: '✅ Concluída', badge: 'bg-green-100 text-green-800', row: 'bg-green-50 border-green-200' },
+    'Parcial':   { label: '⚠️ Parcial',   badge: 'bg-amber-100 text-amber-800', row: 'bg-amber-50 border-amber-200' },
+    'Ausente':   { label: '❌ Ausente',   badge: 'bg-red-100 text-red-800',     row: 'bg-red-50 border-red-200 opacity-80' },
+    'Atual':     { label: '📍 Atual',     badge: 'bg-blue-100 text-blue-800',   row: 'bg-blue-50 border-blue-200' },
+    'Próxima':   { label: '🔵 Próxima',   badge: 'bg-gray-100 text-gray-600',   row: 'bg-gray-50 border-gray-200' },
+  };
 
-  const totalPresencas = registros.filter(r => r.presente).length;
-  const totalAulas = registros.length;
-  const percentualGeral = totalAulas > 0 ? Math.round((totalPresencas / totalAulas) * 100) : 0;
+  if (isLoading) return (
+    <div className="space-y-4 max-w-2xl mx-auto">
+      <div className="h-8 w-48 bg-neutral-100 rounded animate-pulse" />
+      <div className="h-24 bg-neutral-100 rounded animate-pulse" />
+      <div className="h-48 bg-neutral-100 rounded animate-pulse" />
+    </div>
+  );
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -59,104 +111,98 @@ export default function MeuEnsino() {
           <BookOpenCheck className="w-6 h-6 text-promessa-600" />
           Meu Ensino
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">Acompanhe sua frequência nas turmas</p>
+        {data && <p className="text-muted-foreground text-sm mt-1">{data.cicloNome} — {data.cicloSub}</p>}
       </div>
 
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2].map(i => <div key={i} className="h-24 bg-neutral-100 rounded-lg animate-pulse" />)}
-        </div>
-      ) : totalAulas === 0 ? (
+      {!data ? (
         <Card>
           <CardContent className="py-16 text-center">
-            <BookOpenCheck className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
-            <p className="text-muted-foreground font-medium">Nenhuma aula registrada</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Sua presença aparecerá aqui assim que for marcada em uma chamada
-            </p>
+            <BookOpen className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
+            <p className="font-medium text-muted-foreground">Você ainda não está matriculado na Escola Bíblica</p>
+            <p className="text-sm text-muted-foreground mt-1">Fale com o líder de ensino para se matricular</p>
           </CardContent>
         </Card>
       ) : (
         <>
-          {/* Resumo geral */}
-          <div className="grid grid-cols-3 gap-3">
-            <Card>
-              <CardContent className="pt-4 pb-4 text-center">
-                <p className="text-2xl font-bold text-promessa-700">{totalAulas}</p>
-                <p className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1">
-                  <Calendar className="w-3 h-3" />Aulas
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-4 text-center">
-                <p className="text-2xl font-bold text-green-600">{totalPresencas}</p>
-                <p className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />Presenças
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-4 text-center">
-                <p className={`text-2xl font-bold ${percentualGeral >= 75 ? 'text-green-600' : percentualGeral >= 50 ? 'text-amber-500' : 'text-red-500'}`}>
-                  {percentualGeral}%
-                </p>
-                <p className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1">
-                  <TrendingUp className="w-3 h-3" />Frequência
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Por turma */}
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-              <Users className="w-4 h-4" />Por Turma
-            </h2>
-            {estatisticas.map(est => (
-              <Card key={est.turma_id}>
-                <CardContent className="py-4 px-4">
+          {/* Progress */}
+          {(() => {
+            const concluded = data.discs.filter(d => d.status === 'Concluída').length;
+            const total = data.discs.length;
+            const pct = total > 0 ? Math.round((concluded / total) * 100) : 0;
+            return (
+              <Card>
+                <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-sm">{est.turma_nome}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Última aula: {format(new Date(est.ultimo + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR })}
-                      </p>
-                    </div>
-                    <Badge variant={est.percentual >= 75 ? 'default' : est.percentual >= 50 ? 'secondary' : 'destructive'}>
-                      {est.percentual}%
-                    </Badge>
+                    <span className="text-sm font-medium">Progresso do Ciclo</span>
+                    <span className="text-sm text-muted-foreground">{concluded}/{total} concluídas</span>
                   </div>
-                  <div className="w-full bg-neutral-100 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all ${est.percentual >= 75 ? 'bg-green-500' : est.percentual >= 50 ? 'bg-amber-400' : 'bg-red-400'}`}
-                      style={{ width: `${est.percentual}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">{est.presentes} de {est.total} aulas</p>
+                  <Progress value={pct} className="h-2" />
+                  <p className="text-xs text-muted-foreground mt-1">{pct}% completo</p>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+            );
+          })()}
 
-          {/* Histórico recente */}
-          <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-              <Calendar className="w-4 h-4" />Histórico Recente
-            </h2>
-            {registros.slice(0, 20).map((r, i) => (
-              <div key={i} className={`flex items-center justify-between px-4 py-2.5 rounded-lg border ${r.presente ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200 opacity-75'}`}>
-                <div>
-                  <p className="text-sm font-medium">{r.turma_nome}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {format(new Date(r.data_aula + 'T12:00:00'), "EEEE, dd 'de' MMMM", { locale: ptBR })}
-                  </p>
+          {/* Current discipline */}
+          {data.currentDisc && (
+            <Card className="ring-2 ring-promessa-400">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                      {data.currentDisc.eixo_tematico}
+                    </p>
+                    <p className="font-semibold mt-0.5">{data.currentDisc.titulo}</p>
+                    {data.currentDisc.subtitulo && (
+                      <p className="text-sm text-muted-foreground">{data.currentDisc.subtitulo}</p>
+                    )}
+                  </div>
+                  <Badge className="bg-blue-100 text-blue-800 shrink-0">
+                    {MES_NOMES[data.currentDisc.mes] || `Mês ${data.currentDisc.mes}`}
+                  </Badge>
                 </div>
-                {r.presente
-                  ? <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-                  : <XCircle className="w-5 h-5 text-red-400 shrink-0" />}
-              </div>
-            ))}
+                <div className="flex gap-2">
+                  {data.currentAulas.map((aula: any) => {
+                    const present = data.currentPresences.some((p: any) => p.aula_id === aula.id && p.presente);
+                    const recorded = data.currentPresences.some((p: any) => p.aula_id === aula.id);
+                    return (
+                      <div
+                        key={aula.id}
+                        title={aula.titulo}
+                        className={`flex-1 h-8 rounded text-xs font-semibold inline-flex items-center justify-center ${
+                          !recorded ? 'bg-gray-100 text-gray-400' :
+                          present ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+                        }`}
+                      >
+                        A{aula.numero}
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {data.currentPresences.filter((p: any) => p.presente).length} de {data.currentAulas.length} aulas presentes
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* History */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Todas as Disciplinas
+            </h2>
+            {data.discs.map(d => {
+              const s = statusStyle[d.status];
+              return (
+                <div key={d.id} className={`flex items-center justify-between px-4 py-3 rounded-lg border ${s.row}`}>
+                  <div>
+                    <p className="text-sm font-medium">{d.titulo}</p>
+                    <p className="text-xs text-muted-foreground">{MES_NOMES[d.mes] || `Mês ${d.mes}`}</p>
+                  </div>
+                  <Badge className={`${s.badge} text-xs shrink-0`}>{s.label}</Badge>
+                </div>
+              );
+            })}
           </div>
         </>
       )}
