@@ -335,7 +335,8 @@ export default function Usuarios() {
       new Date(user.created_at).toLocaleDateString('pt-BR'),
     ]);
 
-    const csvContent = [headers, ...rows].map((row) => row.join(',')).join('\n');
+    const escape = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csvContent = '﻿' + [headers, ...rows].map((row) => row.map(escape).join(';')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
