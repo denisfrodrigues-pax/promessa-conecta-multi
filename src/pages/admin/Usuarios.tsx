@@ -327,21 +327,23 @@ export default function Usuarios() {
   const exportCSV = () => {
     const headers = ['Nome', 'Email', 'Telefone', 'Status', 'Função', 'Data Cadastro'];
     const rows = users.map((user) => [
-      user.nome,
-      user.email,
+      user.nome || '',
+      user.email || '',
       user.telefone || '',
-      user.status,
+      user.status || '',
       getUserRole(user.user_id),
-      new Date(user.created_at).toLocaleDateString('pt-BR'),
-    ]);
+      user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : '',
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(';'));
 
-    const escape = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const csvContent = '﻿' + [headers, ...rows].map((row) => row.map(escape).join(';')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csv = [headers.map(h => `"${h}"`).join(';'), ...rows].join('\r\n');
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const blob = new Blob([bom, csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `usuarios_${new Date().toISOString().split('T')[0]}.csv`;
+    link.href = url;
+    link.download = `usuarios_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
+    URL.revokeObjectURL(url);
     toast.success('Arquivo CSV exportado');
   };
 
