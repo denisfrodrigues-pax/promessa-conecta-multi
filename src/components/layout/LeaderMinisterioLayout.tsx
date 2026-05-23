@@ -165,6 +165,7 @@ export default function LeaderMinisterioLayout() {
 
   const ensinoNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
+    { icon: GraduationCap, label: "Escola Bíblica", path: `${basePath}/escola-biblica` },
     { icon: Users, label: "Turmas", path: `${basePath}/turmas` },
     { icon: BookOpenCheck, label: "Espaço do Professor", path: `${basePath}/planos` },
     { icon: ClipboardCheck, label: "Chamada", path: `${basePath}/chamada` },
