@@ -67,11 +67,11 @@ export default function AdminEnsino() {
     },
   });
 
-  // Usa perfis diretamente: id = perfil_id em eb_matriculas
+  // profiles.id = perfil_id em eb_matriculas
   const { data: todosAtivos = [] } = useQuery({
     queryKey: ['perfis_lista'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('perfis')
+      const { data, error } = await supabase.from('profiles')
         .select('id, nome').order('nome');
       if (error) throw error;
       return (data || []) as any[];

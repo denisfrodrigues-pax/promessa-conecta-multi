@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import {
   BookOpen, Users, ClipboardList, BarChart3, Download, UserPlus,
-  AlertTriangle, CheckCircle2, XCircle, Loader2,
+  AlertTriangle, CheckCircle2, XCircle, Loader2, ChevronDown,
 } from 'lucide-react';
 
 const CHURCH_ID = 'e19bf49a-4532-4fd9-98af-5b5682e50cd6';
@@ -29,9 +29,33 @@ const MES_NOMES: Record<number, string> = {
 interface Ciclo { id: string; nome: string; subtitulo: string; ordem: number }
 interface Disciplina { id: string; ciclo_id: string; mes: number; eixo_tematico: string; titulo: string; subtitulo: string; ordem: number }
 interface Aula { id: string; disciplina_id: string; numero: number; titulo: string }
-interface Matricula { id: string; perfil_id: string; ciclo_id: string; ativo: boolean; perfis: { nome: string } | null }
+interface AulaDetalhe { id: string; numero: number; titulo: string; conteudo: string | null }
+// Join usa "profiles" (nome real da tabela no Supabase)
+interface Matricula { id: string; perfil_id: string; ciclo_id: string; ativo: boolean; profiles: { id: string; nome: string } | null }
+interface ChamadaMembro { perfil_id: string; profiles: { id: string; nome: string } | null }
 interface Presenca { id: string; perfil_id: string; aula_id: string; disciplina_id: string; presente: boolean }
 interface MembroDisp { id: string; nome: string | null }
+
+// Sub-componente accordion para cada aula no detalhe da disciplina
+function AulaItem({ aula }: { aula: AulaDetalhe }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border rounded-lg overflow-hidden">
+      <button
+        className="w-full flex items-center justify-between p-3 hover:bg-muted/40 text-left"
+        onClick={() => setOpen(o => !o)}
+      >
+        <span className="font-medium text-sm">Aula {aula.numero} — {aula.titulo}</span>
+        <ChevronDown className={`w-4 h-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="px-3 pb-3 pt-2 text-sm text-muted-foreground border-t bg-muted/20 whitespace-pre-wrap">
+          {aula.conteudo || <span className="italic">Sem conteúdo cadastrado</span>}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function EscolaBiblica() {
   const { profile } = useAuth();
@@ -47,6 +71,11 @@ export default function EscolaBiblica() {
   const [matriculaMembroId, setMatriculaMembroId] = useState('');
   const [savingMatricula, setSavingMatricula] = useState(false);
 
+  // Para o detalhe da disciplina na Grade
+  const [selectedDisc, setSelectedDisc] = useState<Disciplina | null>(null);
+
+  // ── Queries base ──────────────────────────────────────────────────────────
+
   const { data: ciclos = [], isLoading: loadingCiclos } = useQuery<Ciclo[]>({
     queryKey: ['eb_ciclos'],
     queryFn: async () => {
@@ -60,26 +89,60 @@ export default function EscolaBiblica() {
   const { data: disciplinas = [] } = useQuery<Disciplina[]>({
     queryKey: ['eb_disciplinas'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('eb_disciplinas').select('*').order('ordem');
+      const { data, error } = await supabase.from('eb_disciplinas')
+        .select('id, ciclo_id, mes, eixo_tematico, titulo, subtitulo, ordem')
+        .order('ordem');
       if (error) throw error;
       return data || [];
     },
   });
 
+  // Aulas globais para stats (Matrículas / Relatório)
   const { data: aulas = [] } = useQuery<Aula[]>({
     queryKey: ['eb_aulas'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('eb_aulas').select('*').order('numero');
+      const { data, error } = await supabase.from('eb_aulas')
+        .select('id, disciplina_id, numero, titulo').order('numero');
       if (error) throw error;
       return data || [];
     },
   });
 
+  // Aulas da disciplina selecionada — para o select da Chamada (com título garantido)
+  const { data: aulasDisc = [] } = useQuery<AulaDetalhe[]>({
+    queryKey: ['eb_aulas_chamada', selectedDiscId],
+    queryFn: async () => {
+      if (!selectedDiscId) return [];
+      const { data, error } = await supabase.from('eb_aulas')
+        .select('id, numero, titulo, conteudo')
+        .eq('disciplina_id', selectedDiscId)
+        .order('numero');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!selectedDiscId,
+  });
+
+  // Aulas da disciplina clicada na Grade — para o modal de detalhe
+  const { data: aulaDetalhe = [], isLoading: loadingAulaDetalhe } = useQuery<AulaDetalhe[]>({
+    queryKey: ['eb_aulas_detalhe', selectedDisc?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('eb_aulas')
+        .select('id, numero, titulo, conteudo')
+        .eq('disciplina_id', selectedDisc!.id)
+        .order('numero');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!selectedDisc?.id,
+  });
+
+  // Matrículas com join em "profiles" (nome real da tabela Supabase)
   const { data: matriculas = [], isLoading: loadingMatriculas } = useQuery<Matricula[]>({
     queryKey: ['eb_matriculas'],
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_matriculas')
-        .select('*, perfis(nome)').eq('ativo', true);
+        .select('*, profiles(id, nome)').eq('ativo', true);
       if (error) throw error;
       return (data || []) as Matricula[];
     },
@@ -94,11 +157,11 @@ export default function EscolaBiblica() {
     },
   });
 
-  // perfis.id = perfil_id em eb_matriculas
+  // profiles.id = perfil_id em eb_matriculas
   const { data: membrosDisp = [] } = useQuery<MembroDisp[]>({
     queryKey: ['perfis_lista'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('perfis')
+      const { data, error } = await supabase.from('profiles')
         .select('id, nome').order('nome');
       if (error) throw error;
       return data || [];
@@ -106,7 +169,30 @@ export default function EscolaBiblica() {
     enabled: showModal,
   });
 
-  // Auto-select current month discipline on first load
+  // ── Derivados ─────────────────────────────────────────────────────────────
+
+  // ciclo_id da disciplina selecionada (para a Chamada)
+  const selectedCicloId = useMemo(
+    () => disciplinas.find(d => d.id === selectedDiscId)?.ciclo_id || '',
+    [selectedDiscId, disciplinas],
+  );
+
+  // Membros do ciclo selecionado — query dedicada para a Chamada
+  const { data: chamadaMatriculas = [] } = useQuery<ChamadaMembro[]>({
+    queryKey: ['eb_chamada_membros', selectedCicloId],
+    queryFn: async () => {
+      if (!selectedCicloId) return [];
+      const { data, error } = await supabase.from('eb_matriculas')
+        .select('perfil_id, profiles(id, nome)')
+        .eq('ciclo_id', selectedCicloId)
+        .eq('ativo', true);
+      if (error) throw error;
+      return (data || []) as ChamadaMembro[];
+    },
+    enabled: !!selectedCicloId,
+  });
+
+  // Auto-select disciplina do mês atual
   useEffect(() => {
     if (disciplinas.length > 0) {
       setSelectedDiscId(prev => {
@@ -116,24 +202,19 @@ export default function EscolaBiblica() {
     }
   }, [disciplinas]);
 
+  // aula_id selecionada (usa aulasDisc para não depender do cache global)
   const selectedAulaId = useMemo(() => {
-    if (!selectedDiscId || !selectedAulaNum) return '';
-    return aulas.find(a => a.disciplina_id === selectedDiscId && a.numero === parseInt(selectedAulaNum))?.id || '';
-  }, [selectedDiscId, selectedAulaNum, aulas]);
+    const a = aulasDisc.find(a => a.numero === parseInt(selectedAulaNum));
+    return a?.id || '';
+  }, [aulasDisc, selectedAulaNum]);
 
-  // Sync toggles when aula changes
+  // Sync toggles ao trocar de aula
   useEffect(() => {
     if (!selectedAulaId) return;
     const init: Record<string, boolean> = {};
     presencas.filter(p => p.aula_id === selectedAulaId).forEach(p => { init[p.perfil_id] = p.presente; });
     setPresencaLocal(init);
   }, [selectedAulaId, presencas]);
-
-  const membrosNaCiclo = useMemo(() => {
-    const disc = disciplinas.find(d => d.id === selectedDiscId);
-    if (!disc) return [];
-    return matriculas.filter(m => m.ciclo_id === disc.ciclo_id);
-  }, [selectedDiscId, disciplinas, matriculas]);
 
   const isAlreadyRecorded = useMemo(
     () => presencas.some(p => p.aula_id === selectedAulaId),
@@ -156,7 +237,7 @@ export default function EscolaBiblica() {
     });
     return {
       ...m,
-      nome: m.perfis?.nome || 'Desconhecido',
+      nome: m.profiles?.nome || 'Desconhecido',
       total, present,
       percent: total > 0 ? Math.round((present / total) * 100) : 0,
       hasAlert,
@@ -179,26 +260,27 @@ export default function EscolaBiblica() {
           presencas.some(p => p.aula_id === a.id && p.perfil_id === m.perfil_id && p.presente)
         ).length;
       });
-      return { perfil_id: m.perfil_id, nome: m.perfis?.nome || '?', counts };
+      return { perfil_id: m.perfil_id, nome: m.profiles?.nome || '?', counts };
     });
     return { ciclo, discs, rows };
   }), [ciclos, relatorioDiscs, matriculas, aulas, presencas]);
 
   const enrolledPerfilIds = useMemo(() => matriculas.map(m => m.perfil_id), [matriculas]);
-  // perfis.id já é o perfil_id
   const membrosParaMatricula = useMemo(
     () => membrosDisp.filter(m => !enrolledPerfilIds.includes(m.id)),
     [membrosDisp, enrolledPerfilIds],
   );
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleSaveChamada = async () => {
     if (!selectedAulaId) { toast.error('Selecione uma disciplina e aula'); return; }
     setSavingChamada(true);
     try {
       await supabase.from('eb_presencas').delete().eq('aula_id', selectedAulaId);
-      if (membrosNaCiclo.length > 0) {
+      if (chamadaMatriculas.length > 0) {
         const { error } = await supabase.from('eb_presencas').insert(
-          membrosNaCiclo.map(m => ({
+          chamadaMatriculas.map(m => ({
             perfil_id: m.perfil_id,
             aula_id: selectedAulaId,
             disciplina_id: selectedDiscId,
@@ -220,7 +302,6 @@ export default function EscolaBiblica() {
 
   const handleMatricular = async () => {
     if (!matriculaCicloId || !matriculaMembroId) return;
-    // matriculaMembroId é perfis.id = perfil_id diretamente
     setSavingMatricula(true);
     try {
       const { error } = await supabase.from('eb_matriculas').insert({
@@ -231,6 +312,7 @@ export default function EscolaBiblica() {
       });
       if (error) throw error;
       qc.invalidateQueries({ queryKey: ['eb_matriculas'] });
+      qc.invalidateQueries({ queryKey: ['eb_chamada_membros'] });
       toast.success('Matrícula realizada com sucesso');
       setShowModal(false); setMatriculaCicloId(''); setMatriculaMembroId('');
     } catch {
@@ -269,6 +351,8 @@ export default function EscolaBiblica() {
     <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
   );
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div className="space-y-6">
       <div>
@@ -294,13 +378,18 @@ export default function EscolaBiblica() {
 
         {/* ── GRADE CURRICULAR ── */}
         <TabsContent value="grade" className="space-y-8 mt-6">
+          <p className="text-xs text-muted-foreground">Clique em uma disciplina para ver as aulas</p>
           {ciclos.map(ciclo => (
             <div key={ciclo.id}>
               <h2 className="text-lg font-semibold mb-1">{ciclo.nome}</h2>
               <p className="text-sm text-muted-foreground mb-3">{ciclo.subtitulo}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {disciplinas.filter(d => d.ciclo_id === ciclo.id).map(d => (
-                  <Card key={d.id} className={d.mes === MES_ATUAL ? 'ring-2 ring-promessa-600 shadow-md' : ''}>
+                  <Card
+                    key={d.id}
+                    className={`cursor-pointer transition-shadow hover:shadow-md ${d.mes === MES_ATUAL ? 'ring-2 ring-promessa-600 shadow-md' : ''}`}
+                    onClick={() => setSelectedDisc(d)}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
@@ -346,33 +435,29 @@ export default function EscolaBiblica() {
             if (stats.length === 0) return null;
             return (
               <div key={ciclo.id}>
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  {ciclo.nome}
-                </h3>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">{ciclo.nome}</h3>
                 <div className="space-y-2">
                   {stats.map(m => (
                     <Card key={m.id}>
-                      <CardContent className="p-3 flex items-center gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-sm">{m.nome}</span>
-                            {m.hasAlert && (
-                              <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
-                                <AlertTriangle className="w-3 h-3 mr-1" />Ausências
-                              </Badge>
-                            )}
+                      <CardContent className="p-3">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="font-medium text-sm">{m.nome}</span>
+                          {m.hasAlert && (
+                            <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
+                              <AlertTriangle className="w-3 h-3 mr-1" />Ausências
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-gray-100 rounded-full">
+                            <div
+                              className={`h-1.5 rounded-full ${m.percent >= 75 ? 'bg-green-500' : m.percent >= 50 ? 'bg-amber-400' : 'bg-red-400'}`}
+                              style={{ width: `${m.percent}%` }}
+                            />
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full">
-                              <div
-                                className={`h-1.5 rounded-full ${m.percent >= 75 ? 'bg-green-500' : m.percent >= 50 ? 'bg-amber-400' : 'bg-red-400'}`}
-                                style={{ width: `${m.percent}%` }}
-                              />
-                            </div>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">
-                              {m.present}/{m.total} aulas ({m.percent}%)
-                            </span>
-                          </div>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {m.present}/{m.total} aulas ({m.percent}%)
+                          </span>
                         </div>
                       </CardContent>
                     </Card>
@@ -399,7 +484,7 @@ export default function EscolaBiblica() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Disciplina</label>
-                  <Select value={selectedDiscId} onValueChange={setSelectedDiscId}>
+                  <Select value={selectedDiscId} onValueChange={v => { setSelectedDiscId(v); setSelectedAulaNum('1'); }}>
                     <SelectTrigger><SelectValue placeholder="Selecionar..." /></SelectTrigger>
                     <SelectContent>
                       {ciclos.map(ciclo => (
@@ -421,14 +506,15 @@ export default function EscolaBiblica() {
                   <Select value={selectedAulaNum} onValueChange={setSelectedAulaNum}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {[1, 2, 3, 4].map(n => {
-                        const a = aulas.find(a => a.disciplina_id === selectedDiscId && a.numero === n);
-                        return (
-                          <SelectItem key={n} value={String(n)}>
-                            Aula {n}{a ? ` — ${a.titulo}` : ''}
-                          </SelectItem>
-                        );
-                      })}
+                      {aulasDisc.length > 0
+                        ? aulasDisc.map(a => (
+                            <SelectItem key={a.id} value={String(a.numero)}>
+                              Aula {a.numero} — {a.titulo}
+                            </SelectItem>
+                          ))
+                        : [1, 2, 3, 4].map(n => (
+                            <SelectItem key={n} value={String(n)}>Aula {n}</SelectItem>
+                          ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -441,7 +527,7 @@ export default function EscolaBiblica() {
             </CardContent>
           </Card>
 
-          {membrosNaCiclo.length === 0 ? (
+          {chamadaMatriculas.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground text-sm">
                 {selectedDiscId ? 'Nenhum membro matriculado neste ciclo' : 'Selecione uma disciplina'}
@@ -452,7 +538,7 @@ export default function EscolaBiblica() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center justify-between">
                   <span>
-                    {membrosNaCiclo.length} membro(s) —{' '}
+                    {chamadaMatriculas.length} membro(s) —{' '}
                     {Object.values(presencaLocal).filter(Boolean).length} presentes
                   </span>
                   <Button onClick={handleSaveChamada} disabled={savingChamada} size="sm">
@@ -463,8 +549,9 @@ export default function EscolaBiblica() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y">
-                  {membrosNaCiclo.map(m => {
+                  {chamadaMatriculas.map(m => {
                     const presente = presencaLocal[m.perfil_id] ?? false;
+                    const nome = m.profiles?.nome || '?';
                     return (
                       <button
                         key={m.perfil_id}
@@ -473,7 +560,7 @@ export default function EscolaBiblica() {
                         }`}
                         onClick={() => setPresencaLocal(prev => ({ ...prev, [m.perfil_id]: !prev[m.perfil_id] }))}
                       >
-                        <span className="font-medium text-sm">{m.perfis?.nome || '?'}</span>
+                        <span className="font-medium text-sm">{nome}</span>
                         {presente
                           ? <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
                           : <XCircle className="w-5 h-5 text-gray-300 shrink-0" />}
@@ -552,7 +639,49 @@ export default function EscolaBiblica() {
         </TabsContent>
       </Tabs>
 
-      {/* Modal Matricular */}
+      {/* ── Modal: Detalhe da Disciplina (Grade) ── */}
+      <Dialog open={!!selectedDisc} onOpenChange={open => { if (!open) setSelectedDisc(null); }}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="leading-snug">{selectedDisc?.titulo}</DialogTitle>
+          </DialogHeader>
+          {selectedDisc && (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {selectedDisc.eixo_tematico}
+                </p>
+                {selectedDisc.subtitulo && (
+                  <p className="text-sm text-muted-foreground">{selectedDisc.subtitulo}</p>
+                )}
+                <Badge variant="outline" className="text-xs">
+                  {MES_NOMES[selectedDisc.mes] || `Mês ${selectedDisc.mes}`}
+                </Badge>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-semibold">Aulas</p>
+                {loadingAulaDetalhe ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-10" />)}
+                  </div>
+                ) : aulaDetalhe.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhuma aula cadastrada</p>
+                ) : (
+                  <div className="space-y-2">
+                    {aulaDetalhe.map(a => <AulaItem key={a.id} aula={a} />)}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedDisc(null)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Modal: Matricular Membro ── */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent>
           <DialogHeader>
@@ -574,12 +703,12 @@ export default function EscolaBiblica() {
                 <SelectTrigger><SelectValue placeholder="Selecionar membro..." /></SelectTrigger>
                 <SelectContent>
                   {membrosParaMatricula.map(m => (
-                    <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
+                    <SelectItem key={m.id} value={m.id}>{m.nome || m.id}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {showModal && membrosParaMatricula.length === 0 && (
-                <p className="text-xs text-muted-foreground mt-1">Todos os membros ativos já estão matriculados</p>
+                <p className="text-xs text-muted-foreground mt-1">Todos os membros já estão matriculados</p>
               )}
             </div>
           </div>
