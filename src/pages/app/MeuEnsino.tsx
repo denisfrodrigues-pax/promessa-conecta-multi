@@ -13,7 +13,7 @@ const MES_NOMES: Record<number, string> = {
   8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro',
 };
 
-type Status = 'Concluída' | 'Parcial' | 'Ausente' | 'Atual' | 'Próxima';
+type Status = 'Concluída' | 'Parcial' | 'Ausente' | 'Atual' | 'Próxima' | 'Sem chamada';
 
 interface DiscRow {
   id: string; mes: number; titulo: string; eixo_tematico: string; subtitulo: string;
@@ -55,23 +55,25 @@ export default function MeuEnsino() {
         .select('id, disciplina_id, numero, titulo').in('disciplina_id', discIds).order('numero');
       if (aErr) throw aErr;
 
-      const aulaIds = (aulasList || []).map((a: any) => a.id);
-      const { data: presencas, error: pErr } = aulaIds.length > 0
-        ? await supabase.from('eb_presencas').select('aula_id, presente').eq('perfil_id', profile!.id).in('aula_id', aulaIds)
-        : { data: [], error: null };
+      // Busca todas as presenças do usuário — sem filtro de presente para detectar "Sem chamada"
+      const { data: presencas, error: pErr } = await supabase
+        .from('eb_presencas')
+        .select('aula_id, presente')
+        .eq('perfil_id', profile!.id);
       if (pErr) throw pErr;
 
       const discRows: DiscRow[] = (discs || []).map((d: any) => {
         const da = (aulasList || []).filter((a: any) => a.disciplina_id === d.id);
-        const presentCount = da.filter((a: any) =>
-          (presencas || []).some((p: any) => p.aula_id === a.id && p.presente)
-        ).length;
+        const discPresencas = (presencas || []).filter((p: any) => da.some((a: any) => a.id === p.aula_id));
+        const presentCount = discPresencas.filter((p: any) => p.presente).length;
+        const hadChamada = discPresencas.length > 0;
         let status: Status;
         if (d.mes === MES_ATUAL) status = 'Atual';
         else if (d.mes > MES_ATUAL) status = 'Próxima';
         else if (presentCount >= 3) status = 'Concluída';
         else if (presentCount >= 1) status = 'Parcial';
-        else status = 'Ausente';
+        else if (hadChamada) status = 'Ausente';
+        else status = 'Sem chamada';
         return { id: d.id, mes: d.mes, titulo: d.titulo, eixo_tematico: d.eixo_tematico, subtitulo: d.subtitulo, aulaCount: da.length, presentCount, status };
       });
 
@@ -89,11 +91,12 @@ export default function MeuEnsino() {
   });
 
   const statusStyle: Record<Status, { label: string; badge: string; row: string }> = {
-    'Concluída': { label: '✅ Concluída', badge: 'bg-green-100 text-green-800', row: 'bg-green-50 border-green-200' },
-    'Parcial':   { label: '⚠️ Parcial',   badge: 'bg-amber-100 text-amber-800', row: 'bg-amber-50 border-amber-200' },
-    'Ausente':   { label: '❌ Ausente',   badge: 'bg-red-100 text-red-800',     row: 'bg-red-50 border-red-200 opacity-80' },
-    'Atual':     { label: '📍 Atual',     badge: 'bg-blue-100 text-blue-800',   row: 'bg-blue-50 border-blue-200' },
-    'Próxima':   { label: '🔵 Próxima',   badge: 'bg-gray-100 text-gray-600',   row: 'bg-gray-50 border-gray-200' },
+    'Concluída':    { label: '✅ Concluída',    badge: 'bg-green-100 text-green-800',  row: 'bg-green-50 border-green-200' },
+    'Parcial':      { label: '⚠️ Parcial',      badge: 'bg-amber-100 text-amber-800',  row: 'bg-amber-50 border-amber-200' },
+    'Ausente':      { label: '❌ Ausente',      badge: 'bg-red-100 text-red-800',      row: 'bg-red-50 border-red-200 opacity-80' },
+    'Atual':        { label: '📍 Atual',        badge: 'bg-blue-100 text-blue-800',    row: 'bg-blue-50 border-blue-200' },
+    'Próxima':      { label: '🔵 Próxima',      badge: 'bg-gray-100 text-gray-600',    row: 'bg-gray-50 border-gray-200' },
+    'Sem chamada':  { label: '⬜ Sem chamada',  badge: 'bg-gray-100 text-gray-500',    row: 'border-gray-200 opacity-70' },
   };
 
   if (isLoading) return (

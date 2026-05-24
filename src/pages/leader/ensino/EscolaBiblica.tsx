@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel,
   SelectTrigger, SelectValue,
@@ -16,7 +17,7 @@ import { toast } from 'sonner';
 import {
   BookOpen, Users, ClipboardList, BarChart3, Download, UserPlus,
   AlertTriangle, CheckCircle2, XCircle, Loader2, ChevronDown,
-  Upload, Trash2, File, FileText, Film, LayoutList,
+  Upload, Trash2, File, FileText, Film, LayoutList, Search,
 } from 'lucide-react';
 
 const CHURCH_ID = 'e19bf49a-4532-4fd9-98af-5b5682e50cd6';
@@ -37,6 +38,7 @@ interface Matricula { id: string; perfil_id: string; ciclo_id: string; ativo: bo
 interface ChamadaMembro { perfil_id: string; profiles: { id: string; nome: string } | null }
 interface Presenca { id: string; perfil_id: string; aula_id: string; disciplina_id: string; presente: boolean }
 interface MembroDisp { id: string; nome: string | null }
+interface MatriculaStat extends Matricula { nome: string; total: number; present: number; percent: number; hasAlert: boolean }
 
 // ── Sub-componente: item de aula com accordion + arquivos + upload ──────────
 
@@ -230,6 +232,8 @@ export default function EscolaBiblica() {
   const [savingMatricula, setSavingMatricula] = useState(false);
 
   const [selectedDisc, setSelectedDisc] = useState<Disciplina | null>(null);
+  const [selectedMembro, setSelectedMembro] = useState<MatriculaStat | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // ── Queries ────────────────────────────────────────────────────────────────
 
@@ -329,6 +333,20 @@ export default function EscolaBiblica() {
     enabled: showModal,
   });
 
+  // Presenças do membro selecionado para o dialog de detalhe
+  const { data: membroPresencasRaw = [] } = useQuery<any[]>({
+    queryKey: ['eb_membro_presencas', selectedMembro?.perfil_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('eb_presencas')
+        .select('aula_id, presente')
+        .eq('perfil_id', selectedMembro!.perfil_id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!selectedMembro?.perfil_id,
+  });
+
   // ciclo_id da disciplina selecionada
   const selectedCicloId = useMemo(
     () => disciplinas.find(d => d.id === selectedDiscId)?.ciclo_id || '',
@@ -385,8 +403,9 @@ export default function EscolaBiblica() {
     [selectedAulaId, presencas],
   );
 
+  // Total = TODAS as aulas do ciclo (sem filtro de mês) — dinâmico
   const matriculaStats = useMemo(() => matriculas.map(m => {
-    const cicloDiscs = disciplinas.filter(d => d.ciclo_id === m.ciclo_id && d.mes <= MES_ATUAL);
+    const cicloDiscs = disciplinas.filter(d => d.ciclo_id === m.ciclo_id);
     const allAulas = cicloDiscs.flatMap(d => aulas.filter(a => a.disciplina_id === d.id));
     const total = allAulas.length;
     const present = allAulas.filter(a =>
@@ -405,8 +424,31 @@ export default function EscolaBiblica() {
       total, present,
       percent: total > 0 ? Math.round((present / total) * 100) : 0,
       hasAlert,
-    };
+    } as MatriculaStat;
   }), [matriculas, disciplinas, aulas, presencas]);
+
+  // Lista ordenada alfabeticamente e filtrada pela busca
+  const matriculaStatsSorted = useMemo(() =>
+    [...matriculaStats]
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+      .filter(m => !searchQuery || m.nome.toLowerCase().includes(searchQuery.toLowerCase())),
+    [matriculaStats, searchQuery],
+  );
+
+  // Disciplinas do membro selecionado para o dialog de detalhe
+  const membroDiscs = useMemo(() => {
+    if (!selectedMembro) return [];
+    return disciplinas
+      .filter(d => d.ciclo_id === selectedMembro.ciclo_id)
+      .map(disc => {
+        const discAulas = aulas.filter(a => a.disciplina_id === disc.id);
+        const presentCount = discAulas.filter(a =>
+          membroPresencasRaw.some((p: any) => p.aula_id === a.id && p.presente)
+        ).length;
+        const pct = discAulas.length > 0 ? Math.round((presentCount / discAulas.length) * 100) : 0;
+        return { disc, discAulas, presentCount, pct };
+      });
+  }, [selectedMembro, disciplinas, aulas, membroPresencasRaw]);
 
   const relatorioDiscs = useMemo(
     () => disciplinas.filter(d => d.mes <= MES_ATUAL),
@@ -549,7 +591,6 @@ export default function EscolaBiblica() {
               <p className="text-sm text-muted-foreground mb-3">{ciclo.subtitulo}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {disciplinas.filter(d => d.ciclo_id === ciclo.id).map(d => (
-                  // Usar button como wrapper garante clickabilidade
                   <button
                     key={d.id}
                     type="button"
@@ -596,39 +637,57 @@ export default function EscolaBiblica() {
             </Button>
           </div>
 
+          {/* Campo de busca */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar membro..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
           {loadingMatriculas ? (
             <div className="space-y-2">{[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}</div>
           ) : ciclos.map(ciclo => {
-            const stats = matriculaStats.filter(m => m.ciclo_id === ciclo.id);
+            const stats = matriculaStatsSorted.filter(m => m.ciclo_id === ciclo.id);
             if (stats.length === 0) return null;
             return (
               <div key={ciclo.id}>
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">{ciclo.nome}</h3>
                 <div className="space-y-2">
                   {stats.map(m => (
-                    <Card key={m.id}>
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="font-medium text-sm">{m.nome}</span>
-                          {m.hasAlert && (
-                            <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
-                              <AlertTriangle className="w-3 h-3 mr-1" />Ausências
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 bg-gray-100 rounded-full">
-                            <div
-                              className={`h-1.5 rounded-full ${m.percent >= 75 ? 'bg-green-500' : m.percent >= 50 ? 'bg-amber-400' : 'bg-red-400'}`}
-                              style={{ width: `${m.percent}%` }}
-                            />
+                    <button
+                      key={m.id}
+                      type="button"
+                      className="w-full text-left"
+                      onClick={() => setSelectedMembro(m)}
+                    >
+                      <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                        <CardContent className="p-3">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="font-medium text-sm">{m.nome}</span>
+                            {m.hasAlert && (
+                              <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
+                                <AlertTriangle className="w-3 h-3 mr-1" />Ausências
+                              </Badge>
+                            )}
                           </div>
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {m.present}/{m.total} aulas ({m.percent}%)
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full">
+                              <div
+                                className={`h-1.5 rounded-full ${m.percent >= 75 ? 'bg-green-500' : m.percent >= 50 ? 'bg-amber-400' : 'bg-red-400'}`}
+                                style={{ width: `${m.percent}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {m.present}/{m.total} aulas ({m.percent}%)
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -808,6 +867,67 @@ export default function EscolaBiblica() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* ── Dialog: Detalhe do Membro ── */}
+      <Dialog open={!!selectedMembro} onOpenChange={open => { if (!open) setSelectedMembro(null); }}>
+        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{selectedMembro?.nome}</DialogTitle>
+            {selectedMembro && (
+              <p className="text-sm text-muted-foreground">
+                {ciclos.find(c => c.id === selectedMembro.ciclo_id)?.nome}
+                {' — '}{selectedMembro.present}/{selectedMembro.total} aulas ({selectedMembro.percent}%)
+              </p>
+            )}
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+            {membroDiscs.map(({ disc, discAulas, presentCount, pct }) => (
+              <div key={disc.id} className="border rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-sm font-medium">{disc.titulo}</p>
+                    <p className="text-xs text-muted-foreground">{MES_NOMES[disc.mes] || `Mês ${disc.mes}`}</p>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={`text-xs ${
+                      pct >= 75 ? 'text-green-700 border-green-300' :
+                      pct >= 50 ? 'text-amber-700 border-amber-300' :
+                      pct > 0   ? 'text-red-700 border-red-300' :
+                      'text-gray-500'
+                    }`}
+                  >
+                    {pct}%
+                  </Badge>
+                </div>
+                <div className="flex gap-1.5">
+                  {discAulas.map(aula => {
+                    const presenca = membroPresencasRaw.find((p: any) => p.aula_id === aula.id);
+                    return (
+                      <div
+                        key={aula.id}
+                        title={`Aula ${aula.numero} — ${aula.titulo}`}
+                        className={`flex-1 h-7 rounded text-xs font-semibold inline-flex items-center justify-center ${
+                          !presenca               ? 'bg-gray-100 text-gray-400' :
+                          presenca.presente       ? 'bg-green-100 text-green-700' :
+                                                    'bg-red-100 text-red-600'
+                        }`}
+                      >
+                        {!presenca ? '⬜' : presenca.presente ? '✅' : '❌'}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setSelectedMembro(null)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Dialog: Detalhe da Disciplina ── */}
       <Dialog open={!!selectedDisc} onOpenChange={open => { if (!open) setSelectedDisc(null); }}>
