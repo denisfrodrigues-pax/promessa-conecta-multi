@@ -498,6 +498,7 @@ export default function EscolaBiblica() {
         if (error) throw error;
       }
       qc.invalidateQueries({ queryKey: ['eb_presencas'] });
+      qc.invalidateQueries({ queryKey: ['meu_ensino_eb'] });
       toast.success('Chamada salva com sucesso');
     } catch {
       toast.error('Erro ao salvar chamada');

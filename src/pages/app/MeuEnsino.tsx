@@ -33,6 +33,7 @@ export default function MeuEnsino() {
 
   const { data, isLoading } = useQuery<EBData | null>({
     queryKey: ['meu_ensino_eb', profile?.id],
+    staleTime: 0,
     queryFn: async () => {
       const { data: mats, error: mErr } = await supabase.from('eb_matriculas')
         .select('ciclo_id, eb_ciclos(nome, subtitulo)')
@@ -55,35 +56,47 @@ export default function MeuEnsino() {
         .select('id, disciplina_id, numero, titulo').in('disciplina_id', discIds).order('numero');
       if (aErr) throw aErr;
 
-      // Busca todas as presenças do usuário — sem filtro de presente para detectar "Sem chamada"
+      // Apenas presenças confirmadas (presente=true) — usadas para contagem e progresso
       const { data: presencas, error: pErr } = await supabase
         .from('eb_presencas')
         .select('aula_id, presente')
-        .eq('perfil_id', profile!.id);
+        .eq('perfil_id', profile!.id)
+        .eq('presente', true);
       if (pErr) throw pErr;
+
+      // Mapa rápido: aula_id → disciplina_id
+      const aulaParaDisciplina: Record<string, string> = {};
+      (aulasList || []).forEach((a: any) => { aulaParaDisciplina[a.id] = a.disciplina_id; });
+
+      // Contagem de presenças por disciplina
+      const presencasPorDisciplina: Record<string, number> = {};
+      (presencas || []).forEach((p: any) => {
+        const discId = aulaParaDisciplina[p.aula_id];
+        if (discId) presencasPorDisciplina[discId] = (presencasPorDisciplina[discId] || 0) + 1;
+      });
 
       const discRows: DiscRow[] = (discs || []).map((d: any) => {
         const da = (aulasList || []).filter((a: any) => a.disciplina_id === d.id);
-        const discPresencas = (presencas || []).filter((p: any) => da.some((a: any) => a.id === p.aula_id));
-        const presentCount = discPresencas.filter((p: any) => p.presente).length;
-        const hadChamada = discPresencas.length > 0;
+        const presentCount = presencasPorDisciplina[d.id] || 0;
+        // Verificar presença ANTES do mês — evita que Maio com 4 presenças fique preso em 'Atual'
         let status: Status;
-        if (d.mes === MES_ATUAL) status = 'Atual';
+        if (presentCount >= 3) status = 'Concluída';
         else if (d.mes > MES_ATUAL) status = 'Próxima';
-        else if (presentCount >= 3) status = 'Concluída';
+        else if (d.mes === MES_ATUAL) status = 'Atual';
         else if (presentCount >= 1) status = 'Parcial';
-        else if (hadChamada) status = 'Ausente';
         else status = 'Sem chamada';
         return { id: d.id, mes: d.mes, titulo: d.titulo, eixo_tematico: d.eixo_tematico, subtitulo: d.subtitulo, aulaCount: da.length, presentCount, status };
       });
 
-      const currentDisc = discRows.find(d => d.status === 'Atual');
+      // currentDisc: disciplina do mês atual (independente do status)
+      const currentDisc = discRows.find(d => d.mes === MES_ATUAL);
       const currentAulas = currentDisc
         ? (aulasList || []).filter((a: any) => a.disciplina_id === currentDisc.id)
         : [];
-      const currentPresences = currentDisc
-        ? (presencas || []).filter((p: any) => currentAulas.some((a: any) => a.id === p.aula_id))
-        : [];
+      // currentPresences: todas as presenças do mês atual (já filtradas por presente=true)
+      const currentPresences = (presencas || []).filter((p: any) =>
+        currentAulas.some((a: any) => a.id === p.aula_id)
+      );
 
       return { cicloNome: ciclo?.nome || '', cicloSub: ciclo?.subtitulo || '', discs: discRows, currentDisc, currentAulas, currentPresences };
     },
@@ -114,7 +127,7 @@ export default function MeuEnsino() {
           <BookOpenCheck className="w-6 h-6 text-promessa-600" />
           Meu Ensino
         </h1>
-        {data && <p className="text-muted-foreground text-sm mt-1">{data.cicloNome} — {data.cicloSub}</p>}
+        {data && <p className="text-muted-foreground text-sm mt-1">Ciclo {data.cicloNome} — {data.cicloSub}</p>}
       </div>
 
       {!data ? (
@@ -166,15 +179,13 @@ export default function MeuEnsino() {
                 </div>
                 <div className="flex gap-2">
                   {data.currentAulas.map((aula: any) => {
-                    const present = data.currentPresences.some((p: any) => p.aula_id === aula.id && p.presente);
-                    const recorded = data.currentPresences.some((p: any) => p.aula_id === aula.id);
+                    const present = data.currentPresences.some((p: any) => p.aula_id === aula.id);
                     return (
                       <div
                         key={aula.id}
                         title={aula.titulo}
                         className={`flex-1 h-8 rounded text-xs font-semibold inline-flex items-center justify-center ${
-                          !recorded ? 'bg-gray-100 text-gray-400' :
-                          present ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+                          present ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
                         }`}
                       >
                         A{aula.numero}
@@ -183,7 +194,7 @@ export default function MeuEnsino() {
                   })}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  {data.currentPresences.filter((p: any) => p.presente).length} de {data.currentAulas.length} aulas presentes
+                  {data.currentPresences.length} de {data.currentAulas.length} aulas presentes
                 </p>
               </CardContent>
             </Card>
