@@ -52,63 +52,37 @@ export async function notifyStatusChanged(
   status: 'confirmado' | 'ausente',
   justificativa?: string | null
 ) {
-  // Get the scale details
+  // Busca a escala incluindo created_by (criador) e fallback lider_id do ministério
   const { data: escala } = await supabase
     .from('escalas')
-    .select(`
-      data,
-      funcao,
-      ministerio_id,
-      ministerios(nome, lider_id)
-    `)
+    .select('data, funcao, ministerio_id, created_by, ministerios(lider_id)')
     .eq('id', escalaId)
     .maybeSingle();
 
   if (!escala) return;
 
+  // Destinatário: criador da escala, com fallback para lider_id do ministério
+  const responsavelId = (escala as any).created_by
+    ?? (escala as any).ministerios?.lider_id;
+
+  // Sem destinatário ou voluntário respondendo a si mesmo → encerra
+  if (!responsavelId || responsavelId === voluntarioId) return;
+
   const dataFormatada = format(new Date(escala.data), "dd/MM/yyyy", { locale: ptBR });
-  const statusTexto = status === 'confirmado' ? 'confirmou' : 'recusou';
-  let mensagem = `${voluntarioNome} ${statusTexto} a escala de ${dataFormatada} como ${escala.funcao}.`;
-  
+  const statusTexto = status === 'confirmado' ? 'confirmou presença na' : 'recusou a';
+  let mensagem = `${voluntarioNome} ${statusTexto} escala de ${dataFormatada} como ${escala.funcao}.`;
+
   if (justificativa && status === 'ausente') {
     mensagem += ` Justificativa: ${justificativa}`;
   }
 
-  // Notify the ministry leader if exists
-  if (escala.ministerios?.lider_id) {
-    await createNotification({
-      voluntario_id: escala.ministerios.lider_id,
-      escala_id: escalaId,
-      tipo: 'status_alterado',
-      mensagem,
-    });
-  }
-
-  // Get admins to notify
-  const { data: adminRoles } = await supabase
-    .from('user_roles')
-    .select('user_id')
-    .eq('role', 'admin');
-
-  if (adminRoles) {
-    for (const adminRole of adminRoles) {
-      // Get profile id for admin
-      const { data: adminProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', adminRole.user_id)
-        .maybeSingle();
-
-      if (adminProfile && adminProfile.id !== escala.ministerios?.lider_id) {
-        await createNotification({
-          voluntario_id: adminProfile.id,
-          escala_id: escalaId,
-          tipo: 'status_alterado',
-          mensagem,
-        });
-      }
-    }
-  }
+  // Exatamente 1 notificação para o responsável pela escala
+  await createNotification({
+    voluntario_id: responsavelId,
+    escala_id: escalaId,
+    tipo: 'status_alterado',
+    mensagem,
+  });
 }
 
 export async function notifyBatchNewEscalas(
