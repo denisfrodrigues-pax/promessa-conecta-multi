@@ -267,14 +267,9 @@ export default function Auditoria() {
             <SelectItem value="profiles">Membro</SelectItem>
             <SelectItem value="escalas">Escala</SelectItem>
             <SelectItem value="ministerio_usuarios">Voluntário no Ministério</SelectItem>
-            <SelectItem value="ministerios">Ministério</SelectItem>
             <SelectItem value="musicas_repertorio">Música</SelectItem>
             <SelectItem value="transacoes_financeiras">Transação Financeira</SelectItem>
             <SelectItem value="eb_matriculas">Matrícula EB</SelectItem>
-            <SelectItem value="visitantes">Visitante</SelectItem>
-            <SelectItem value="bases">Base</SelectItem>
-            <SelectItem value="eventos">Evento</SelectItem>
-            <SelectItem value="configuracoes_instituicao">Configuração</SelectItem>
           </SelectContent>
         </Select>
       </div>
