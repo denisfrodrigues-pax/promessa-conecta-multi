@@ -210,7 +210,7 @@ export default function Membros() {
     const { count: batizadosCount } = await supabase
       .from('membros')
       .select('*', { count: 'exact', head: true })
-      .not('data_batismo', 'is', null);
+      .not('data_batismo_agua', 'is', null);
 
     setStats({
       total: totalCount || 0,

@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ArrowLeft, Save, Upload, MessageCircle, User, Phone, Mail, MapPin,
   Calendar, Heart, Clock, Home, Users, AlertCircle, Plus, History, Link2, AlertTriangle
@@ -24,25 +25,23 @@ import { formatPhoneBR, cleanPhone } from '@/lib/formatters';
 
 /**
  * ARQUITETURA DE DADOS: PROFILES vs MEMBROS
- * 
+ *
  * - profiles: tabela de DADOS PESSOAIS (fonte primária quando há vínculo)
  *   → nome, email, telefone, data_nascimento, endereco, estado_civil, data_batismo, foto_url
- * 
+ *
  * - membros: tabela de DADOS ADMINISTRATIVOS/ECLESIÁSTICOS
  *   → status, observacoes, data_registro
  *   → O campo 'nome' existe apenas como fallback técnico (quando user_id = null)
- * 
+ *
  * Quando membros.user_id existe:
  *   → Dados pessoais são exibidos de profiles (NÃO de membros)
  *   → Dados pessoais são editáveis APENAS pelo usuário no seu perfil
  *   → Admin pode editar apenas dados administrativos (status, observacoes)
- * 
+ *
  * @see src/pages/member/Perfil.tsx para edição de dados pessoais pelo usuário
  */
 interface Membro {
   id: string;
-  // ATENÇÃO: Este campo NÃO é fonte de verdade quando user_id existe.
-  // Quando vinculado a um perfil, usar profileData.nome para exibição.
   nome: string;
   telefone: string | null;
   email: string | null;
@@ -55,17 +54,10 @@ interface Membro {
   observacoes: string | null;
   status: string | null;
   created_at: string | null;
-  // Quando não-nulo, profiles é a fonte primária de dados pessoais
   user_id: string | null;
 }
 
-/**
- * Dados pessoais COMPLETOS vindos da tabela profiles.
- * Esta é a FONTE ABSOLUTA DA VERDADE quando membro está vinculado a uma conta.
- * Todos os campos disponíveis na tabela profiles são mapeados aqui.
- */
 interface ProfileData {
-  // Identificação
   nome: string;
   email: string;
   telefone: string | null;
@@ -74,8 +66,6 @@ interface ProfileData {
   data_nascimento: string | null;
   naturalidade: string | null;
   foto_url: string | null;
-  
-  // Endereço (campos normalizados)
   logradouro: string | null;
   numero: string | null;
   complemento: string | null;
@@ -83,51 +73,36 @@ interface ProfileData {
   cidade: string | null;
   uf: string | null;
   cep: string | null;
-  
-  // Dados pessoais adicionais
   estado_civil: string | null;
   grau_instrucao: string | null;
   formacao: string | null;
   profissao: string | null;
   pcd: string | null;
-  
-  // Dados eclesiásticos
   batizado_aguas: boolean | null;
   data_batismo: string | null;
   data_cadastro: string | null;
-  
-  // Metadata
   created_at: string | null;
   updated_at: string | null;
 }
 
-/**
- * Monta o endereço completo a partir dos campos separados do perfil
- */
 const formatEnderecoFromProfile = (profile: ProfileData): string => {
   const parts: string[] = [];
-  
   if (profile.logradouro) {
     let endereco = profile.logradouro;
     if (profile.numero) endereco += `, ${profile.numero}`;
     if (profile.complemento) endereco += ` - ${profile.complemento}`;
     parts.push(endereco);
   }
-  
   if (profile.bairro) parts.push(profile.bairro);
-  
   if (profile.cidade) {
     let cidadeUf = profile.cidade;
     if (profile.uf) cidadeUf += `/${profile.uf}`;
     parts.push(cidadeUf);
   }
-  
   if (profile.cep) parts.push(`CEP: ${profile.cep}`);
-  
   return parts.join(' - ') || '';
 };
 
-// Labels para exibição de campos
 const sexoLabels: Record<string, string> = {
   masculino: 'Masculino',
   feminino: 'Feminino',
@@ -189,7 +164,6 @@ interface BaseMembroAtivo {
   base: BaseComLider;
 }
 
-// Status config - same as other modules
 const statusLabels: Record<string, string> = {
   ativo: 'Ativo',
   inativo: 'Inativo',
@@ -204,20 +178,6 @@ const statusColors: Record<string, string> = {
   desligado: 'bg-red-100 text-red-800 border-red-300',
   transferido: 'bg-orange-100 text-orange-800 border-orange-300',
   em_acompanhamento: 'bg-blue-100 text-blue-800 border-blue-300',
-};
-
-const acompStatusLabels: Record<string, string> = {
-  novo: 'Novo',
-  contato_iniciado: 'Contato Iniciado',
-  em_acompanhamento: 'Em Acompanhamento',
-  concluido: 'Concluído',
-};
-
-const acompStatusColors: Record<string, string> = {
-  novo: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  contato_iniciado: 'bg-blue-100 text-blue-800 border-blue-300',
-  em_acompanhamento: 'bg-purple-100 text-purple-800 border-purple-300',
-  concluido: 'bg-green-100 text-green-800 border-green-300',
 };
 
 const estadoCivilOptions = [
@@ -259,13 +219,12 @@ const ORIGEM_MIN_OPTIONS = [
   { value: 'sem_religiao', label: 'Sem religião anterior' },
 ];
 
-// Helper functions (cleanPhone imported from formatters)
-const hasValidPhone = (phone: string | null): boolean => {
-  return cleanPhone(phone).length >= 10;
+const hasValidPhone = (phone: string | null | undefined): boolean => {
+  return cleanPhone(phone || null).length >= 10;
 };
 
-const getWhatsAppUrl = (phone: string | null): string => {
-  const cleaned = cleanPhone(phone);
+const getWhatsAppUrl = (phone: string | null | undefined): string => {
+  const cleaned = cleanPhone(phone || null);
   const msg = encodeURIComponent('Olá! Sou da Igreja da Promessa. Estou entrando em contato :)');
   return `https://wa.me/55${cleaned}?text=${msg}`;
 };
@@ -297,7 +256,7 @@ const getOcupacaoPercent = (base: BaseComLider | null): number => {
 export default function MembroDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const [membro, setMembro] = useState<Membro | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -306,18 +265,14 @@ export default function MembroDetalhes() {
   const [isEditing, setIsEditing] = useState(false);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [fotoFile, setFotoFile] = useState<File | null>(null);
-  
-  // Determina se membro está vinculado a um perfil de usuário
+  const [activeTab, setActiveTab] = useState('pessoal');
+
   const isLinkedToProfile = membro?.user_id !== null && profileData !== null;
-  
-  // Base atual
+
   const [baseAtual, setBaseAtual] = useState<BaseMembroAtivo | null>(null);
-  
-  // Histórico
   const [historico, setHistorico] = useState<Acompanhamento[]>([]);
   const [loadingHistorico, setLoadingHistorico] = useState(true);
-  
-  // Modal vincular base
+
   const [showBaseModal, setShowBaseModal] = useState(false);
   const [basesDisponiveis, setBasesDisponiveis] = useState<BaseComLider[]>([]);
   const [selectedBaseId, setSelectedBaseId] = useState<string>('');
@@ -345,6 +300,7 @@ export default function MembroDetalhes() {
     origem_membro: '',
     igreja_anterior: '',
     data_recebimento: '',
+    batismo_nas_aguas: false,
     data_batismo_agua: '',
     local_batismo: '',
     pastor_oficiante: '',
@@ -362,6 +318,7 @@ export default function MembroDetalhes() {
     pais: 'Brasil',
     curso: '',
   });
+
   const setMin = (field: string, value: unknown) =>
     setMinisterialData((prev) => ({ ...prev, [field]: value }));
 
@@ -390,8 +347,6 @@ export default function MembroDetalhes() {
 
       setMembro(data);
 
-      // Se houver vínculo com perfil, buscar TODOS os dados pessoais do profiles
-      // FONTE ABSOLUTA DA VERDADE: profiles quando vinculado
       let profile: ProfileData | null = null;
       if (data.user_id) {
         const { data: profileResult, error: profileError } = await supabase
@@ -405,25 +360,23 @@ export default function MembroDetalhes() {
           `)
           .eq('id', data.user_id)
           .maybeSingle();
-        
+
         if (profileError) {
           console.error('Erro ao buscar perfil vinculado:', profileError);
         }
-        
+
         if (profileResult) {
           profile = profileResult;
           setProfileData(profile);
-          console.log('Perfil vinculado carregado (todos os campos):', profile);
         }
       }
 
-      // Dados combinados: profiles é FONTE ABSOLUTA quando vinculado
       const combinedNome = profile?.nome || data.nome || '';
       const combinedEmail = profile?.email || data.email || '';
       const combinedTelefone = profile?.telefone || data.telefone || '';
       const combinedNascimento = profile?.data_nascimento || data.data_nascimento || '';
-      const combinedEndereco = profile 
-        ? formatEnderecoFromProfile(profile) 
+      const combinedEndereco = profile
+        ? formatEnderecoFromProfile(profile)
         : (data.endereco || '');
       const combinedEstadoCivil = profile?.estado_civil || data.estado_civil || '';
       const combinedBatismo = profile?.data_batismo || data.data_batismo || '';
@@ -440,6 +393,7 @@ export default function MembroDetalhes() {
         status: data.status || 'ativo',
         observacoes: data.observacoes || '',
       });
+
       setMinisterialData({
         situacao_ministerial: (data as any).situacao_ministerial || 'ativo',
         data_situacao_inicio: (data as any).data_situacao_inicio || '',
@@ -448,6 +402,7 @@ export default function MembroDetalhes() {
         origem_membro: (data as any).origem_membro || '',
         igreja_anterior: (data as any).igreja_anterior || '',
         data_recebimento: (data as any).data_recebimento || '',
+        batismo_nas_aguas: Boolean((data as any).data_batismo_agua),
         data_batismo_agua: (data as any).data_batismo_agua || '',
         local_batismo: (data as any).local_batismo || '',
         pastor_oficiante: (data as any).pastor_oficiante || '',
@@ -479,18 +434,13 @@ export default function MembroDetalhes() {
     try {
       const { data } = await supabase
         .from('bases_membros')
-        .select(`
-          base_id,
-          bases!inner(id, nome, dia_semana, horario, local, capacidade, lider_id)
-        `)
+        .select(`base_id, bases!inner(id, nome, dia_semana, horario, local, capacidade, lider_id)`)
         .eq('membro_id', id)
         .eq('status', 'ativo')
         .maybeSingle();
 
       if (data && data.bases) {
         const base = data.bases as unknown as Base;
-        
-        // Get leader info
         let lider: Lider | null = null;
         if (base.lider_id) {
           const { data: liderData } = await supabase
@@ -500,22 +450,13 @@ export default function MembroDetalhes() {
             .maybeSingle();
           lider = liderData;
         }
-
-        // Get members count
         const { count } = await supabase
           .from('bases_membros')
           .select('*', { count: 'exact', head: true })
           .eq('base_id', base.id)
           .eq('status', 'ativo');
 
-        setBaseAtual({
-          base_id: data.base_id,
-          base: {
-            ...base,
-            lider,
-            membros_count: count || 0
-          }
-        });
+        setBaseAtual({ base_id: data.base_id, base: { ...base, lider, membros_count: count || 0 } });
       } else {
         setBaseAtual(null);
       }
@@ -527,26 +468,17 @@ export default function MembroDetalhes() {
   const fetchHistorico = async () => {
     setLoadingHistorico(true);
     try {
-      // Fetch acompanhamentos for this member
-      // Note: acompanhamentos uses visitante_id, not membro_id
-      // We'll need to check if there's a link or just show bases_membros history
-      
       const { data: basesData } = await supabase
         .from('bases_membros')
-        .select(`
-          id, created_at, status, observacao,
-          bases(id, nome, dia_semana, horario, local, capacidade, lider_id)
-        `)
+        .select(`id, created_at, status, observacao, bases(id, nome, dia_semana, horario, local, capacidade, lider_id)`)
         .eq('membro_id', id)
         .order('created_at', { ascending: false });
 
       if (basesData) {
         const historicoFormatado: Acompanhamento[] = [];
-        
         for (const item of basesData) {
           const base = item.bases as unknown as Base | null;
           if (!base) continue;
-
           let lider: Lider | null = null;
           if (base.lider_id) {
             const { data: liderData } = await supabase
@@ -556,7 +488,6 @@ export default function MembroDetalhes() {
               .maybeSingle();
             lider = liderData;
           }
-
           const { count } = await supabase
             .from('bases_membros')
             .select('*', { count: 'exact', head: true })
@@ -569,14 +500,9 @@ export default function MembroDetalhes() {
             observacao: item.observacao,
             created_at: item.created_at || '',
             updated_at: item.created_at || '',
-            base: {
-              ...base,
-              lider,
-              membros_count: count || 0
-            }
+            base: { ...base, lider, membros_count: count || 0 },
           });
         }
-
         setHistorico(historicoFormatado);
       }
     } catch (error) {
@@ -605,18 +531,12 @@ export default function MembroDetalhes() {
             .maybeSingle();
           lider = liderData;
         }
-
         const { count } = await supabase
           .from('bases_membros')
           .select('*', { count: 'exact', head: true })
           .eq('base_id', base.id)
           .eq('status', 'ativo');
-
-        basesComInfo.push({
-          ...base,
-          lider,
-          membros_count: count || 0
-        });
+        basesComInfo.push({ ...base, lider, membros_count: count || 0 });
       }
       setBasesDisponiveis(basesComInfo);
     }
@@ -646,9 +566,7 @@ export default function MembroDetalhes() {
         .from('membros_fotos')
         .upload(fileName, fotoFile, { upsert: true });
       if (uploadError) throw uploadError;
-      const { data: urlData } = supabase.storage
-        .from('membros_fotos')
-        .getPublicUrl(fileName);
+      const { data: urlData } = supabase.storage.from('membros_fotos').getPublicUrl(fileName);
       return urlData.publicUrl + `?t=${Date.now()}`;
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
@@ -659,17 +577,6 @@ export default function MembroDetalhes() {
   };
 
   const handleSave = async () => {
-    /**
-     * PROTEÇÃO CONTRA SOBRESCRITA ACIDENTAL
-     * 
-     * Quando user_id existe (isLinkedToProfile = true):
-     * - NÃO atualizar: nome, email, telefone, data_nascimento, endereco, data_batismo, foto_perfil
-     * - Estes campos são gerenciados pelo usuário em seu perfil (profiles)
-     * - Exceção: estado_civil é sempre editável pelo admin (salvo em membros.estado_civil)
-     * - Aqui atualizamos APENAS dados administrativos: status, observacoes
-     */
-    
-    // Para membros sem vínculo, nome é obrigatório
     if (!isLinkedToProfile && !formData.nome.trim()) {
       toast.error('Nome é obrigatório');
       return;
@@ -677,11 +584,9 @@ export default function MembroDetalhes() {
 
     setSaving(true);
     try {
-      // DADOS ADMINISTRATIVOS - sempre editáveis pelo admin
       const updateData: Record<string, unknown> = {
         status: formData.status,
         observacoes: formData.observacoes.trim() || null,
-        // Dados ministeriais - sempre editáveis pelo admin independente de user_id
         situacao_ministerial: ministerialData.situacao_ministerial || null,
         data_situacao_inicio: ministerialData.data_situacao_inicio || null,
         data_situacao_fim: ministerialData.data_situacao_fim || null,
@@ -689,11 +594,11 @@ export default function MembroDetalhes() {
         origem_membro: ministerialData.origem_membro || null,
         igreja_anterior: ministerialData.igreja_anterior.trim() || null,
         data_recebimento: ministerialData.data_recebimento || null,
-        data_batismo_agua: ministerialData.data_batismo_agua || null,
-        local_batismo: ministerialData.local_batismo.trim() || null,
-        pastor_oficiante: ministerialData.pastor_oficiante.trim() || null,
+        data_batismo_agua: ministerialData.batismo_nas_aguas ? (ministerialData.data_batismo_agua || null) : null,
+        local_batismo: ministerialData.batismo_nas_aguas ? (ministerialData.local_batismo.trim() || null) : null,
+        pastor_oficiante: ministerialData.batismo_nas_aguas ? (ministerialData.pastor_oficiante.trim() || null) : null,
         batismo_espirito_santo: ministerialData.batismo_espirito_santo,
-        data_batismo_espirito: ministerialData.data_batismo_espirito || null,
+        data_batismo_espirito: ministerialData.batismo_espirito_santo ? (ministerialData.data_batismo_espirito || null) : null,
         ordenacao_funcao: ministerialData.ordenacao_funcao || 'nenhum',
         data_ordenacao_inicio: ministerialData.data_ordenacao_inicio || null,
         data_ordenacao_fim: ministerialData.data_ordenacao_fim || null,
@@ -707,15 +612,12 @@ export default function MembroDetalhes() {
         curso: ministerialData.curso.trim() || null,
       };
 
-      // DADOS PESSOAIS - APENAS quando NÃO vinculado a perfil
-      // Quando vinculado, esses dados vêm de profiles e NÃO podem ser alterados aqui
       if (!isLinkedToProfile) {
         let fotoUrl = membro?.foto_perfil;
         if (fotoFile) {
           const newUrl = await uploadFoto();
           if (newUrl) fotoUrl = newUrl;
         }
-
         Object.assign(updateData, {
           nome: formData.nome.trim(),
           telefone: cleanPhone(formData.telefone) || null,
@@ -727,11 +629,7 @@ export default function MembroDetalhes() {
         });
       }
 
-      const { error } = await supabase
-        .from('membros')
-        .update(updateData)
-        .eq('id', id);
-
+      const { error } = await supabase.from('membros').update(updateData).eq('id', id);
       if (error) throw error;
 
       toast.success('Membro atualizado com sucesso!');
@@ -759,10 +657,8 @@ export default function MembroDetalhes() {
       toast.error('Selecione uma base');
       return;
     }
-
     setSavingBase(true);
     try {
-      // Deactivate current base membership if exists
       if (baseAtual) {
         await supabase
           .from('bases_membros')
@@ -770,19 +666,13 @@ export default function MembroDetalhes() {
           .eq('membro_id', id)
           .eq('status', 'ativo');
       }
-
-      // Create new base membership
-      const { error } = await supabase
-        .from('bases_membros')
-        .insert({
-          membro_id: id,
-          base_id: selectedBaseId,
-          status: 'ativo',
-          observacao: observacao.trim() || null,
-        });
-
+      const { error } = await supabase.from('bases_membros').insert({
+        membro_id: id,
+        base_id: selectedBaseId,
+        status: 'ativo',
+        observacao: observacao.trim() || null,
+      });
       if (error) throw error;
-
       toast.success('Membro vinculado à base com sucesso!');
       setShowBaseModal(false);
       fetchBaseAtual();
@@ -807,11 +697,7 @@ export default function MembroDetalhes() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map(i => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-16 w-full" />
-              </CardContent>
-            </Card>
+            <Card key={i}><CardContent className="p-4"><Skeleton className="h-16 w-full" /></CardContent></Card>
           ))}
         </div>
       </div>
@@ -828,19 +714,27 @@ export default function MembroDetalhes() {
     );
   }
 
+  const displayName = isLinkedToProfile ? (profileData?.nome || membro.nome) : membro.nome;
+  const displayPhone = isLinkedToProfile ? profileData?.telefone : membro.telefone;
+
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/admin/membros')}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-display font-bold">{membro.nome}</h1>
-            {hasValidPhone(membro.telefone) && (
+            <div>
+              <h1 className="text-2xl font-display font-bold">{displayName}</h1>
+              <p className="text-sm text-muted-foreground">
+                {isLinkedToProfile ? (profileData?.email || '–') : (formData.email || '–')}
+              </p>
+            </div>
+            {hasValidPhone(displayPhone) && (
               <button
-                onClick={() => window.open(getWhatsAppUrl(membro.telefone), '_blank')}
+                onClick={() => window.open(getWhatsAppUrl(displayPhone), '_blank')}
                 className="text-green-600 hover:text-green-700"
                 title="Abrir WhatsApp"
               >
@@ -859,16 +753,33 @@ export default function MembroDetalhes() {
                 <Home className="w-3 h-3" />
                 {baseAtual.base.nome}
               </Badge>
-              {isBaseLotada(baseAtual.base) && (
-                <Badge variant="destructive">Lotada</Badge>
-              )}
+              {isBaseLotada(baseAtual.base) && <Badge variant="destructive">Lotada</Badge>}
             </>
+          )}
+          {isEditing ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setIsEditing(false); fetchMembro(); setFotoFile(null); }}
+              >
+                Cancelar
+              </Button>
+              <Button size="sm" onClick={handleSave} disabled={saving || uploading}>
+                <Save className="w-4 h-4 mr-1" />
+                {saving ? 'Salvando...' : 'Salvar'}
+              </Button>
+            </>
+          ) : (
+            <Button size="sm" onClick={() => setIsEditing(true)}>
+              Editar
+            </Button>
           )}
         </div>
       </div>
 
       {/* Incomplete profile banner */}
-      {(() => {
+      {!isLinkedToProfile && (() => {
         const missing: string[] = [];
         if (!formData.telefone) missing.push('telefone');
         if (!formData.data_nascimento) missing.push('data de nascimento');
@@ -884,7 +795,7 @@ export default function MembroDetalhes() {
               size="sm"
               variant="outline"
               className="border-yellow-500 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-500 dark:text-yellow-300 dark:hover:bg-yellow-900/40 shrink-0"
-              onClick={() => setIsEditing(true)}
+              onClick={() => { setIsEditing(true); setActiveTab('pessoal'); }}
             >
               Completar cadastro
             </Button>
@@ -892,7 +803,7 @@ export default function MembroDetalhes() {
         );
       })()}
 
-      {/* Info Cards */}
+      {/* ── Info Cards ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -914,15 +825,13 @@ export default function MembroDetalhes() {
                 <Calendar className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Batismo</p>
-                {/* Fonte de verdade: profiles quando vinculado */}
+                <p className="text-sm text-muted-foreground">Batismo nas Águas</p>
                 <p className="font-medium">
-                  {isLinkedToProfile 
-                    ? (profileData?.batizado_aguas 
-                        ? (profileData.data_batismo ? formatDate(profileData.data_batismo) : 'Batizado') 
-                        : 'Não batizado')
-                    : (membro.data_batismo ? formatDate(membro.data_batismo) : 'Não batizado')
-                  }
+                  {ministerialData.data_batismo_agua
+                    ? formatDate(ministerialData.data_batismo_agua)
+                    : (isLinkedToProfile && profileData?.batizado_aguas
+                        ? (profileData.data_batismo ? formatDate(profileData.data_batismo) : 'Batizado')
+                        : 'Não batizado')}
                 </p>
               </div>
             </div>
@@ -936,12 +845,8 @@ export default function MembroDetalhes() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Telefone</p>
-                {/* Fonte de verdade: profiles quando vinculado */}
                 <p className="font-medium">
-                  {isLinkedToProfile 
-                    ? (profileData?.telefone ? formatPhoneBR(profileData.telefone) : '–')
-                    : (membro.telefone ? formatPhoneBR(membro.telefone) : '–')
-                  }
+                  {displayPhone ? formatPhoneBR(displayPhone) : '–'}
                 </p>
               </div>
             </div>
@@ -949,7 +854,7 @@ export default function MembroDetalhes() {
         </Card>
       </div>
 
-      {/* Base Atual Section */}
+      {/* ── Base Atual ── */}
       {baseAtual && (
         <Card>
           <CardHeader className="pb-3">
@@ -966,10 +871,7 @@ export default function MembroDetalhes() {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span>Líder: {baseAtual.base.lider.nome}</span>
                     {hasValidPhone(baseAtual.base.lider.telefone) && (
-                      <button
-                        onClick={() => window.open(getWhatsAppUrl(baseAtual.base.lider!.telefone), '_blank')}
-                        className="text-green-600 hover:text-green-700"
-                      >
+                      <button onClick={() => window.open(getWhatsAppUrl(baseAtual.base.lider!.telefone), '_blank')} className="text-green-600 hover:text-green-700">
                         <MessageCircle className="w-4 h-4" />
                       </button>
                     )}
@@ -986,9 +888,7 @@ export default function MembroDetalhes() {
                 <div className="flex items-center gap-2 text-sm">
                   <Users className="w-4 h-4" />
                   <span>{baseAtual.base.membros_count || 0}/{baseAtual.base.capacidade || '∞'}</span>
-                  {isBaseLotada(baseAtual.base) && (
-                    <Badge variant="destructive" className="text-xs">Lotada</Badge>
-                  )}
+                  {isBaseLotada(baseAtual.base) && <Badge variant="destructive" className="text-xs">Lotada</Badge>}
                 </div>
                 <Progress value={getOcupacaoPercent(baseAtual.base)} className="w-24 h-2" />
               </div>
@@ -996,8 +896,6 @@ export default function MembroDetalhes() {
           </CardContent>
         </Card>
       )}
-
-      {/* Action Button for Base */}
       <div className="flex gap-2">
         <Button variant="outline" onClick={handleOpenBaseModal}>
           <Plus className="w-4 h-4 mr-2" />
@@ -1005,287 +903,811 @@ export default function MembroDetalhes() {
         </Button>
       </div>
 
-      {/* Seções organizadas para membro vinculado a perfil */}
-      {isLinkedToProfile && profileData ? (
-        <div className="space-y-6">
-          {/* Aviso de perfil vinculado */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <Link2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm text-blue-800 font-medium mb-1">
-                  Membro vinculado a uma conta de usuário
-                </p>
-                <p className="text-sm text-blue-700 mb-3">
-                  Os dados pessoais são gerenciados pelo próprio usuário em seu perfil. 
-                  Aqui você visualiza todos os dados e pode editar apenas as informações administrativas.
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/admin/usuarios`)}
-                  className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                >
-                  <User className="w-3 h-3 mr-1" />
-                  Abrir perfil do usuário
-                </Button>
-              </div>
-            </div>
-          </div>
+      {/* ══════════════════════════════════════════
+          TABS
+      ══════════════════════════════════════════ */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
+          <TabsTrigger value="pessoal">Pessoal</TabsTrigger>
+          <TabsTrigger value="endereco">Endereço</TabsTrigger>
+          <TabsTrigger value="familia">Família</TabsTrigger>
+          <TabsTrigger value="ministerial">Ministerial</TabsTrigger>
+          <TabsTrigger value="batismo">Batismo</TabsTrigger>
+          <TabsTrigger value="conta">Conta</TabsTrigger>
+        </TabsList>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Coluna da Foto */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  Foto de Perfil
-                  <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center gap-4">
-                <Avatar className="w-32 h-32">
-                  <AvatarImage src={profileData.foto_url || undefined} alt={profileData.nome} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-2xl">
-                    {getInitials(profileData.nome)}
-                  </AvatarFallback>
-                </Avatar>
-                <p className="text-xs text-muted-foreground text-center">
-                  Gerenciada pelo usuário
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Dados de Identificação */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <User className="w-4 h-4" />
-                  Identificação Pessoal
-                  <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Nome Completo</Label>
-                    <p className="font-medium">{profileData.nome || '–'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">E-mail</Label>
-                    <p className="font-medium">{profileData.email || '–'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Telefone</Label>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{formatPhoneBR(profileData.telefone) || '–'}</p>
-                      {hasValidPhone(profileData.telefone) && (
-                        <button
-                          onClick={() => window.open(getWhatsAppUrl(profileData.telefone), '_blank')}
-                          className="text-green-600 hover:text-green-700"
-                          title="Abrir WhatsApp"
-                        >
-                          <MessageCircle className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">CPF</Label>
-                    <p className="font-medium">{profileData.cpf || '–'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Data de Nascimento</Label>
-                    <p className="font-medium">{profileData.data_nascimento ? formatDate(profileData.data_nascimento) : '–'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Sexo</Label>
-                    <p className="font-medium">{profileData.sexo ? (sexoLabels[profileData.sexo] || profileData.sexo) : '–'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Naturalidade</Label>
-                    <p className="font-medium">{profileData.naturalidade || '–'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Estado Civil</Label>
-                    <p className="font-medium">{profileData.estado_civil ? (estadoCivilLabels[profileData.estado_civil] || profileData.estado_civil) : '–'}</p>
+        {/* ── TAB: PESSOAL ── */}
+        <TabsContent value="pessoal" className="mt-6">
+          {isLinkedToProfile && profileData ? (
+            <div className="space-y-6">
+              {/* Notice */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Link2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm text-blue-800 font-medium mb-1">Membro vinculado a uma conta de usuário</p>
+                    <p className="text-sm text-blue-700 mb-3">
+                      Os dados pessoais são gerenciados pelo próprio usuário em seu perfil.
+                      Aqui você pode editar apenas as informações administrativas e ministeriais.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/admin/usuarios')}
+                      className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                    >
+                      <User className="w-3 h-3 mr-1" />
+                      Abrir perfil do usuário
+                    </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
 
-          {/* Endereço Completo */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Photo */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      Foto de Perfil
+                      <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col items-center gap-3">
+                    <Avatar className="w-32 h-32">
+                      <AvatarImage src={profileData.foto_url || undefined} alt={profileData.nome} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+                        {getInitials(profileData.nome)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <p className="text-xs text-muted-foreground text-center">Gerenciada pelo usuário</p>
+                  </CardContent>
+                </Card>
+
+                {/* Personal data (read-only) */}
+                <Card className="lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <User className="w-4 h-4" />
+                      Dados Pessoais
+                      <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">Nome Completo</Label>
+                        <p className="font-medium">{profileData.nome || '–'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">E-mail</Label>
+                        <p className="font-medium">{profileData.email || '–'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">Telefone</Label>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{formatPhoneBR(profileData.telefone) || '–'}</p>
+                          {hasValidPhone(profileData.telefone) && (
+                            <button
+                              onClick={() => window.open(getWhatsAppUrl(profileData.telefone), '_blank')}
+                              className="text-green-600 hover:text-green-700"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">CPF</Label>
+                        <p className="font-medium">{profileData.cpf || '–'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">Data de Nascimento</Label>
+                        <p className="font-medium">
+                          {profileData.data_nascimento ? formatDate(profileData.data_nascimento) : '–'}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">Sexo</Label>
+                        <p className="font-medium">
+                          {profileData.sexo ? (sexoLabels[profileData.sexo] || profileData.sexo) : '–'}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">Naturalidade</Label>
+                        <p className="font-medium">{profileData.naturalidade || '–'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">Estado Civil (perfil)</Label>
+                        <p className="font-medium">
+                          {profileData.estado_civil
+                            ? (estadoCivilLabels[profileData.estado_civil] || profileData.estado_civil)
+                            : '–'}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Estado Civil editable by admin */}
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    Estado Civil
+                    <Badge variant="default" className="text-xs font-normal">editável pelo admin</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-w-xs">
+                    <Label className="text-sm text-muted-foreground mb-2 block">
+                      Estado Civil (registro ministerial)
+                    </Label>
+                    <Select
+                      value={ministerialData.estado_civil || 'none'}
+                      onValueChange={(v) => setMin('estado_civil', v === 'none' ? '' : v)}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Não informado</SelectItem>
+                        {estadoCivilOptions.map((o) => (
+                          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            /* Unlinked member: fully editable */
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Photo */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Foto</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center gap-4">
+                  <Avatar className="w-32 h-32">
+                    <AvatarImage src={fotoPreview || undefined} alt={formData.nome} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+                      {getInitials(formData.nome)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {isEditing && (
+                    <>
+                      <Label htmlFor="foto" className="cursor-pointer">
+                        <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-muted transition-colors">
+                          <Upload className="w-4 h-4" />
+                          Trocar foto
+                        </div>
+                        <Input id="foto" type="file" accept="image/*" className="hidden" onChange={handleFotoChange} />
+                      </Label>
+                      <p className="text-xs text-muted-foreground">Máximo 5MB</p>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Editable fields */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-base">Dados Pessoais</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="nome">Nome *</Label>
+                      <Input
+                        id="nome"
+                        value={formData.nome}
+                        onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="telefone">Telefone</Label>
+                      <Input
+                        id="telefone"
+                        value={formatPhoneBR(formData.telefone)}
+                        onChange={(e) => setFormData({ ...formData, telefone: formatPhoneBR(e.target.value) })}
+                        disabled={!isEditing}
+                        placeholder="(00) 00000-0000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">E-mail</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="data_nascimento">Data de Nascimento</Label>
+                      <Input
+                        id="data_nascimento"
+                        type="date"
+                        value={formData.data_nascimento}
+                        onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Estado Civil</Label>
+                      <Select
+                        value={ministerialData.estado_civil || 'none'}
+                        onValueChange={(v) => setMin('estado_civil', v === 'none' ? '' : v)}
+                        disabled={!isEditing}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Não informado</SelectItem>
+                          {estadoCivilOptions.map((o) => (
+                            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="data_batismo">Data do Batismo</Label>
+                      <Input
+                        id="data_batismo"
+                        type="date"
+                        value={formData.data_batismo}
+                        onChange={(e) => setFormData({ ...formData, data_batismo: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* ── TAB: ENDEREÇO ── */}
+        <TabsContent value="endereco" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <MapPin className="w-4 h-4" />
                 Endereço
-                <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+                {isLinkedToProfile && (
+                  <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {profileData.logradouro || profileData.cidade ? (
+              {isLinkedToProfile && profileData ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="md:col-span-2 space-y-1">
-                    <Label className="text-muted-foreground text-xs">Logradouro</Label>
-                    <p className="font-medium">
-                      {profileData.logradouro || '–'}
-                      {profileData.numero && `, ${profileData.numero}`}
-                      {profileData.complemento && ` - ${profileData.complemento}`}
+                  {!profileData.logradouro && !profileData.cidade && (
+                    <p className="text-sm text-muted-foreground md:col-span-3">
+                      Endereço não informado pelo usuário
                     </p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">CEP</Label>
-                    <p className="font-medium">{profileData.cep || '–'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Bairro</Label>
-                    <p className="font-medium">{profileData.bairro || '–'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Cidade</Label>
-                    <p className="font-medium">{profileData.cidade || '–'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Estado</Label>
-                    <p className="font-medium">{profileData.uf || '–'}</p>
-                  </div>
+                  )}
+                  {(profileData.logradouro || profileData.cidade) && (
+                    <>
+                      <div className="md:col-span-2 space-y-1">
+                        <Label className="text-muted-foreground text-xs">Logradouro</Label>
+                        <p className="font-medium">
+                          {profileData.logradouro || '–'}
+                          {profileData.numero && `, ${profileData.numero}`}
+                          {profileData.complemento && ` - ${profileData.complemento}`}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">CEP</Label>
+                        <p className="font-medium">{profileData.cep || '–'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">Bairro</Label>
+                        <p className="font-medium">{profileData.bairro || '–'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">Cidade</Label>
+                        <p className="font-medium">{profileData.cidade || '–'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground text-xs">Estado</Label>
+                        <p className="font-medium">{profileData.uf || '–'}</p>
+                      </div>
+                    </>
+                  )}
                   <div className="space-y-1">
                     <Label className="text-muted-foreground text-xs">País</Label>
                     <p className="font-medium">{ministerialData.pais || '–'}</p>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-sm">Endereço não informado</p>
-                  {ministerialData.pais && (
-                    <div className="mt-2">
-                      <Label className="text-muted-foreground text-xs">País</Label>
-                      <p className="font-medium">{ministerialData.pais}</p>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="endereco">Endereço Completo</Label>
+                    <Input
+                      id="endereco"
+                      value={formData.endereco}
+                      onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+                      disabled={!isEditing}
+                      placeholder="Rua, número, bairro, cidade, estado"
+                    />
+                  </div>
+                  <div className="max-w-xs space-y-2">
+                    <Label>País</Label>
+                    <Input
+                      value={ministerialData.pais}
+                      onChange={(e) => setMin('pais', e.target.value)}
+                      disabled={!isEditing}
+                      placeholder="Brasil"
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── TAB: FAMÍLIA ── */}
+        <TabsContent value="familia" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Users className="w-4 h-4" />
+                Dados da Família
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome da Mãe</Label>
+                  <Input
+                    value={ministerialData.nome_mae}
+                    onChange={(e) => setMin('nome_mae', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Nome completo da mãe"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nome do Pai</Label>
+                  <Input
+                    value={ministerialData.nome_pai}
+                    onChange={(e) => setMin('nome_pai', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Nome completo do pai"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <div className="flex items-center gap-3 p-3 rounded-lg border">
+                    <Switch
+                      checked={ministerialData.pai_mae_promessista}
+                      onCheckedChange={(v) => setMin('pai_mae_promessista', v)}
+                      disabled={!isEditing}
+                    />
+                    <div>
+                      <Label className="cursor-pointer font-medium">Pai ou Mãe é Promessista</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Pelo menos um dos pais é membro da Igreja da Promessa
+                      </p>
                     </div>
-                  )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── TAB: MINISTERIAL ── */}
+        <TabsContent value="ministerial" className="mt-6 space-y-6">
+          {/* Situação */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Heart className="w-4 h-4 text-primary" />
+                Situação Ministerial
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Situação</Label>
+                  <Select
+                    value={ministerialData.situacao_ministerial}
+                    onValueChange={(v) => setMin('situacao_ministerial', v)}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {SITUACAO_MIN_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Data de Início</Label>
+                  <Input
+                    type="date"
+                    value={ministerialData.data_situacao_inicio}
+                    onChange={(e) => setMin('data_situacao_inicio', e.target.value)}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Data de Fim (opcional)</Label>
+                  <Input
+                    type="date"
+                    value={ministerialData.data_situacao_fim}
+                    onChange={(e) => setMin('data_situacao_fim', e.target.value)}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Observação</Label>
+                  <Textarea
+                    value={ministerialData.situacao_observacao}
+                    onChange={(e) => setMin('situacao_observacao', e.target.value)}
+                    disabled={!isEditing}
+                    rows={2}
+                    placeholder="Observações sobre a situação ministerial..."
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Origem e Ingresso */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Origem e Ingresso</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Como chegou à Igreja</Label>
+                  <Select
+                    value={ministerialData.origem_membro || 'none'}
+                    onValueChange={(v) => setMin('origem_membro', v === 'none' ? '' : v)}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Não informado</SelectItem>
+                      {ORIGEM_MIN_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {ministerialData.origem_membro && ministerialData.origem_membro !== 'promessista_nato' && (
+                  <div className="space-y-2">
+                    <Label>Igreja Anterior</Label>
+                    <Input
+                      value={ministerialData.igreja_anterior}
+                      onChange={(e) => setMin('igreja_anterior', e.target.value)}
+                      disabled={!isEditing}
+                      placeholder="Nome da igreja anterior"
+                    />
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label>Data de Recebimento</Label>
+                  <Input
+                    type="date"
+                    value={ministerialData.data_recebimento}
+                    onChange={(e) => setMin('data_recebimento', e.target.value)}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Curso</Label>
+                  <Input
+                    value={ministerialData.curso}
+                    onChange={(e) => setMin('curso', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Curso de graduação ou técnico"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Ordenação */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Ordenação</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Função</Label>
+                  <Select
+                    value={ministerialData.ordenacao_funcao}
+                    onValueChange={(v) => setMin('ordenacao_funcao', v)}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {ORDENACAO_MIN_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Data de Início</Label>
+                  <Input
+                    type="date"
+                    value={ministerialData.data_ordenacao_inicio}
+                    onChange={(e) => setMin('data_ordenacao_inicio', e.target.value)}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Data de Término (opcional)</Label>
+                  <Input
+                    type="date"
+                    value={ministerialData.data_ordenacao_fim}
+                    onChange={(e) => setMin('data_ordenacao_fim', e.target.value)}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Observação</Label>
+                  <Textarea
+                    value={ministerialData.ordenacao_observacao}
+                    onChange={(e) => setMin('ordenacao_observacao', e.target.value)}
+                    disabled={!isEditing}
+                    rows={2}
+                    placeholder="Observações sobre a ordenação..."
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Formação (linked profiles only) */}
+          {isLinkedToProfile && profileData && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  Formação e Profissão
+                  <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Escolaridade</Label>
+                    <p className="font-medium">
+                      {profileData.grau_instrucao
+                        ? (grauInstrucaoLabels[profileData.grau_instrucao] || profileData.grau_instrucao)
+                        : '–'}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Formação</Label>
+                    <p className="font-medium">{profileData.formacao || '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Profissão</Label>
+                    <p className="font-medium">{profileData.profissao || '–'}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Observações Pastorais */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Observações Pastorais</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={ministerialData.observacoes_pastorais}
+                onChange={(e) => setMin('observacoes_pastorais', e.target.value)}
+                disabled={!isEditing}
+                rows={4}
+                placeholder="Informações confidenciais de acompanhamento pastoral..."
+              />
+            </CardContent>
+          </Card>
+
+          {/* Histórico de Bases */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="w-5 h-5" />
+                Histórico de Bases
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingHistorico ? (
+                <div className="space-y-3">
+                  {[1, 2].map(i => <Skeleton key={i} className="h-24 w-full" />)}
+                </div>
+              ) : historico.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <History className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                  <p>Nenhum registro de histórico ainda</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {historico.map((item) => (
+                    <div key={item.id} className="p-4 border rounded-lg">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{item.base?.nome || 'Base não encontrada'}</p>
+                            <Badge
+                              variant="outline"
+                              className={item.status === 'ativo'
+                                ? 'bg-green-100 text-green-800 border-green-300'
+                                : 'bg-gray-100 text-gray-800 border-gray-300'}
+                            >
+                              {item.status === 'ativo' ? 'Ativo' : item.status === 'saida' ? 'Saiu' : item.status}
+                            </Badge>
+                          </div>
+                          {item.base?.lider && (
+                            <p className="text-sm text-muted-foreground">Líder: {item.base.lider.nome}</p>
+                          )}
+                          {item.base && (
+                            <p className="text-sm text-muted-foreground">
+                              {item.base.dia_semana && item.base.horario
+                                ? `${item.base.dia_semana} às ${item.base.horario}`
+                                : item.base.dia_semana || item.base.horario || ''}
+                              {item.base.local && ` • ${item.base.local}`}
+                            </p>
+                          )}
+                          {item.observacao && (
+                            <p className="text-sm mt-1 italic text-muted-foreground">"{item.observacao}"</p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">{formatDateTime(item.created_at)}</p>
+                          {item.base && (
+                            <div className="flex items-center justify-end gap-1 mt-1">
+                              <Users className="w-3 h-3 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground">
+                                {item.base.membros_count || 0}/{item.base.capacidade || '∞'}
+                              </span>
+                              {isBaseLotada(item.base) && (
+                                <Badge variant="destructive" className="text-xs ml-1">Lotada</Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── TAB: BATISMO ── */}
+        <TabsContent value="batismo" className="mt-6 space-y-6">
+          {/* Batismo nas Águas */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Calendar className="w-4 h-4 text-blue-600" />
+                Batismo nas Águas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg border">
+                <Switch
+                  checked={ministerialData.batismo_nas_aguas}
+                  onCheckedChange={(v) => {
+                    setMin('batismo_nas_aguas', v);
+                    if (!v) {
+                      setMin('data_batismo_agua', '');
+                      setMin('local_batismo', '');
+                      setMin('pastor_oficiante', '');
+                    }
+                  }}
+                  disabled={!isEditing}
+                />
+                <Label className="cursor-pointer font-medium">Batizado(a) nas Águas</Label>
+              </div>
+              {ministerialData.batismo_nas_aguas && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="space-y-2">
+                    <Label>Data do Batismo</Label>
+                    <Input
+                      type="date"
+                      value={ministerialData.data_batismo_agua}
+                      onChange={(e) => setMin('data_batismo_agua', e.target.value)}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Local do Batismo</Label>
+                    <Input
+                      value={ministerialData.local_batismo}
+                      onChange={(e) => setMin('local_batismo', e.target.value)}
+                      disabled={!isEditing}
+                      placeholder="Local onde foi batizado"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Pastor Oficiante</Label>
+                    <Input
+                      value={ministerialData.pastor_oficiante}
+                      onChange={(e) => setMin('pastor_oficiante', e.target.value)}
+                      disabled={!isEditing}
+                      placeholder="Nome do pastor"
+                    />
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Dados Profissionais e Educação */}
+          {/* Batismo no Espírito Santo */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Calendar className="w-4 h-4" />
-                Formação e Profissão
-                <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
+                <Heart className="w-4 h-4 text-purple-600" />
+                Batismo no Espírito Santo
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Escolaridade</Label>
-                  <p className="font-medium">
-                    {profileData.grau_instrucao ? (grauInstrucaoLabels[profileData.grau_instrucao] || profileData.grau_instrucao) : '–'}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Formação</Label>
-                  <p className="font-medium">{profileData.formacao || '–'}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Curso</Label>
-                  <p className="font-medium">{ministerialData.curso || '–'}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Profissão</Label>
-                  <p className="font-medium">{profileData.profissao || '–'}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">PCD</Label>
-                  <p className="font-medium">{profileData.pcd || 'Não informado'}</p>
-                </div>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg border">
+                <Switch
+                  checked={ministerialData.batismo_espirito_santo}
+                  onCheckedChange={(v) => {
+                    setMin('batismo_espirito_santo', v);
+                    if (!v) setMin('data_batismo_espirito', '');
+                  }}
+                  disabled={!isEditing}
+                />
+                <Label className="cursor-pointer font-medium">Recebeu o Batismo no Espírito Santo</Label>
               </div>
+              {ministerialData.batismo_espirito_santo && (
+                <div className="max-w-xs pt-2">
+                  <div className="space-y-2">
+                    <Label>Data do Batismo no Espírito Santo</Label>
+                    <Input
+                      type="date"
+                      value={ministerialData.data_batismo_espirito}
+                      onChange={(e) => setMin('data_batismo_espirito', e.target.value)}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {/* Família */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Users className="w-4 h-4" />
-                Família
-                <Badge variant="outline" className="text-xs font-normal">editável pelo admin</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Estado Civil</Label>
-                  <p className="font-medium">{estadoCivilLabels[ministerialData.estado_civil] || '–'}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Nome da Mãe</Label>
-                  <p className="font-medium">{ministerialData.nome_mae || '–'}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Nome do Pai</Label>
-                  <p className="font-medium">{ministerialData.nome_pai || '–'}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Pais Promessistas</Label>
-                  <p className="font-medium">{ministerialData.pai_mae_promessista ? 'Sim' : 'Não'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Dados Eclesiásticos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Heart className="w-4 h-4" />
-                Dados Eclesiásticos
-                <Badge variant="secondary" className="text-xs font-normal">perfil</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Batizado nas Águas</Label>
-                  <p className="font-medium">{profileData.batizado_aguas ? 'Sim' : 'Não'}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Data do Batismo</Label>
-                  <p className="font-medium">{profileData.data_batismo ? formatDate(profileData.data_batismo) : '–'}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Data de Cadastro</Label>
-                  <p className="font-medium">{profileData.data_cadastro ? formatDate(profileData.data_cadastro) : '–'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Dados Administrativos - EDITÁVEIS */}
+        {/* ── TAB: CONTA ── */}
+        <TabsContent value="conta" className="mt-6 space-y-6">
+          {/* Status Administrativo */}
           <Card className="border-primary/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <AlertCircle className="w-4 h-4" />
-                Dados Administrativos do Membro
+                Dados Administrativos
                 <Badge variant="default" className="text-xs font-normal">editável</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status do Membro</Label>
+                  <Label>Status do Membro</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value) => setFormData({ ...formData, status: value })}
                     disabled={!isEditing}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ativo">Ativo</SelectItem>
                       <SelectItem value="inativo">Inativo</SelectItem>
@@ -1301,9 +1723,8 @@ export default function MembroDetalhes() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="observacoes">Observações Administrativas</Label>
+                <Label>Observações Administrativas</Label>
                 <Textarea
-                  id="observacoes"
                   value={formData.observacoes}
                   onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
                   disabled={!isEditing}
@@ -1313,465 +1734,51 @@ export default function MembroDetalhes() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      ) : (
-        /* Layout tradicional para membros SEM vínculo com perfil */
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Photo Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">Foto</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4">
-              <Avatar className="w-32 h-32">
-                <AvatarImage src={fotoPreview || undefined} alt={formData.nome} />
-                <AvatarFallback className="bg-primary/10 text-primary text-2xl">
-                  {getInitials(formData.nome)}
-                </AvatarFallback>
-              </Avatar>
-              {isEditing && (
-                <>
-                  <Label htmlFor="foto" className="cursor-pointer">
-                    <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-muted transition-colors">
-                      <Upload className="w-4 h-4" />
-                      Trocar foto
-                    </div>
-                    <Input
-                      id="foto"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleFotoChange}
-                    />
-                  </Label>
-                  <p className="text-xs text-muted-foreground">Máximo 5MB</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
 
-          {/* Form Card */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">Dados do Membro</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nome">
-                    <User className="w-4 h-4 inline mr-1" />
-                    Nome *
-                  </Label>
-                  <Input
-                    id="nome"
-                    value={formData.nome}
-                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="telefone">
-                    <Phone className="w-4 h-4 inline mr-1" />
-                    Telefone
-                  </Label>
-                  <Input
-                    id="telefone"
-                    value={formatPhoneBR(formData.telefone)}
-                    onChange={(e) => setFormData({ ...formData, telefone: formatPhoneBR(e.target.value) })}
-                    disabled={!isEditing}
-                    placeholder="(00) 00000-0000"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">
-                    <Mail className="w-4 h-4 inline mr-1" />
-                    E-mail
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="data_nascimento">
-                    <Calendar className="w-4 h-4 inline mr-1" />
-                    Data de Nascimento
-                  </Label>
-                  <Input
-                    id="data_nascimento"
-                    type="date"
-                    value={formData.data_nascimento}
-                    onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="endereco">
-                    <MapPin className="w-4 h-4 inline mr-1" />
-                    Endereço
-                  </Label>
-                  <Input
-                    id="endereco"
-                    value={formData.endereco}
-                    onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="data_batismo">
-                    <Calendar className="w-4 h-4 inline mr-1" />
-                    Data do Batismo
-                  </Label>
-                  <Input
-                    id="data_batismo"
-                    type="date"
-                    value={formData.data_batismo}
-                    onChange={(e) => setFormData({ ...formData, data_batismo: e.target.value })}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) => setFormData({ ...formData, status: value })}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ativo">Ativo</SelectItem>
-                      <SelectItem value="inativo">Inativo</SelectItem>
-                      <SelectItem value="desligado">Desligado</SelectItem>
-                      <SelectItem value="transferido">Transferido</SelectItem>
-                      <SelectItem value="em_acompanhamento">Em Acompanhamento</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="observacoes">Observações</Label>
-                <Textarea
-                  id="observacoes"
-                  value={formData.observacoes}
-                  onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                  disabled={!isEditing}
-                  rows={4}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Dados Ministeriais — sempre editáveis pelo admin */}
-      <Card className="border-primary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Heart className="w-4 h-4 text-primary" />
-            Dados Ministeriais
-            <Badge variant="default" className="text-xs font-normal">editável</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Situação */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Situação</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Situação Ministerial</Label>
-                <Select value={ministerialData.situacao_ministerial} onValueChange={(v) => setMin('situacao_ministerial', v)} disabled={!isEditing}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {SITUACAO_MIN_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Data de Início</Label>
-                <Input type="date" value={ministerialData.data_situacao_inicio} onChange={(e) => setMin('data_situacao_inicio', e.target.value)} disabled={!isEditing} />
-              </div>
-              <div className="space-y-2">
-                <Label>Data de Fim (opcional)</Label>
-                <Input type="date" value={ministerialData.data_situacao_fim} onChange={(e) => setMin('data_situacao_fim', e.target.value)} disabled={!isEditing} />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label>Observação</Label>
-                <Textarea value={ministerialData.situacao_observacao} onChange={(e) => setMin('situacao_observacao', e.target.value)} disabled={!isEditing} rows={2} placeholder="Observações..." />
-              </div>
-            </div>
-          </div>
-
-          {/* Origem */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Origem</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Como chegou à igreja</Label>
-                <Select value={ministerialData.origem_membro} onValueChange={(v) => setMin('origem_membro', v)} disabled={!isEditing}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    {ORIGEM_MIN_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              {ministerialData.origem_membro && ministerialData.origem_membro !== 'promessista_nato' && (
-                <div className="space-y-2">
-                  <Label>Igreja Anterior</Label>
-                  <Input value={ministerialData.igreja_anterior} onChange={(e) => setMin('igreja_anterior', e.target.value)} disabled={!isEditing} placeholder="Nome da igreja anterior" />
-                </div>
-              )}
-              <div className="space-y-2">
-                <Label>Data de Recebimento</Label>
-                <Input type="date" value={ministerialData.data_recebimento} onChange={(e) => setMin('data_recebimento', e.target.value)} disabled={!isEditing} />
-              </div>
-            </div>
-          </div>
-
-          {/* Batismo */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Batismo</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Data do Batismo em Água</Label>
-                <Input type="date" value={ministerialData.data_batismo_agua} onChange={(e) => setMin('data_batismo_agua', e.target.value)} disabled={!isEditing} />
-              </div>
-              <div className="space-y-2">
-                <Label>Local do Batismo</Label>
-                <Input value={ministerialData.local_batismo} onChange={(e) => setMin('local_batismo', e.target.value)} disabled={!isEditing} placeholder="Local onde foi batizado" />
-              </div>
-              <div className="space-y-2">
-                <Label>Pastor Oficiante</Label>
-                <Input value={ministerialData.pastor_oficiante} onChange={(e) => setMin('pastor_oficiante', e.target.value)} disabled={!isEditing} placeholder="Nome do pastor" />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <div className="flex items-center gap-3">
-                  <Switch
-                    checked={ministerialData.batismo_espirito_santo}
-                    onCheckedChange={(v) => setMin('batismo_espirito_santo', v)}
-                    disabled={!isEditing}
-                  />
-                  <Label>Recebeu o Batismo no Espírito Santo</Label>
-                </div>
-              </div>
-              {ministerialData.batismo_espirito_santo && (
-                <div className="space-y-2">
-                  <Label>Data do Batismo no Espírito Santo</Label>
-                  <Input type="date" value={ministerialData.data_batismo_espirito} onChange={(e) => setMin('data_batismo_espirito', e.target.value)} disabled={!isEditing} />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Ordenação */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Ordenação</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Função</Label>
-                <Select value={ministerialData.ordenacao_funcao} onValueChange={(v) => setMin('ordenacao_funcao', v)} disabled={!isEditing}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {ORDENACAO_MIN_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Data de Início</Label>
-                <Input type="date" value={ministerialData.data_ordenacao_inicio} onChange={(e) => setMin('data_ordenacao_inicio', e.target.value)} disabled={!isEditing} />
-              </div>
-              <div className="space-y-2">
-                <Label>Data de Término (opcional)</Label>
-                <Input type="date" value={ministerialData.data_ordenacao_fim} onChange={(e) => setMin('data_ordenacao_fim', e.target.value)} disabled={!isEditing} />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label>Observação</Label>
-                <Textarea value={ministerialData.ordenacao_observacao} onChange={(e) => setMin('ordenacao_observacao', e.target.value)} disabled={!isEditing} rows={2} placeholder="Observações sobre a ordenação..." />
-              </div>
-            </div>
-          </div>
-
-          {/* Família */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Família</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Estado Civil</Label>
-                <Select value={ministerialData.estado_civil} onValueChange={(v) => setMin('estado_civil', v)} disabled={!isEditing}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    {estadoCivilOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Nome da Mãe</Label>
-                <Input value={ministerialData.nome_mae} onChange={(e) => setMin('nome_mae', e.target.value)} disabled={!isEditing} placeholder="Nome completo da mãe" />
-              </div>
-              <div className="space-y-2">
-                <Label>Nome do Pai</Label>
-                <Input value={ministerialData.nome_pai} onChange={(e) => setMin('nome_pai', e.target.value)} disabled={!isEditing} placeholder="Nome completo do pai" />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <div className="flex items-center gap-3">
-                  <Switch
-                    checked={ministerialData.pai_mae_promessista}
-                    onCheckedChange={(v) => setMin('pai_mae_promessista', v)}
-                    disabled={!isEditing}
-                  />
-                  <Label>Pai ou Mãe é Promessista</Label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Dados Adicionais */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Dados Adicionais</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>País</Label>
-                <Input value={ministerialData.pais} onChange={(e) => setMin('pais', e.target.value)} disabled={!isEditing} placeholder="Brasil" />
-              </div>
-              <div className="space-y-2">
-                <Label>Curso</Label>
-                <Input value={ministerialData.curso} onChange={(e) => setMin('curso', e.target.value)} disabled={!isEditing} placeholder="Curso de graduação ou técnico" />
-              </div>
-            </div>
-          </div>
-
-          {/* Observações Pastorais */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">Observações Pastorais</h4>
-            <Textarea
-              value={ministerialData.observacoes_pastorais}
-              onChange={(e) => setMin('observacoes_pastorais', e.target.value)}
-              disabled={!isEditing}
-              rows={4}
-              placeholder="Informações confidenciais de acompanhamento pastoral..."
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Histórico de Bases */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="w-5 h-5" />
-            Histórico de Bases
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loadingHistorico ? (
-            <div className="space-y-3">
-              {[1, 2].map(i => (
-                <Skeleton key={i} className="h-24 w-full" />
-              ))}
-            </div>
-          ) : historico.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <History className="w-10 h-10 mx-auto mb-2 opacity-50" />
-              <p>Nenhum registro de histórico ainda</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {historico.map((item) => (
-                <div key={item.id} className="p-4 border rounded-lg">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{item.base?.nome || 'Base não encontrada'}</p>
-                        <Badge 
-                          variant="outline" 
-                          className={item.status === 'ativo' 
-                            ? 'bg-green-100 text-green-800 border-green-300' 
-                            : 'bg-gray-100 text-gray-800 border-gray-300'}
-                        >
-                          {item.status === 'ativo' ? 'Ativo' : item.status === 'saida' ? 'Saiu' : item.status}
-                        </Badge>
-                      </div>
-                      {item.base?.lider && (
-                        <p className="text-sm text-muted-foreground">
-                          Líder: {item.base.lider.nome}
-                        </p>
-                      )}
-                      {item.base && (
-                        <p className="text-sm text-muted-foreground">
-                          {item.base.dia_semana && item.base.horario
-                            ? `${item.base.dia_semana} às ${item.base.horario}`
-                            : item.base.dia_semana || item.base.horario || ''}
-                          {item.base.local && ` • ${item.base.local}`}
-                        </p>
-                      )}
-                      {item.observacao && (
-                        <p className="text-sm mt-1 italic text-muted-foreground">
-                          "{item.observacao}"
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">
-                        {formatDateTime(item.created_at)}
-                      </p>
-                      {item.base && (
-                        <div className="flex items-center justify-end gap-1 mt-1">
-                          <Users className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            {item.base.membros_count || 0}/{item.base.capacidade || '∞'}
-                          </span>
-                          {isBaseLotada(item.base) && (
-                            <Badge variant="destructive" className="text-xs ml-1">Lotada</Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
+          {/* Linked profile info */}
+          {isLinkedToProfile && profileData && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Link2 className="w-4 h-4" />
+                  Conta de Usuário Vinculada
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">E-mail da conta</Label>
+                    <p className="font-medium">{profileData.email || '–'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Data de Cadastro</Label>
+                    <p className="font-medium">
+                      {profileData.data_cadastro ? formatDate(profileData.data_cadastro) : '–'}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">Conta criada em</Label>
+                    <p className="font-medium">
+                      {profileData.created_at ? formatDate(profileData.created_at) : '–'}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/admin/usuarios')}
+                >
+                  <User className="w-3 h-3 mr-1" />
+                  Gerenciar usuário
+                </Button>
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-3">
-        <Button variant="outline" onClick={() => navigate('/admin/membros')}>
-          Voltar
-        </Button>
-        {isEditing ? (
-          <>
-            <Button variant="outline" onClick={() => {
-              setIsEditing(false);
-              fetchMembro();
-              setFotoFile(null);
-            }}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave} disabled={saving || uploading}>
-              <Save className="w-4 h-4 mr-2" />
-              {saving ? 'Salvando...' : 'Salvar alterações'}
-            </Button>
-          </>
-        ) : (
-          <Button onClick={() => setIsEditing(true)}>
-            Editar
-          </Button>
-        )}
-      </div>
-
-      {/* Modal Vincular Base */}
+      {/* ── Modal Vincular Base ── */}
       <Dialog open={showBaseModal} onOpenChange={setShowBaseModal}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -1832,9 +1839,7 @@ export default function MembroDetalhes() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBaseModal(false)}>
-              Cancelar
-            </Button>
+            <Button variant="outline" onClick={() => setShowBaseModal(false)}>Cancelar</Button>
             <Button onClick={handleVincularBase} disabled={!selectedBaseId || savingBase}>
               {savingBase ? 'Salvando...' : 'Confirmar'}
             </Button>
