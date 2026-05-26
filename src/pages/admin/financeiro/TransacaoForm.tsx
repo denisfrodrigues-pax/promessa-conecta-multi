@@ -392,12 +392,12 @@ export default function TransacaoForm() {
               {/* Membro vinculado */}
               <div className="space-y-2">
                 <Label htmlFor="membro">Membro Vinculado</Label>
-                <Select value={membroId} onValueChange={setMembroId}>
+                <Select value={membroId || 'none'} onValueChange={v => setMembroId(v === 'none' ? '' : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione (opcional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
+                    <SelectItem value="none">Nenhum</SelectItem>
                     {membros.map((m) => (
                       <SelectItem key={m.id} value={m.id}>
                         {m.nome}
@@ -410,12 +410,12 @@ export default function TransacaoForm() {
               {/* Evento vinculado */}
               <div className="space-y-2">
                 <Label htmlFor="evento">Evento Vinculado</Label>
-                <Select value={eventoId} onValueChange={setEventoId}>
+                <Select value={eventoId || 'none'} onValueChange={v => setEventoId(v === 'none' ? '' : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione (opcional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
+                    <SelectItem value="none">Nenhum</SelectItem>
                     {eventos.map((e) => (
                       <SelectItem key={e.id} value={e.id}>
                         {e.titulo}
