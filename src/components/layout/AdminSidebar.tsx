@@ -78,12 +78,11 @@ const menuItems: MenuItem[] = [
     label: 'Equipe & Operações',
     path: '/admin/ministerios',
     submenu: [
-      { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
-      { icon: ClipboardList, label: 'Funções', path: '/admin/funcoes-ministerio' },
-      { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
-      { icon: ClipboardList, label: 'Períodos de Escala', path: '/admin/escalas/periodos' },
       { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
-      { icon: Users, label: 'Acompanhamento', path: '/admin/acompanhamento' },
+      { icon: ClipboardList, label: 'Funções', path: '/admin/funcoes-ministerio' },
+      { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
+      { icon: ClipboardList, label: 'Períodos de Escala', path: '/admin/escalas/periodos' },
+      { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
     ]
   },
   { icon: Bell, label: 'Notificações', path: '/admin/notificacoes', showBadge: true },
@@ -115,7 +114,6 @@ const menuItems: MenuItem[] = [
       { icon: MessageCircle, label: 'Comunicações', path: '/admin/relatorios/comunicacoes' },
     ]
   },
-  { icon: GraduationCap, label: 'Ensino', path: '/admin/ensino' },
   { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },
   { icon: Bell, label: 'Avisos', path: '/admin/avisos' },
   { icon: BookOpen, label: 'Devocionais', path: '/admin/devocionais' },
