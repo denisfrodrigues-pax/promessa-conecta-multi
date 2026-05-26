@@ -128,8 +128,7 @@ export default function BaseDetalhes() {
   const [membrosBase, setMembrosBase] = useState<BaseMembroUnificado[]>([]);
   const [membrosDisponiveis, setMembrosDisponiveis] = useState<Membro[]>([]);
   const [liderInfo, setLiderInfo] = useState<Membro | null>(null);
-  const [todosMembros, setTodosMembros] = useState<Membro[]>([]);
-  const [todosProfiles, setTodosProfiles] = useState<{ id: string; nome: string }[]>([]);
+  const [todosProfiles, setTodosProfiles] = useState<{ id: string; nome: string; telefone?: string | null; foto_url?: string | null }[]>([]);
   const [visitantesBase, setVisitantesBase] = useState<BaseVisitante[]>([]);
   const [filtroStatusVisitante, setFiltroStatusVisitante] = useState('todos');
   const [loading, setLoading] = useState(true);
@@ -165,7 +164,6 @@ export default function BaseDetalhes() {
     await Promise.all([
       fetchBase(),
       fetchMembrosBase(),
-      fetchTodosMembros(),
       fetchTodosProfiles(),
       fetchVisitantesBase(),
     ]);
@@ -279,26 +277,42 @@ export default function BaseDetalhes() {
     }
   };
 
-  const fetchTodosMembros = async () => {
-    const { data } = await supabase.from('membros').select('id, nome, telefone, foto_perfil').eq('status', 'ativo').order('nome');
-    if (data) setTodosMembros(data);
-  };
-
   const fetchTodosProfiles = async () => {
-    const { data } = await supabase.from('profiles').select('id, nome').eq('status', 'ativo').order('nome');
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, nome, telefone, foto_url')
+      .eq('status', 'ativo')
+      .order('nome');
     if (data) setTodosProfiles(data);
   };
 
   const fetchMembrosDisponiveis = async () => {
-    const { data: emBase } = await supabase.from('bases_membros').select('membro_id').eq('status', 'ativo');
-    const idsEmBase = (emBase || []).map((m) => m.membro_id);
-    const disponiveis = todosMembros.filter((m) => !idsEmBase.includes(m.id));
+    // Busca profile_ids já ativos nesta base
+    const { data: emBase } = await supabase
+      .from('bases_membros')
+      .select('profile_id')
+      .eq('base_id', id)
+      .eq('status', 'ativo')
+      .not('profile_id', 'is', null);
+
+    const profileIdsEmBase = new Set((emBase || []).map((r) => r.profile_id as string));
+
+    // Filtra profiles disponíveis e mapeia para interface Membro
+    const disponiveis = todosProfiles
+      .filter((p) => !profileIdsEmBase.has(p.id))
+      .map((p) => ({
+        id: p.id,
+        nome: p.nome,
+        telefone: p.telefone ?? null,
+        foto_perfil: p.foto_url ?? null,
+      }));
+
     setMembrosDisponiveis(disponiveis);
   };
 
   useEffect(() => {
     if (addModalOpen) fetchMembrosDisponiveis();
-  }, [addModalOpen, todosMembros]);
+  }, [addModalOpen, todosProfiles]);
 
   const handleSave = async () => {
     if (!formData.nome.trim()) {
@@ -361,20 +375,21 @@ export default function BaseDetalhes() {
     }
   };
 
-  const addMembro = async (membroId: string) => {
-    // Look up the membro's profile_id (user_id in membros references profiles.id)
-    const { data: membroData } = await supabase
-      .from('membros')
-      .select('user_id')
-      .eq('id', membroId)
-      .maybeSingle();
+  const addMembro = async (profileId: string) => {
+    // Usa profile_id como chave — upsert para reativar caso o membro já tenha sido desligado
+    const { error } = await supabase
+      .from('bases_membros')
+      .upsert(
+        {
+          base_id: id!,
+          profile_id: profileId,
+          status: 'ativo',
+          data_entrada: new Date().toISOString(),
+          data_saida: null,
+        },
+        { onConflict: 'base_id,profile_id' }
+      );
 
-    const insertData: { base_id: string; membro_id: string; status: string; profile_id?: string } = { base_id: id!, membro_id: membroId, status: 'ativo' };
-    if (membroData?.user_id) {
-      insertData.profile_id = membroData.user_id;
-    }
-
-    const { error } = await supabase.from('bases_membros').insert(insertData);
     if (error) {
       toast.error('Erro ao adicionar membro: ' + error.message);
       return;
