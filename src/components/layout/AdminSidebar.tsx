@@ -34,6 +34,7 @@ import {
   BookOpen,
   Baby,
   GraduationCap,
+  Building2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -119,7 +120,15 @@ const menuItems: MenuItem[] = [
   { icon: Bell, label: 'Avisos', path: '/admin/avisos' },
   { icon: BookOpen, label: 'Devocionais', path: '/admin/devocionais' },
   { icon: Shield, label: 'Auditoria', path: '/admin/auditoria' },
-  { icon: Settings, label: 'Configurações', path: '/admin/configuracoes' },
+  {
+    icon: Settings,
+    label: 'Configurações',
+    path: '/admin/configuracoes',
+    submenu: [
+      { icon: Settings, label: 'Configurações Gerais', path: '/admin/configuracoes' },
+      { icon: Building2, label: 'Dados da Igreja', path: '/admin/configuracoes/igreja' },
+    ]
+  },
 ];
 
 export default function AdminSidebar() {

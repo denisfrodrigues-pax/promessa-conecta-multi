@@ -78,9 +78,19 @@ export default function Onboarding() {
 
       if (profileError) throw profileError;
 
-      toast.success('Igreja configurada com sucesso! Bem-vindo ao Promessa Conecta!');
+      // Tornar o criador da igreja admin automaticamente
+      // upsert evita erro se já tiver role (unique: user_id, role)
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert(
+          { user_id: user.id, role: 'admin', church_id: igrejaCriada!.id },
+          { onConflict: 'user_id,role' }
+        );
+      if (roleError) console.warn('[onboarding] role admin não atribuído:', roleError.message);
 
-      // Recarrega a página para que o AuthContext atualize o churchId
+      toast.success('Igreja configurada! Você é o administrador da nova igreja.');
+
+      // Recarrega a página para que o AuthContext atualize o churchId e roles
       window.location.href = '/admin/dashboard';
     } catch (error: any) {
       console.error('Erro ao criar igreja:', error);

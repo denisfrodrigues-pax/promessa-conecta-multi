@@ -59,9 +59,13 @@ const AdminAcompanhamento = lazy(() => import("@/pages/admin/Acompanhamento"));
 const AdminAuditoria = lazy(() => import("@/pages/admin/Auditoria"));
 const AdminDevocionais = lazy(() => import("@/pages/admin/Devocionais"));
 const AdminConfiguracoes = lazy(() => import("@/pages/admin/Configuracoes"));
+const AdminConfiguracaoIgreja = lazy(() => import("@/pages/admin/ConfiguracaoIgreja"));
 const WhatsAppTest = lazy(() => import("@/pages/admin/WhatsAppTest"));
 const AdminKids = lazy(() => import("@/pages/admin/Kids"));
 const AdminEnsino = lazy(() => import("@/pages/admin/Ensino"));
+
+// Super Admin (fora do AdminLayout — tela própria)
+const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
 
 // Admin — Financeiro
 const FinanceiroDashboard = lazy(() => import("@/pages/admin/financeiro/FinanceiroDashboard"));
@@ -209,6 +213,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/install" element={<InstallPWA />} />
             <Route path="/onboarding" element={<PrivateRoute><Onboarding /></PrivateRoute>} />
+            <Route path="/superadmin" element={<PrivateRoute allowedRoles={["superadmin"]}><SuperAdmin /></PrivateRoute>} />
             <Route path="/sou-novo" element={<SouNovo />} />
             <Route path="/contribuicoes" element={<Contribuicoes />} />
 
@@ -309,6 +314,7 @@ const App = () => (
               {/* Config & Audit */}
               <Route path="auditoria" element={<AdminAuditoria />} />
               <Route path="configuracoes" element={<AdminConfiguracoes />} />
+              <Route path="configuracoes/igreja" element={<AdminConfiguracaoIgreja />} />
               <Route path="whatsapp-test" element={<WhatsAppTest />} />
             </Route>
 

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-export type UserRole = 'admin' | 'lider' | 'voluntario' | 'membro' | 'visitante' | 'financeiro';
+export type UserRole = 'admin' | 'lider' | 'voluntario' | 'membro' | 'visitante' | 'financeiro' | 'superadmin';
 
 export interface MyMinistry {
   ministerio_id: string;
