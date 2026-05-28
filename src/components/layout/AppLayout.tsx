@@ -14,6 +14,7 @@ import {
   User,
   BookOpenCheck,
   ChevronDown,
+  Church,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -36,6 +37,7 @@ export default function AppLayout() {
   
   const navItems = [
     { icon: Home, label: 'Início', path: '/app' },
+    { icon: Church, label: 'Minha Igreja', path: '/app/minha-igreja' },
     { icon: Users, label: 'Minha Base', path: '/app/minha-base' },
     { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
     { icon: Calendar, label: 'Calendário', path: '/app/calendario' },

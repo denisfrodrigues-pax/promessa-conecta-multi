@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChurchThemeApplier } from "@/components/ChurchThemeApplier";
 
 // Route Guards
 import PublicRoute from "@/components/routes/PublicRoute";
@@ -107,6 +108,7 @@ const AppHome = lazy(() => import("@/pages/app/AppHome"));
 const AppCalendario = lazy(() => import("@/pages/app/Calendario"));
 const VoluntariosDoDia = lazy(() => import("@/pages/app/VoluntariosDoDia"));
 const MeuEnsino = lazy(() => import("@/pages/app/MeuEnsino"));
+const MinhaIgreja = lazy(() => import("@/pages/app/MinhaIgreja"));
 
 // Ministério Modular
 const MinisterioHome = lazy(() => import("@/pages/ministerio/MinisterioHome"));
@@ -205,6 +207,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <ChurchThemeApplier />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* ── PUBLIC ──────────────────────────────────────────────────── */}
@@ -251,6 +254,7 @@ const App = () => (
               <Route path="calendario" element={<AppCalendario />} />
               <Route path="voluntarios-do-dia" element={<VoluntariosDoDia />} />
               <Route path="meu-ensino" element={<MeuEnsino />} />
+              <Route path="minha-igreja" element={<MinhaIgreja />} />
             </Route>
 
             {/* Redirects legados */}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useChurchConfig } from '@/hooks/useChurchConfig';
+import { usePublicIgreja } from '@/hooks/usePublicIgreja';
 import { supabase } from '@/integrations/supabase/client';
 import { Logo } from '@/components/Logo';
 import logoIgreja from '@/assets/logo-igreja-promessa.png';
@@ -49,7 +49,7 @@ export default function Auth() {
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   
   const { signIn, signUp, user, roles, loading } = useAuth();
-  const { config } = useChurchConfig();
+  const { igreja } = usePublicIgreja();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -218,8 +218,8 @@ export default function Auth() {
     setErrors({});
   };
 
-  const churchName = config?.nome_igreja || 'Igreja da Promessa';
-  const hasCustomLogo = config?.logo_url && !config.logo_url.includes('placeholder');
+  const churchName = igreja?.nome || 'Igreja da Promessa';
+  const hasCustomLogo = !!igreja?.logo_url;
 
   const features = [
     { icon: Church, text: 'Gestão completa da sua igreja' },
@@ -230,7 +230,20 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex">
       {/* Left Panel - Decorative */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-hero relative overflow-hidden">
+      <div
+        className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
+        style={
+          igreja?.foto_login_url
+            ? {
+                backgroundImage: `url(${igreja.foto_login_url})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }
+            : undefined
+        }
+      >
+        {/* Gradient overlay — sempre presente, mais forte sem foto */}
+        <div className={`absolute inset-0 ${igreja?.foto_login_url ? 'bg-gradient-to-br from-promessa-900/80 to-promessa-700/70' : 'bg-gradient-hero'}`} />
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-white/20 blur-3xl" />
@@ -258,7 +271,7 @@ export default function Auth() {
               <div className="inline-flex items-center justify-center p-10 rounded-3xl bg-white/95 backdrop-blur-xl shadow-[0_8px_40px_-8px_rgba(0,0,0,0.15)] border border-white/60 mb-8">
                 {hasCustomLogo ? (
                   <img 
-                    src={config.logo_url!} 
+                    src={igreja!.logo_url!}
                     alt={churchName}
                     className="h-28 w-auto object-contain"
                   />
@@ -324,7 +337,7 @@ export default function Auth() {
             <div className="p-2 rounded-xl bg-white/15 backdrop-blur-md shadow-lg border border-white/20">
               {hasCustomLogo ? (
                 <img 
-                  src={config.logo_url!} 
+                  src={igreja!.logo_url!}
                   alt={churchName}
                   className="h-10 w-auto object-contain drop-shadow-md"
                 />

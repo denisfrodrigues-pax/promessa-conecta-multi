@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, Navigate, NavLink as RouterNavLink, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIgrejaConfig } from "@/hooks/useIgrejaConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
@@ -23,6 +24,7 @@ interface MinisterioInfo {
 export default function LeaderMinisterioLayout() {
   const { slug } = useParams<{ slug: string }>();
   const { user, loading: authLoading, profile, isLider } = useAuth();
+  const { nomeModulo } = useIgrejaConfig();
   const { unreadCount } = useLeaderNotifications();
   const [ministerio, setMinisterio] = useState<MinisterioInfo | null>(null);
   const [loadingMin, setLoadingMin] = useState(true);
@@ -123,7 +125,7 @@ export default function LeaderMinisterioLayout() {
 
   const musicaNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
-    { icon: ListMusic, label: "Escala de Cultos", path: `${basePath}/escala-culto` },
+    { icon: ListMusic, label: `Escala de ${nomeModulo.culto}s`, path: `${basePath}/escala-culto` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Music2, label: "Repertório", path: `${basePath}/repertorio` },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
@@ -134,7 +136,7 @@ export default function LeaderMinisterioLayout() {
 
   const celebracaoNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
-    { icon: CalendarDays, label: "Cultos", path: `${basePath}/cultos` },
+    { icon: CalendarDays, label: `${nomeModulo.culto}s`, path: `${basePath}/cultos` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
@@ -165,7 +167,7 @@ export default function LeaderMinisterioLayout() {
 
   const ensinoNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
-    { icon: GraduationCap, label: "Escola Bíblica", path: `${basePath}/escola-biblica` },
+    { icon: GraduationCap, label: nomeModulo.escolaBiblica, path: `${basePath}/escola-biblica` },
     { icon: Users, label: "Turmas", path: `${basePath}/turmas` },
     { icon: BookOpenCheck, label: "Espaço do Professor", path: `${basePath}/planos` },
     { icon: ClipboardCheck, label: "Chamada", path: `${basePath}/chamada` },
@@ -178,7 +180,7 @@ export default function LeaderMinisterioLayout() {
 
   const pequenosGruposNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: basePath, end: true },
-    { icon: Network, label: "Grupos", path: `${basePath}/grupos` },
+    { icon: Network, label: nomeModulo.bases, path: `${basePath}/grupos` },
     { icon: CalendarDays, label: "Escalas", path: `${basePath}/escalas` },
     { icon: Users, label: "Equipe", path: `${basePath}/equipe` },
     { icon: BarChart3, label: "Relatórios", path: `${basePath}/relatorios` },
