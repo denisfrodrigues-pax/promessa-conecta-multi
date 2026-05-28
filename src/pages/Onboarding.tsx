@@ -11,7 +11,7 @@ import {
 import { toast } from 'sonner';
 import {
   Loader2, Church, MapPin, Clock, ChevronRight, ChevronLeft,
-  CheckCircle, Copy, ExternalLink,
+  CheckCircle, Copy, ExternalLink, Users, DollarSign, BookOpen, Calendar,
 } from 'lucide-react';
 
 const DIAS_SEMANA = [
@@ -31,11 +31,29 @@ function slugify(text: string): string {
 
 type Step = 'igreja' | 'localizacao' | 'culto' | 'sucesso';
 
+interface SeedResult {
+  ministerios: number;
+  categorias: number;
+  disciplinas: number;
+  aulas: number;
+  periodos: number;
+  seedOk: boolean;
+}
+
 export default function Onboarding() {
   const { user, profile } = useAuth();
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState<Step>('igreja');
   const [subdominioGerado, setSubdominioGerado] = useState('');
+  const [nomeIgreja, setNomeIgreja] = useState('');
+  const [seedResult, setSeedResult] = useState<SeedResult>({
+    ministerios: 7,
+    categorias: 13,
+    disciplinas: 18,
+    aulas: 72,
+    periodos: 3,
+    seedOk: true,
+  });
 
   // Passo 1 — Igreja
   const [formIgreja, setFormIgreja] = useState({
@@ -60,15 +78,12 @@ export default function Onboarding() {
     local: '',
   });
 
-  const handleIgrejaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleIgrejaChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormIgreja(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-  const handleLocalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLocalChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormLocal(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-  const handleCultoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCultoChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormCulto(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
   const canAdvanceStep1 = formIgreja.nome_igreja.trim() && formIgreja.responsavel_nome.trim();
 
@@ -111,14 +126,12 @@ export default function Onboarding() {
       }
 
       const churchId = igrejaCriada!.id;
+      setNomeIgreja(formIgreja.nome_igreja.trim());
 
       // 2. Gerar e salvar subdomínio
       const subBase = slugify(formIgreja.nome_igreja);
       const subdominio = `${subBase}-${Date.now().toString(36).slice(-4)}`;
-      await supabase
-        .from('igrejas')
-        .update({ subdominio })
-        .eq('id', churchId);
+      await supabase.from('igrejas').update({ subdominio }).eq('id', churchId);
       setSubdominioGerado(subdominio);
 
       // 3. Vincular perfil à nova igreja
@@ -151,7 +164,48 @@ export default function Onboarding() {
         });
       if (eventoError) console.warn('[onboarding] evento semanal não criado:', eventoError.message);
 
-      // Avançar para tela de sucesso (não redireciona ainda)
+      // 6. Seed dos dados iniciais (ministérios, categorias, escola bíblica, config)
+      let seedOk = true;
+      const { error: seedError } = await supabase.rpc('fn_seed_nova_igreja', {
+        p_church_id: churchId,
+      } as any);
+      if (seedError) {
+        console.error('[onboarding] seed error:', seedError.message);
+        seedOk = false;
+        // Não bloqueia o fluxo — admin pode configurar manualmente depois
+      }
+
+      // 7. Criar 3 períodos de escala iniciais
+      const hoje = new Date();
+      const periodos = [0, 1, 2].map(i => {
+        const d = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+        const mesNome = d
+          .toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
+          .replace(/^\w/, c => c.toUpperCase());
+        return {
+          nome: mesNome,
+          mes: d.getMonth() + 1,
+          ano: d.getFullYear(),
+          church_id: churchId,
+          status: 'aberto',
+        };
+      });
+      const { error: periodosError } = await supabase
+        .from('periodos_escala')
+        .insert(periodos);
+      if (periodosError) {
+        console.warn('[onboarding] períodos de escala não criados:', periodosError.message);
+      }
+
+      setSeedResult({
+        ministerios: 7,
+        categorias: 13,
+        disciplinas: 18,
+        aulas: 72,
+        periodos: periodosError ? 0 : 3,
+        seedOk,
+      });
+
       setStep('sucesso');
     } catch (error: any) {
       console.error('Erro ao criar igreja:', error);
@@ -176,7 +230,8 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-lg space-y-6">
-        {/* Header */}
+
+        {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="text-center space-y-3">
           <div className="flex justify-center">
             <div className="p-3 bg-promessa-100 rounded-full">
@@ -189,7 +244,7 @@ export default function Onboarding() {
           </p>
         </div>
 
-        {/* Stepper */}
+        {/* ── Stepper ────────────────────────────────────────────────────── */}
         {step !== 'sucesso' && (
           <>
             <div className="flex items-center justify-center gap-2">
@@ -209,29 +264,46 @@ export default function Onboarding() {
               ))}
             </div>
             <div className="text-center text-xs text-muted-foreground">
-              {step === 'igreja' && 'Dados da Igreja'}
+              {step === 'igreja'     && 'Dados da Igreja'}
               {step === 'localizacao' && 'Localização e Identidade'}
-              {step === 'culto' && 'Culto Principal'}
+              {step === 'culto'      && 'Culto Principal'}
             </div>
           </>
         )}
 
-        {/* ── Passo 1: Igreja ──────────────────────────────────────────────── */}
+        {/* ── Passo 1: Igreja ─────────────────────────────────────────────── */}
         {step === 'igreja' && (
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="nome_igreja">Nome da Igreja *</Label>
-                  <Input id="nome_igreja" name="nome_igreja" placeholder="Ex: Igreja da Promessa – Centro" value={formIgreja.nome_igreja} onChange={handleIgrejaChange} required autoFocus />
+                  <Input
+                    id="nome_igreja" name="nome_igreja"
+                    placeholder="Ex: Igreja da Promessa – Centro"
+                    value={formIgreja.nome_igreja}
+                    onChange={handleIgrejaChange}
+                    required autoFocus
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="responsavel_nome">Nome do Responsável *</Label>
-                  <Input id="responsavel_nome" name="responsavel_nome" placeholder="Seu nome completo" value={formIgreja.responsavel_nome} onChange={handleIgrejaChange} required />
+                  <Input
+                    id="responsavel_nome" name="responsavel_nome"
+                    placeholder="Seu nome completo"
+                    value={formIgreja.responsavel_nome}
+                    onChange={handleIgrejaChange}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="responsavel_email">E-mail do Responsável</Label>
-                  <Input id="responsavel_email" name="responsavel_email" type="email" placeholder="email@exemplo.com" value={formIgreja.responsavel_email} onChange={handleIgrejaChange} />
+                  <Input
+                    id="responsavel_email" name="responsavel_email"
+                    type="email" placeholder="email@exemplo.com"
+                    value={formIgreja.responsavel_email}
+                    onChange={handleIgrejaChange}
+                  />
                 </div>
                 <Button className="w-full" onClick={() => setStep('localizacao')} disabled={!canAdvanceStep1}>
                   Próximo <ChevronRight className="w-4 h-4 ml-2" />
@@ -331,49 +403,112 @@ export default function Onboarding() {
 
         {/* ── Passo 4: Sucesso ─────────────────────────────────────────────── */}
         {step === 'sucesso' && (
-          <Card className="border-green-200 bg-green-50/50">
-            <CardContent className="pt-6 text-center space-y-5">
-              <div className="flex justify-center">
-                <div className="p-4 bg-green-100 rounded-full">
-                  <CheckCircle className="w-10 h-10 text-green-600" />
-                </div>
-              </div>
-              <div>
-                <h2 className="text-xl font-display font-bold text-foreground">Igreja configurada! 🎉</h2>
-                <p className="text-muted-foreground text-sm mt-1">
-                  <strong>{formIgreja.nome_igreja}</strong> está pronta para usar o Promessa Conecta.
-                </p>
-              </div>
-
-              {subdominioGerado && (
-                <div className="bg-white border border-green-200 rounded-lg p-4 text-left space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Seu sistema está disponível em:</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 text-sm text-promessa-700 bg-promessa-50 px-3 py-2 rounded font-mono break-all">
-                      https://{subdominioGerado}.vercel.app
-                    </code>
-                    <Button variant="outline" size="icon" onClick={copySubdomain} title="Copiar link">
-                      <Copy className="w-4 h-4" />
-                    </Button>
+          <div className="space-y-4">
+            <Card className="border-green-200 bg-green-50/50">
+              <CardContent className="pt-6 text-center space-y-4">
+                <div className="flex justify-center">
+                  <div className="p-4 bg-green-100 rounded-full">
+                    <CheckCircle className="w-10 h-10 text-green-600" />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    💡 Em breve você poderá configurar um domínio personalizado em{' '}
-                    <strong>Admin → Configurações → Dados da Igreja</strong>.
+                </div>
+                <div>
+                  <h2 className="text-xl font-display font-bold text-foreground">Igreja configurada! 🎉</h2>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    <strong>{nomeIgreja}</strong> está pronta para usar o Promessa Conecta.
                   </p>
                 </div>
-              )}
 
-              <div className="space-y-2">
-                <Button className="w-full" onClick={goToDashboard}>
-                  Ir para o Painel <ExternalLink className="w-4 h-4 ml-2" />
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  Você pode editar tudo em <strong>Admin → Configurações → Dados da Igreja</strong>
+                {/* Subdomínio */}
+                {subdominioGerado && (
+                  <div className="bg-white border border-green-200 rounded-lg p-4 text-left space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Site da sua igreja:
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 text-sm text-promessa-700 bg-promessa-50 px-3 py-2 rounded font-mono break-all">
+                        https://{subdominioGerado}.vercel.app
+                      </code>
+                      <Button variant="outline" size="icon" onClick={copySubdomain} title="Copiar link">
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      💡 Configure um domínio personalizado em{' '}
+                      <strong>Admin → Configurações → Dados da Igreja</strong>.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* O que foi criado automaticamente */}
+            <Card>
+              <CardContent className="pt-5 pb-5">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                  Criado automaticamente para você:
                 </p>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 p-3 bg-promessa-50 rounded-lg">
+                    <div className="p-2 bg-promessa-100 rounded-lg flex-shrink-0">
+                      <Users className="w-4 h-4 text-promessa-700" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{seedResult.ministerios} ministérios</p>
+                      <p className="text-xs text-muted-foreground">com funções padrão</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-promessa-50 rounded-lg">
+                    <div className="p-2 bg-promessa-100 rounded-lg flex-shrink-0">
+                      <DollarSign className="w-4 h-4 text-promessa-700" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{seedResult.categorias} categorias</p>
+                      <p className="text-xs text-muted-foreground">financeiras</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-promessa-50 rounded-lg">
+                    <div className="p-2 bg-promessa-100 rounded-lg flex-shrink-0">
+                      <BookOpen className="w-4 h-4 text-promessa-700" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Escola Bíblica</p>
+                      <p className="text-xs text-muted-foreground">{seedResult.disciplinas} disciplinas · {seedResult.aulas} aulas</p>
+                    </div>
+                  </div>
+
+                  {seedResult.periodos > 0 && (
+                    <div className="flex items-center gap-3 p-3 bg-promessa-50 rounded-lg">
+                      <div className="p-2 bg-promessa-100 rounded-lg flex-shrink-0">
+                        <Calendar className="w-4 h-4 text-promessa-700" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{seedResult.periodos} períodos</p>
+                        <p className="text-xs text-muted-foreground">de escala abertos</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {!seedResult.seedOk && (
+                  <p className="text-xs text-amber-600 mt-3 bg-amber-50 border border-amber-200 rounded p-2">
+                    ⚠️ Alguns dados iniciais não puderam ser criados automaticamente.
+                    Acesse <strong>Admin → Configurações</strong> para configurar manualmente.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Button className="w-full" size="lg" onClick={goToDashboard}>
+              Acessar meu painel <ExternalLink className="w-4 h-4 ml-2" />
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              Você pode editar tudo em <strong>Admin → Configurações → Dados da Igreja</strong>
+            </p>
+          </div>
         )}
+
       </div>
     </div>
   );
