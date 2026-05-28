@@ -1,6 +1,7 @@
 import { NavLink } from '@/components/NavLink';
 import { Logo } from '@/components/Logo';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
+import { PlanoInfo } from '@/components/PlanoInfo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
@@ -259,6 +260,9 @@ export default function AdminSidebar() {
 
       {/* Profile & Actions - Clean Premium */}
       <div className="p-3 border-t border-neutral-200 space-y-2">
+        {/* Plano da Igreja */}
+        {!collapsed && <PlanoInfo compact />}
+
         {/* Back to Member Area Button */}
         <NavLink
           to="/app"
