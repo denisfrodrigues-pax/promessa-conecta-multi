@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Download, FileText, UserPlus, UserMinus, Calendar, MessageCircle, Loader2, Baby } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { format, subMonths, startOfMonth, endOfMonth, differenceInYears } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from 'recharts';
@@ -17,6 +18,7 @@ const COLORS = ['#5A9462', '#396939', '#73A97A', '#85A89A', '#B7CEC4'];
 const statusLabels: Record<string, string> = { ativo: 'Ativo', inativo: 'Inativo' };
 
 export default function RelatorioMembros() {
+  const { churchId } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);
@@ -43,7 +45,7 @@ export default function RelatorioMembros() {
           .gte('created_at', startOfMonth(new Date()).toISOString()),
         supabase.from('membros').select('*', { count: 'exact', head: true }).neq('status', 'ativo'),
         supabase.from('membros').select('data_nascimento'),
-        supabase.from('mca_criancas').select('*', { count: 'exact', head: true }).eq('church_id', 'e19bf49a-4532-4fd9-98af-5b5682e50cd6').eq('ativo', true),
+        supabase.from('mca_criancas').select('*', { count: 'exact', head: true }).eq('church_id', churchId ?? '').eq('ativo', true),
       ]);
       setTotalCriancas(criancasRes.count || 0);
 

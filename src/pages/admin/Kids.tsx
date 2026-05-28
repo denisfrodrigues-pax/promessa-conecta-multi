@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +19,6 @@ import { toast } from 'sonner';
 import { differenceInYears, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-const CHURCH_ID = 'e19bf49a-4532-4fd9-98af-5b5682e50cd6';
 const MCA_MINISTERIO_ID = '2716147f-b6a4-442f-8020-21c6d9ba4b72';
 
 interface Crianca {
@@ -143,7 +143,7 @@ function CriancaForm({ open, initial, salas, onClose, onSaved }: CriancaFormProp
         if (error) throw error;
         toast.success('Criança atualizada!');
       } else {
-        const { error } = await supabase.from('mca_criancas').insert({ ...payload, church_id: CHURCH_ID });
+        const { error } = await supabase.from('mca_criancas').insert({ ...payload, church_id: churchId! });
         if (error) throw error;
         toast.success('Criança cadastrada!');
       }
@@ -268,7 +268,7 @@ function SalaForm({ open, initial, responsaveis, onClose, onSaved }: SalaFormPro
       } else {
         const { error } = await supabase.from('mca_salas').insert({
           ...payload,
-          church_id: CHURCH_ID,
+          church_id: churchId!,
           ministerio_id: MCA_MINISTERIO_ID,
         });
         if (error) throw error;
@@ -337,6 +337,7 @@ function SalaForm({ open, initial, responsaveis, onClose, onSaved }: SalaFormPro
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AdminKids() {
+  const { churchId } = useAuth();
   const [criancas, setCriancas] = useState<Crianca[]>([]);
   const [salas, setSalas] = useState<Sala[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
@@ -367,7 +368,7 @@ export default function AdminKids() {
       const { data, error } = await supabase
         .from('mca_criancas')
         .select('*')
-        .eq('church_id', CHURCH_ID)
+        .eq('church_id', churchId!)
         .order('nome');
       if (error) throw error;
 
@@ -398,7 +399,7 @@ export default function AdminKids() {
       const { data, error } = await supabase
         .from('mca_salas')
         .select('*')
-        .eq('church_id', CHURCH_ID)
+        .eq('church_id', churchId!)
         .order('nome');
       if (error) throw error;
 

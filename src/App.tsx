@@ -31,6 +31,7 @@ const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const InstallPWA = lazy(() => import("@/pages/InstallPWA"));
 const Index = lazy(() => import("@/pages/Index"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const Onboarding = lazy(() => import("@/pages/Onboarding"));
 
 // Admin
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
@@ -207,6 +208,7 @@ const App = () => (
             <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/install" element={<InstallPWA />} />
+            <Route path="/onboarding" element={<PrivateRoute><Onboarding /></PrivateRoute>} />
             <Route path="/sou-novo" element={<SouNovo />} />
             <Route path="/contribuicoes" element={<Contribuicoes />} />
 

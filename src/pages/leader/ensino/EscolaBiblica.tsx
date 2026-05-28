@@ -20,7 +20,6 @@ import {
   Upload, Trash2, File, FileText, Film, LayoutList, Search,
 } from 'lucide-react';
 
-const CHURCH_ID = 'e19bf49a-4532-4fd9-98af-5b5682e50cd6';
 const MES_ATUAL = new Date().getMonth() + 1;
 
 const MES_NOMES: Record<number, string> = {
@@ -218,7 +217,7 @@ function AulaItem({ aula, disciplinaId, userId }: {
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export default function EscolaBiblica() {
-  const { profile } = useAuth();
+  const { profile, churchId } = useAuth();
   const qc = useQueryClient();
 
   const [selectedDiscId, setSelectedDiscId] = useState('');
@@ -238,13 +237,14 @@ export default function EscolaBiblica() {
   // ── Queries ────────────────────────────────────────────────────────────────
 
   const { data: ciclos = [], isLoading: loadingCiclos } = useQuery<Ciclo[]>({
-    queryKey: ['eb_ciclos'],
+    queryKey: ['eb_ciclos', churchId],
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_ciclos')
-        .select('*').eq('church_id', CHURCH_ID).order('ordem');
+        .select('*').eq('church_id', churchId!).order('ordem');
       if (error) throw error;
       return data || [];
     },
+    enabled: !!churchId,
   });
 
   const { data: disciplinas = [] } = useQuery<Disciplina[]>({

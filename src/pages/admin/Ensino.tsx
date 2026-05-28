@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,10 +10,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { GraduationCap, Users, UserPlus, Loader2 } from 'lucide-react';
 
-const CHURCH_ID = 'e19bf49a-4532-4fd9-98af-5b5682e50cd6';
 const MES_ATUAL = new Date().getMonth() + 1;
 
 export default function AdminEnsino() {
+  const { churchId } = useAuth();
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [cicloId, setCicloId] = useState('');
@@ -20,13 +21,14 @@ export default function AdminEnsino() {
   const [saving, setSaving] = useState(false);
 
   const { data: ciclos = [], isLoading } = useQuery({
-    queryKey: ['eb_ciclos'],
+    queryKey: ['eb_ciclos', churchId],
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_ciclos')
-        .select('*').eq('church_id', CHURCH_ID).order('ordem');
+        .select('*').eq('church_id', churchId!).order('ordem');
       if (error) throw error;
       return (data || []) as any[];
     },
+    enabled: !!churchId,
   });
 
   const { data: disciplinas = [] } = useQuery({

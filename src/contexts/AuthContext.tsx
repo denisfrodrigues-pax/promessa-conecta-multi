@@ -20,6 +20,7 @@ interface Profile {
   telefone?: string;
   foto_url?: string;
   status: string;
+  church_id?: string | null;
 }
 
 interface AuthContextType {
@@ -106,25 +107,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserData = async (userId: string) => {
     try {
-      const [profileResult, rolesResult, churchResult] = await Promise.all([
+      const [profileResult, rolesResult] = await Promise.all([
         supabase
           .from('profiles')
-          .select('id, user_id, nome, email, telefone, foto_url, status')
+          .select('id, user_id, nome, email, telefone, foto_url, status, church_id')
           .eq('user_id', userId)
           .maybeSingle(),
         supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', userId),
-        supabase
-          .from('igrejas')
-          .select('id')
-          .limit(1)
-          .maybeSingle(),
       ]);
 
       if (!profileResult.error && profileResult.data) {
         setProfile(profileResult.data as Profile);
+        setChurchId(profileResult.data.church_id ?? null);
       } else if (profileResult.error) {
         console.error('Profile fetch error:', profileResult.error);
       }
@@ -133,10 +130,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRoles(rolesResult.data.map(r => r.role as UserRole));
       } else if (rolesResult.error) {
         console.error('Roles fetch error:', rolesResult.error);
-      }
-
-      if (!churchResult.error && churchResult.data) {
-        setChurchId(churchResult.data.id);
       }
 
       refreshMyMinistries();
