@@ -229,7 +229,7 @@ export default function CultoDetalhe() {
   const { ministerioId, ministerioNome } = useOutletContext<OutletCtx>();
   const { slug, eventoId } = useParams<{ slug: string; eventoId: string }>();
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, churchId } = useAuth();
   const queryClient = useQueryClient();
   const resumoRef = useRef<HTMLDivElement>(null);
 
@@ -348,11 +348,12 @@ export default function CultoDetalhe() {
   });
 
   const { data: todosAvisos } = useQuery({
-    queryKey: ['avisos_lista'],
+    queryKey: ['avisos_lista', churchId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('avisos')
         .select('id, titulo, conteudo')
+        .eq('church_id', churchId ?? '')
         .order('titulo');
       if (error) throw error;
       return (data ?? []) as Aviso[];
@@ -597,6 +598,7 @@ export default function CultoDetalhe() {
         .insert({
           titulo: novoAvisoForm.titulo,
           conteudo: novoAvisoForm.conteudo,
+          church_id: churchId,
         })
         .select('id')
         .single();

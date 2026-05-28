@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -98,6 +99,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
+  const { churchId } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
     visitantesNoMes: 0,
     acompanhamentosAtivos: 0,
@@ -228,6 +230,7 @@ export default function AdminDashboard() {
       const { data: eventosData } = await (supabase as any)
         .from('eventos_escala')
         .select('id, titulo, tipo, data_evento')
+        .eq('church_id', churchId ?? '')
         .gte('data_evento', today)
         .order('data_evento', { ascending: true })
         .limit(5);
