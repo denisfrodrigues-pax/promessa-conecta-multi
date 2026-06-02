@@ -218,7 +218,7 @@ export default function Membros() {
       .from('membros')
       .select('*', { count: 'exact', head: true })
       .eq('church_id', churchId)
-      .not('data_batismo_agua', 'is', null);
+      .not('data_batismo', 'is', null);
 
     setStats({
       total: totalCount || 0,
