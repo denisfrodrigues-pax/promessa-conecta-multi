@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -20,6 +20,8 @@ import {
   Phone,
   ExternalLink,
   CalendarDays,
+  Building2,
+  PlusCircle,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -100,6 +102,7 @@ const statusLabels: Record<string, string> = {
 
 export default function AdminDashboard() {
   const { churchId } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     visitantesNoMes: 0,
     acompanhamentosAtivos: 0,
@@ -460,9 +463,18 @@ export default function AdminDashboard() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Visão geral do ministério</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Visão geral do ministério</p>
+        </div>
+        <Button
+          onClick={() => navigate('/admin/igrejas/nova')}
+          className="bg-emerald-700 hover:bg-emerald-800 shrink-0"
+        >
+          <Building2 className="h-4 w-4 mr-2" />
+          Nova Igreja
+        </Button>
       </div>
 
       {/* KPI Cards */}

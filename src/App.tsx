@@ -61,6 +61,7 @@ const AdminConfiguracoes = lazy(() => import("@/pages/admin/Configuracoes"));
 const WhatsAppTest = lazy(() => import("@/pages/admin/WhatsAppTest"));
 const AdminKids = lazy(() => import("@/pages/admin/Kids"));
 const AdminEnsino = lazy(() => import("@/pages/admin/Ensino"));
+const NovaIgreja = lazy(() => import("@/pages/superadmin/NovaIgreja"));
 
 // Admin — Financeiro
 const FinanceiroDashboard = lazy(() => import("@/pages/admin/financeiro/FinanceiroDashboard"));
@@ -308,6 +309,7 @@ const App = () => (
               <Route path="auditoria" element={<AdminAuditoria />} />
               <Route path="configuracoes" element={<AdminConfiguracoes />} />
               <Route path="whatsapp-test" element={<WhatsAppTest />} />
+              <Route path="igrejas/nova" element={<NovaIgreja />} />
             </Route>
 
             {/* ── FINANCEIRO (role financeiro, não-admin) ───────────────────── */}
