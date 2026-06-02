@@ -147,14 +147,20 @@ export default function PainelSuperAdmin() {
                 </div>
 
                 {/* Botão de acesso */}
-                <Button
-                  className="w-full"
-                  size="sm"
-                  onClick={() => navigate(`/i/${igreja.slug}/admin/dashboard`)}
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Acessar Painel
-                </Button>
+                {igreja.slug ? (
+                  <Button
+                    className="w-full"
+                    size="sm"
+                    onClick={() => navigate(`/i/${igreja.slug}/admin/dashboard`)}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Acessar Painel
+                  </Button>
+                ) : (
+                  <p className="text-xs text-amber-600 text-center bg-amber-50 border border-amber-200 rounded px-3 py-2">
+                    Slug não configurado — acesso indisponível
+                  </p>
+                )}
               </div>
             ))}
           </div>

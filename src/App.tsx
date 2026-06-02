@@ -268,8 +268,8 @@ const App = () => (
                 <Route path="minha-igreja" element={<MinhaIgreja />} />
               </Route>
 
-              {/* ── ADMIN (igreja) ─────────────────────────────────────────── */}
-              <Route path="admin" element={<PrivateRoute allowedRoles={["admin"]}><AdminLayout /></PrivateRoute>}>
+              {/* ── ADMIN (igreja) — superadmin tem acesso irrestrito a todas as igrejas ── */}
+              <Route path="admin" element={<PrivateRoute allowedRoles={["admin", "superadmin"]}><AdminLayout /></PrivateRoute>}>
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="usuarios" element={<AdminUsuarios />} />

@@ -8,8 +8,9 @@ export default function AdminLayout() {
   const { user, loading, isAdmin, roles } = useAuth();
   const { p } = useIgrejaSlug();
 
-  // Only block rendering on initial load (no user yet). Once authenticated,
-  // never unmount the Outlet — avoids wiping unsaved form data on token refresh.
+  // superadmin tem acesso irrestrito a qualquer painel de igreja
+  const canAccess = isAdmin || roles.includes('superadmin');
+
   if (loading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -22,7 +23,7 @@ export default function AdminLayout() {
     return <Navigate to={p('/login')} replace />;
   }
 
-  if (!isAdmin) {
+  if (!canAccess) {
     return <Navigate to={p('/app')} replace />;
   }
 
