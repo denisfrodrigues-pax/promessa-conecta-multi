@@ -105,7 +105,7 @@ interface AdminEscalasProps {
 }
 
 export default function AdminEscalas({ ministerioId: propMinisterioId, canManage = true }: AdminEscalasProps = {}) {
-  const { profile } = useAuth();
+  const { profile, churchId } = useAuth();
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [escalaGroups, setEscalaGroups] = useState<EscalaGroup[]>([]);
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
@@ -154,9 +154,10 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [churchId]);
 
   const fetchData = async () => {
+    if (!churchId) return;
     setLoading(true);
     await Promise.all([
       fetchEscalas(),
@@ -176,8 +177,9 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
           ministerios(nome),
           voluntario:profiles!escalas_voluntario_id_fkey(nome),
           responsavel:profiles!escalas_responsavel_id_fkey(nome)
-        `);
-      
+        `)
+        .eq('church_id', churchId!);
+
       if (propMinisterioId) {
         query = query.eq('ministerio_id', propMinisterioId);
       }
@@ -237,6 +239,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
       const { data, error } = await supabase
         .from('ministerios')
         .select('id, nome')
+        .eq('church_id', churchId!)
         .order('nome');
 
       if (error) throw error;
@@ -253,6 +256,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id')
+        .eq('church_id', churchId!)
         .in('role', ['admin', 'financeiro', 'lider', 'voluntario']);
 
       if (rolesError) throw rolesError;
@@ -263,6 +267,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
         const { data, error } = await supabase
           .from('profiles')
           .select('id, nome, user_id, telefone')
+          .eq('church_id', churchId!)
           .in('user_id', userIds)
           .order('nome');
 
@@ -342,6 +347,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
       const { data, error } = await supabase
         .from('user_roles')
         .select('user_id')
+        .eq('church_id', churchId!)
         .in('role', ['admin', 'lider']);
 
       if (error) throw error;
@@ -352,6 +358,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id, nome, user_id')
+          .eq('church_id', churchId!)
           .in('user_id', userIds)
           .order('nome');
 

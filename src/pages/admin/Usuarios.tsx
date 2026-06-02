@@ -39,7 +39,7 @@ interface MembroVinculado {
 }
 
 export default function Usuarios() {
-  const { isAdmin, user: currentUser } = useAuth();
+  const { isAdmin, user: currentUser, churchId } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [membrosVinculados, setMembrosVinculados] = useState<MembroVinculado[]>([]);
@@ -62,14 +62,15 @@ export default function Usuarios() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [churchId]);
 
   const fetchUsers = async () => {
+    if (!churchId) return;
     try {
       const [usersRes, rolesRes, membrosRes] = await Promise.all([
-        supabase.from('profiles').select('*, foto_url').order('nome', { ascending: true }),
-        supabase.from('user_roles').select('user_id, role'),
-        supabase.from('membros').select('id, user_id').not('user_id', 'is', null),
+        supabase.from('profiles').select('*, foto_url').eq('church_id', churchId).order('nome', { ascending: true }),
+        supabase.from('user_roles').select('user_id, role').eq('church_id', churchId),
+        supabase.from('membros').select('id, user_id').eq('church_id', churchId).not('user_id', 'is', null),
       ]);
 
       if (usersRes.error) throw usersRes.error;

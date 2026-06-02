@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +45,7 @@ interface MinisterioVoluntario {
 }
 
 export default function AdminVoluntariosMinisterios() {
+  const { churchId } = useAuth();
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
   const [selectedMinisterio, setSelectedMinisterio] = useState<Ministerio | null>(null);
   const [voluntarios, setVoluntarios] = useState<MinisterioVoluntario[]>([]);
@@ -64,7 +66,7 @@ export default function AdminVoluntariosMinisterios() {
 
   useEffect(() => {
     fetchMinisterios();
-  }, []);
+  }, [churchId]);
 
   useEffect(() => {
     if (selectedMinisterio) {
@@ -74,10 +76,12 @@ export default function AdminVoluntariosMinisterios() {
   }, [selectedMinisterio]);
 
   const fetchMinisterios = async () => {
+    if (!churchId) return;
     try {
       const { data, error } = await supabase
         .from('ministerios')
         .select('id, nome, ativo')
+        .eq('church_id', churchId)
         .order('nome');
 
       if (error) throw error;
@@ -155,6 +159,7 @@ export default function AdminVoluntariosMinisterios() {
       const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, nome, email, user_id')
+        .eq('church_id', churchId!)
         .order('nome');
 
       if (profilesError) throw profilesError;

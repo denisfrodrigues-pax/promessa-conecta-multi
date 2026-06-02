@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -112,6 +113,7 @@ const exportToCSV = (data: Visitante[]) => {
 };
 
 export default function Visitantes() {
+  const { churchId } = useAuth();
   const [visitantes, setVisitantes] = useState<Visitante[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState<string>('ativos');
@@ -150,9 +152,10 @@ export default function Visitantes() {
 
   useEffect(() => {
     fetchVisitantes();
-  }, [filtroStatus, debouncedSearch, page]);
+  }, [filtroStatus, debouncedSearch, page, churchId]);
 
   const fetchVisitantes = async () => {
+    if (!churchId) return;
     try {
       setLoading(true);
 
@@ -163,7 +166,8 @@ export default function Visitantes() {
       // First: get total count for pagination
       let countQuery = supabase
         .from('visitantes')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('church_id', churchId);
 
       if (filtroStatus === 'ativos') {
         countQuery = countQuery.neq('status', 'concluido');
@@ -183,6 +187,7 @@ export default function Visitantes() {
       let query = supabase
         .from('visitantes')
         .select('*')
+        .eq('church_id', churchId)
         .order('created_at', { ascending: false })
         .range((page - 1) * limit, page * limit - 1);
 

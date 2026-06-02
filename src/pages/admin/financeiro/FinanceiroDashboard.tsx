@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +53,7 @@ interface TransacaoRecente {
 }
 
 export default function FinanceiroDashboard() {
+  const { churchId } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [kpis, setKpis] = useState<KPIData>({
@@ -65,9 +67,10 @@ export default function FinanceiroDashboard() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [churchId]);
 
   const fetchData = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       const inicioMes = startOfMonth(new Date()).toISOString().split("T")[0];

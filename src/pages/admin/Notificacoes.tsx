@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +50,7 @@ interface Profile {
 }
 
 export default function AdminNotificacoes() {
+  const { churchId } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
   const [usuarios, setUsuarios] = useState<Profile[]>([]);
@@ -76,9 +78,10 @@ export default function AdminNotificacoes() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [churchId]);
 
   const fetchData = async () => {
+    if (!churchId) return;
     setLoading(true);
     await Promise.all([fetchNotifications(), fetchMinisterios(), fetchUsuarios()]);
     setLoading(false);
@@ -94,6 +97,7 @@ export default function AdminNotificacoes() {
           escala:escalas(ministerio_id, ministerios(nome)),
           ministerio:ministerios!notificacoes_ministerio_id_fkey(nome)
         `)
+        .eq('church_id', churchId!)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -117,6 +121,7 @@ export default function AdminNotificacoes() {
       const { data, error } = await supabase
         .from('ministerios')
         .select('id, nome')
+        .eq('church_id', churchId!)
         .order('nome');
 
       if (error) throw error;
@@ -131,6 +136,7 @@ export default function AdminNotificacoes() {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, nome')
+        .eq('church_id', churchId!)
         .order('nome');
 
       if (error) throw error;

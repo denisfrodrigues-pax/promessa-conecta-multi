@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,6 +65,7 @@ const sanitizeSearch = (input: string): string => {
 };
 
 export default function Transacoes() {
+  const { churchId } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
@@ -85,13 +87,14 @@ export default function Transacoes() {
   useEffect(() => {
     fetchContas();
     fetchCategorias();
-  }, []);
+  }, [churchId]);
 
   useEffect(() => {
     fetchTransacoes();
-  }, [page, search, filtroTipo, filtroConta, filtroCategoria, filtroStatus, dataInicio, dataFim]);
+  }, [page, search, filtroTipo, filtroConta, filtroCategoria, filtroStatus, dataInicio, dataFim, churchId]);
 
   const fetchContas = async () => {
+    if (!churchId) return;
     const { data } = await supabase
       .from("contas_financeiras")
       .select("id, nome")
@@ -101,14 +104,17 @@ export default function Transacoes() {
   };
 
   const fetchCategorias = async () => {
+    if (!churchId) return;
     const { data } = await supabase
       .from("categorias_financeiras")
       .select("id, nome, natureza")
+      .eq("church_id", churchId)
       .order("nome");
     setCategorias(data || []);
   };
 
   const fetchTransacoes = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       let query = supabase

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -109,6 +110,7 @@ const exportToCSV = (data: Acompanhamento[]) => {
 };
 
 export default function Acompanhamento() {
+  const { churchId } = useAuth();
   const [acompanhamentos, setAcompanhamentos] = useState<Acompanhamento[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -120,9 +122,10 @@ export default function Acompanhamento() {
 
   useEffect(() => {
     fetchAcompanhamentos();
-  }, [filtroStatus]);
+  }, [filtroStatus, churchId]);
 
   const fetchAcompanhamentos = async () => {
+    if (!churchId) return;
     setLoading(true);
     const now = new Date();
     const inicio = startOfMonth(now).toISOString();

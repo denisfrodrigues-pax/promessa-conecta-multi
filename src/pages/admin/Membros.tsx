@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -149,6 +150,7 @@ const exportToCSV = (data: Membro[]) => {
 };
 
 export default function Membros() {
+  const { churchId } = useAuth();
   const [membros, setMembros] = useState<Membro[]>([]);
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,34 +184,40 @@ export default function Membros() {
   useEffect(() => {
     fetchBases();
     fetchStats();
-  }, []);
+  }, [churchId]);
 
   useEffect(() => {
     fetchMembros();
-  }, [filtroStatus, filtroBase, debouncedSearch, page]);
+  }, [filtroStatus, filtroBase, debouncedSearch, page, churchId]);
 
   const fetchBases = async () => {
+    if (!churchId) return;
     const { data } = await supabase
       .from('bases')
       .select('id, nome')
+      .eq('church_id', churchId)
       .eq('status', 'ativo')
       .order('nome');
     setBases(data || []);
   };
 
   const fetchStats = async () => {
+    if (!churchId) return;
     const { count: totalCount } = await supabase
       .from('membros')
-      .select('*', { count: 'exact', head: true });
+      .select('*', { count: 'exact', head: true })
+      .eq('church_id', churchId);
 
     const { count: ativosCount } = await supabase
       .from('membros')
       .select('*', { count: 'exact', head: true })
+      .eq('church_id', churchId)
       .eq('status', 'ativo');
 
     const { count: batizadosCount } = await supabase
       .from('membros')
       .select('*', { count: 'exact', head: true })
+      .eq('church_id', churchId)
       .not('data_batismo_agua', 'is', null);
 
     setStats({
@@ -220,6 +228,7 @@ export default function Membros() {
   };
 
   const fetchMembros = async () => {
+    if (!churchId) return;
     try {
       setLoading(true);
 
@@ -239,7 +248,8 @@ export default function Membros() {
       // Count query
       let countQuery = supabase
         .from('membros')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('church_id', churchId);
 
       if (filtroStatus !== 'todos') {
         countQuery = countQuery.eq('status', filtroStatus);
@@ -273,6 +283,7 @@ export default function Membros() {
           id, nome, telefone, foto_perfil, status, estado_civil, data_batismo, data_nascimento, created_at, user_id,
           bases_membros!left(base_id, bases(id, nome))
         `)
+        .eq('church_id', churchId)
         .order('nome', { ascending: true })
         .range((page - 1) * limit, page * limit - 1);
 

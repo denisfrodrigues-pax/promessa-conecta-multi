@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +31,7 @@ type PeriodFilter = 'all' | '7days' | '30days' | 'month';
 type StatusFilter = 'all' | 'sucesso' | 'sem_telefone' | 'erro_api';
 
 export default function RelatorioComunicacoes() {
+  const { churchId } = useAuth();
   const [records, setRecords] = useState<CommunicationRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -37,7 +39,7 @@ export default function RelatorioComunicacoes() {
 
   useEffect(() => {
     fetchRecords();
-  }, [statusFilter, periodFilter]);
+  }, [statusFilter, periodFilter, churchId]);
 
   const getDateRangeFilter = () => {
     const now = new Date();
@@ -54,6 +56,7 @@ export default function RelatorioComunicacoes() {
   };
 
   const fetchRecords = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       let query = supabase

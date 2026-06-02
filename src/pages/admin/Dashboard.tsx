@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -98,6 +99,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
+  const { churchId } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
     visitantesNoMes: 0,
     acompanhamentosAtivos: 0,
@@ -116,9 +118,10 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [churchId]);
 
   const fetchDashboardData = async () => {
+    if (!churchId) return;
     try {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -142,6 +145,7 @@ export default function AdminDashboard() {
         supabase
           .from('visitantes')
           .select('id', { count: 'exact', head: true })
+          .eq('church_id', churchId)
           .gte('created_at', startOfMonth),
         
         // Acompanhamentos ativos (não concluídos)
@@ -161,12 +165,14 @@ export default function AdminDashboard() {
         supabase
           .from('bases')
           .select('id', { count: 'exact', head: true })
+          .eq('church_id', churchId)
           .eq('status', 'ativo'),
-        
+
         // Membros ativos
         supabase
           .from('membros')
           .select('id', { count: 'exact', head: true })
+          .eq('church_id', churchId)
           .eq('status', 'ativo'),
         
         // Crianças presentes hoje
@@ -180,6 +186,7 @@ export default function AdminDashboard() {
         supabase
           .from('visitantes')
           .select('id, nome, telefone, data_visita, status')
+          .eq('church_id', churchId)
           .order('created_at', { ascending: false })
           .limit(5),
         
@@ -206,6 +213,7 @@ export default function AdminDashboard() {
         supabase
           .from('profiles')
           .select('id', { count: 'exact', head: true })
+          .eq('church_id', churchId)
           .or('telefone.is.null,telefone.eq.,data_nascimento.is.null'),
       ]);
 
@@ -273,6 +281,7 @@ export default function AdminDashboard() {
           supabase
             .from('visitantes')
             .select('id', { count: 'exact', head: true })
+            .eq('church_id', churchId!)
             .gte('created_at', startOfMonth)
             .lte('created_at', endOfMonth)
         )
@@ -308,6 +317,7 @@ export default function AdminDashboard() {
         created_at,
         acompanhamentos(id)
       `)
+      .eq('church_id', churchId!)
       .lte('created_at', sevenDaysAgo)
       .limit(10);
 
@@ -354,6 +364,7 @@ export default function AdminDashboard() {
     const { data: bases } = await supabase
       .from('bases')
       .select('id, nome, capacidade')
+      .eq('church_id', churchId!)
       .eq('status', 'ativo');
 
     if (bases) {

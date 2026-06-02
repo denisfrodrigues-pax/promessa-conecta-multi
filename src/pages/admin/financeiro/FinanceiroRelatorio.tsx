@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ interface Transacao {
 }
 
 export default function FinanceiroRelatorio() {
+  const { churchId } = useAuth();
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState("mes_atual");
   const [dataInicio, setDataInicio] = useState(startOfMonth(new Date()).toISOString().split("T")[0]);
@@ -80,10 +82,10 @@ export default function FinanceiroRelatorio() {
   }, [periodo]);
 
   useEffect(() => {
-    if (dataInicio && dataFim) {
+    if (dataInicio && dataFim && churchId) {
       fetchRelatorio();
     }
-  }, [dataInicio, dataFim]);
+  }, [dataInicio, dataFim, churchId]);
 
   const handlePeriodoChange = (value: string) => {
     setPeriodo(value);

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { exportToCSV, exportToPDF } from '@/utils/exportUtils';
 
 export default function RelatorioBases() {
+  const { churchId } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);
@@ -25,17 +27,19 @@ export default function RelatorioBases() {
 
   useEffect(() => {
     fetchData();
-  }, [page]);
+  }, [page, churchId]);
 
   const fetchData = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       // Get count first
-      const { count } = await supabase.from('bases').select('*', { count: 'exact', head: true }).eq('status', 'ativo');
+      const { count } = await supabase.from('bases').select('*', { count: 'exact', head: true }).eq('church_id', churchId).eq('status', 'ativo');
       setTotal(count || 0);
 
       const { data: basesData } = await supabase.from('bases')
         .select('*, lider:profiles!bases_lider_id_fkey(nome)')
+        .eq('church_id', churchId)
         .eq('status', 'ativo')
         .order('nome')
         .range((page - 1) * limit, page * limit - 1);
@@ -72,7 +76,7 @@ export default function RelatorioBases() {
       setBases(basesComOcupacao);
 
       // KPIs (from all bases)
-      const { data: allBases } = await supabase.from('bases').select('id, capacidade').eq('status', 'ativo');
+      const { data: allBases } = await supabase.from('bases').select('id, capacidade').eq('church_id', churchId!).eq('status', 'ativo');
       const allBasesOcupacao = await Promise.all((allBases || []).map(async (base) => {
         const { count } = await supabase.from('bases_membros').select('*', { count: 'exact', head: true })
           .eq('base_id', base.id).eq('status', 'ativo');

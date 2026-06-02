@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -99,6 +100,7 @@ const exportToCSV = (bases: Base[]) => {
 
 // ===== COMPONENT =====
 export default function Bases() {
+  const { churchId } = useAuth();
   const navigate = useNavigate();
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,9 +110,10 @@ export default function Bases() {
 
   useEffect(() => {
     fetchBases();
-  }, []);
+  }, [churchId]);
 
   const fetchBases = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -118,6 +121,7 @@ export default function Bases() {
         .select(
           "id, nome, descricao, lider_id, status, dia_semana, horario, local, capacidade, visibilidade, data_criacao",
         )
+        .eq("church_id", churchId)
         .order("nome");
 
       console.log("BASES DATA:", data);

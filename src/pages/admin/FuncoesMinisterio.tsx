@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +39,7 @@ const initialFormData: FuncaoFormData = {
 };
 
 export default function AdminFuncoesMinisterio() {
+  const { churchId } = useAuth();
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
   const [funcoes, setFuncoes] = useState<Funcao[]>([]);
   const [selectedMinisterio, setSelectedMinisterio] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export default function AdminFuncoesMinisterio() {
 
   useEffect(() => {
     fetchMinisterios();
-  }, []);
+  }, [churchId]);
 
   useEffect(() => {
     if (selectedMinisterio) {
@@ -60,10 +62,12 @@ export default function AdminFuncoesMinisterio() {
   }, [selectedMinisterio]);
 
   const fetchMinisterios = async () => {
+    if (!churchId) return;
     try {
       const { data, error } = await supabase
         .from('ministerios')
         .select('id, nome')
+        .eq('church_id', churchId)
         .eq('ativo', true)
         .order('nome');
 

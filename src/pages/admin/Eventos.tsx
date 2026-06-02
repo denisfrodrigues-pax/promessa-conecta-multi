@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,6 +57,7 @@ const EventCardSkeleton = () => (
 );
 
 export default function Eventos() {
+  const { churchId } = useAuth();
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [inscricoes, setInscricoes] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -77,12 +79,13 @@ export default function Eventos() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [churchId]);
 
   const fetchData = async () => {
+    if (!churchId) return;
     try {
       const [eventosRes, inscricoesRes] = await Promise.all([
-        supabase.from('eventos').select('*').order('data_inicio', { ascending: true }),
+        supabase.from('eventos').select('*').eq('church_id', churchId).order('data_inicio', { ascending: true }),
         supabase.from('eventos_inscricoes').select('evento_id'),
       ]);
 

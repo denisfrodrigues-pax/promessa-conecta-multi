@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,6 +18,7 @@ const COLORS = ['#5A9462', '#396939', '#73A97A', '#85A89A', '#B7CEC4'];
 const statusLabels: Record<string, string> = { ativo: 'Ativo', inativo: 'Inativo' };
 
 export default function RelatorioMembros() {
+  const { churchId } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);
@@ -31,17 +33,18 @@ export default function RelatorioMembros() {
 
   useEffect(() => {
     fetchData();
-  }, [filtroStatus, page]);
+  }, [filtroStatus, page, churchId]);
 
   const fetchData = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       // KPIs
       const [ativos, novosMes, desligados, todosData, criancasRes] = await Promise.all([
-        supabase.from('membros').select('*', { count: 'exact', head: true }).eq('status', 'ativo'),
-        supabase.from('membros').select('*', { count: 'exact', head: true })
+        supabase.from('membros').select('*', { count: 'exact', head: true }).eq('church_id', churchId).eq('status', 'ativo'),
+        supabase.from('membros').select('*', { count: 'exact', head: true }).eq('church_id', churchId)
           .gte('created_at', startOfMonth(new Date()).toISOString()),
-        supabase.from('membros').select('*', { count: 'exact', head: true }).neq('status', 'ativo'),
+        supabase.from('membros').select('*', { count: 'exact', head: true }).eq('church_id', churchId).neq('status', 'ativo'),
         supabase.from('membros').select('data_nascimento'),
         supabase.from('mca_criancas').select('*', { count: 'exact', head: true }).eq('church_id', 'e19bf49a-4532-4fd9-98af-5b5682e50cd6').eq('ativo', true),
       ]);
@@ -61,12 +64,12 @@ export default function RelatorioMembros() {
       });
 
       // Table data
-      let countQuery = supabase.from('membros').select('*', { count: 'exact', head: true });
+      let countQuery = supabase.from('membros').select('*', { count: 'exact', head: true }).eq('church_id', churchId);
       if (filtroStatus !== 'todos') countQuery = countQuery.eq('status', filtroStatus);
       const { count } = await countQuery;
       setTotal(count || 0);
 
-      let query = supabase.from('membros').select('*').order('nome').range((page - 1) * limit, page * limit - 1);
+      let query = supabase.from('membros').select('*').eq('church_id', churchId).order('nome').range((page - 1) * limit, page * limit - 1);
       if (filtroStatus !== 'todos') query = query.eq('status', filtroStatus);
       const { data } = await query;
       setMembros(data || []);
@@ -77,6 +80,7 @@ export default function RelatorioMembros() {
       for (let i = 5; i >= 0; i--) {
         const mes = subMonths(new Date(), i);
         const { count } = await supabase.from('membros').select('*', { count: 'exact', head: true })
+          .eq('church_id', churchId!)
           .gte('created_at', startOfMonth(mes).toISOString())
           .lte('created_at', endOfMonth(mes).toISOString());
         entradas.push({ mes: format(mes, 'MMM', { locale: ptBR }), novos: count || 0 });

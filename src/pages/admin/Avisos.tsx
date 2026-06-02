@@ -26,7 +26,7 @@ interface Aviso {
 }
 
 export default function Avisos() {
-  const { profile } = useAuth();
+  const { profile, churchId } = useAuth();
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -40,13 +40,15 @@ export default function Avisos() {
 
   useEffect(() => {
     fetchAvisos();
-  }, []);
+  }, [churchId]);
 
   const fetchAvisos = async () => {
+    if (!churchId) return;
     try {
       const { data, error } = await supabase
         .from('avisos')
         .select('*')
+        .eq('church_id', churchId)
         .order('data_publicacao', { ascending: false });
 
       if (error) throw error;

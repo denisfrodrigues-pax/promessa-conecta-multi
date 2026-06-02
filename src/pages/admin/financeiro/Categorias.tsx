@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ interface Categoria {
 }
 
 export default function Categorias() {
+  const { churchId } = useAuth();
   const [loading, setLoading] = useState(true);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -55,14 +57,16 @@ export default function Categorias() {
 
   useEffect(() => {
     fetchCategorias();
-  }, []);
+  }, [churchId]);
 
   const fetchCategorias = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from("categorias_financeiras")
         .select("*")
+        .eq("church_id", churchId)
         .order("natureza")
         .order("nome");
 

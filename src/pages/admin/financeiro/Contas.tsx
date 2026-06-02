@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ interface Conta {
 }
 
 export default function Contas() {
+  const { churchId } = useAuth();
   const [loading, setLoading] = useState(true);
   const [contas, setContas] = useState<Conta[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -56,9 +58,10 @@ export default function Contas() {
 
   useEffect(() => {
     fetchContas();
-  }, []);
+  }, [churchId]);
 
   const fetchContas = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       const { data, error } = await supabase

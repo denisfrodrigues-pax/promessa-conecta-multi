@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,6 +39,7 @@ import { exportToCSV, exportToPDF } from "@/utils/exportUtils";
 const COLORS = ["#5A9462", "#396939", "#73A97A", "#D9534F", "#85A89A", "#E6A327"];
 
 export default function RelatorioGeral() {
+  const { churchId } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);
@@ -60,9 +62,10 @@ export default function RelatorioGeral() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [churchId]);
 
   const fetchData = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       const mesAtual = new Date();
@@ -74,10 +77,11 @@ export default function RelatorioGeral() {
         supabase
           .from("visitantes")
           .select("*", { count: "exact", head: true })
+          .eq("church_id", churchId)
           .gte("created_at", inicioMes.toISOString())
           .lte("created_at", fimMes.toISOString()),
-        supabase.from("bases").select("*", { count: "exact", head: true }).eq("status", "ativo"),
-        supabase.from("membros").select("*", { count: "exact", head: true }).eq("status", "ativo"),
+        supabase.from("bases").select("*", { count: "exact", head: true }).eq("church_id", churchId).eq("status", "ativo"),
+        supabase.from("membros").select("*", { count: "exact", head: true }).eq("church_id", churchId).eq("status", "ativo"),
         supabase
           .from("checkins_kids")
           .select("*", { count: "exact", head: true })
@@ -128,6 +132,7 @@ export default function RelatorioGeral() {
       const { count } = await supabase
         .from("visitantes")
         .select("*", { count: "exact", head: true })
+        .eq("church_id", churchId!)
         .gte("created_at", startOfMonth(mes).toISOString())
         .lte("created_at", endOfMonth(mes).toISOString());
       visitantesMensal.push({ mes: format(mes, "MMM", { locale: ptBR }), visitantes: count || 0 });
@@ -146,10 +151,12 @@ export default function RelatorioGeral() {
     const { count: ativos } = await supabase
       .from("membros")
       .select("*", { count: "exact", head: true })
+      .eq("church_id", churchId!)
       .eq("status", "ativo");
     const { count: inativos } = await supabase
       .from("membros")
       .select("*", { count: "exact", head: true })
+      .eq("church_id", churchId!)
       .neq("status", "ativo");
     const membrosStatus = [
       { name: "Ativos", value: ativos || 0 },

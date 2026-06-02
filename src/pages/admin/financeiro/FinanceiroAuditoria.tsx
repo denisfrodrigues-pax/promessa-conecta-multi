@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ interface AuditLog {
 }
 
 export default function FinanceiroAuditoria() {
+  const { churchId } = useAuth();
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [total, setTotal] = useState(0);
@@ -72,9 +74,10 @@ export default function FinanceiroAuditoria() {
 
   useEffect(() => {
     fetchLogs();
-  }, [page, search, filtroAcao, filtroEntidade, dataInicio, dataFim]);
+  }, [page, search, filtroAcao, filtroEntidade, dataInicio, dataFim, churchId]);
 
   const fetchLogs = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       let query = supabase

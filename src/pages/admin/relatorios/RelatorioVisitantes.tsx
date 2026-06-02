@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -28,6 +29,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function RelatorioVisitantes() {
+  const { churchId } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);
@@ -41,7 +43,7 @@ export default function RelatorioVisitantes() {
 
   useEffect(() => {
     fetchData();
-  }, [periodo, filtroStatus, page]);
+  }, [periodo, filtroStatus, page, churchId]);
 
   const getDateRange = () => {
     const now = new Date();
@@ -55,17 +57,20 @@ export default function RelatorioVisitantes() {
   };
 
   const fetchData = async () => {
+    if (!churchId) return;
     setLoading(true);
     try {
       const dataInicio = getDateRange();
-      
+
       let countQuery = supabase.from('visitantes').select('*', { count: 'exact', head: true })
+        .eq('church_id', churchId)
         .gte('created_at', dataInicio.toISOString());
       if (filtroStatus !== 'todos') countQuery = countQuery.eq('status', filtroStatus);
       const { count } = await countQuery;
       setTotal(count || 0);
 
       let query = supabase.from('visitantes').select('*')
+        .eq('church_id', churchId)
         .gte('created_at', dataInicio.toISOString())
         .order('created_at', { ascending: false })
         .range((page - 1) * limit, page * limit - 1);
@@ -75,6 +80,7 @@ export default function RelatorioVisitantes() {
 
       // Charts
       const { data: allData } = await supabase.from('visitantes').select('status, created_at')
+        .eq('church_id', churchId)
         .gte('created_at', dataInicio.toISOString());
       
       // Mensal
