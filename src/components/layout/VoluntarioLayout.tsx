@@ -1,5 +1,6 @@
 import { Outlet, Link, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { Button } from "@/components/ui/button";
 import { Heart, LogOut, Home, Loader2 } from "lucide-react";
 import { useChurchConfig } from "@/hooks/useChurchConfig";
@@ -7,11 +8,12 @@ import { useChurchConfig } from "@/hooks/useChurchConfig";
 const VoluntarioLayout = () => {
   const { signOut, profile, user, loading, isVoluntario } = useAuth();
   const { config } = useChurchConfig();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/auth");
+    navigate(p('/login'));
   };
 
   if (loading) {
@@ -23,11 +25,11 @@ const VoluntarioLayout = () => {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to={p('/login')} replace />;
   }
 
   if (!isVoluntario) {
-    return <Navigate to="/app" replace />;
+    return <Navigate to={p('/app')} replace />;
   }
 
   return (
@@ -52,7 +54,7 @@ const VoluntarioLayout = () => {
                 </span>
               )}
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/app">
+                <Link to={p('/app')}>
                   <Home className="w-4 h-4 mr-1" />
                   <span className="hidden sm:inline">Início</span>
                 </Link>

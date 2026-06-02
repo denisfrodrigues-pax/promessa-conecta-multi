@@ -1,10 +1,12 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import FinanceiroSidebar from './FinanceiroSidebar';
 import { Loader2 } from 'lucide-react';
 
 export default function FinanceiroLayout() {
   const { user, loading, roles } = useAuth();
+  const { p } = useIgrejaSlug();
 
   if (loading) {
     return (
@@ -15,17 +17,15 @@ export default function FinanceiroLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to={p('/login')} replace />;
   }
 
-  // If user is admin, redirect to admin panel (admin has full access there)
   if (roles.includes('admin')) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to={p('/admin/dashboard')} replace />;
   }
 
-  // If user doesn't have financeiro role at all, redirect to app
   if (!roles.includes('financeiro')) {
-    return <Navigate to="/app" replace />;
+    return <Navigate to={p('/app')} replace />;
   }
 
   // User has financeiro role but not admin - show financeiro panel

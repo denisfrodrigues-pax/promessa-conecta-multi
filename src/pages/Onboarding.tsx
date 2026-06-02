@@ -45,6 +45,7 @@ export default function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState<Step>('igreja');
   const [subdominioGerado, setSubdominioGerado] = useState('');
+  const [slugGerado, setSlugGerado] = useState('');
   const [nomeIgreja, setNomeIgreja] = useState('');
   const [seedResult, setSeedResult] = useState<SeedResult>({
     ministerios: 7,
@@ -114,10 +115,12 @@ export default function Onboarding() {
     try {
       // 1. Criar a igreja
       const baseSlug = slugify(formIgreja.nome_igreja);
+      let actualSlug = baseSlug;
       let { data: igrejaCriada, error: igrejaError } = await doInsert(baseSlug);
 
       if (igrejaError?.code === '23505') {
         const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
+        actualSlug = uniqueSlug;
         const retry = await doInsert(uniqueSlug);
         if (retry.error) throw retry.error;
         igrejaCriada = retry.data;
@@ -126,6 +129,7 @@ export default function Onboarding() {
       }
 
       const churchId = igrejaCriada!.id;
+      setSlugGerado(actualSlug);
       setNomeIgreja(formIgreja.nome_igreja.trim());
 
       // 2. Gerar e salvar subdomínio
@@ -221,7 +225,7 @@ export default function Onboarding() {
   };
 
   const goToDashboard = () => {
-    window.location.href = '/admin/dashboard';
+    window.location.href = `/i/${slugGerado}/admin/dashboard`;
   };
 
   const STEPS: Step[] = ['igreja', 'localizacao', 'culto', 'sucesso'];

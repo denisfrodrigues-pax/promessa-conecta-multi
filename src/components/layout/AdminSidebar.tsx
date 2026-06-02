@@ -5,6 +5,7 @@ import { PlanoInfo } from '@/components/PlanoInfo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -56,101 +57,102 @@ export default function AdminSidebar() {
   const { profile, signOut } = useAuth();
   const { config, nomeModulo } = useIgrejaConfig();
   const { unreadCount } = useAdminNotifications();
+  const { p } = useIgrejaSlug();
   const location = useLocation();
 
   // Monta o menu com nomes e disponibilidade dinâmicos
   const menuItems: MenuItem[] = useMemo(() => [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
-    { icon: Users, label: 'Usuários', path: '/admin/usuarios' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: p('/admin/dashboard') },
+    { icon: Users, label: 'Usuários', path: p('/admin/usuarios') },
     // === MEMBROS ===
     {
       icon: Users,
       label: 'Membros',
-      path: '/admin/membros',
+      path: p('/admin/membros'),
       submenu: [
-        { icon: Users, label: 'Lista de Membros', path: '/admin/membros' },
-        { icon: UserPlus, label: 'Visitantes', path: '/admin/visitantes' },
-        { icon: Baby, label: 'Kids', path: '/admin/kids' },
-        { icon: FileText, label: 'Relatório Membros', path: '/admin/membros/relatorio' },
+        { icon: Users, label: 'Lista de Membros', path: p('/admin/membros') },
+        { icon: UserPlus, label: 'Visitantes', path: p('/admin/visitantes') },
+        { icon: Baby, label: 'Kids', path: p('/admin/kids') },
+        { icon: FileText, label: 'Relatório Membros', path: p('/admin/membros/relatorio') },
       ]
     },
     // === BASES / PEQUENOS GRUPOS ===
     {
       icon: Network,
       label: nomeModulo.bases,
-      path: '/admin/bases',
+      path: p('/admin/bases'),
       moduleKey: 'modulo_pequenos_grupos',
       submenu: [
-        { icon: Network, label: `Lista de ${nomeModulo.bases}`, path: '/admin/bases' },
-        { icon: FileText, label: `Relatório ${nomeModulo.bases}`, path: '/admin/bases/relatorio' },
+        { icon: Network, label: `Lista de ${nomeModulo.bases}`, path: p('/admin/bases') },
+        { icon: FileText, label: `Relatório ${nomeModulo.bases}`, path: p('/admin/bases/relatorio') },
       ]
     },
     // === EQUIPE & OPERAÇÕES ===
     {
       icon: Briefcase,
       label: 'Equipe & Operações',
-      path: '/admin/ministerios',
+      path: p('/admin/ministerios'),
       submenu: [
-        { icon: Music, label: 'Ministérios', path: '/admin/ministerios' },
-        { icon: ClipboardList, label: 'Funções', path: '/admin/funcoes-ministerio' },
-        { icon: Users, label: 'Voluntários', path: '/admin/voluntarios-ministerios' },
-        { icon: ClipboardList, label: 'Períodos de Escala', path: '/admin/escalas/periodos' },
-        { icon: ClipboardList, label: 'Escalas', path: '/admin/escalas' },
+        { icon: Music, label: 'Ministérios', path: p('/admin/ministerios') },
+        { icon: ClipboardList, label: 'Funções', path: p('/admin/funcoes-ministerio') },
+        { icon: Users, label: 'Voluntários', path: p('/admin/voluntarios-ministerios') },
+        { icon: ClipboardList, label: 'Períodos de Escala', path: p('/admin/escalas/periodos') },
+        { icon: ClipboardList, label: 'Escalas', path: p('/admin/escalas') },
       ]
     },
-    { icon: Bell, label: 'Notificações', path: '/admin/notificacoes', showBadge: true },
+    { icon: Bell, label: 'Notificações', path: p('/admin/notificacoes'), showBadge: true },
     // === FINANCEIRO ===
     {
       icon: Wallet,
       label: nomeModulo.financeiro,
-      path: '/admin/financeiro',
+      path: p('/admin/financeiro'),
       moduleKey: 'modulo_financeiro',
       submenu: [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/financeiro' },
-        { icon: ArrowLeftRight, label: 'Transações', path: '/admin/financeiro/transacoes' },
-        { icon: CreditCard, label: 'Contas', path: '/admin/financeiro/contas' },
-        { icon: Tag, label: 'Categorias', path: '/admin/financeiro/categorias' },
-        { icon: FileText, label: 'Relatórios', path: '/admin/financeiro/relatorios' },
-        { icon: History, label: 'Auditoria', path: '/admin/financeiro/auditoria' },
+        { icon: LayoutDashboard, label: 'Dashboard', path: p('/admin/financeiro') },
+        { icon: ArrowLeftRight, label: 'Transações', path: p('/admin/financeiro/transacoes') },
+        { icon: CreditCard, label: 'Contas', path: p('/admin/financeiro/contas') },
+        { icon: Tag, label: 'Categorias', path: p('/admin/financeiro/categorias') },
+        { icon: FileText, label: 'Relatórios', path: p('/admin/financeiro/relatorios') },
+        { icon: History, label: 'Auditoria', path: p('/admin/financeiro/auditoria') },
       ]
     },
     // === RELATÓRIOS ===
     {
       icon: BarChart3,
       label: 'Relatórios',
-      path: '/admin/relatorios',
+      path: p('/admin/relatorios'),
       submenu: [
-        { icon: LayoutDashboard, label: 'Consolidado Geral', path: '/admin/relatorios' },
-        { icon: UserPlus, label: 'Visitantes', path: '/admin/relatorios/visitantes' },
-        { icon: Network, label: nomeModulo.bases, path: '/admin/relatorios/bases' },
-        { icon: Users, label: 'Membros', path: '/admin/relatorios/membros' },
-        { icon: Wallet, label: nomeModulo.financeiro, path: '/admin/relatorios/financeiro', moduleKey: 'modulo_financeiro' },
-        { icon: MessageCircle, label: 'Comunicações', path: '/admin/relatorios/comunicacoes' },
+        { icon: LayoutDashboard, label: 'Consolidado Geral', path: p('/admin/relatorios') },
+        { icon: UserPlus, label: 'Visitantes', path: p('/admin/relatorios/visitantes') },
+        { icon: Network, label: nomeModulo.bases, path: p('/admin/relatorios/bases') },
+        { icon: Users, label: 'Membros', path: p('/admin/relatorios/membros') },
+        { icon: Wallet, label: nomeModulo.financeiro, path: p('/admin/relatorios/financeiro'), moduleKey: 'modulo_financeiro' },
+        { icon: MessageCircle, label: 'Comunicações', path: p('/admin/relatorios/comunicacoes') },
       ]
     },
-    { icon: Calendar, label: 'Eventos', path: '/admin/eventos' },
-    { icon: Bell, label: 'Avisos', path: '/admin/avisos' },
-    { icon: BookOpen, label: 'Devocionais', path: '/admin/devocionais' },
+    { icon: Calendar, label: 'Eventos', path: p('/admin/eventos') },
+    { icon: Bell, label: 'Avisos', path: p('/admin/avisos') },
+    { icon: BookOpen, label: 'Devocionais', path: p('/admin/devocionais') },
     // Escola Bíblica (módulo oculto se desabilitado)
     {
       icon: GraduationCap,
       label: nomeModulo.escolaBiblica,
-      path: '/admin/ensino',
+      path: p('/admin/ensino'),
       moduleKey: 'modulo_escola_biblica',
     },
     // Auditoria (módulo oculto se desabilitado)
-    { icon: Shield, label: 'Auditoria', path: '/admin/auditoria', moduleKey: 'modulo_auditoria' },
+    { icon: Shield, label: 'Auditoria', path: p('/admin/auditoria'), moduleKey: 'modulo_auditoria' },
     // Configurações
     {
       icon: Settings,
       label: 'Configurações',
-      path: '/admin/configuracoes',
+      path: p('/admin/configuracoes'),
       submenu: [
-        { icon: Settings, label: 'Configurações Gerais', path: '/admin/configuracoes' },
-        { icon: Building2, label: 'Dados da Igreja', path: '/admin/configuracoes/igreja' },
+        { icon: Settings, label: 'Configurações Gerais', path: p('/admin/configuracoes') },
+        { icon: Building2, label: 'Dados da Igreja', path: p('/admin/configuracoes/igreja') },
       ]
     },
-  ], [nomeModulo, config]);
+  ], [nomeModulo, config, p]);
 
   // Filtra itens de menu baseado nos módulos habilitados
   const visibleMenuItems = useMemo(() => {
@@ -254,7 +256,7 @@ export default function AdminSidebar() {
                       <NavLink
                         key={subItem.path}
                         to={subItem.path}
-                        end={subItem.path === '/admin/kids'}
+                        end={subItem.path === p('/admin/kids')}
                         className="flex items-center gap-2 px-3 py-2 rounded-lg text-neutral-600 hover:bg-promessa-50 hover:text-promessa-700 transition-all duration-200 text-sm"
                         activeClassName="bg-promessa-100 text-promessa-700 font-medium"
                       >
@@ -298,7 +300,7 @@ export default function AdminSidebar() {
         {!collapsed && <PlanoInfo compact />}
 
         <NavLink
-          to="/app"
+          to={p('/app')}
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg bg-promessa-50 text-promessa-700 hover:bg-promessa-100 hover:text-promessa-900 transition-all duration-200 border border-promessa-200',
             collapsed && 'justify-center px-2'

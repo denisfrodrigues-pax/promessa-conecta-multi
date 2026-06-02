@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { ChurchLogo } from '@/components/ChurchLogo';
 import {
@@ -24,34 +25,34 @@ import { useNotifications } from '@/hooks/useNotifications';
 
 export default function AppLayout() {
   const { roles } = useAuth();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
 
   const panelItems = [
-    roles.includes('admin')      && { route: '/admin/dashboard', label: 'Painel Admin' },
-    roles.includes('financeiro') && { route: '/financeiro',      label: 'Painel Financeiro' },
-    roles.includes('lider')      && { route: '/leader/hub',      label: 'Painel Líder' },
-    roles.includes('voluntario') && { route: '/voluntario',      label: 'Painel Voluntário' },
+    roles.includes('admin')      && { route: p('/admin/dashboard'), label: 'Painel Admin' },
+    roles.includes('financeiro') && { route: p('/financeiro'),      label: 'Painel Financeiro' },
+    roles.includes('lider')      && { route: p('/leader/hub'),      label: 'Painel Líder' },
+    roles.includes('voluntario') && { route: p('/voluntario'),      label: 'Painel Voluntário' },
   ].filter(Boolean) as { route: string; label: string }[];
-  
+
   const navItems = [
-    { icon: Home, label: 'Início', path: '/app' },
-    { icon: Church, label: 'Minha Igreja', path: '/app/minha-igreja' },
-    { icon: Users, label: 'Minha Base', path: '/app/minha-base' },
-    { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
-    { icon: Calendar, label: 'Calendário', path: '/app/calendario' },
-    { icon: BookOpenCheck, label: 'Meu Ensino', path: '/app/meu-ensino' },
-    { icon: Bell, label: 'Notificações', path: '/app/notificacoes', badge: unreadCount > 0 ? unreadCount : undefined },
-    { icon: Heart, label: 'Contribuições', path: '/app/contribuicoes' },
-    { icon: User, label: 'Perfil', path: '/app/perfil' },
+    { icon: Home,          label: 'Início',        path: p('/app') },
+    { icon: Church,        label: 'Minha Igreja',  path: p('/app/minha-igreja') },
+    { icon: Users,         label: 'Minha Base',    path: p('/app/minha-base') },
+    { icon: Calendar,      label: 'Eventos',       path: p('/app/eventos') },
+    { icon: Calendar,      label: 'Calendário',    path: p('/app/calendario') },
+    { icon: BookOpenCheck, label: 'Meu Ensino',    path: p('/app/meu-ensino') },
+    { icon: Bell,          label: 'Notificações',  path: p('/app/notificacoes'), badge: unreadCount > 0 ? unreadCount : undefined },
+    { icon: Heart,         label: 'Contribuições', path: p('/app/contribuicoes') },
+    { icon: User,          label: 'Perfil',        path: p('/app/perfil') },
   ];
 
-  // Items for bottom mobile nav (limited)
   const mobileBottomNavItems = [
-    { icon: Home, label: 'Início', path: '/app' },
-    { icon: Calendar, label: 'Calendário', path: '/app/calendario' },
-    { icon: Calendar, label: 'Eventos', path: '/app/eventos' },
+    { icon: Home,     label: 'Início',    path: p('/app') },
+    { icon: Calendar, label: 'Calendário',path: p('/app/calendario') },
+    { icon: Calendar, label: 'Eventos',   path: p('/app/eventos') },
   ];
 
   return (
@@ -61,7 +62,7 @@ export default function AppLayout() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link to="/" title="Ir para o site da igreja" className="flex items-center gap-2">
+            <Link to={p('/publico')} title="Ir para o site da igreja" className="flex items-center gap-2">
               <ChurchLogo size={36} maxWidth={140} />
             </Link>
 
@@ -71,7 +72,7 @@ export default function AppLayout() {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  end={item.path === '/app'}
+                  end={item.path === p('/app')}
                   className={({ isActive }) =>
                     cn(
                       'relative flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors',
@@ -145,7 +146,7 @@ export default function AppLayout() {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  end={item.path === '/app'}
+                  end={item.path === p('/app')}
                   onClick={() => setMobileMenuOpen(false)}
                   className={({ isActive }) =>
                     cn(
@@ -226,7 +227,7 @@ export default function AppLayout() {
           ))}
           {/* Notification with badge */}
           <NavLink
-            to="/app/notificacoes"
+            to={p('/app/notificacoes')}
             className={({ isActive }) =>
               cn(
                 'relative flex flex-col items-center gap-1 px-3 py-2 text-xs',

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, Navigate, NavLink as RouterNavLink, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
@@ -22,6 +23,7 @@ export default function VolunteerMinisterioLayout() {
     isVoluntario, roles,
     myMinistries, myMinistriesLoading,
   } = useAuth();
+  const { p } = useIgrejaSlug();
   const [ministerio, setMinisterio] = useState<MinisterioInfo | null>(null);
   const [loadingMin, setLoadingMin] = useState(true);
   const [noAccess, setNoAccess] = useState(false);
@@ -81,16 +83,16 @@ export default function VolunteerMinisterioLayout() {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
-  if (!isVoluntario && !isAdmin) return <Navigate to="/app" replace />;
-  if (noAccess || !ministerio) return <Navigate to="/voluntario" replace />;
+  if (!user) return <Navigate to={p('/login')} replace />;
+  if (!isVoluntario && !isAdmin) return <Navigate to={p('/app')} replace />;
+  if (noAccess || !ministerio) return <Navigate to={p('/voluntario')} replace />;
 
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <RouterNavLink to="/voluntario" className="flex items-center gap-3">
+            <RouterNavLink to={p('/voluntario')} className="flex items-center gap-3">
               <Logo size={40} />
             </RouterNavLink>
             <div>
@@ -101,13 +103,13 @@ export default function VolunteerMinisterioLayout() {
 
           <div className="flex items-center gap-3">
             <Button asChild variant="ghost" size="sm">
-              <RouterNavLink to="/voluntario">
+              <RouterNavLink to={p('/voluntario')}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Hub
               </RouterNavLink>
             </Button>
             <Button asChild variant="ghost" size="sm">
-              <RouterNavLink to="/app">
+              <RouterNavLink to={p('/app')}>
                 <Home className="w-4 h-4 mr-2" />
                 App
               </RouterNavLink>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePublicIgreja } from '@/hooks/usePublicIgreja';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Logo } from '@/components/Logo';
 import logoIgreja from '@/assets/logo-igreja-promessa.png';
@@ -50,21 +51,18 @@ export default function Auth() {
   
   const { signIn, signUp, user, roles, loading } = useAuth();
   const { igreja } = usePublicIgreja();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
-  // Get redirect URL from query params
+
   const redirectUrl = searchParams.get('redirect');
 
-  // Redirect authenticated users based on role:
-  // - If ?redirect= exists, go to that URL (e.g., from Check-in Kids)
-  // - Otherwise, redirect to the panel matching the user's highest role
   useEffect(() => {
     if (!loading && user) {
-      const dest = redirectUrl ? decodeURIComponent(redirectUrl) : '/app';
+      const dest = redirectUrl ? decodeURIComponent(redirectUrl) : p('/app');
       navigate(dest, { replace: true });
     }
-  }, [user, loading, redirectUrl, navigate]);
+  }, [user, loading, redirectUrl, navigate, p]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

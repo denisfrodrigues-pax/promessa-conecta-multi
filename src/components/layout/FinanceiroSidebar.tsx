@@ -3,6 +3,7 @@ import { Logo } from '@/components/Logo';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import {
   LayoutDashboard,
   ChevronLeft,
@@ -25,19 +26,20 @@ interface MenuItem {
   path: string;
 }
 
-const menuItems: MenuItem[] = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/financeiro' },
-  { icon: ArrowLeftRight, label: 'Transações', path: '/financeiro/transacoes' },
-  { icon: CreditCard, label: 'Contas', path: '/financeiro/contas' },
-  { icon: Tag, label: 'Categorias', path: '/financeiro/categorias' },
-  { icon: FileText, label: 'Relatórios', path: '/financeiro/relatorios' },
-  { icon: History, label: 'Auditoria', path: '/financeiro/auditoria' },
-];
-
 export default function FinanceiroSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { profile, signOut } = useAuth();
   const { config } = useChurchConfig();
+  const { p } = useIgrejaSlug();
+
+  const menuItems: MenuItem[] = [
+    { icon: LayoutDashboard, label: 'Dashboard',  path: p('/financeiro') },
+    { icon: ArrowLeftRight,  label: 'Transações', path: p('/financeiro/transacoes') },
+    { icon: CreditCard,      label: 'Contas',     path: p('/financeiro/contas') },
+    { icon: Tag,             label: 'Categorias', path: p('/financeiro/categorias') },
+    { icon: FileText,        label: 'Relatórios', path: p('/financeiro/relatorios') },
+    { icon: History,         label: 'Auditoria',  path: p('/financeiro/auditoria') },
+  ];
 
   const hasCustomLogo = config?.logo_url && !config.logo_url.includes('placeholder');
   const churchName = config?.nome_igreja || 'Igreja da Promessa';
@@ -80,7 +82,7 @@ export default function FinanceiroSidebar() {
           <NavLink
             key={item.path}
             to={item.path}
-            end={item.path === '/financeiro'}
+            end={item.path === p('/financeiro')}
             className={cn(
               'relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200',
               collapsed && 'justify-center px-2'
@@ -97,7 +99,7 @@ export default function FinanceiroSidebar() {
       <div className="p-3 border-t border-neutral-200 space-y-2">
         {/* Back to Member Area Button */}
         <NavLink
-          to="/app"
+          to={p('/app')}
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900 transition-all duration-200 border border-emerald-200',
             collapsed && 'justify-center px-2'
