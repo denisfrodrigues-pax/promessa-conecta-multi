@@ -32,16 +32,19 @@ export default function AdminEnsino() {
   });
 
   const { data: disciplinas = [] } = useQuery({
-    queryKey: ['eb_disciplinas_admin'],
+    queryKey: ['eb_disciplinas_admin', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
-      const { data, error } = await supabase.from('eb_disciplinas').select('id, ciclo_id, mes');
+      const { data, error } = await supabase.from('eb_disciplinas')
+        .select('id, ciclo_id, mes').eq('church_id', churchId!);
       if (error) throw error;
       return (data || []) as any[];
     },
   });
 
   const { data: aulas = [] } = useQuery({
-    queryKey: ['eb_aulas_admin'],
+    queryKey: ['eb_aulas_admin', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_aulas').select('id, disciplina_id');
       if (error) throw error;
@@ -50,20 +53,22 @@ export default function AdminEnsino() {
   });
 
   const { data: matriculas = [] } = useQuery({
-    queryKey: ['eb_matriculas_admin'],
+    queryKey: ['eb_matriculas_admin', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_matriculas')
-        .select('id, perfil_id, ciclo_id').eq('ativo', true);
+        .select('id, perfil_id, ciclo_id').eq('church_id', churchId!).eq('ativo', true);
       if (error) throw error;
       return (data || []) as any[];
     },
   });
 
   const { data: presencas = [] } = useQuery({
-    queryKey: ['eb_presencas_admin'],
+    queryKey: ['eb_presencas_admin', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_presencas')
-        .select('perfil_id, aula_id, presente');
+        .select('perfil_id, aula_id, presente').eq('church_id', churchId!);
       if (error) throw error;
       return (data || []) as any[];
     },
@@ -71,10 +76,11 @@ export default function AdminEnsino() {
 
   // profiles.id = perfil_id em eb_matriculas
   const { data: todosAtivos = [] } = useQuery({
-    queryKey: ['perfis_lista'],
+    queryKey: ['perfis_lista', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
       const { data, error } = await supabase.from('profiles')
-        .select('id, nome').order('nome');
+        .select('id, nome').eq('church_id', churchId!).order('nome');
       if (error) throw error;
       return (data || []) as any[];
     },

@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useMemo, useEffect, useState, ReactNode } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 import { useIgrejaBySlug } from '@/hooks/useIgrejaBySlug';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,13 +28,20 @@ export function IgrejaSlugLayout() {
 
   const isSuperAdmin = roles.includes('superadmin');
 
-  // Injeta o churchId correto no AuthContext para que todos os hooks/pages o usem
+  // Rastreia se o override já foi commitado no AuthContext.
+  // Em React 18, setChurchIdOverride e setOverrideReady são batched no mesmo
+  // ciclo de render, garantindo que quando overrideReady=true, useAuth().churchId
+  // já retorna o valor correto — filhos nunca veem churchId=null.
+  const [overrideReady, setOverrideReady] = useState(false);
+
   useEffect(() => {
     if (church?.id) {
-      setChurchIdOverride(church.id);
+      setChurchIdOverride(church.id);  // atualiza AuthContext
+      setOverrideReady(true);          // ambos batched → mesmo render
     }
     return () => {
       setChurchIdOverride(null);
+      setOverrideReady(false);
     };
   }, [church?.id, setChurchIdOverride]);
 
@@ -46,9 +53,13 @@ export function IgrejaSlugLayout() {
     p: (path: string) => `/i/${churchSlug}${path}`,
   }), [churchSlug, church, loading]);
 
-  // Para superadmin: aguarda a church carregar antes de renderizar as páginas
-  // (evita flash de dados vazios enquanto churchIdOverride ainda não foi injetado)
-  if (isSuperAdmin && loading) {
+  // Aguarda enquanto:
+  // - church ainda carregando
+  // - superadmin: override ainda não foi aplicado no AuthContext
+  // Usuários normais não precisam esperar (seu churchId do profile já está correto)
+  const shouldWait = loading || (isSuperAdmin && !overrideReady);
+
+  if (shouldWait) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
