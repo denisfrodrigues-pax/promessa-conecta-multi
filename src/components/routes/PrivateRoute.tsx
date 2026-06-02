@@ -32,6 +32,11 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
     return <Navigate to={`${loginPath}?redirect=${redirectPath}`} replace />;
   }
 
+  // superadmin bypassa qualquer verificação de role — acesso total
+  if (roles.includes('superadmin')) {
+    return <>{children}</>;
+  }
+
   if (allowedRoles && allowedRoles.length > 0) {
     const hasRequiredRole = allowedRoles.some(role => roles.includes(role));
     if (!hasRequiredRole) {
@@ -42,8 +47,6 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
         if (roles.includes('voluntario')) return <Navigate to={`/i/${churchSlug}/voluntario`} replace />;
         return <Navigate to={`/i/${churchSlug}/app`} replace />;
       } else {
-        // Área do super-admin
-        if (roles.includes('superadmin')) return <Navigate to="/admin" replace />;
         return <Navigate to="/" replace />;
       }
     }
