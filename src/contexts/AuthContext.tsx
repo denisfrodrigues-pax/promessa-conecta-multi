@@ -30,6 +30,8 @@ interface AuthContextType {
   roles: UserRole[];
   loading: boolean;
   churchId: string | null;
+  /** Sobrescreve o churchId do perfil — usado por IgrejaSlugLayout para superadmin */
+  setChurchIdOverride: (id: string | null) => void;
   myMinistries: MyMinistry[];
   myMinistriesLoading: boolean;
   refreshMyMinistries: () => Promise<void>;
@@ -52,10 +54,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
-  const [churchId, setChurchId] = useState<string | null>(null);
+  const [profileChurchId, setProfileChurchId] = useState<string | null>(null);
+  const [churchIdOverride, setChurchIdOverride] = useState<string | null>(null);
   const [myMinistries, setMyMinistries] = useState<MyMinistry[]>([]);
   const [myMinistriesLoading, setMyMinistriesLoading] = useState(false);
   const loadedUserIdRef = useRef<string | null>(null);
+
+  // churchId efetivo: override (posto por IgrejaSlugLayout) tem precedência sobre o do perfil
+  const churchId = churchIdOverride ?? profileChurchId;
 
   const refreshMyMinistries = useCallback(async () => {
     setMyMinistriesLoading(true);
@@ -121,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!profileResult.error && profileResult.data) {
         setProfile(profileResult.data as Profile);
-        setChurchId(profileResult.data.church_id ?? null);
+        setProfileChurchId(profileResult.data.church_id ?? null);
       } else if (profileResult.error) {
         console.error('Profile fetch error:', profileResult.error);
       }
@@ -166,7 +172,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     setProfile(null);
     setRoles([]);
-    setChurchId(null);
+    setProfileChurchId(null);
+    setChurchIdOverride(null);
     setMyMinistries([]);
   };
 
@@ -193,6 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       roles,
       loading,
       churchId,
+      setChurchIdOverride,
       myMinistries,
       myMinistriesLoading,
       refreshMyMinistries,
