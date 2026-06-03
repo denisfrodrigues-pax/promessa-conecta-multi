@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +22,7 @@ import { toast } from 'sonner';
 import {
   Building2, Save, Loader2, Upload, X, Image as ImageIcon, Palette,
   User, Mail, Phone, Crown, MapPin, Globe, Instagram, Youtube,
-  Facebook, MessageCircle, Puzzle, Clock, Plus, Trash2, Pencil,
+  Facebook, MessageCircle, Puzzle, Clock, Plus, Trash2, Pencil, Copy, ExternalLink,
 } from 'lucide-react';
 
 type Plano = 'teste' | 'basico' | 'completo';
@@ -137,8 +138,13 @@ const EMPTY_EVENTO = {
   descricao: '',
 };
 
+const PLANO_OPTIONS: Plano[] = ['teste', 'basico', 'completo'];
+
 export default function ConfiguracaoIgreja() {
-  const { churchId } = useAuth();
+  const { churchId, roles } = useAuth();
+  const { slug } = useIgrejaSlug();
+  const isSuperAdmin = roles.includes('superadmin');
+  const publicUrl = `https://promessa-conecta-multi.vercel.app/i/${slug}/publico`;
   const [form, setForm] = useState<IgrejaForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -491,6 +497,30 @@ export default function ConfiguracaoIgreja() {
         </Button>
       </div>
 
+      {/* 2.2 — Card de link público */}
+      <Card className="bg-emerald-50 border-emerald-200">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-emerald-800 mb-1">Página pública da sua igreja</p>
+              <a href={publicUrl} target="_blank" rel="noopener noreferrer"
+                className="text-sm text-emerald-700 hover:underline break-all">{publicUrl}</a>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Button variant="outline" size="sm" className="h-8 text-xs"
+                onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Link copiado!'); }}>
+                <Copy className="h-3.5 w-3.5 mr-1" />Copiar
+              </Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs" asChild>
+                <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-3.5 w-3.5 mr-1" />Abrir
+                </a>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Abas */}
       <Tabs defaultValue="visual">
         <TabsList className="mb-4">
@@ -653,10 +683,27 @@ export default function ConfiguracaoIgreja() {
                   <CardTitle className="text-base flex items-center gap-2">
                     <Crown className="w-4 h-4 text-amber-500" />Plano Atual
                   </CardTitle>
-                  <CardDescription>Para alterar o plano, entre em contato com a equipe Promessa Conecta.</CardDescription>
+                  {!isSuperAdmin && <CardDescription>Para alterar o plano, entre em contato com a equipe Promessa Conecta.</CardDescription>}
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Badge className={`text-sm px-3 py-1 ${PLANO_COLORS[form.plano]}`}>{PLANO_LABELS[form.plano]}</Badge>
+                  {/* 2.3 — superadmin pode editar plano */}
+                  {isSuperAdmin ? (
+                    <Select
+                      value={form.plano}
+                      onValueChange={v => setForm(p => ({ ...p, plano: v as Plano }))}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PLANO_OPTIONS.map(p => (
+                          <SelectItem key={p} value={p}>{PLANO_LABELS[p]}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Badge className={`text-sm px-3 py-1 ${PLANO_COLORS[form.plano]}`}>{PLANO_LABELS[form.plano]}</Badge>
+                  )}
                   <Separator />
                   <div className="text-xs text-muted-foreground space-y-1">
                     <p>✅ Dashboard e relatórios</p>
@@ -665,7 +712,7 @@ export default function ConfiguracaoIgreja() {
                     {form.plano !== 'teste' && <p>✅ Financeiro completo</p>}
                     {form.plano === 'completo' && <p>✅ Módulos avançados</p>}
                     {form.plano === 'teste' && (
-                      <p className="text-amber-600 font-medium pt-1">⚠️ Período de avaliação — entre em contato para ativar um plano.</p>
+                      <p className="text-amber-600 font-medium pt-1">⚠️ Período de avaliação.</p>
                     )}
                   </div>
                 </CardContent>

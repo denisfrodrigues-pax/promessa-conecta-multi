@@ -10,6 +10,9 @@ import {
   Building2,
 } from 'lucide-react';
 
+interface CultoBlock { ativo?: boolean; nome?: string; dia?: string; horario?: string; descricao?: string; }
+interface CultosConfig { culto_principal?: CultoBlock; escola_biblica?: CultoBlock; pequenos_grupos?: CultoBlock; }
+
 interface Igreja {
   id: string;
   nome: string;
@@ -30,6 +33,7 @@ interface Igreja {
   telefone: string | null;
   email: string | null;
   google_maps_url: string | null;
+  cultos_config: CultosConfig | null;
   horario_ebd: string | null;
   horario_culto: string | null;
   horario_bases: string | null;
@@ -68,7 +72,7 @@ export default function SitePublicoIgreja() {
           logo_url, cor_primaria, cor_secundaria,
           foto_hero_urls, missao, visao, historia,
           cidade, estado, endereco, telefone, email,
-          google_maps_url, horario_ebd, horario_culto, horario_bases,
+          google_maps_url, cultos_config, horario_ebd, horario_culto, horario_bases,
           whatsapp, instagram_url, youtube_url, facebook_url, site_url
         `)
         .eq('slug', slug)
@@ -99,6 +103,24 @@ export default function SitePublicoIgreja() {
   const cor1 = igreja?.cor_primaria  ?? '#2D6A4F';
   const cor2 = igreja?.cor_secundaria ?? '#1B4332';
   const hasHero = shuffled.length > 0;
+
+  // 4.1 — cultos dinâmicos
+  const cultosBlocos = (() => {
+    const cc = igreja?.cultos_config;
+    if (!cc) {
+      // fallback para colunas legadas
+      return [
+        igreja?.horario_ebd   ? { nome: 'Escola Bíblica',      detalhe: igreja.horario_ebd,   icon: Clock } : null,
+        igreja?.horario_culto ? { nome: 'Culto de Celebração', detalhe: igreja.horario_culto, icon: Clock } : null,
+        igreja?.horario_bases ? { nome: 'Pequenos Grupos',     detalhe: igreja.horario_bases, icon: Users } : null,
+      ].filter(Boolean);
+    }
+    return [
+      cc.escola_biblica?.ativo  !== false  ? { nome: cc.escola_biblica?.nome  ?? 'Escola Bíblica',      detalhe: cc.escola_biblica?.horario  ? `${cc.escola_biblica?.dia ?? ''} às ${cc.escola_biblica.horario}`  : (cc.escola_biblica?.descricao ?? 'A confirmar'), icon: Clock } : null,
+      cc.culto_principal?.ativo !== false  ? { nome: cc.culto_principal?.nome ?? 'Culto de Celebração', detalhe: cc.culto_principal?.horario ? `${cc.culto_principal?.dia ?? ''} às ${cc.culto_principal.horario}` : (cc.culto_principal?.descricao ?? 'A confirmar'), icon: Clock } : null,
+      cc.pequenos_grupos?.ativo !== false  ? { nome: cc.pequenos_grupos?.nome ?? 'Pequenos Grupos',     detalhe: cc.pequenos_grupos?.descricao ?? 'A confirmar', icon: Users } : null,
+    ].filter(Boolean);
+  })() as { nome: string; detalhe: string; icon: typeof Clock }[];
   const localidade = [igreja?.cidade, igreja?.estado].filter(Boolean).join(', ');
 
   /* ── Loading skeleton ── */
@@ -235,23 +257,19 @@ export default function SitePublicoIgreja() {
       )}
 
       {/* ── HORÁRIOS ── */}
-      {(igreja.horario_ebd || igreja.horario_culto || igreja.horario_bases) && (
+      {cultosBlocos.length > 0 && (
         <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-12">Nossos Encontros</h2>
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {[
-                { label: 'Escola Bíblica',      value: igreja.horario_ebd   ?? 'A confirmar' },
-                { label: 'Culto de Celebração', value: igreja.horario_culto ?? 'A confirmar' },
-                { label: 'Bases / Grupos',       value: igreja.horario_bases ?? 'A confirmar' },
-              ].map(h => (
-                <div key={h.label} className="bg-card rounded-2xl p-8 text-center border hover:shadow-lg transition-shadow">
+            <div className={`grid gap-6 max-w-4xl mx-auto ${cultosBlocos.length === 1 ? 'max-w-sm' : cultosBlocos.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
+              {cultosBlocos.map((h, i) => (
+                <div key={i} className="bg-card rounded-2xl p-8 text-center border hover:shadow-lg transition-shadow">
                   <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
                     style={{ backgroundColor: `${cor1}20` }}>
-                    <Clock className="w-7 h-7" style={{ color: cor1 }} />
+                    <h.icon className="w-7 h-7" style={{ color: cor1 }} />
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">{h.label}</h3>
-                  <p className="font-bold text-lg" style={{ color: cor1 }}>{h.value}</p>
+                  <h3 className="font-semibold text-lg mb-2">{h.nome}</h3>
+                  <p className="font-bold text-lg" style={{ color: cor1 }}>{h.detalhe}</p>
                 </div>
               ))}
             </div>

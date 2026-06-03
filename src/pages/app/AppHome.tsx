@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIgrejaConfig } from "@/hooks/useIgrejaConfig";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import {
   Heart,
   Sparkles,
@@ -14,7 +16,21 @@ import AniversariantesDoMes from "@/components/app/AniversariantesDoMes";
 
 export default function AppHome() {
   const { profile } = useAuth();
+  const { config } = useIgrejaConfig();
+  const { slug } = useIgrejaSlug();
   const firstName = profile?.nome?.split(' ')[0] || 'membro';
+
+  // Cultos dinâmicos a partir de cultos_config
+  const cc = config?.cultos_config as Record<string, { ativo?: boolean; nome?: string; dia?: string; horario?: string; descricao?: string }> | null | undefined;
+  const cultosAtivos = [
+    cc?.escola_biblica?.ativo  !== false && cc?.escola_biblica  ? { nome: cc.escola_biblica.nome  ?? 'Escola Bíblica',    detalhe: cc.escola_biblica.descricao  ?? (cc.escola_biblica.dia  ? `${cc.escola_biblica.dia} ${cc.escola_biblica.horario}` : ''), icon: Clock } : null,
+    cc?.culto_principal?.ativo !== false && cc?.culto_principal ? { nome: cc.culto_principal.nome ?? 'Culto de Celebração', detalhe: cc.culto_principal.descricao ?? (cc.culto_principal.dia ? `${cc.culto_principal.dia} ${cc.culto_principal.horario}` : ''), icon: Clock } : null,
+    cc?.pequenos_grupos?.ativo !== false && cc?.pequenos_grupos ? { nome: cc.pequenos_grupos.nome  ?? 'Pequenos Grupos',    detalhe: cc.pequenos_grupos.descricao ?? '', icon: Users } : null,
+  ].filter(Boolean) as { nome: string; detalhe: string; icon: typeof Clock }[];
+
+  const missao = config?.missao ?? null;
+  const visao  = config?.visao  ?? null;
+  const nomeIgreja = config?.nome ?? 'Igreja';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -76,10 +92,10 @@ export default function AppHome() {
                 </div>
                 <h3 className="text-lg font-display font-semibold text-foreground mb-3">Nossa Missão</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  "Existimos para Amar e Servir a Deus e as pessoas através de um relacionamento crescente com Jesus."
+                  {missao ? `"${missao}"` : 'Em breve'}
                 </p>
               </div>
-              
+
               {/* Vision */}
               <div className="bg-card rounded-2xl p-6 md:p-8 border border-border shadow-soft hover:shadow-elevated transition-shadow duration-300">
                 <div className="w-12 h-12 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-5">
@@ -87,22 +103,22 @@ export default function AppHome() {
                 </div>
                 <h3 className="text-lg font-display font-semibold text-foreground mb-3">Nossa Visão</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  "Ser uma igreja consolidada, saudável, vibrante, relacional e relevante na cidade de Hortolândia/SP."
+                  {visao ? `"${visao}"` : 'Em breve'}
                 </p>
               </div>
             </div>
-            
-            {/* CTA */}
-            <Button 
-              variant="outline" 
+
+            {/* CTA — 3.3: aponta para site público */}
+            <Button
+              variant="outline"
               size="lg"
               className="group border-promessa-300 text-promessa-700 hover:bg-promessa-50 hover:border-promessa-400 transition-all duration-300"
               asChild
             >
-              <Link to="/quem-somos" className="flex items-center gap-2">
+              <a href={`/i/${slug}/publico`} className="flex items-center gap-2">
                 Conheça mais sobre a Igreja
                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
+              </a>
             </Button>
           </div>
         </div>
@@ -116,31 +132,21 @@ export default function AppHome() {
           <h2 className="text-2xl md:text-3xl font-display font-semibold text-center text-foreground mb-10">
             Nossos Encontros
           </h2>
-          <div className="grid md:grid-cols-3 gap-5 max-w-4xl mx-auto">
-            <div className="bg-card rounded-2xl p-6 text-center border border-border shadow-soft hover:shadow-elevated transition-all duration-300 hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-6 h-6 text-promessa-600" />
+          <div className={`grid gap-5 max-w-4xl mx-auto ${cultosAtivos.length === 2 ? 'md:grid-cols-2' : cultosAtivos.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-1 max-w-sm'}`}>
+            {cultosAtivos.length > 0 ? cultosAtivos.map((c, i) => (
+              <div key={i} className="bg-card rounded-2xl p-6 text-center border border-border shadow-soft hover:shadow-elevated transition-all duration-300 hover:-translate-y-1">
+                <div className="w-12 h-12 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-4">
+                  <c.icon className="w-6 h-6 text-promessa-600" />
+                </div>
+                <h3 className="font-display font-semibold text-base text-foreground mb-2">{c.nome}</h3>
+                <p className="text-promessa-600 font-semibold text-lg">{c.detalhe || 'A confirmar'}</p>
               </div>
-              <h3 className="font-display font-semibold text-base text-foreground mb-2">Sábado</h3>
-              <p className="text-muted-foreground text-sm mb-2">Escola Bíblica</p>
-              <p className="text-promessa-600 font-semibold text-lg">18:00</p>
-            </div>
-            <div className="bg-card rounded-2xl p-6 text-center border border-border shadow-soft hover:shadow-elevated transition-all duration-300 hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-6 h-6 text-promessa-600" />
+            )) : (
+              <div className="bg-card rounded-2xl p-6 text-center border border-border">
+                <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-sm">Horários em breve</p>
               </div>
-              <h3 className="font-display font-semibold text-base text-foreground mb-2">Sábado</h3>
-              <p className="text-muted-foreground text-sm mb-2">Culto de Celebração</p>
-              <p className="text-promessa-600 font-semibold text-lg">19:07</p>
-            </div>
-            <div className="bg-card rounded-2xl p-6 text-center border border-border shadow-soft hover:shadow-elevated transition-all duration-300 hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-promessa-600" />
-              </div>
-              <h3 className="font-display font-semibold text-base text-foreground mb-2">Bases</h3>
-              <p className="text-muted-foreground text-sm mb-2">Grupos de Comunhão</p>
-              <p className="text-promessa-600 font-semibold text-lg">Durante a semana</p>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -158,8 +164,8 @@ export default function AppHome() {
               Contribuições
             </h2>
             <p className="text-white/80 text-base leading-relaxed mb-6 max-w-2xl mx-auto">
-              As contribuições são voluntárias e fazem parte da nossa missão de servir a Deus e às pessoas. 
-              Cada oferta é usada para manter e expandir o trabalho da igreja em Hortolândia e região.
+              As contribuições são voluntárias e fazem parte da nossa missão de servir a Deus e às pessoas.
+              Cada oferta é usada para manter e expandir o trabalho da {nomeIgreja}.
             </p>
             <Button 
               size="lg"
@@ -179,7 +185,7 @@ export default function AppHome() {
       <footer className="py-8 bg-muted/50 border-t border-border">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Igreja da Promessa Hortolândia. Todos os direitos reservados.
+            Promessa Conecta © {new Date().getFullYear()}
           </p>
         </div>
       </footer>

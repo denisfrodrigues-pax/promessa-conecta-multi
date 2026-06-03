@@ -54,11 +54,12 @@ interface MenuItem {
 export default function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
-  const { profile, signOut } = useAuth();
+  const { profile, roles, signOut } = useAuth();
   const { config, nomeModulo } = useIgrejaConfig();
   const { unreadCount } = useAdminNotifications();
   const { p } = useIgrejaSlug();
   const location = useLocation();
+  const isSuperAdmin = roles.includes('superadmin');
 
   // Monta o menu com nomes e disponibilidade dinâmicos
   const menuItems: MenuItem[] = useMemo(() => [
@@ -298,6 +299,20 @@ export default function AdminSidebar() {
       {/* Footer */}
       <div className="p-3 border-t border-neutral-200 space-y-2">
         {!collapsed && <PlanoInfo compact />}
+
+        {/* 5.1 — Botão Super Admin (visível apenas para superadmin) */}
+        {isSuperAdmin && (
+          <NavLink
+            to="/admin"
+            className={cn(
+              'flex items-center gap-3 px-3 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all duration-200 border border-amber-200 text-sm font-medium',
+              collapsed && 'justify-center px-2'
+            )}
+          >
+            <Building2 className="w-4 h-4 flex-shrink-0" />
+            {!collapsed && <span>← Super Admin</span>}
+          </NavLink>
+        )}
 
         <NavLink
           to={p('/app')}
