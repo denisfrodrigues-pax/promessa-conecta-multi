@@ -48,27 +48,35 @@ export function IgrejaSlugLayout() {
   // 4.1 — favicon dinâmico + título por igreja
   useEffect(() => {
     if (!church) return;
-    // Favicon
+    console.log('[FAVICON DEBUG] church.nome:', church.nome, '| church.logo_url:', church.logo_url);
+
+    // Título
+    const prevTitle = document.title;
+    document.title = `${church.nome} — Promessa Conecta`;
+
     if (church.logo_url) {
-      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+      // Tentar pegar o link específico da plataforma primeiro, depois qualquer icon link
+      let link =
+        (document.getElementById('favicon-default') as HTMLLinkElement | null) ??
+        (document.querySelector("link[rel='icon']") as HTMLLinkElement | null);
+
       if (!link) {
         link = document.createElement('link');
-        link.rel = 'shortcut icon';
+        link.rel = 'icon';
+        link.id = 'favicon-church';
         document.head.appendChild(link);
       }
       const prevHref = link.href;
-      link.type = 'image/x-icon';
+      link.type = 'image/png';
       link.href = church.logo_url;
-      const prevTitle = document.title;
-      document.title = `${church.nome} — Promessa Conecta`;
+      console.log('[FAVICON DEBUG] set href to', church.logo_url);
+
       return () => {
         if (link) link.href = prevHref;
         document.title = prevTitle;
       };
     }
-    // Só atualiza o título mesmo sem logo
-    const prevTitle = document.title;
-    document.title = `${church.nome} — Promessa Conecta`;
+
     return () => { document.title = prevTitle; };
   }, [church?.logo_url, church?.nome]);
 

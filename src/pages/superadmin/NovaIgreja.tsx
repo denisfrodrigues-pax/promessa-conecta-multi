@@ -348,12 +348,13 @@ export default function NovaIgreja() {
       if (iErr || !igreja) throw iErr ?? new Error('Falha ao criar a igreja');
       const id = igreja.id;
 
+      const sfx = id.slice(0, 8);
       const { error: mErr } = await supabase.from('ministerios').insert([
-        { nome: 'Ministério de Música',     tipo: 'musica',     church_id: id, ativo: true, is_core: true },
-        { nome: 'Ministério de Recepção',   tipo: 'recepcao',   church_id: id, ativo: true, is_core: true },
-        { nome: 'Ministério Infantil',      tipo: 'mca',        church_id: id, ativo: true, is_core: true },
-        { nome: 'Ministério de Celebração', tipo: 'celebracao', church_id: id, ativo: true, is_core: true },
-        { nome: 'Ministério de Ensino',     tipo: 'ensino',     church_id: id, ativo: true, is_core: true },
+        { nome: 'Ministério de Música',     tipo: 'musica',     church_id: id, ativo: true, is_core: true, slug: `musica-${sfx}` },
+        { nome: 'Ministério de Recepção',   tipo: 'recepcao',   church_id: id, ativo: true, is_core: true, slug: `recepcao-${sfx}` },
+        { nome: 'Ministério Infantil',      tipo: 'mca',        church_id: id, ativo: true, is_core: true, slug: `mca-${sfx}` },
+        { nome: 'Ministério de Celebração', tipo: 'celebracao', church_id: id, ativo: true, is_core: true, slug: `celebracao-${sfx}` },
+        { nome: 'Ministério de Ensino',     tipo: 'ensino',     church_id: id, ativo: true, is_core: true, slug: `ensino-${sfx}` },
       ]);
       if (mErr) console.error('Seed ministérios:', mErr);
 

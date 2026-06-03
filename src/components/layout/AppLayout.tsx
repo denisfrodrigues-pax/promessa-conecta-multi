@@ -34,32 +34,29 @@ export default function AppLayout() {
 
   const isSuperAdmin = roles.includes('superadmin');
 
-  const panelItems = [
-    isSuperAdmin                                          && { route: '/admin',              label: '⚡ Super Admin' },
-    (isSuperAdmin || roles.includes('admin'))             && { route: p('/admin/dashboard'), label: 'Painel Admin' },
-    (isSuperAdmin || roles.includes('financeiro'))        && { route: p('/financeiro'),      label: 'Painel Financeiro' },
-    (isSuperAdmin || roles.includes('lider'))             && { route: p('/leader/hub'),      label: 'Painel Líder' },
-    (isSuperAdmin || roles.includes('voluntario'))        && { route: p('/voluntario'),      label: 'Painel Voluntário' },
-  ].filter(Boolean) as { route: string; label: string }[];
+  // Painéis: apenas superadmin vê o dropdown de troca de painel
+  const panelItems = isSuperAdmin ? [
+    { route: '/admin',               label: '⚡ Super Admin' },
+    { route: p('/admin/dashboard'),  label: 'Admin da Igreja' },
+    { route: p('/leader/hub'),       label: 'Painel Líder' },
+    { route: p('/voluntario'),       label: 'Painel Voluntário' },
+  ] : [];
 
-  const nomeBase = `Minha ${nomeModulo.bases}`;
+  const nomeBase = nomeModulo.bases ?? 'PG';
 
   const navItems = [
-    { icon: Home,          label: 'Início',        path: p('/app') },
-    { icon: Church,        label: 'Minha Igreja',  path: p('/app/minha-igreja') },
-    { icon: Users,         label: nomeBase,         path: p('/app/minha-base') },
-    { icon: Calendar,      label: 'Eventos',       path: p('/app/eventos') },
-    { icon: Calendar,      label: 'Calendário',    path: p('/app/calendario') },
-    { icon: BookOpenCheck, label: 'Meu Ensino',    path: p('/app/meu-ensino') },
-    { icon: Bell,          label: 'Notificações',  path: p('/app/notificacoes'), badge: unreadCount > 0 ? unreadCount : undefined },
-    { icon: Heart,         label: 'Contribuições', path: p('/app/contribuicoes') },
+    { icon: Home,          label: 'Início',       path: p('/app') },
+    { icon: Church,        label: 'Minha Igreja', path: p('/app/minha-igreja') },
+    { icon: Users,         label: nomeBase,        path: p('/app/minha-base') },
+    { icon: BookOpenCheck, label: 'Ensino',        path: p('/app/meu-ensino') },
+    { icon: Bell,          label: 'Notificações', path: p('/app/notificacoes'), badge: unreadCount > 0 ? unreadCount : undefined },
     { icon: User,          label: 'Perfil',        path: p('/app/perfil') },
   ];
 
   const mobileBottomNavItems = [
-    { icon: Home,     label: 'Início',    path: p('/app') },
-    { icon: Calendar, label: 'Calendário',path: p('/app/calendario') },
-    { icon: Calendar, label: 'Eventos',   path: p('/app/eventos') },
+    { icon: Home,          label: 'Início',  path: p('/app') },
+    { icon: Users,         label: nomeBase,   path: p('/app/minha-base') },
+    { icon: BookOpenCheck, label: 'Ensino',   path: p('/app/meu-ensino') },
   ];
 
   return (
@@ -115,8 +112,8 @@ export default function AppLayout() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {panelItems.map((item) => (
-                      <DropdownMenuItem key={item.route} onClick={() => navigate(item.route)}>
-                        {item.label}
+                      <DropdownMenuItem key={item.route} asChild>
+                        <Link to={item.route} className="w-full cursor-pointer">{item.label}</Link>
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
@@ -189,8 +186,8 @@ export default function AppLayout() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-full">
                     {panelItems.map((item) => (
-                      <DropdownMenuItem key={item.route} onClick={() => { navigate(item.route); setMobileMenuOpen(false); }}>
-                        {item.label}
+                      <DropdownMenuItem key={item.route} asChild onClick={() => setMobileMenuOpen(false)}>
+                        <Link to={item.route} className="w-full cursor-pointer">{item.label}</Link>
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>

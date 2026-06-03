@@ -58,6 +58,10 @@ const generateSlug = (nome: string) =>
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '');
 
+// Slug único por igreja: base do nome + 6 chars do churchId para evitar colisão na constraint (church_id, slug)
+const generateUniqueSlug = (nome: string, churchId: string) =>
+  `${generateSlug(nome)}-${churchId.slice(0, 6)}`;
+
 interface Profile {
   id: string;
   nome: string;
@@ -148,8 +152,9 @@ export default function AdminMinisterios() {
           descricao: data.descricao || null,
           lider_id: data.lider_id || null,
           ativo: data.ativo,
-          slug: generateSlug(data.nome),
+          slug: generateUniqueSlug(data.nome, churchId!),
           tipo: data.tipo_ministerio,
+          church_id: churchId!,
         })
         .select('id')
         .single();
