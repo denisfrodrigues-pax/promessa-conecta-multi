@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,10 +10,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { GraduationCap, Users, UserPlus, Loader2 } from 'lucide-react';
 
-const CHURCH_ID = 'e19bf49a-4532-4fd9-98af-5b5682e50cd6';
 const MES_ATUAL = new Date().getMonth() + 1;
 
 export default function AdminEnsino() {
+  const { churchId } = useAuth();
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [cicloId, setCicloId] = useState('');
@@ -20,26 +21,30 @@ export default function AdminEnsino() {
   const [saving, setSaving] = useState(false);
 
   const { data: ciclos = [], isLoading } = useQuery({
-    queryKey: ['eb_ciclos'],
+    queryKey: ['eb_ciclos', churchId],
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_ciclos')
-        .select('*').eq('church_id', CHURCH_ID).order('ordem');
+        .select('*').eq('church_id', churchId!).order('ordem');
       if (error) throw error;
       return (data || []) as any[];
     },
+    enabled: !!churchId,
   });
 
   const { data: disciplinas = [] } = useQuery({
-    queryKey: ['eb_disciplinas_admin'],
+    queryKey: ['eb_disciplinas_admin', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
-      const { data, error } = await supabase.from('eb_disciplinas').select('id, ciclo_id, mes');
+      const { data, error } = await supabase.from('eb_disciplinas')
+        .select('id, ciclo_id, mes').eq('church_id', churchId!);
       if (error) throw error;
       return (data || []) as any[];
     },
   });
 
   const { data: aulas = [] } = useQuery({
-    queryKey: ['eb_aulas_admin'],
+    queryKey: ['eb_aulas_admin', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_aulas').select('id, disciplina_id');
       if (error) throw error;
@@ -48,20 +53,22 @@ export default function AdminEnsino() {
   });
 
   const { data: matriculas = [] } = useQuery({
-    queryKey: ['eb_matriculas_admin'],
+    queryKey: ['eb_matriculas_admin', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_matriculas')
-        .select('id, perfil_id, ciclo_id').eq('ativo', true);
+        .select('id, perfil_id, ciclo_id').eq('church_id', churchId!).eq('ativo', true);
       if (error) throw error;
       return (data || []) as any[];
     },
   });
 
   const { data: presencas = [] } = useQuery({
-    queryKey: ['eb_presencas_admin'],
+    queryKey: ['eb_presencas_admin', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_presencas')
-        .select('perfil_id, aula_id, presente');
+        .select('perfil_id, aula_id, presente').eq('church_id', churchId!);
       if (error) throw error;
       return (data || []) as any[];
     },
@@ -69,10 +76,11 @@ export default function AdminEnsino() {
 
   // profiles.id = perfil_id em eb_matriculas
   const { data: todosAtivos = [] } = useQuery({
-    queryKey: ['perfis_lista'],
+    queryKey: ['perfis_lista', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
       const { data, error } = await supabase.from('profiles')
-        .select('id, nome').order('nome');
+        .select('id, nome').eq('church_id', churchId!).order('nome');
       if (error) throw error;
       return (data || []) as any[];
     },

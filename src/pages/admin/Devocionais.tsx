@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,29 +58,23 @@ const EMPTY_FORM: FormData = {
 
 export default function AdminDevocionais() {
   const qc = useQueryClient();
+  const { churchId } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [toDelete, setToDelete] = useState<Devocional | null>(null);
 
   const { data: devocionais = [], isLoading } = useQuery({
-    queryKey: ['admin_devocionais'],
+    queryKey: ['admin_devocionais', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('devocionais')
         .select('*')
+        .eq('church_id', churchId)
         .order('data_publicacao', { ascending: true });
       if (error) throw error;
       return data as Devocional[];
-    },
-  });
-
-  const { data: churchId } = useQuery({
-    queryKey: ['my_church_id'],
-    staleTime: Infinity,
-    queryFn: async () => {
-      const { data } = await supabase.from('igrejas').select('id').limit(1).maybeSingle();
-      return (data as any)?.id as string | null ?? null;
     },
   });
 

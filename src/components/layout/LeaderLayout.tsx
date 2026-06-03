@@ -1,5 +1,6 @@
 import { Outlet, Navigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Logo } from '@/components/Logo';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { Home, Loader2 } from 'lucide-react';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 
 export default function LeaderLayout() {
   const { user, loading, profile, isLider } = useAuth();
+  const { p } = useIgrejaSlug();
 
   if (loading) {
     return (
@@ -17,11 +19,11 @@ export default function LeaderLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to={p('/login')} replace />;
   }
 
   if (!isLider) {
-    return <Navigate to="/app" replace />;
+    return <Navigate to={p('/app')} replace />;
   }
 
   return (
@@ -29,7 +31,7 @@ export default function LeaderLayout() {
       <header className="sticky top-0 z-50 bg-white border-b border-neutral-200 shadow-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <RouterNavLink to="/app" className="flex items-center gap-3">
+            <RouterNavLink to={p('/app')} className="flex items-center gap-3">
               <Logo size={40} />
             </RouterNavLink>
             <div>

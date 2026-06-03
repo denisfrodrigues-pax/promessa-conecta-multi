@@ -239,6 +239,7 @@ export default function AdminDashboard() {
       const { data: eventosData } = await (supabase as any)
         .from('eventos_escala')
         .select('id, titulo, tipo, data_evento')
+        .eq('church_id', churchId ?? '')
         .gte('data_evento', today)
         .order('data_evento', { ascending: true })
         .limit(5);

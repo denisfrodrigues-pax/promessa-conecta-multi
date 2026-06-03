@@ -1,13 +1,16 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import AdminSidebar from './AdminSidebar';
 import { Loader2 } from 'lucide-react';
 
 export default function AdminLayout() {
   const { user, loading, isAdmin, roles } = useAuth();
+  const { p } = useIgrejaSlug();
 
-  // Only block rendering on initial load (no user yet). Once authenticated,
-  // never unmount the Outlet — avoids wiping unsaved form data on token refresh.
+  // superadmin tem acesso irrestrito a qualquer painel de igreja
+  const canAccess = isAdmin || roles.includes('superadmin');
+
   if (loading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -17,13 +20,11 @@ export default function AdminLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to={p('/login')} replace />;
   }
 
-  // Admin panel accessible by 'admin' and 'financeiro' roles
-  // isAdmin already includes both roles
-  if (!isAdmin) {
-    return <Navigate to="/app" replace />;
+  if (!canAccess) {
+    return <Navigate to={p('/app')} replace />;
   }
 
   return (

@@ -50,7 +50,8 @@ function shuffleArray<T>(arr: T[]): T[] {
 }
 
 export default function SitePublicoIgreja() {
-  const { slug } = useParams<{ slug: string }>();
+  const { churchSlug, slug: legacySlug } = useParams<{ churchSlug?: string; slug?: string }>();
+  const slug = churchSlug ?? legacySlug;
   const [igreja, setIgreja] = useState<Igreja | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

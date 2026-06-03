@@ -6,14 +6,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { IgrejaSlugLayout } from "@/contexts/IgrejaSlugContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChurchThemeApplier } from "@/components/ChurchThemeApplier";
 
 // Route Guards
 import PublicRoute from "@/components/routes/PublicRoute";
 import PrivateRoute from "@/components/routes/PrivateRoute";
-import RequireMinistry from "@/components/routes/RequireMinistry";
 
-// Layouts (not lazy — needed immediately)
+// Layouts (não lazy — necessários imediatamente)
 import AdminLayout from "@/components/layout/AdminLayout";
 import LeaderLayout from "@/components/layout/LeaderLayout";
 import LeaderMinisterioLayout from "@/components/layout/LeaderMinisterioLayout";
@@ -25,14 +26,19 @@ import FinanceiroLayout from "@/components/layout/FinanceiroLayout";
 
 // ─── Lazy page imports ───────────────────────────────────────────────────────
 
-// Auth
+// Super Admin
+const LoginSuperAdmin = lazy(() => import("@/pages/superadmin/LoginSuperAdmin"));
+const PainelSuperAdmin = lazy(() => import("@/pages/superadmin/PainelSuperAdmin"));
+
+// Auth & utilitários
 const Auth = lazy(() => import("@/pages/Auth"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const InstallPWA = lazy(() => import("@/pages/InstallPWA"));
 const Index = lazy(() => import("@/pages/Index"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const Onboarding = lazy(() => import("@/pages/Onboarding"));
 
-// Admin
+// Admin (igreja)
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
 const AdminUsuarios = lazy(() => import("@/pages/admin/Usuarios"));
 const AdminEventos = lazy(() => import("@/pages/admin/Eventos"));
@@ -58,6 +64,7 @@ const AdminAcompanhamento = lazy(() => import("@/pages/admin/Acompanhamento"));
 const AdminAuditoria = lazy(() => import("@/pages/admin/Auditoria"));
 const AdminDevocionais = lazy(() => import("@/pages/admin/Devocionais"));
 const AdminConfiguracoes = lazy(() => import("@/pages/admin/Configuracoes"));
+const AdminConfiguracaoIgreja = lazy(() => import("@/pages/admin/ConfiguracaoIgreja"));
 const WhatsAppTest = lazy(() => import("@/pages/admin/WhatsAppTest"));
 const AdminKids = lazy(() => import("@/pages/admin/Kids"));
 const AdminEnsino = lazy(() => import("@/pages/admin/Ensino"));
@@ -80,7 +87,7 @@ const RelatorioMembros = lazy(() => import("@/pages/admin/relatorios/RelatorioMe
 const RelatorioFinanceiro = lazy(() => import("@/pages/admin/relatorios/RelatorioFinanceiro"));
 const RelatorioComunicacoes = lazy(() => import("@/pages/admin/relatorios/RelatorioComunicacoes"));
 
-// Member
+// Member / App
 const MemberHome = lazy(() => import("@/pages/member/Home"));
 const BasesPublic = lazy(() => import("@/pages/member/BasesPublic"));
 const BaseDetalhesPublic = lazy(() => import("@/pages/member/BaseDetalhesPublic"));
@@ -103,6 +110,7 @@ const AppHome = lazy(() => import("@/pages/app/AppHome"));
 const AppCalendario = lazy(() => import("@/pages/app/Calendario"));
 const VoluntariosDoDia = lazy(() => import("@/pages/app/VoluntariosDoDia"));
 const MeuEnsino = lazy(() => import("@/pages/app/MeuEnsino"));
+const MinhaIgreja = lazy(() => import("@/pages/app/MinhaIgreja"));
 
 // Ministério Modular
 const MinisterioHome = lazy(() => import("@/pages/ministerio/MinisterioHome"));
@@ -162,7 +170,6 @@ const SejaVoluntario = lazy(() => import("@/pages/institutional/SejaVoluntario")
 const CadastroInfantil = lazy(() => import("@/pages/institutional/CadastroInfantil"));
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Despacho de rotas compartilhadas entre ministérios com slug diferente
 function PlanosDispatch() {
   const { slug } = useParams<{ slug: string }>();
   return slug === 'ensino' ? <LeaderEnsinoPlanos /> : <LeaderMcaPlanos />;
@@ -202,188 +209,180 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <ChurchThemeApplier />
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* ── PUBLIC ──────────────────────────────────────────────────── */}
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/install" element={<InstallPWA />} />
-            <Route path="/sou-novo" element={<SouNovo />} />
-            <Route path="/contribuicoes" element={<Contribuicoes />} />
+            {/* ── SUPER ADMIN ──────────────────────────────────────────────── */}
+            <Route path="/" element={<LoginSuperAdmin />} />
+            <Route path="/admin" element={<PrivateRoute allowedRoles={["superadmin"]}><PainelSuperAdmin /></PrivateRoute>} />
+            <Route path="/admin/igrejas" element={<Navigate to="/admin" replace />} />
+            <Route path="/admin/igrejas/nova" element={<PrivateRoute allowedRoles={["superadmin"]}><NovaIgreja /></PrivateRoute>} />
 
-            {/* ── INSTITUCIONAL ────────────────────────────────────────────── */}
-            <Route path="/quem-somos" element={<QuemSomos />} />
-            <Route path="/quem-somos/teologia" element={<Teologia />} />
-            <Route path="/quem-somos/missao-visao" element={<MissaoVisao />} />
-            <Route path="/quem-somos/historia" element={<HistoriaPage />} />
-            <Route path="/quem-somos/pastores" element={<Pastores />} />
-            <Route path="/quem-somos/lideres-ministerios" element={<LideresMinisterios />} />
-            <Route path="/trilha-amar-servir" element={<TrilhaAmarServir />} />
-            <Route path="/bases-publicas" element={<BasesPublicas />} />
-            <Route path="/seja-voluntario" element={<SejaVoluntario />} />
-            <Route path="/cadastro-infantil" element={<CadastroInfantil />} />
-            <Route path="/contato" element={<Contato />} />
-            <Route path="/contato/:section" element={<Contato />} />
-            <Route path="/i/:slug" element={<SitePublicoIgreja />} />
+            {/* ── ROTAS POR IGREJA (/i/:churchSlug/*) ──────────────────────── */}
+            <Route path="/i/:churchSlug" element={<IgrejaSlugLayout />}>
+              <Route index element={<Navigate to="login" replace />} />
 
-            {/* ── APP MEMBRO ───────────────────────────────────────────────── */}
-            <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-              <Route index element={<AppHome />} />
-              <Route path="home" element={<MemberHome />} />
-              <Route path="minha-base" element={<MinhaBase />} />
-              <Route path="bases" element={<BasesPublic />} />
-              <Route path="bases/:id" element={<BaseDetalhesPublic />} />
-              <Route path="eventos" element={<MemberEventos />} />
-              <Route path="eventos/:id" element={<MemberEventoDetalhes />} />
-              <Route path="avisos" element={<MemberAvisos />} />
-              <Route path="perfil" element={<MemberPerfil />} />
-              <Route path="oracao" element={<Oracao />} />
-              <Route path="escalas" element={<MinhasEscalas />} />
-              <Route path="historico-escalas" element={<HistoricoEscalas />} />
-              <Route path="notificacoes" element={<MemberNotificacoes />} />
-              <Route path="contribuicoes" element={<MinhasContribuicoes />} />
-              <Route path="contribuir" element={<Contribuir />} />
-              <Route path="calendario" element={<AppCalendario />} />
-              <Route path="voluntarios-do-dia" element={<VoluntariosDoDia />} />
-              <Route path="meu-ensino" element={<MeuEnsino />} />
-            </Route>
+              {/* Auth & utilitários */}
+              <Route path="login" element={<PublicRoute><Auth /></PublicRoute>} />
+              <Route path="reset-password" element={<ResetPassword />} />
+              <Route path="install" element={<InstallPWA />} />
+              <Route path="onboarding" element={<PrivateRoute><Onboarding /></PrivateRoute>} />
+              <Route path="sou-novo" element={<SouNovo />} />
+              <Route path="contribuicoes" element={<Contribuicoes />} />
 
-            {/* Redirects legados */}
-            <Route path="/home" element={<Navigate to="/app/home" replace />} />
-            <Route path="/minha-base" element={<Navigate to="/app/minha-base" replace />} />
-            <Route path="/bases" element={<Navigate to="/app/bases" replace />} />
-            <Route path="/eventos" element={<Navigate to="/app/eventos" replace />} />
-            <Route path="/avisos" element={<Navigate to="/app/avisos" replace />} />
-            <Route path="/perfil" element={<Navigate to="/app/perfil" replace />} />
-            <Route path="/oracao" element={<Navigate to="/app/oracao" replace />} />
-            <Route path="/minhas-escalas" element={<Navigate to="/app/escalas" replace />} />
-            <Route path="/notificacoes" element={<Navigate to="/app/notificacoes" replace />} />
-            <Route path="/financeiro/minhas-contribuicoes" element={<Navigate to="/app/contribuicoes" replace />} />
-            <Route path="/app/minhas-contribuicoes" element={<Navigate to="/app/contribuicoes" replace />} />
+              {/* Pública — site dinâmico da igreja */}
+              <Route path="publico" element={<SitePublicoIgreja />} />
 
-            {/* ── ADMIN ────────────────────────────────────────────────────── */}
-            <Route path="/admin" element={<PrivateRoute allowedRoles={["admin"]}><AdminLayout /></PrivateRoute>}>
-              <Route index element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="usuarios" element={<AdminUsuarios />} />
-              <Route path="eventos" element={<AdminEventos />} />
-              <Route path="avisos" element={<AdminAvisos />} />
-              <Route path="ministerios" element={<AdminMinisterios />} />
-              <Route path="voluntarios-ministerios" element={<AdminVoluntariosMinisterios />} />
-              <Route path="funcoes-ministerio" element={<AdminFuncoesMinisterio />} />
-              <Route path="escalas" element={<AdminEscalas />} />
-              <Route path="escalas/periodos" element={<AdminEscalasPeriodos />} />
-              <Route path="escalas/periodos/:id" element={<AdminEscalasPeriodoDetalhe />} />
-              <Route path="notificacoes" element={<AdminNotificacoes />} />
-              <Route path="visitantes" element={<AdminVisitantes />} />
-              <Route path="visitantes/:id" element={<AdminVisitanteDetalhes />} />
-              <Route path="membros" element={<AdminMembros />} />
-              <Route path="membros/novo" element={<AdminMembroNovo />} />
-              <Route path="membros/relatorio" element={<AdminMembroRelatorio />} />
-              <Route path="membros/:id" element={<AdminMembroDetalhes />} />
-              <Route path="bases" element={<AdminBases />} />
-              <Route path="bases/nova" element={<AdminBaseNova />} />
-              <Route path="bases/relatorio" element={<AdminBaseRelatorio />} />
-              <Route path="bases/:id" element={<AdminBaseDetalhes />} />
-              <Route path="acompanhamento" element={<AdminAcompanhamento />} />
-              <Route path="kids" element={<AdminKids />} />
-              <Route path="ensino" element={<AdminEnsino />} />
-              {/* Financeiro */}
-              <Route path="financeiro" element={<FinanceiroDashboard />} />
-              <Route path="financeiro/transacoes" element={<Transacoes />} />
-              <Route path="financeiro/transacoes/novo" element={<TransacaoForm />} />
-              <Route path="financeiro/transacoes/:id" element={<TransacaoForm />} />
-              <Route path="financeiro/contas" element={<Contas />} />
-              <Route path="financeiro/categorias" element={<Categorias />} />
-              <Route path="financeiro/relatorios" element={<FinanceiroRelatorio />} />
-              <Route path="financeiro/auditoria" element={<FinanceiroAuditoria />} />
-              {/* Relatórios */}
-              <Route path="relatorios" element={<RelatorioGeral />} />
-              <Route path="relatorios/visitantes" element={<RelatorioVisitantes />} />
-              <Route path="relatorios/bases" element={<RelatorioBases />} />
-              <Route path="relatorios/membros" element={<RelatorioMembros />} />
-              <Route path="relatorios/financeiro" element={<RelatorioFinanceiro />} />
-              <Route path="relatorios/comunicacoes" element={<RelatorioComunicacoes />} />
-              {/* Devocionais */}
-              <Route path="devocionais" element={<AdminDevocionais />} />
-              {/* Config & Audit */}
-              <Route path="auditoria" element={<AdminAuditoria />} />
-              <Route path="configuracoes" element={<AdminConfiguracoes />} />
-              <Route path="whatsapp-test" element={<WhatsAppTest />} />
-              <Route path="igrejas/nova" element={<NovaIgreja />} />
-            </Route>
+              {/* Institucional */}
+              <Route path="quem-somos" element={<QuemSomos />} />
+              <Route path="quem-somos/teologia" element={<Teologia />} />
+              <Route path="quem-somos/missao-visao" element={<MissaoVisao />} />
+              <Route path="quem-somos/historia" element={<HistoriaPage />} />
+              <Route path="quem-somos/pastores" element={<Pastores />} />
+              <Route path="quem-somos/lideres-ministerios" element={<LideresMinisterios />} />
+              <Route path="trilha-amar-servir" element={<TrilhaAmarServir />} />
+              <Route path="bases-publicas" element={<BasesPublicas />} />
+              <Route path="seja-voluntario" element={<SejaVoluntario />} />
+              <Route path="cadastro-infantil" element={<CadastroInfantil />} />
+              <Route path="contato" element={<Contato />} />
+              <Route path="contato/:section" element={<Contato />} />
 
-            {/* ── FINANCEIRO (role financeiro, não-admin) ───────────────────── */}
-            <Route path="/financeiro" element={<PrivateRoute allowedRoles={["financeiro"]}><FinanceiroLayout /></PrivateRoute>}>
-              <Route index element={<FinanceiroDashboard />} />
-              <Route path="transacoes" element={<Transacoes />} />
-              <Route path="transacoes/novo" element={<TransacaoForm />} />
-              <Route path="transacoes/:id" element={<TransacaoForm />} />
-              <Route path="contas" element={<Contas />} />
-              <Route path="categorias" element={<Categorias />} />
-              <Route path="relatorios" element={<FinanceiroRelatorio />} />
-              <Route path="auditoria" element={<FinanceiroAuditoria />} />
-            </Route>
+              {/* ── APP MEMBRO ─────────────────────────────────────────────── */}
+              <Route path="app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+                <Route index element={<AppHome />} />
+                <Route path="home" element={<MemberHome />} />
+                <Route path="minha-base" element={<MinhaBase />} />
+                <Route path="bases" element={<BasesPublic />} />
+                <Route path="bases/:id" element={<BaseDetalhesPublic />} />
+                <Route path="eventos" element={<MemberEventos />} />
+                <Route path="eventos/:id" element={<MemberEventoDetalhes />} />
+                <Route path="avisos" element={<MemberAvisos />} />
+                <Route path="perfil" element={<MemberPerfil />} />
+                <Route path="oracao" element={<Oracao />} />
+                <Route path="escalas" element={<MinhasEscalas />} />
+                <Route path="historico-escalas" element={<HistoricoEscalas />} />
+                <Route path="notificacoes" element={<MemberNotificacoes />} />
+                <Route path="contribuicoes" element={<MinhasContribuicoes />} />
+                <Route path="contribuir" element={<Contribuir />} />
+                <Route path="calendario" element={<AppCalendario />} />
+                <Route path="voluntarios-do-dia" element={<VoluntariosDoDia />} />
+                <Route path="meu-ensino" element={<MeuEnsino />} />
+                <Route path="minha-igreja" element={<MinhaIgreja />} />
+              </Route>
 
-            {/* ── LÍDER (hub) ──────────────────────────────────────────────── */}
-            <Route path="/leader" element={<PrivateRoute allowedRoles={["lider", "admin"]}><LeaderLayout /></PrivateRoute>}>
-              <Route index element={<LeaderEntry />} />
-              <Route path="hub" element={<LeaderHub />} />
-            </Route>
+              {/* ── ADMIN (igreja) ─────────────────────────────────────────── */}
+              <Route path="admin" element={<PrivateRoute allowedRoles={["admin"]}><AdminLayout /></PrivateRoute>}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="usuarios" element={<AdminUsuarios />} />
+                <Route path="eventos" element={<AdminEventos />} />
+                <Route path="avisos" element={<AdminAvisos />} />
+                <Route path="ministerios" element={<AdminMinisterios />} />
+                <Route path="voluntarios-ministerios" element={<AdminVoluntariosMinisterios />} />
+                <Route path="funcoes-ministerio" element={<AdminFuncoesMinisterio />} />
+                <Route path="escalas" element={<AdminEscalas />} />
+                <Route path="escalas/periodos" element={<AdminEscalasPeriodos />} />
+                <Route path="escalas/periodos/:id" element={<AdminEscalasPeriodoDetalhe />} />
+                <Route path="notificacoes" element={<AdminNotificacoes />} />
+                <Route path="visitantes" element={<AdminVisitantes />} />
+                <Route path="visitantes/:id" element={<AdminVisitanteDetalhes />} />
+                <Route path="membros" element={<AdminMembros />} />
+                <Route path="membros/novo" element={<AdminMembroNovo />} />
+                <Route path="membros/relatorio" element={<AdminMembroRelatorio />} />
+                <Route path="membros/:id" element={<AdminMembroDetalhes />} />
+                <Route path="bases" element={<AdminBases />} />
+                <Route path="bases/nova" element={<AdminBaseNova />} />
+                <Route path="bases/relatorio" element={<AdminBaseRelatorio />} />
+                <Route path="bases/:id" element={<AdminBaseDetalhes />} />
+                <Route path="acompanhamento" element={<AdminAcompanhamento />} />
+                <Route path="kids" element={<AdminKids />} />
+                <Route path="ensino" element={<AdminEnsino />} />
+                <Route path="financeiro" element={<FinanceiroDashboard />} />
+                <Route path="financeiro/transacoes" element={<Transacoes />} />
+                <Route path="financeiro/transacoes/novo" element={<TransacaoForm />} />
+                <Route path="financeiro/transacoes/:id" element={<TransacaoForm />} />
+                <Route path="financeiro/contas" element={<Contas />} />
+                <Route path="financeiro/categorias" element={<Categorias />} />
+                <Route path="financeiro/relatorios" element={<FinanceiroRelatorio />} />
+                <Route path="financeiro/auditoria" element={<FinanceiroAuditoria />} />
+                <Route path="relatorios" element={<RelatorioGeral />} />
+                <Route path="relatorios/visitantes" element={<RelatorioVisitantes />} />
+                <Route path="relatorios/bases" element={<RelatorioBases />} />
+                <Route path="relatorios/membros" element={<RelatorioMembros />} />
+                <Route path="relatorios/financeiro" element={<RelatorioFinanceiro />} />
+                <Route path="relatorios/comunicacoes" element={<RelatorioComunicacoes />} />
+                <Route path="devocionais" element={<AdminDevocionais />} />
+                <Route path="auditoria" element={<AdminAuditoria />} />
+                <Route path="configuracoes" element={<AdminConfiguracoes />} />
+                <Route path="configuracoes/igreja" element={<AdminConfiguracaoIgreja />} />
+                <Route path="whatsapp-test" element={<WhatsAppTest />} />
+              </Route>
 
-            {/* ── LÍDER (ministério específico) ────────────────────────────── */}
-            <Route path="/leader/:slug" element={<PrivateRoute allowedRoles={["lider", "admin"]}><LeaderMinisterioLayout /></PrivateRoute>}>
-              <Route index element={<LeaderDashboard />} />
-              <Route path="equipe" element={<LeaderMinhaEquipe />} />
-              <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
-              <Route path="escalas" element={<LeaderEscalas />} />
-              <Route path="bases" element={<LeaderBases />} />
-              <Route path="bases/:id" element={<LeaderBaseDetalhes />} />
-              <Route path="notificacoes" element={<LeaderNotificacoes />} />
-              <Route path="relatorios" element={<LeaderRelatorios />} />
-              <Route path="documentos" element={<LeaderDocumentos />} />
-              {/* Música */}
-              <Route path="escala-culto" element={<LeaderMusicaEscalaCulto />} />
-              <Route path="escala-culto/:eventoId" element={<LeaderMusicaEscalaCultoDetalhe />} />
-              <Route path="repertorio" element={<LeaderMusicaRepertorio />} />
-              {/* Celebração */}
-              <Route path="cultos" element={<LeaderCelebracaoCultos />} />
-              <Route path="cultos/:eventoId" element={<LeaderCelebracaoCultoDetalhe />} />
-              {/* Recepção */}
-              <Route path="visitantes-dia" element={<LeaderRecepcaoVisitantesDia />} />
-              <Route path="visitantes" element={<LeaderRecepcaoVisitantesHistorico />} />
-              {/* Pequenos Grupos */}
-              <Route path="grupos" element={<LeaderPgGruposHub />} />
-              <Route path="grupos/grupo/:grupoId" element={<LeaderPgGrupoDetalhe />} />
-              {/* MCA */}
-              <Route path="kids" element={<LeaderMcaKidsHub />} />
-              <Route path="salas" element={<LeaderMcaSalas />} />
-              <Route path="criancas" element={<LeaderMcaCriancas />} />
-              <Route path="checkin" element={<LeaderMcaCheckin />} />
-              <Route path="planos" element={<PlanosDispatch />} />
-              <Route path="planos/:planoId" element={<PlanoDetalheDispatch />} />
-              <Route path="comunicacao" element={<LeaderMcaComunicacao />} />
-              {/* Ensino */}
-              <Route path="escola-biblica" element={<LeaderEscolaBiblica />} />
-              <Route path="turmas" element={<LeaderEnsinoTurmas />} />
-              <Route path="chamada" element={<LeaderEnsinoChamada />} />
-            </Route>
+              {/* ── FINANCEIRO (role financeiro) ───────────────────────────── */}
+              <Route path="financeiro" element={<PrivateRoute allowedRoles={["financeiro"]}><FinanceiroLayout /></PrivateRoute>}>
+                <Route index element={<FinanceiroDashboard />} />
+                <Route path="transacoes" element={<Transacoes />} />
+                <Route path="transacoes/novo" element={<TransacaoForm />} />
+                <Route path="transacoes/:id" element={<TransacaoForm />} />
+                <Route path="contas" element={<Contas />} />
+                <Route path="categorias" element={<Categorias />} />
+                <Route path="relatorios" element={<FinanceiroRelatorio />} />
+                <Route path="auditoria" element={<FinanceiroAuditoria />} />
+              </Route>
 
-            {/* ── VOLUNTÁRIO ───────────────────────────────────────────────── */}
-            <Route path="/voluntario" element={<PrivateRoute allowedRoles={["voluntario", "admin", "lider"]}><VoluntarioLayout /></PrivateRoute>}>
-              <Route index element={<VoluntarioDashboard />} />
-            </Route>
+              {/* ── LÍDER (hub) ────────────────────────────────────────────── */}
+              <Route path="leader" element={<PrivateRoute allowedRoles={["lider", "admin"]}><LeaderLayout /></PrivateRoute>}>
+                <Route index element={<LeaderEntry />} />
+                <Route path="hub" element={<LeaderHub />} />
+              </Route>
 
-            <Route path="/volunteer/:slug" element={<PrivateRoute allowedRoles={["voluntario", "admin", "lider"]}><VolunteerMinisterioLayout /></PrivateRoute>}>
-              <Route index element={<VolunteerMinisterioDashboard />} />
-            </Route>
+              {/* ── LÍDER (ministério específico) ──────────────────────────── */}
+              <Route path="leader/:slug" element={<PrivateRoute allowedRoles={["lider", "admin"]}><LeaderMinisterioLayout /></PrivateRoute>}>
+                <Route index element={<LeaderDashboard />} />
+                <Route path="equipe" element={<LeaderMinhaEquipe />} />
+                <Route path="funcoes" element={<LeaderMinhasFuncoes />} />
+                <Route path="escalas" element={<LeaderEscalas />} />
+                <Route path="bases" element={<LeaderBases />} />
+                <Route path="bases/:id" element={<LeaderBaseDetalhes />} />
+                <Route path="notificacoes" element={<LeaderNotificacoes />} />
+                <Route path="relatorios" element={<LeaderRelatorios />} />
+                <Route path="documentos" element={<LeaderDocumentos />} />
+                <Route path="escala-culto" element={<LeaderMusicaEscalaCulto />} />
+                <Route path="escala-culto/:eventoId" element={<LeaderMusicaEscalaCultoDetalhe />} />
+                <Route path="repertorio" element={<LeaderMusicaRepertorio />} />
+                <Route path="cultos" element={<LeaderCelebracaoCultos />} />
+                <Route path="cultos/:eventoId" element={<LeaderCelebracaoCultoDetalhe />} />
+                <Route path="visitantes-dia" element={<LeaderRecepcaoVisitantesDia />} />
+                <Route path="visitantes" element={<LeaderRecepcaoVisitantesHistorico />} />
+                <Route path="grupos" element={<LeaderPgGruposHub />} />
+                <Route path="grupos/grupo/:grupoId" element={<LeaderPgGrupoDetalhe />} />
+                <Route path="kids" element={<LeaderMcaKidsHub />} />
+                <Route path="salas" element={<LeaderMcaSalas />} />
+                <Route path="criancas" element={<LeaderMcaCriancas />} />
+                <Route path="checkin" element={<LeaderMcaCheckin />} />
+                <Route path="planos" element={<PlanosDispatch />} />
+                <Route path="planos/:planoId" element={<PlanoDetalheDispatch />} />
+                <Route path="comunicacao" element={<LeaderMcaComunicacao />} />
+                <Route path="escola-biblica" element={<LeaderEscolaBiblica />} />
+                <Route path="turmas" element={<LeaderEnsinoTurmas />} />
+                <Route path="chamada" element={<LeaderEnsinoChamada />} />
+              </Route>
 
-            {/* ── MINISTÉRIO MODULAR ───────────────────────────────────────── */}
-            <Route path="/ministerio/:slug" element={<PrivateRoute allowedRoles={["admin", "lider", "voluntario"]}><MinisterioLayout /></PrivateRoute>}>
-              <Route index element={<MinisterioHome />} />
-              <Route path="escalas" element={<MinisterioEscalas />} />
-              <Route path=":modulo" element={<MinisterioModulo />} />
+              {/* ── VOLUNTÁRIO ────────────────────────────────────────────── */}
+              <Route path="voluntario" element={<PrivateRoute allowedRoles={["voluntario", "admin", "lider"]}><VoluntarioLayout /></PrivateRoute>}>
+                <Route index element={<VoluntarioDashboard />} />
+              </Route>
+
+              <Route path="volunteer/:slug" element={<PrivateRoute allowedRoles={["voluntario", "admin", "lider"]}><VolunteerMinisterioLayout /></PrivateRoute>}>
+                <Route index element={<VolunteerMinisterioDashboard />} />
+              </Route>
+
+              {/* ── MINISTÉRIO MODULAR ────────────────────────────────────── */}
+              <Route path="ministerio/:slug" element={<PrivateRoute allowedRoles={["admin", "lider", "voluntario"]}><MinisterioLayout /></PrivateRoute>}>
+                <Route index element={<MinisterioHome />} />
+                <Route path="escalas" element={<MinisterioEscalas />} />
+                <Route path=":modulo" element={<MinisterioModulo />} />
+              </Route>
             </Route>
 
             {/* ── 404 ──────────────────────────────────────────────────────── */}

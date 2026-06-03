@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-export type UserRole = 'admin' | 'lider' | 'voluntario' | 'membro' | 'visitante' | 'financeiro';
+export type UserRole = 'admin' | 'lider' | 'voluntario' | 'membro' | 'visitante' | 'financeiro' | 'superadmin';
 
 export interface MyMinistry {
   ministerio_id: string;
@@ -20,6 +20,7 @@ interface Profile {
   telefone?: string;
   foto_url?: string;
   status: string;
+  church_id?: string | null;
 }
 
 interface AuthContextType {
@@ -29,6 +30,8 @@ interface AuthContextType {
   roles: UserRole[];
   loading: boolean;
   churchId: string | null;
+  /** Sobrescreve o churchId do perfil — usado por IgrejaSlugLayout para superadmin */
+  setChurchIdOverride: (id: string | null) => void;
   myMinistries: MyMinistry[];
   myMinistriesLoading: boolean;
   refreshMyMinistries: () => Promise<void>;
@@ -51,10 +54,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
-  const [churchId, setChurchId] = useState<string | null>(null);
+  const [profileChurchId, setProfileChurchId] = useState<string | null>(null);
+  const [churchIdOverride, setChurchIdOverride] = useState<string | null>(null);
   const [myMinistries, setMyMinistries] = useState<MyMinistry[]>([]);
   const [myMinistriesLoading, setMyMinistriesLoading] = useState(false);
   const loadedUserIdRef = useRef<string | null>(null);
+
+  // churchId efetivo: override (posto por IgrejaSlugLayout) tem precedência sobre o do perfil
+  const churchId = churchIdOverride ?? profileChurchId;
 
   const refreshMyMinistries = useCallback(async () => {
     setMyMinistriesLoading(true);
@@ -106,25 +113,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserData = async (userId: string) => {
     try {
-      const [profileResult, rolesResult, churchResult] = await Promise.all([
+      const [profileResult, rolesResult] = await Promise.all([
         supabase
           .from('profiles')
-          .select('id, user_id, nome, email, telefone, foto_url, status')
+          .select('id, user_id, nome, email, telefone, foto_url, status, church_id')
           .eq('user_id', userId)
           .maybeSingle(),
         supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', userId),
-        supabase
-          .from('igrejas')
-          .select('id')
-          .limit(1)
-          .maybeSingle(),
       ]);
 
       if (!profileResult.error && profileResult.data) {
         setProfile(profileResult.data as Profile);
+        setProfileChurchId(profileResult.data.church_id ?? null);
       } else if (profileResult.error) {
         console.error('Profile fetch error:', profileResult.error);
       }
@@ -133,10 +136,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRoles(rolesResult.data.map(r => r.role as UserRole));
       } else if (rolesResult.error) {
         console.error('Roles fetch error:', rolesResult.error);
-      }
-
-      if (!churchResult.error && churchResult.data) {
-        setChurchId(churchResult.data.id);
       }
 
       refreshMyMinistries();
@@ -173,7 +172,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     setProfile(null);
     setRoles([]);
-    setChurchId(null);
+    setProfileChurchId(null);
+    setChurchIdOverride(null);
     setMyMinistries([]);
   };
 
@@ -200,6 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       roles,
       loading,
       churchId,
+      setChurchIdOverride,
       myMinistries,
       myMinistriesLoading,
       refreshMyMinistries,

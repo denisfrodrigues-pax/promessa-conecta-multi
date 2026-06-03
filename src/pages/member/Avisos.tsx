@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Search, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -14,19 +15,21 @@ interface Aviso {
 }
 
 export default function MemberAvisos() {
+  const { churchId } = useAuth();
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetchAvisos();
-  }, []);
+    if (churchId) fetchAvisos();
+  }, [churchId]);
 
   const fetchAvisos = async () => {
     try {
       const { data, error } = await supabase
         .from('avisos')
         .select('*')
+        .eq('church_id', churchId ?? '')
         .eq('publico', true)
         .order('data_publicacao', { ascending: false });
 

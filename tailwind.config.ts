@@ -87,6 +87,11 @@ export default {
         success: "hsl(var(--success))",
         warning: "hsl(var(--warning))",
         error: "hsl(var(--error))",
+        // Cores dinâmicas por igreja (definidas via ChurchThemeApplier)
+        church: {
+          primary: "var(--color-primary)",
+          secondary: "var(--color-secondary, #ffffff)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

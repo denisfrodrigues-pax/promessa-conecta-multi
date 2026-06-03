@@ -28,7 +28,7 @@ interface Evento {
 }
 
 export default function MemberHome() {
-  const { profile } = useAuth();
+  const { profile, churchId } = useAuth();
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +44,7 @@ export default function MemberHome() {
         supabase
           .from('avisos')
           .select('*')
+          .eq('church_id', churchId ?? '')
           .eq('publico', true)
           .order('data_publicacao', { ascending: false })
           .limit(3),
