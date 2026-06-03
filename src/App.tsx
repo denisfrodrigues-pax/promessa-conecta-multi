@@ -148,6 +148,7 @@ const LeaderEnsinoPlanoDetalhe = lazy(() => import("@/pages/leader/ensino/PlanoD
 const LeaderEnsinoChamada = lazy(() => import("@/pages/leader/ensino/Chamada"));
 
 // Institucional
+const SitePublicoIgreja = lazy(() => import("@/pages/institutional/SitePublicoIgreja"));
 const QuemSomos = lazy(() => import("@/pages/institutional/QuemSomos"));
 const Contato = lazy(() => import("@/pages/institutional/Contato"));
 const Teologia = lazy(() => import("@/pages/institutional/quem-somos/Teologia"));
@@ -224,6 +225,7 @@ const App = () => (
             <Route path="/cadastro-infantil" element={<CadastroInfantil />} />
             <Route path="/contato" element={<Contato />} />
             <Route path="/contato/:section" element={<Contato />} />
+            <Route path="/i/:slug" element={<SitePublicoIgreja />} />
 
             {/* ── APP MEMBRO ───────────────────────────────────────────────── */}
             <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
