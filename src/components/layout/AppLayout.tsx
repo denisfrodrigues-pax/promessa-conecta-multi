@@ -35,11 +35,11 @@ export default function AppLayout() {
   const isSuperAdmin = roles.includes('superadmin');
 
   const panelItems = [
-    isSuperAdmin                   && { route: '/admin',               label: '⚡ Super Admin' },
-    roles.includes('admin')        && { route: p('/admin/dashboard'),  label: 'Painel Admin' },
-    roles.includes('financeiro')   && { route: p('/financeiro'),       label: 'Painel Financeiro' },
-    roles.includes('lider')        && { route: p('/leader/hub'),       label: 'Painel Líder' },
-    roles.includes('voluntario')   && { route: p('/voluntario'),       label: 'Painel Voluntário' },
+    isSuperAdmin                                          && { route: '/admin',              label: '⚡ Super Admin' },
+    (isSuperAdmin || roles.includes('admin'))             && { route: p('/admin/dashboard'), label: 'Painel Admin' },
+    (isSuperAdmin || roles.includes('financeiro'))        && { route: p('/financeiro'),      label: 'Painel Financeiro' },
+    (isSuperAdmin || roles.includes('lider'))             && { route: p('/leader/hub'),      label: 'Painel Líder' },
+    (isSuperAdmin || roles.includes('voluntario'))        && { route: p('/voluntario'),      label: 'Painel Voluntário' },
   ].filter(Boolean) as { route: string; label: string }[];
 
   const nomeBase = `Minha ${nomeModulo.bases}`;

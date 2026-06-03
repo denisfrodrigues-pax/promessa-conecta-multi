@@ -11,7 +11,6 @@ import {
   Users,
   ArrowRight
 } from "lucide-react";
-import familiaPastoral from "@/assets/familia-pastoral.png";
 import DevocionaldaSemana from "@/components/app/DevocionaldaSemana";
 import AniversariantesDoMes from "@/components/app/AniversariantesDoMes";
 
@@ -39,15 +38,7 @@ export default function AppHome() {
       {/* ============================================
           HERO SECTION - Authenticated
       ============================================ */}
-      <section className="relative flex flex-col items-center justify-center text-center py-20 md:py-28 px-4 overflow-hidden">
-        {/* Background with subtle image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-          style={{ backgroundImage: `url(${familiaPastoral})` }}
-        />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-promessa-50/80 via-background/90 to-background" />
-        
+      <section className="relative flex flex-col items-center justify-center text-center py-20 md:py-28 px-4 overflow-hidden bg-gradient-to-b from-promessa-50/60 to-background">
         {/* Content */}
         <div className="relative z-10 max-w-3xl mx-auto">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground mb-4">

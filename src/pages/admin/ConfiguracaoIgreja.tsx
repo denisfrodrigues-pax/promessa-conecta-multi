@@ -1,7 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
+import {
+  CultoPrincipalBlock, EscolaBiblicaBlock, PequenosGruposBlock,
+  DEFAULT_CULTOS_CONFIG,
+} from '@/components/CultoBlocks';
+import type { CultosConfig } from '@/components/CultoBlocks';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +28,7 @@ import {
   Building2, Save, Loader2, Upload, X, Image as ImageIcon, Palette,
   User, Mail, Phone, Crown, MapPin, Globe, Instagram, Youtube,
   Facebook, MessageCircle, Puzzle, Clock, Plus, Trash2, Pencil, Copy, ExternalLink,
+  Sparkles, Search, BookOpen,
 } from 'lucide-react';
 
 type Plano = 'teste' | 'basico' | 'completo';
@@ -58,10 +64,22 @@ interface IgrejaForm {
   responsavel_nome: string;
   responsavel_email: string;
   responsavel_telefone: string;
+  // Sobre
+  missao: string;
+  visao: string;
+  historia: string;
   // Localização
+  cep: string;
   cidade: string;
   estado: string;
   endereco: string;
+  no_endereco: string;
+  complemento_endereco: string;
+  telefone: string;
+  email: string;
+  google_maps_url: string;
+  // Cultos config
+  cultos_config: CultosConfig;
   // Redes
   instagram_url: string;
   youtube_url: string;
@@ -108,9 +126,19 @@ const EMPTY_FORM: IgrejaForm = {
   responsavel_nome: '',
   responsavel_email: '',
   responsavel_telefone: '',
+  missao: '',
+  visao: '',
+  historia: '',
+  cep: '',
   cidade: '',
   estado: '',
   endereco: '',
+  no_endereco: '',
+  complemento_endereco: '',
+  telefone: '',
+  email: '',
+  google_maps_url: '',
+  cultos_config: DEFAULT_CULTOS_CONFIG,
   instagram_url: '',
   youtube_url: '',
   facebook_url: '',
@@ -151,6 +179,8 @@ export default function ConfiguracaoIgreja() {
   const [uploading, setUploading] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
   const [uploadingLogin, setUploadingLogin] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
   const fileLogoRef = useRef<HTMLInputElement>(null);
   const fileHeroRef = useRef<HTMLInputElement>(null);
   const fileLoginRef = useRef<HTMLInputElement>(null);
@@ -179,8 +209,11 @@ export default function ConfiguracaoIgreja() {
         nome, logo_url, cor_primaria, cor_secundaria,
         foto_hero_urls, foto_login_url,
         slogan, versiculo, versiculo_referencia,
+        missao, visao, historia,
         responsavel_nome, responsavel_email, responsavel_telefone,
-        cidade, estado, endereco,
+        cep, cidade, estado, endereco, no_endereco, complemento_endereco,
+        telefone, email, google_maps_url,
+        cultos_config,
         instagram_url, youtube_url, facebook_url, whatsapp, site_url,
         modulo_pequenos_grupos, modulo_escola_biblica, modulo_financeiro,
         modulo_repertorio, modulo_auditoria,
@@ -202,12 +235,22 @@ export default function ConfiguracaoIgreja() {
         slogan: data.slogan ?? '',
         versiculo: data.versiculo ?? '',
         versiculo_referencia: data.versiculo_referencia ?? '',
+        missao: (data as any).missao ?? '',
+        visao:  (data as any).visao  ?? '',
+        historia: (data as any).historia ?? '',
         responsavel_nome: data.responsavel_nome ?? '',
         responsavel_email: data.responsavel_email ?? '',
         responsavel_telefone: data.responsavel_telefone ?? '',
+        cep:    (data as any).cep    ?? '',
         cidade: data.cidade ?? '',
         estado: data.estado ?? '',
         endereco: data.endereco ?? '',
+        no_endereco:          (data as any).no_endereco          ?? '',
+        complemento_endereco: (data as any).complemento_endereco ?? '',
+        telefone:      (data as any).telefone      ?? '',
+        email:         (data as any).email         ?? '',
+        google_maps_url: (data as any).google_maps_url ?? '',
+        cultos_config: (data as any).cultos_config ?? DEFAULT_CULTOS_CONFIG,
         instagram_url: data.instagram_url ?? '',
         youtube_url: data.youtube_url ?? '',
         facebook_url: data.facebook_url ?? '',
@@ -249,6 +292,71 @@ export default function ConfiguracaoIgreja() {
 
   const handleSwitch = (name: keyof IgrejaForm, value: boolean) => {
     setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const setCulto = useCallback((key: keyof CultosConfig, field: string, value: unknown) =>
+    setForm(p => ({
+      ...p,
+      cultos_config: { ...p.cultos_config, [key]: { ...p.cultos_config[key], [field]: value } },
+    })), []);
+
+  // ─── CEP lookup ──────────────────────────────────────────────────────────
+  const handleCepChange = (v: string) => {
+    const digits = v.replace(/\D/g, '').slice(0, 8);
+    setForm(p => ({ ...p, cep: digits.length > 5 ? `${digits.slice(0,5)}-${digits.slice(5)}` : digits }));
+    if (digits.length === 8) lookupCep(digits);
+  };
+  const lookupCep = async (digits: string) => {
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = await res.json();
+      if (data.erro) { toast.error('CEP não encontrado'); return; }
+      setForm(p => ({
+        ...p,
+        endereco: [data.logradouro, data.bairro].filter(Boolean).join(', '),
+        cidade:   data.localidade ?? p.cidade,
+        estado:   data.uf         ?? p.estado,
+      }));
+      toast.success('Endereço preenchido automaticamente');
+    } catch { toast.error('Erro ao buscar CEP'); }
+    finally { setCepLoading(false); }
+  };
+
+  // ─── Melhore com IA ───────────────────────────────────────────────────────
+  const handleMelhorarHistoria = async () => {
+    if (!form.historia.trim()) { toast.error('Escreva algo primeiro para melhorar com IA'); return; }
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      toast.error('Chave de IA não configurada. Contate o administrador.');
+      console.error('VITE_ANTHROPIC_API_KEY não encontrada nas variáveis de ambiente');
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{
+            role: 'user',
+            content: `Você é um assistente especializado em comunicação evangélica. Reescreva o seguinte texto de história de igreja de forma clara, inspiradora e acolhedora, mantendo as informações originais. Máximo 3 parágrafos. Texto original: ${form.historia}`,
+          }],
+        }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      const texto = data.content?.[0]?.text as string | undefined;
+      if (texto) { setForm(p => ({ ...p, historia: texto.trim() })); toast.success('Texto melhorado com IA!'); }
+    } catch (e) { console.error(e); toast.error('Erro ao chamar IA. Verifique a chave no .env'); }
+    finally { setAiLoading(false); }
   };
 
   // ─── Upload logo ───────────────────────────────────────────────────────────
@@ -358,9 +466,19 @@ export default function ConfiguracaoIgreja() {
         responsavel_nome: form.responsavel_nome.trim() || null,
         responsavel_email: form.responsavel_email.trim() || null,
         responsavel_telefone: form.responsavel_telefone.trim() || null,
+        missao: form.missao.trim() || null,
+        visao:  form.visao.trim()  || null,
+        historia: form.historia.trim() || null,
+        cep:    form.cep.trim() || null,
         cidade: form.cidade.trim() || null,
         estado: form.estado.trim() || null,
         endereco: form.endereco.trim() || null,
+        no_endereco:          form.no_endereco.trim()          || null,
+        complemento_endereco: form.complemento_endereco.trim() || null,
+        telefone:       form.telefone.trim()       || null,
+        email:          form.email.trim()          || null,
+        google_maps_url: form.google_maps_url.trim() || null,
+        cultos_config: form.cultos_config,
         instagram_url: form.instagram_url.trim() || null,
         youtube_url: form.youtube_url.trim() || null,
         facebook_url: form.facebook_url.trim() || null,
@@ -375,6 +493,7 @@ export default function ConfiguracaoIgreja() {
         nome_modulo_culto: form.nome_modulo_culto.trim() || 'Culto',
         nome_modulo_escola_biblica: form.nome_modulo_escola_biblica.trim() || 'Escola Bíblica',
         nome_modulo_financeiro: form.nome_modulo_financeiro.trim() || 'Financeiro',
+        ...(isSuperAdmin ? { plano: form.plano } : {}),
       })
       .eq('id', churchId);
 
@@ -523,11 +642,12 @@ export default function ConfiguracaoIgreja() {
 
       {/* Abas */}
       <Tabs defaultValue="visual">
-        <TabsList className="mb-4">
+        <TabsList className="mb-4 flex-wrap">
           <TabsTrigger value="visual">🎨 Visual</TabsTrigger>
-          <TabsTrigger value="localizacao">📍 Localização e Redes</TabsTrigger>
+          <TabsTrigger value="sobre">📖 Sobre</TabsTrigger>
+          <TabsTrigger value="localizacao">📍 Localização</TabsTrigger>
           <TabsTrigger value="modulos">🧩 Módulos</TabsTrigger>
-          <TabsTrigger value="cultos">⛪ Cultos e Eventos</TabsTrigger>
+          <TabsTrigger value="cultos">⛪ Cultos</TabsTrigger>
         </TabsList>
 
         {/* ─── Aba Visual ─────────────────────────────────────────────────── */}
@@ -752,7 +872,46 @@ export default function ConfiguracaoIgreja() {
           </div>
         </TabsContent>
 
-        {/* ─── Aba Localização e Redes ─────────────────────────────────────── */}
+        {/* ─── Aba Sobre ──────────────────────────────────────────────────── */}
+        <TabsContent value="sobre" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2"><BookOpen className="w-4 h-4" />Sobre a Igreja</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="missao">Missão</Label>
+                <Textarea id="missao" name="missao" value={form.missao} onChange={handleChange}
+                  placeholder="Ex: Existimos para Amar e Servir a Deus e as pessoas…" rows={3} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="visao">Visão</Label>
+                <Textarea id="visao" name="visao" value={form.visao} onChange={handleChange}
+                  placeholder="Ex: Ser uma igreja consolidada, saudável e relevante…" rows={3} />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="historia">História Resumida</Label>
+                  <Button type="button" variant="ghost" size="sm" onClick={handleMelhorarHistoria} disabled={aiLoading}
+                    className="text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50 h-7 px-2 gap-1">
+                    {aiLoading
+                      ? <><Loader2 className="h-3 w-3 animate-spin" />Melhorando…</>
+                      : <><Sparkles className="h-3 w-3" />✨ Melhore com IA</>}
+                  </Button>
+                </div>
+                <Textarea id="historia" name="historia" value={form.historia} onChange={handleChange}
+                  placeholder="Conte brevemente a história da igreja…" rows={5} />
+              </div>
+            </CardContent>
+          </Card>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Salvando...</> : <><Save className="w-4 h-4 mr-2" />Salvar</>}
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* ─── Aba Localização ─────────────────────────────────────────────── */}
         <TabsContent value="localizacao" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
@@ -760,6 +919,15 @@ export default function ConfiguracaoIgreja() {
                 <CardTitle className="text-base flex items-center gap-2"><MapPin className="w-4 h-4" />Localização</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* CEP com busca automática */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1">
+                    <Search className="h-3.5 w-3.5" />CEP
+                    {cepLoading && <Loader2 className="h-3 w-3 animate-spin text-gray-400 ml-1" />}
+                  </Label>
+                  <Input value={form.cep} onChange={e => handleCepChange(e.target.value)} placeholder="00000-000" maxLength={9} />
+                  <p className="text-xs text-muted-foreground">Preencha o CEP para buscar o endereço automaticamente</p>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="cidade">Cidade</Label>
@@ -771,8 +939,32 @@ export default function ConfiguracaoIgreja() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="endereco">Endereço Completo</Label>
-                  <Textarea id="endereco" name="endereco" value={form.endereco} onChange={handleChange} placeholder="Rua Exemplo, 123 - Bairro, Cidade - SP" rows={3} />
+                  <Label htmlFor="endereco">Logradouro / Rua</Label>
+                  <Input id="endereco" name="endereco" value={form.endereco} onChange={handleChange} placeholder="Rua Exemplo" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="no_endereco">Número</Label>
+                    <Input id="no_endereco" name="no_endereco" value={form.no_endereco} onChange={handleChange} placeholder="123" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="complemento_endereco">Complemento</Label>
+                    <Input id="complemento_endereco" name="complemento_endereco" value={form.complemento_endereco} onChange={handleChange} placeholder="Sala 2" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="telefone" className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />Telefone</Label>
+                    <Input id="telefone" name="telefone" value={form.telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />E-mail</Label>
+                    <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="contato@igreja.com.br" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="google_maps_url" className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />Google Maps URL</Label>
+                  <Input id="google_maps_url" name="google_maps_url" value={form.google_maps_url} onChange={handleChange} placeholder="https://maps.google.com/..." />
                 </div>
               </CardContent>
             </Card>
@@ -899,8 +1091,30 @@ export default function ConfiguracaoIgreja() {
           </div>
         </TabsContent>
 
-        {/* ─── Aba Cultos e Eventos ─────────────────────────────────────────── */}
+        {/* ─── Aba Cultos ─────────────────────────────────────────────────── */}
         <TabsContent value="cultos" className="space-y-6">
+          {/* Configuração rápida de cultos (cultos_config) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2"><Clock className="w-4 h-4" />Configuração Rápida de Cultos</CardTitle>
+              <CardDescription>Configure os encontros principais exibidos no site público e na área do membro.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <CultoPrincipalBlock
+                config={form.cultos_config.culto_principal}
+                onChange={(field, value) => setCulto('culto_principal', field, value)}
+              />
+              <EscolaBiblicaBlock
+                config={form.cultos_config.escola_biblica}
+                onChange={(field, value) => setCulto('escola_biblica', field, value)}
+              />
+              <PequenosGruposBlock
+                config={form.cultos_config.pequenos_grupos}
+                onChange={(field, value) => setCulto('pequenos_grupos', field, value)}
+              />
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">

@@ -45,20 +45,32 @@ export function IgrejaSlugLayout() {
     };
   }, [church?.id, setChurchIdOverride]);
 
-  // 4.1 — favicon dinâmico por igreja
+  // 4.1 — favicon dinâmico + título por igreja
   useEffect(() => {
-    if (!church?.logo_url) return;
-    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'shortcut icon';
-      document.head.appendChild(link);
+    if (!church) return;
+    // Favicon
+    if (church.logo_url) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'shortcut icon';
+        document.head.appendChild(link);
+      }
+      const prevHref = link.href;
+      link.type = 'image/x-icon';
+      link.href = church.logo_url;
+      const prevTitle = document.title;
+      document.title = `${church.nome} — Promessa Conecta`;
+      return () => {
+        if (link) link.href = prevHref;
+        document.title = prevTitle;
+      };
     }
-    const previous = link.href;
-    link.type = 'image/x-icon';
-    link.href = church.logo_url;
-    return () => { if (link) link.href = previous; };
-  }, [church?.logo_url]);
+    // Só atualiza o título mesmo sem logo
+    const prevTitle = document.title;
+    document.title = `${church.nome} — Promessa Conecta`;
+    return () => { document.title = prevTitle; };
+  }, [church?.logo_url, church?.nome]);
 
   const value = useMemo<IgrejaSlugContextType>(() => ({
     slug: churchSlug,

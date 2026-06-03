@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { useChurchConfig } from '@/hooks/useChurchConfig';
+import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
 import { Logo } from './Logo';
 import { Church } from 'lucide-react';
 
@@ -11,47 +11,37 @@ interface ChurchLogoProps {
   showFallbackIcon?: boolean;
 }
 
-export function ChurchLogo({ 
-  size = 40, 
+export function ChurchLogo({
+  size = 40,
   maxWidth = 120,
   className,
   fallbackText,
-  showFallbackIcon = true
+  showFallbackIcon = true,
 }: ChurchLogoProps) {
-  const { config, loading } = useChurchConfig();
+  const { config, loading } = useIgrejaConfig();
 
   if (loading) {
     return (
-      <div 
+      <div
         className={cn('animate-pulse bg-muted rounded', className)}
         style={{ width: size, height: size }}
       />
     );
   }
 
-  // If there's a custom logo URL, use it
   if (config?.logo_url && !config.logo_url.includes('placeholder')) {
     return (
       <img
         src={config.logo_url}
-        alt={config.nome_igreja || 'Logo da Igreja'}
+        alt={config.nome || 'Logo da Igreja'}
         className={cn('object-contain', className)}
-        style={{ 
-          maxWidth: maxWidth, 
-          maxHeight: size,
-          width: 'auto',
-          height: 'auto'
-        }}
+        style={{ maxWidth, maxHeight: size, width: 'auto', height: 'auto' }}
       />
     );
   }
 
-  // Fallback to default logo or icon
-  if (showFallbackIcon) {
-    return <Logo size={size} className={className} />;
-  }
+  if (showFallbackIcon) return <Logo size={size} className={className} />;
 
-  // Text fallback
   if (fallbackText) {
     return (
       <div className={cn('flex items-center gap-2', className)}>

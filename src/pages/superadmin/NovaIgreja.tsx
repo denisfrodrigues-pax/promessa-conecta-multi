@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -18,22 +18,17 @@ import {
   Youtube, Facebook, BookOpen, Image as ImageIcon, Share2, Camera,
   Sparkles, Search, BookMarked,
 } from 'lucide-react';
+import {
+  CultoPrincipalBlock, EscolaBiblicaBlock, PequenosGruposBlock,
+  DEFAULT_CULTOS_CONFIG,
+} from '@/components/CultoBlocks';
+import type { CultosConfig } from '@/components/CultoBlocks';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ESTADOS_BR = [
   'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG',
   'PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO',
-];
-
-const DIAS_SEMANA = [
-  { value: 'domingo',  label: 'Domingo' },
-  { value: 'segunda',  label: 'Segunda-feira' },
-  { value: 'terca',    label: 'Terça-feira' },
-  { value: 'quarta',   label: 'Quarta-feira' },
-  { value: 'quinta',   label: 'Quinta-feira' },
-  { value: 'sexta',    label: 'Sexta-feira' },
-  { value: 'sabado',   label: 'Sábado' },
 ];
 
 const STEPS = [
@@ -52,55 +47,15 @@ function generateSlug(nome: string): string {
     .trim().replace(/\s+/g, '-').replace(/-+/g, '-');
 }
 
+import { DIAS_SEMANA } from '@/components/CultoBlocks';
+
 function labelDia(dia: string) {
   return DIAS_SEMANA.find(d => d.value === dia)?.label ?? dia;
-}
-
-// ─── Sub-components (OUTSIDE NovaIgreja to prevent focus loss on re-render) ──
-
-interface CultoBlockProps {
-  title: string;
-  ativo: boolean;
-  onToggle: (v: boolean) => void;
-  children: React.ReactNode;
-}
-
-function CultoToggleBlock({ title, ativo, onToggle, children }: CultoBlockProps) {
-  return (
-    <div className={`border rounded-xl p-4 transition-all ${ativo ? 'border-emerald-300 bg-emerald-50/50' : 'border-gray-200 bg-gray-50 opacity-60'}`}>
-      <div className="flex items-center justify-between mb-3">
-        <span className="font-semibold text-sm text-gray-700">{title}</span>
-        <Switch checked={ativo} onCheckedChange={onToggle} />
-      </div>
-      {ativo && <div className="space-y-3">{children}</div>}
-    </div>
-  );
-}
-
-// Input local para nomes dos cultos — evita re-render do pai a cada keystroke
-function CultoNameInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [local, setLocal] = useState(value);
-  useEffect(() => setLocal(value), [value]);
-  return (
-    <Input value={local} onChange={e => setLocal(e.target.value)} onBlur={() => onChange(local)} />
-  );
-}
-
-function CultoDescInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
-  const [local, setLocal] = useState(value);
-  useEffect(() => setLocal(value), [value]);
-  return (
-    <Input value={local} onChange={e => setLocal(e.target.value)} onBlur={() => onChange(local)} placeholder={placeholder} />
-  );
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
 interface HeroItem { file: File; preview: string; }
-
-interface CultoBlock { ativo: boolean; nome: string; dia: string; horario: string; }
-interface PgBlock    { ativo: boolean; nome: string; descricao: string; }
-interface CultosConfig { culto_principal: CultoBlock; escola_biblica: CultoBlock; pequenos_grupos: PgBlock; }
 
 interface BibleResult { reference: string; text: string; }
 
@@ -134,11 +89,7 @@ const INIT: FormData = {
   missao: '', visao: '', historia: '',
   cep: '', cidade: '', estado: '', endereco: '', no_endereco: '', complemento_endereco: '',
   telefone: '', email: '', google_maps_url: '',
-  cultos_config: {
-    culto_principal: { ativo: true,  nome: 'Culto de Celebração', dia: 'sabado', horario: '19:00' },
-    escola_biblica:  { ativo: true,  nome: 'Escola Bíblica',      dia: 'sabado', horario: '18:00' },
-    pequenos_grupos: { ativo: true,  nome: 'Pequenos Grupos',     descricao: 'Durante a semana' },
-  },
+  cultos_config: DEFAULT_CULTOS_CONFIG,
   whatsapp: '', instagram_url: '', youtube_url: '', facebook_url: '', site_url: '',
   responsavel_nome: '', responsavel_email: '', responsavel_telefone: '',
   modulo_pequenos_grupos: true, modulo_escola_biblica: true, modulo_financeiro: true,
@@ -277,8 +228,12 @@ export default function NovaIgreja() {
   // ── AI (1.2 — direct Anthropic API) ─────────────────────────────────────
   const handleMelhorarHistoria = async () => {
     if (!form.historia.trim()) { toast.error('Escreva algo primeiro para melhorar com IA'); return; }
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;
-    if (!apiKey) { toast.error('Configure VITE_ANTHROPIC_API_KEY no .env'); return; }
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      toast.error('Chave de IA não configurada. Contate o administrador.');
+      console.error('VITE_ANTHROPIC_API_KEY não encontrada nas variáveis de ambiente');
+      return;
+    }
     setAiLoading(true);
     try {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -693,61 +648,18 @@ export default function NovaIgreja() {
               <Separator />
               <p className="text-sm font-semibold text-gray-700">Cultos e Encontros</p>
 
-              {/* 1.4 — CultoToggleBlock extraído para módulo → sem perda de foco */}
-              <CultoToggleBlock title="Culto Principal" ativo={form.cultos_config.culto_principal.ativo}
-                onToggle={v => setCulto('culto_principal', 'ativo', v)}>
-                <div className="space-y-1"><Label className="text-xs">Nome</Label>
-                  <CultoNameInput value={form.cultos_config.culto_principal.nome}
-                    onChange={v => setCulto('culto_principal', 'nome', v)} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1"><Label className="text-xs">Dia da semana</Label>
-                    <Select value={form.cultos_config.culto_principal.dia}
-                      onValueChange={v => setCulto('culto_principal', 'dia', v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{DIAS_SEMANA.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1"><Label className="text-xs">Horário</Label>
-                    <Input type="time" value={form.cultos_config.culto_principal.horario}
-                      onChange={e => setCulto('culto_principal', 'horario', e.target.value)} />
-                  </div>
-                </div>
-              </CultoToggleBlock>
-
-              <CultoToggleBlock title="Escola Bíblica" ativo={form.cultos_config.escola_biblica.ativo}
-                onToggle={v => setCulto('escola_biblica', 'ativo', v)}>
-                <div className="space-y-1"><Label className="text-xs">Nome</Label>
-                  <CultoNameInput value={form.cultos_config.escola_biblica.nome}
-                    onChange={v => setCulto('escola_biblica', 'nome', v)} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1"><Label className="text-xs">Dia da semana</Label>
-                    <Select value={form.cultos_config.escola_biblica.dia}
-                      onValueChange={v => setCulto('escola_biblica', 'dia', v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{DIAS_SEMANA.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1"><Label className="text-xs">Horário</Label>
-                    <Input type="time" value={form.cultos_config.escola_biblica.horario}
-                      onChange={e => setCulto('escola_biblica', 'horario', e.target.value)} />
-                  </div>
-                </div>
-              </CultoToggleBlock>
-
-              <CultoToggleBlock title="Pequenos Grupos" ativo={form.cultos_config.pequenos_grupos.ativo}
-                onToggle={v => setCulto('pequenos_grupos', 'ativo', v)}>
-                <div className="space-y-1"><Label className="text-xs">Nome</Label>
-                  <CultoNameInput value={form.cultos_config.pequenos_grupos.nome}
-                    onChange={v => setCulto('pequenos_grupos', 'nome', v)} />
-                </div>
-                <div className="space-y-1"><Label className="text-xs">Descrição</Label>
-                  <CultoDescInput value={form.cultos_config.pequenos_grupos.descricao}
-                    onChange={v => setCulto('pequenos_grupos', 'descricao', v)}
-                    placeholder="Ex: Durante a semana" />
-                </div>
-              </CultoToggleBlock>
+              <CultoPrincipalBlock
+                config={form.cultos_config.culto_principal}
+                onChange={(field, value) => setCulto('culto_principal', field, value)}
+              />
+              <EscolaBiblicaBlock
+                config={form.cultos_config.escola_biblica}
+                onChange={(field, value) => setCulto('escola_biblica', field, value)}
+              />
+              <PequenosGruposBlock
+                config={form.cultos_config.pequenos_grupos}
+                onChange={(field, value) => setCulto('pequenos_grupos', field, value)}
+              />
             </CardContent>
           </Card>
         )}
