@@ -313,7 +313,7 @@ const App = () => (
                 <Route path="relatorios/comunicacoes" element={<RelatorioComunicacoes />} />
                 <Route path="devocionais" element={<AdminDevocionais />} />
                 <Route path="auditoria" element={<AdminAuditoria />} />
-                <Route path="configuracoes" element={<AdminConfiguracoes />} />
+                <Route path="configuracoes" element={<Navigate to="configuracoes/igreja" replace />} />
                 <Route path="configuracoes/igreja" element={<AdminConfiguracaoIgreja />} />
                 <Route path="whatsapp-test" element={<WhatsAppTest />} />
               </Route>

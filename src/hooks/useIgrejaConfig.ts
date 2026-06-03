@@ -45,6 +45,10 @@ export interface IgrejaConfig {
   responsavel_nome: string | null;
   responsavel_email: string | null;
   responsavel_telefone: string | null;
+  // Sobre
+  missao: string | null;
+  visao: string | null;
+  cultos_config: Record<string, unknown> | null;
 }
 
 const DEFAULT_CONFIG: IgrejaConfig = {
@@ -83,6 +87,9 @@ const DEFAULT_CONFIG: IgrejaConfig = {
   responsavel_nome: null,
   responsavel_email: null,
   responsavel_telefone: null,
+  missao: null,
+  visao: null,
+  cultos_config: null,
 };
 
 /**
@@ -124,7 +131,8 @@ export function useIgrejaConfig() {
           modulo_pequenos_grupos, modulo_escola_biblica,
           modulo_financeiro, modulo_repertorio, modulo_auditoria,
           subdominio, dominio_customizado,
-          responsavel_nome, responsavel_email, responsavel_telefone
+          responsavel_nome, responsavel_email, responsavel_telefone,
+          missao, visao, cultos_config
         `)
         .eq('id', id)
         .single();

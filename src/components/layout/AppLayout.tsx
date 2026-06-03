@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
+import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { ChurchLogo } from '@/components/ChurchLogo';
 import {
@@ -26,21 +27,27 @@ import { useNotifications } from '@/hooks/useNotifications';
 export default function AppLayout() {
   const { roles } = useAuth();
   const { p } = useIgrejaSlug();
+  const { nomeModulo } = useIgrejaConfig();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
 
+  const isSuperAdmin = roles.includes('superadmin');
+
   const panelItems = [
-    roles.includes('admin')      && { route: p('/admin/dashboard'), label: 'Painel Admin' },
-    roles.includes('financeiro') && { route: p('/financeiro'),      label: 'Painel Financeiro' },
-    roles.includes('lider')      && { route: p('/leader/hub'),      label: 'Painel Líder' },
-    roles.includes('voluntario') && { route: p('/voluntario'),      label: 'Painel Voluntário' },
+    isSuperAdmin                   && { route: '/admin',               label: '⚡ Super Admin' },
+    roles.includes('admin')        && { route: p('/admin/dashboard'),  label: 'Painel Admin' },
+    roles.includes('financeiro')   && { route: p('/financeiro'),       label: 'Painel Financeiro' },
+    roles.includes('lider')        && { route: p('/leader/hub'),       label: 'Painel Líder' },
+    roles.includes('voluntario')   && { route: p('/voluntario'),       label: 'Painel Voluntário' },
   ].filter(Boolean) as { route: string; label: string }[];
+
+  const nomeBase = `Minha ${nomeModulo.bases}`;
 
   const navItems = [
     { icon: Home,          label: 'Início',        path: p('/app') },
     { icon: Church,        label: 'Minha Igreja',  path: p('/app/minha-igreja') },
-    { icon: Users,         label: 'Minha Base',    path: p('/app/minha-base') },
+    { icon: Users,         label: nomeBase,         path: p('/app/minha-base') },
     { icon: Calendar,      label: 'Eventos',       path: p('/app/eventos') },
     { icon: Calendar,      label: 'Calendário',    path: p('/app/calendario') },
     { icon: BookOpenCheck, label: 'Meu Ensino',    path: p('/app/meu-ensino') },

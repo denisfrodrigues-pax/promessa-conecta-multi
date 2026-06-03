@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIgrejaConfig } from "@/hooks/useIgrejaConfig";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
+import { Building2, LayoutDashboard } from "lucide-react";
 import {
   Heart,
   Sparkles,
@@ -15,9 +16,10 @@ import DevocionaldaSemana from "@/components/app/DevocionaldaSemana";
 import AniversariantesDoMes from "@/components/app/AniversariantesDoMes";
 
 export default function AppHome() {
-  const { profile } = useAuth();
+  const { profile, roles } = useAuth();
   const { config } = useIgrejaConfig();
-  const { slug } = useIgrejaSlug();
+  const { slug, p } = useIgrejaSlug();
+  const isSuperAdmin = roles.includes('superadmin');
   const firstName = profile?.nome?.split(' ')[0] || 'membro';
 
   // Cultos dinâmicos a partir de cultos_config
@@ -108,14 +110,14 @@ export default function AppHome() {
               </div>
             </div>
 
-            {/* CTA — 3.3: aponta para site público */}
+            {/* CTA — site público (5.5) */}
             <Button
               variant="outline"
               size="lg"
-              className="group border-promessa-300 text-promessa-700 hover:bg-promessa-50 hover:border-promessa-400 transition-all duration-300"
+              className="group border-promessa-300 text-promessa-700 hover:bg-promessa-50 hover:border-promessa-400 hover:text-promessa-800 transition-all duration-300"
               asChild
             >
-              <a href={`/i/${slug}/publico`} className="flex items-center gap-2">
+              <a href={`${window.location.origin}/i/${slug}/publico`} className="flex items-center gap-2">
                 Conheça mais sobre a Igreja
                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </a>
@@ -180,6 +182,23 @@ export default function AppHome() {
           </div>
         </div>
       </section>
+
+      {/* 5.3 — Painéis para superadmin */}
+      {isSuperAdmin && (
+        <section className="py-8 bg-amber-50 border-t border-amber-200">
+          <div className="container mx-auto px-4 max-w-2xl">
+            <p className="text-xs font-semibold text-amber-700 mb-3 uppercase tracking-wide">⚡ Acesso Super Admin</p>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="outline" size="sm" className="border-amber-300 text-amber-800 hover:bg-amber-100" asChild>
+                <Link to={p('/admin/dashboard')}><LayoutDashboard className="h-4 w-4 mr-2" />Painel Admin da Igreja</Link>
+              </Button>
+              <Button variant="outline" size="sm" className="border-amber-300 text-amber-800 hover:bg-amber-100" asChild>
+                <Link to="/admin"><Building2 className="h-4 w-4 mr-2" />Super Admin</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="py-8 bg-muted/50 border-t border-border">

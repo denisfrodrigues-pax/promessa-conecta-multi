@@ -36,14 +36,29 @@ export function IgrejaSlugLayout() {
 
   useEffect(() => {
     if (church?.id) {
-      setChurchIdOverride(church.id);  // atualiza AuthContext
-      setOverrideReady(true);          // ambos batched → mesmo render
+      setChurchIdOverride(church.id);
+      setOverrideReady(true);
     }
     return () => {
       setChurchIdOverride(null);
       setOverrideReady(false);
     };
   }, [church?.id, setChurchIdOverride]);
+
+  // 4.1 — favicon dinâmico por igreja
+  useEffect(() => {
+    if (!church?.logo_url) return;
+    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'shortcut icon';
+      document.head.appendChild(link);
+    }
+    const previous = link.href;
+    link.type = 'image/x-icon';
+    link.href = church.logo_url;
+    return () => { if (link) link.href = previous; };
+  }, [church?.logo_url]);
 
   const value = useMemo<IgrejaSlugContextType>(() => ({
     slug: churchSlug,

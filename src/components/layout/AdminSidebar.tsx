@@ -143,16 +143,8 @@ export default function AdminSidebar() {
     },
     // Auditoria (módulo oculto se desabilitado)
     { icon: Shield, label: 'Auditoria', path: p('/admin/auditoria'), moduleKey: 'modulo_auditoria' },
-    // Configurações
-    {
-      icon: Settings,
-      label: 'Configurações',
-      path: p('/admin/configuracoes'),
-      submenu: [
-        { icon: Settings, label: 'Configurações Gerais', path: p('/admin/configuracoes') },
-        { icon: Building2, label: 'Dados da Igreja', path: p('/admin/configuracoes/igreja') },
-      ]
-    },
+    // Configurações — aponta diretamente para Dados da Igreja
+    { icon: Settings, label: 'Configurações', path: p('/admin/configuracoes/igreja') },
   ], [nomeModulo, config, p]);
 
   // Filtra itens de menu baseado nos módulos habilitados

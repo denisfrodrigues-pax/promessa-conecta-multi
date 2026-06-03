@@ -104,6 +104,17 @@ export default function SitePublicoIgreja() {
   const cor2 = igreja?.cor_secundaria ?? '#1B4332';
   const hasHero = shuffled.length > 0;
 
+  // 3.1 — converter URL de maps normal para embed
+  const getMapEmbedUrl = (url: string | null): string | null => {
+    if (!url) return null;
+    if (url.includes('maps/embed') || url.includes('output=embed')) return url;
+    if (url.includes('google.com/maps') || url.includes('goo.gl/maps') || url.startsWith('https://maps')) {
+      return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
+    }
+    // Assume é um endereço ou coordenada direta
+    return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
+  };
+
   // 4.1 — cultos dinâmicos
   const cultosBlocos = (() => {
     const cc = igreja?.cultos_config;
@@ -166,7 +177,7 @@ export default function SitePublicoIgreja() {
             <span className="font-semibold text-gray-900 leading-tight">{igreja.nome}</span>
           </div>
           <Button asChild variant="outline" size="sm">
-            <Link to="/auth" className="flex items-center gap-2">
+            <Link to={`/i/${slug}/login`} className="flex items-center gap-2">
               <LogIn className="w-4 h-4" /> Login
             </Link>
           </Button>
@@ -403,8 +414,8 @@ export default function SitePublicoIgreja() {
 
             {/* Mapa */}
             <div className="rounded-2xl overflow-hidden border aspect-video bg-muted">
-              {igreja.google_maps_url ? (
-                <iframe src={igreja.google_maps_url} width="100%" height="100%"
+              {getMapEmbedUrl(igreja.google_maps_url) ? (
+                <iframe src={getMapEmbedUrl(igreja.google_maps_url)!} width="100%" height="100%"
                   style={{ border: 0 }} allowFullScreen loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   title={`Localização ${igreja.nome}`} className="w-full h-full" />
