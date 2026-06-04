@@ -34,13 +34,12 @@ export default function AppLayout() {
 
   const isSuperAdmin = roles.includes('superadmin');
 
-  // Painéis: apenas superadmin vê o dropdown de troca de painel
-  // Usa window.location.href para garantir navegação completa (evita issues com PrivateRoute + router)
+  // Painéis: URLs absolutas com slug direto (sem p() que adicionaria /app/ desnecessário)
   const panelItems = isSuperAdmin ? [
-    { href: '/admin',                          label: '⚡ Super Admin' },
-    { href: `${p('/admin/dashboard')}`,        label: 'Admin da Igreja' },
-    { href: `${p('/leader/hub')}`,             label: 'Painel Líder' },
-    { href: `${p('/voluntario')}`,             label: 'Painel Voluntário' },
+    { href: '/admin',                           label: '⚡ Super Admin' },
+    { href: `/i/${slug}/admin/dashboard`,       label: 'Admin da Igreja' },
+    { href: `/i/${slug}/leader/hub`,            label: 'Painel Líder' },
+    { href: `/i/${slug}/voluntario`,            label: 'Painel Voluntário' },
   ] : [];
 
   const nomeBase = nomeModulo.bases ?? 'PG';

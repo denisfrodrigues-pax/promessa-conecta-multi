@@ -74,6 +74,7 @@ export default function AdminMinisterios() {
   const { churchId: authChurchId } = useAuth();
   const { church } = useIgrejaSlug();
   const churchId = authChurchId ?? church?.id ?? null;
+  console.log('[MIN DEBUG] authChurchId:', authChurchId, 'church?.id:', church?.id, 'churchId final:', churchId);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -99,6 +100,7 @@ export default function AdminMinisterios() {
         .select('*')
         .eq('church_id', churchId!)
         .order('nome');
+      console.log('[MIN DEBUG] query result:', data?.length, 'error:', error);
       if (error) throw error;
       return data as Ministerio[];
     },
