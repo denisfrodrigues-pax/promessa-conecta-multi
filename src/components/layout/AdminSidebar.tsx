@@ -73,7 +73,6 @@ export default function AdminSidebar() {
       submenu: [
         { icon: Users, label: 'Lista de Membros', path: p('/admin/membros') },
         { icon: UserPlus, label: 'Visitantes', path: p('/admin/visitantes') },
-        { icon: Baby, label: 'Kids', path: p('/admin/kids') },
         { icon: FileText, label: 'Relatório Membros', path: p('/admin/membros/relatorio') },
       ]
     },

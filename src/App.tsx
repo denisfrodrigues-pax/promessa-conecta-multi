@@ -295,7 +295,6 @@ const App = () => (
                 <Route path="bases/relatorio" element={<AdminBaseRelatorio />} />
                 <Route path="bases/:id" element={<AdminBaseDetalhes />} />
                 <Route path="acompanhamento" element={<AdminAcompanhamento />} />
-                <Route path="kids" element={<AdminKids />} />
                 <Route path="ensino" element={<AdminEnsino />} />
                 <Route path="financeiro" element={<FinanceiroDashboard />} />
                 <Route path="financeiro/transacoes" element={<Transacoes />} />

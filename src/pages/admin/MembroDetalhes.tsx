@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,11 +12,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ArrowLeft, Save, Upload, MessageCircle, User, Phone, Mail, MapPin,
-  Calendar, Heart, Clock, Home, Users, AlertCircle, Plus, History, Link2, AlertTriangle
+  Calendar, Heart, Clock, Home, Users, AlertCircle, Plus, History, Link2, AlertTriangle, Trash2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -256,6 +258,7 @@ const getOcupacaoPercent = (base: BaseComLider | null): number => {
 export default function MembroDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { p } = useIgrejaSlug();
 
   const [membro, setMembro] = useState<Membro | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -341,7 +344,7 @@ export default function MembroDetalhes() {
       if (error) throw error;
       if (!data) {
         toast.error('Membro não encontrado');
-        navigate('/admin/membros');
+        navigate(p('/admin/membros'));
         return;
       }
 
@@ -424,7 +427,7 @@ export default function MembroDetalhes() {
     } catch (error) {
       console.error('Erro ao buscar membro:', error);
       toast.error('Erro ao carregar dados do membro');
-      navigate('/admin/membros');
+      navigate(p('/admin/membros'));
     } finally {
       setLoading(false);
     }
@@ -709,7 +712,7 @@ export default function MembroDetalhes() {
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <AlertCircle className="w-12 h-12 text-muted-foreground" />
         <p className="text-muted-foreground">Membro não encontrado</p>
-        <Button onClick={() => navigate('/admin/membros')}>Voltar</Button>
+        <Button onClick={() => navigate(p('/admin/membros'))}>Voltar</Button>
       </div>
     );
   }
@@ -722,7 +725,7 @@ export default function MembroDetalhes() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/membros')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/membros'))}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-3">
@@ -771,9 +774,45 @@ export default function MembroDetalhes() {
               </Button>
             </>
           ) : (
-            <Button size="sm" onClick={() => setIsEditing(true)}>
-              Editar
-            </Button>
+            <>
+              <Button size="sm" onClick={() => setIsEditing(true)}>
+                Editar
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive">
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Excluir
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir membro?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta ação não pode ser desfeita. O membro <strong>{membro.nome}</strong> será removido permanentemente.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={async () => {
+                        try {
+                          const { error } = await supabase.from('membros').delete().eq('id', id!);
+                          if (error) throw error;
+                          toast.success('Membro excluído com sucesso');
+                          navigate(p('/admin/membros'));
+                        } catch (err: any) {
+                          toast.error('Erro ao excluir: ' + err.message);
+                        }
+                      }}
+                    >
+                      Excluir
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           )}
         </div>
       </div>
