@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Network } from 'lucide-react';
+import { ArrowLeft, Save, Network, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { BaseFotoUpload } from '@/components/base/BaseFotoUpload';
+import { buscarCep } from '@/utils/cep';
 
 interface Profile {
   id: string;
@@ -20,7 +23,12 @@ const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado',
 
 export default function BaseNova() {
   const navigate = useNavigate();
+  const { churchId: authChurchId } = useAuth();
+  const { church, p } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
+
   const [loading, setLoading] = useState(false);
+  const [buscandoCep, setBuscandoCep] = useState(false);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [formData, setFormData] = useState({
     nome: '',
@@ -28,6 +36,7 @@ export default function BaseNova() {
     dia_semana: '',
     horario: '',
     local: '',
+    cep: '',
     rua: '',
     numero: '',
     bairro: '',
@@ -53,8 +62,29 @@ export default function BaseNova() {
       .select('id, nome')
       .eq('status', 'ativo')
       .order('nome');
-
     if (data) setProfiles(data);
+  };
+
+  const handleCepBlur = async () => {
+    const cep = formData.cep.replace(/\D/g, '');
+    if (cep.length !== 8) return;
+    setBuscandoCep(true);
+    try {
+      const endereco = await buscarCep(cep);
+      if (endereco) {
+        setFormData(prev => ({
+          ...prev,
+          rua: endereco.logradouro || prev.rua,
+          bairro: endereco.bairro || prev.bairro,
+          cidade: endereco.localidade || prev.cidade,
+          uf: endereco.uf || prev.uf,
+        }));
+      }
+    } catch {
+      toast.error('CEP não encontrado');
+    } finally {
+      setBuscandoCep(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,6 +103,7 @@ export default function BaseNova() {
         dia_semana: formData.dia_semana || null,
         horario: formData.horario || null,
         local: formData.local.trim() || null,
+        cep: formData.cep.replace(/\D/g, '') || null,
         rua: formData.rua.trim() || null,
         numero: formData.numero.trim() || null,
         bairro: formData.bairro.trim() || null,
@@ -86,14 +117,15 @@ export default function BaseNova() {
         lider_id: formData.lider_id || null,
         status: formData.status,
         observacoes: formData.observacoes.trim() || null,
+        church_id: churchId!,
       });
 
       if (error) throw error;
 
-      toast.success('Base criada com sucesso!');
-      navigate('/admin/bases');
+      toast.success('Grupo criado com sucesso!');
+      navigate(p('/admin/bases'));
     } catch (error: any) {
-      toast.error('Erro ao criar base: ' + error.message);
+      toast.error('Erro ao criar grupo: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -103,22 +135,22 @@ export default function BaseNova() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/bases')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
           <h1 className="text-xl font-display font-bold flex items-center gap-2">
             <Network className="h-5 w-5" />
-            Nova Base
+            Novo Grupo
           </h1>
-          <p className="text-sm text-muted-foreground">Preencha os dados para criar uma nova base</p>
+          <p className="text-sm text-muted-foreground">Preencha os dados para criar um novo grupo</p>
         </div>
       </div>
 
       {/* Form Card */}
       <Card className="max-w-2xl">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Dados da Base</CardTitle>
+          <CardTitle className="text-base">Dados do Grupo</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -129,7 +161,7 @@ export default function BaseNova() {
                 id="nome"
                 value={formData.nome}
                 onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                placeholder="Nome da base"
+                placeholder="Nome do grupo"
               />
             </div>
 
@@ -140,7 +172,7 @@ export default function BaseNova() {
                 id="descricao"
                 value={formData.descricao}
                 onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                placeholder="Descrição da base"
+                placeholder="Descrição do grupo"
                 rows={3}
               />
             </div>
@@ -184,10 +216,26 @@ export default function BaseNova() {
               />
             </div>
 
-            {/* Endereço completo */}
+            {/* Endereço */}
             <div className="border-t pt-4 mt-4">
               <h3 className="text-sm font-medium mb-3">Endereço (visível apenas para membros)</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* CEP com busca automática */}
+                <div className="sm:col-span-2 space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">CEP</Label>
+                  <div className="relative">
+                    <Input
+                      value={formData.cep}
+                      onChange={(e) => setFormData({ ...formData, cep: e.target.value })}
+                      onBlur={handleCepBlur}
+                      placeholder="00000-000"
+                      maxLength={9}
+                    />
+                    {buscandoCep && (
+                      <Loader2 className="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
+                </div>
                 <div className="sm:col-span-2 space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Rua</Label>
                   <Input
@@ -313,8 +361,8 @@ export default function BaseNova() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
-                  {profiles.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                  {profiles.map((prof) => (
+                    <SelectItem key={prof.id} value={prof.id}>{prof.nome}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -339,12 +387,12 @@ export default function BaseNova() {
 
             {/* Actions */}
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => navigate('/admin/bases')}>
+              <Button type="button" variant="outline" onClick={() => navigate(p('/admin/bases'))}>
                 Voltar
               </Button>
               <Button type="submit" disabled={loading}>
                 <Save className="h-4 w-4 mr-1" />
-                {loading ? 'Salvando...' : 'Criar Base'}
+                {loading ? 'Salvando...' : 'Criar Grupo'}
               </Button>
             </div>
           </form>

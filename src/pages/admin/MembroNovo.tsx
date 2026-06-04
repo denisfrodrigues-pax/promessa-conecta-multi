@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -122,6 +124,9 @@ const getInitials = (nome: string) =>
 export default function MembroNovo() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { churchId: authChurchId } = useAuth();
+  const { church, p } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
   const fromVisitante = searchParams.get('fromVisitante');
   const fotoInputRef = useRef<HTMLInputElement>(null);
 
@@ -337,6 +342,7 @@ export default function MembroNovo() {
           data_batismo_agua: form.data_batismo_agua || null,
           batismo_espirito_santo: form.batismo_espirito_santo === 'sim',
           data_batismo_espirito: form.batismo_espirito_santo === 'sim' ? (form.data_batismo_espirito || null) : null,
+          church_id: churchId!,
         })
         .select()
         .single();
@@ -352,7 +358,7 @@ export default function MembroNovo() {
       }
 
       toast.success('Membro criado com sucesso!');
-      navigate('/admin/membros');
+      navigate(p('/admin/membros'));
     } catch (error) {
       console.error(error);
       toast.error('Erro ao criar membro');
@@ -374,7 +380,7 @@ export default function MembroNovo() {
     <div className="space-y-6 max-w-3xl">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/membros')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/membros'))}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
@@ -679,7 +685,7 @@ export default function MembroNovo() {
         <Button
           type="button"
           variant="outline"
-          onClick={abaAtual === 0 ? () => navigate('/admin/membros') : voltar}
+          onClick={abaAtual === 0 ? () => navigate(p('/admin/membros')) : voltar}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           {abaAtual === 0 ? 'Cancelar' : 'Voltar'}

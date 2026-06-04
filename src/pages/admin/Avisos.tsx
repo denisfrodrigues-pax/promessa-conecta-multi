@@ -151,7 +151,7 @@ export default function Avisos() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold">Avisos</h1>
-          <p className="text-muted-foreground">Gerenciamento de comunicados e avisos</p>
+          <p className="text-muted-foreground">Publicações de texto visíveis na área do membro. Use para comunicados, recados e informações gerais da igreja.</p>
         </div>
         <Button onClick={() => handleOpenDialog()}>
           <Plus className="w-4 h-4 mr-2" />

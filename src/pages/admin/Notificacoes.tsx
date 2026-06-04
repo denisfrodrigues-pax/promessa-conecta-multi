@@ -466,7 +466,7 @@ export default function AdminNotificacoes() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold">Notificações</h1>
-          <p className="text-muted-foreground">Gerencie e envie notificações</p>
+          <p className="text-muted-foreground">Push notifications enviadas diretamente para o dispositivo dos membros. Use para alertas urgentes, escalas e lembretes individuais.</p>
         </div>
         <div className="flex gap-2">
           {selectedIds.size > 0 && (
