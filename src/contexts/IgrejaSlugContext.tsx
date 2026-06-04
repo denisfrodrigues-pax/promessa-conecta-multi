@@ -27,21 +27,15 @@ export function IgrejaSlugLayout() {
   const { setChurchIdOverride, roles } = useAuth();
 
   const isSuperAdmin = roles.includes('superadmin');
-
-  // Rastreia se o override já foi commitado no AuthContext.
-  // Em React 18, setChurchIdOverride e setOverrideReady são batched no mesmo
-  // ciclo de render, garantindo que quando overrideReady=true, useAuth().churchId
-  // já retorna o valor correto — filhos nunca veem churchId=null.
-  const [overrideReady, setOverrideReady] = useState(false);
+  // churchId efetivo que o AuthContext está expondo no momento
+  const { churchId: currentAuthChurchId } = useAuth();
 
   useEffect(() => {
     if (church?.id) {
       setChurchIdOverride(church.id);
-      setOverrideReady(true);
     }
     return () => {
       setChurchIdOverride(null);
-      setOverrideReady(false);
     };
   }, [church?.id, setChurchIdOverride]);
 
@@ -90,9 +84,10 @@ export function IgrejaSlugLayout() {
 
   // Aguarda enquanto:
   // - church ainda carregando
-  // - superadmin: override ainda não foi aplicado no AuthContext
-  // Usuários normais não precisam esperar (seu churchId do profile já está correto)
-  const shouldWait = loading || (isSuperAdmin && !overrideReady);
+  // - superadmin: useAuth().churchId ainda não recebeu o override correto
+  //   Verifica o valor REAL em vez de usar overrideReady, eliminando a race condition
+  //   onde overrideReady=true mas useAuth().churchId ainda não propagou.
+  const shouldWait = loading || (isSuperAdmin && !!church?.id && currentAuthChurchId !== church.id);
 
   if (shouldWait) {
     return (
