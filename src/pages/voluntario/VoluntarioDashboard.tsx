@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth, MyMinistry } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import { parseLocalDate } from '@/lib/dateUtils';
 export default function VoluntarioDashboard() {
   const { profile, myMinistries, myMinistriesLoading } = useAuth();
   const navigate = useNavigate();
+  const { p } = useIgrejaSlug();
 
   const ministerioIds = myMinistries.map((m) => m.ministerio_id);
   const { data: tiposData = [] } = useQuery({
@@ -71,7 +73,7 @@ export default function VoluntarioDashboard() {
 
   const handleMinistryClick = (ministry: MyMinistry) => {
     if (ministry.slug) {
-      navigate(`/volunteer/${ministry.slug}`);
+      navigate(p(`/volunteer/${ministry.slug}`));
     } else {
       toast.info(`Módulo "${ministry.nome}"`, { description: 'Em breve! Este módulo está sendo preparado.' });
     }

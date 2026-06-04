@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
@@ -16,11 +17,12 @@ interface LedMinistry {
 export default function LeaderHub() {
   const navigate = useNavigate();
   const { user, loading: authLoading, roles } = useAuth();
+  const { p } = useIgrejaSlug();
 
   const [ledMinistries, setLedMinistries] = useState<LedMinistry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const isAdmin = roles.includes("admin");
+  const isAdmin = roles.includes("admin") || roles.includes("superadmin");
 
   useEffect(() => {
     if (authLoading) return;
@@ -137,7 +139,7 @@ export default function LeaderHub() {
             <Card
               key={m.ministerio_id}
               className="hover:shadow-md transition-shadow cursor-pointer group"
-              onClick={() => { if (m.slug) navigate(`/leader/${m.slug}`); }}
+              onClick={() => { if (m.slug) navigate(p(`/leader/${m.slug}`)); }}
             >
               <CardContent className="p-5 flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${config.color}`}>

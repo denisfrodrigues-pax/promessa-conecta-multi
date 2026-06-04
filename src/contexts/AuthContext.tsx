@@ -189,8 +189,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isAdmin = roles.includes('admin');
   const isFinanceiro = roles.includes('financeiro') && !roles.includes('admin');
-  const isLider = roles.includes('lider') || roles.includes('admin');
-  const isVoluntario = roles.includes('voluntario') || roles.includes('lider') || roles.includes('admin');
+  const isLider = roles.includes('lider') || roles.includes('admin') || roles.includes('superadmin');
+  const isVoluntario = roles.includes('voluntario') || roles.includes('lider') || roles.includes('admin') || roles.includes('superadmin');
 
   return (
     <AuthContext.Provider value={{
