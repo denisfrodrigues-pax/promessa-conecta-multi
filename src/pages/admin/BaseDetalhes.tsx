@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -98,7 +99,7 @@ const hasValidPhone = (phone: string | null): boolean => {
 const getWhatsAppUrl = (phone: string | null): string => {
   const digits = cleanPhone(phone);
   const phoneWithCountry = digits.startsWith('55') ? digits : `55${digits}`;
-  const message = encodeURIComponent('Olá! Sou da Igreja da Promessa.');
+  const message = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}.`);
   return `https://wa.me/${phoneWithCountry}?text=${message}`;
 };
 
@@ -123,6 +124,7 @@ const getOcupacaoPercent = (membrosCount: number, capacidade: number | null): nu
 export default function BaseDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { churchNome } = useIgrejaSlug();
 
   const [base, setBase] = useState<Base | null>(null);
   const [membrosBase, setMembrosBase] = useState<BaseMembroUnificado[]>([]);

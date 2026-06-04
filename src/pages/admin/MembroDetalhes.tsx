@@ -227,7 +227,7 @@ const hasValidPhone = (phone: string | null | undefined): boolean => {
 
 const getWhatsAppUrl = (phone: string | null | undefined): string => {
   const cleaned = cleanPhone(phone || null);
-  const msg = encodeURIComponent('Olá! Sou da Igreja da Promessa. Estou entrando em contato :)');
+  const msg = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}. Estou entrando em contato :)`);
   return `https://wa.me/55${cleaned}?text=${msg}`;
 };
 
@@ -258,7 +258,7 @@ const getOcupacaoPercent = (base: BaseComLider | null): number => {
 export default function MembroDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { p } = useIgrejaSlug();
+  const { p, churchNome } = useIgrejaSlug();
 
   const [membro, setMembro] = useState<Membro | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);

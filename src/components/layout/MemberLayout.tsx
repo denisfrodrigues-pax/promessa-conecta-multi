@@ -1,5 +1,6 @@
 import { Outlet, Navigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { NavLink } from '@/components/NavLink';
 import { ChurchLogo } from '@/components/ChurchLogo';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
@@ -21,6 +22,7 @@ const navItems = [
 
 export default function MemberLayout() {
   const { user, loading, profile, signOut, isAdmin, isLider, roles } = useAuth();
+  const { churchNome } = useIgrejaSlug();
   const { unreadCount } = useNotifications();
   const { isKidsVolunteer } = useKidsVolunteer();
   
@@ -49,7 +51,7 @@ export default function MemberLayout() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <RouterNavLink to="/home" className="flex items-center gap-3">
             <ChurchLogo size={40} />
-            <span className="font-display font-bold text-lg hidden sm:block text-promessa-700">Igreja da Promessa</span>
+            <span className="font-display font-bold text-lg hidden sm:block text-promessa-700">{churchNome || 'Nossa Igreja'}</span>
           </RouterNavLink>
 
           {/* Desktop Nav */}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -128,7 +129,7 @@ const hasValidPhone = (phone: string | null): boolean => {
 const getWhatsAppUrl = (phone: string | null, message?: string): string => {
   const digits = cleanPhone(phone);
   const phoneWithCountry = digits.startsWith('55') ? digits : `55${digits}`;
-  const msg = encodeURIComponent(message || 'Olá! Sou da Igreja da Promessa.');
+  const msg = encodeURIComponent(message || `Olá! Sou da ${churchNome || 'nossa Igreja'}.`);
   return `https://wa.me/${phoneWithCountry}?text=${msg}`;
 };
 
@@ -231,6 +232,7 @@ export default function LeaderBaseDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { profile, isLider, loading: authLoading } = useAuth();
+  const { churchNome } = useIgrejaSlug();
 
   const [base, setBase] = useState<Base | null>(null);
   const [membrosBase, setMembrosBase] = useState<BaseMemberUnified[]>([]);

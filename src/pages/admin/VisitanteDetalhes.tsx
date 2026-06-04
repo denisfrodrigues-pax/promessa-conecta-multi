@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -86,7 +87,7 @@ const hasValidPhone = (phone: string | null): boolean => {
 const getWhatsAppUrl = (phone: string | null): string => {
   const digits = cleanPhone(phone);
   const phoneWithCountry = digits.startsWith('55') ? digits : `55${digits}`;
-  const message = encodeURIComponent('Olá! Sou da Igreja da Promessa. Estou entrando em contato sobre sua visita :)');
+  const message = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}. Estou entrando em contato sobre sua visita :)`);
   return `https://wa.me/${phoneWithCountry}?text=${message}`;
 };
 
@@ -103,6 +104,7 @@ const isBaseLotada = (membrosCount: number, capacidade: number | null): boolean 
 export default function VisitanteDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { churchNome } = useIgrejaSlug();
 
   // States
   const [visitante, setVisitante] = useState<Visitante | null>(null);

@@ -49,13 +49,23 @@ export function ChurchThemeApplier() {
 
     const [h, s, l] = hexToHsl(hex);
     const root = document.documentElement;
+    const lDark = Math.max(0, l - 15);
+    const lLight = Math.min(100, l + 10);
+    // Texto branco para cores com lightness < 60, escuro para mais claras
+    const fg = l < 60 ? '0 0% 100%' : '0 0% 10%';
 
-    // Variáveis diretas para uso inline/arbitrário
+    // ── Variáveis diretas (inline/arbitrário) ────────────────────────
     root.style.setProperty('--color-primary', hex);
     root.style.setProperty('--color-primary-hex', hex);
 
-    // Escala completa promessa (mantém hue/saturation da cor da igreja,
-    // varia apenas o lightness seguindo a escala padrão)
+    // ── shadcn/ui: botões, inputs, ring, sidebar ─────────────────────
+    root.style.setProperty('--primary', `${h} ${s}% ${l}%`);
+    root.style.setProperty('--primary-foreground', fg);
+    root.style.setProperty('--ring', `${h} ${s}% ${l}%`);
+    root.style.setProperty('--sidebar-primary', `${h} ${s}% ${l}%`);
+    root.style.setProperty('--sidebar-primary-foreground', fg);
+
+    // ── Escala completa promessa ──────────────────────────────────────
     const scale: Record<string, number> = {
       50: 96, 100: 87, 200: 76, 300: 65, 400: 53,
       500: 47, 600: 39, 700: 32, 800: 23, 900: 14,
@@ -64,12 +74,23 @@ export function ChurchThemeApplier() {
       root.style.setProperty(`--promessa-${shade}`, `${h} ${s}% ${targetL}%`);
     }
 
-    // Variantes primary
+    // ── Variantes primary ─────────────────────────────────────────────
     root.style.setProperty('--promessa-primary', `${h} ${s}% ${l}%`);
-    root.style.setProperty('--promessa-primary-dark', `${h} ${s}% ${Math.max(0, l - 15)}%`);
-    root.style.setProperty('--promessa-primary-light', `${h} ${s}% ${Math.min(100, l + 10)}%`);
+    root.style.setProperty('--promessa-primary-dark', `${h} ${s}% ${lDark}%`);
+    root.style.setProperty('--promessa-primary-light', `${h} ${s}% ${lLight}%`);
 
-    // Cor secundária (se definida)
+    // ── Gradientes ────────────────────────────────────────────────────
+    root.style.setProperty(
+      '--gradient-primary',
+      `linear-gradient(135deg, hsl(${h} ${s}% ${l}%) 0%, hsl(${h} ${s}% ${lLight}%) 100%)`
+    );
+
+    // ── Charts ────────────────────────────────────────────────────────
+    root.style.setProperty('--chart-primary', `${h} ${s}% ${l}%`);
+    root.style.setProperty('--chart-primary-dark', `${h} ${s}% ${lDark}%`);
+    root.style.setProperty('--chart-primary-light', `${h} ${s}% ${lLight}%`);
+
+    // ── Cor secundária ────────────────────────────────────────────────
     if (config.cor_secundaria) {
       root.style.setProperty('--color-secondary', config.cor_secundaria);
       const [h2, s2, l2] = hexToHsl(config.cor_secundaria);

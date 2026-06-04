@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -90,13 +91,14 @@ const STATUS_LABELS: Record<string, string> = {
 
 const cleanPhone = (p: string | null) => (p ?? '').replace(/\D/g, '');
 const hasPhone = (p: string | null) => cleanPhone(p).length >= 10;
-const whatsUrl = (p: string | null) => `https://wa.me/55${cleanPhone(p)}?text=${encodeURIComponent('Olá! Sou da Igreja da Promessa.')}`;
+const whatsUrl = (p: string | null, nome = 'nossa Igreja') => `https://wa.me/55${cleanPhone(p)}?text=${encodeURIComponent(`Olá! Sou da ${nome}.`)}`;
 const initials = (nome: string) => nome.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase();
 
 export default function GrupoDetalhe() {
   const { grupoId } = useParams<{ grupoId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { churchNome } = useIgrejaSlug();
 
   const [searchMembro, setSearchMembro] = useState('');
   const [searchVisitante, setSearchVisitante] = useState('');
@@ -481,7 +483,7 @@ export default function GrupoDetalhe() {
                           <div className="flex items-center justify-end gap-1">
                             {hasPhone(m.telefone) && (
                               <>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => window.open(whatsUrl(m.telefone), '_blank')}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => window.open(whatsUrl(m.telefone, churchNome || undefined), '_blank')}>
                                   <MessageCircle className="w-4 h-4" />
                                 </Button>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => window.open(`tel:${cleanPhone(m.telefone)}`)}>
@@ -597,7 +599,7 @@ export default function GrupoDetalhe() {
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
                               {hasPhone(v.visitante?.telefone) && (
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => window.open(whatsUrl(v.visitante?.telefone), '_blank')}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => window.open(whatsUrl(v.visitante?.telefone, churchNome || undefined), '_blank')}>
                                   <MessageCircle className="w-4 h-4" />
                                 </Button>
                               )}

@@ -44,7 +44,7 @@ const hasValidPhone = (phone: string | null): boolean => {
 const getWhatsAppUrl = (phone: string | null): string => {
   const digits = cleanPhone(phone);
   const phoneWithCountry = digits.startsWith("55") ? digits : `55${digits}`;
-  const message = encodeURIComponent("Olá! Sou da Igreja da Promessa.");
+  const message = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}.`);
   return `https://wa.me/${phoneWithCountry}?text=${message}`;
 };
 
@@ -102,7 +102,7 @@ const exportToCSV = (bases: Base[]) => {
 // ===== COMPONENT =====
 export default function Bases() {
   const { churchId: authChurchId } = useAuth();
-  const { church, p } = useIgrejaSlug();
+  const { church, p, churchNome } = useIgrejaSlug();
   const churchId = authChurchId ?? church?.id ?? null;
   const navigate = useNavigate();
   const [bases, setBases] = useState<Base[]>([]);

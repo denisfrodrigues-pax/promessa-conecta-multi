@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,7 +71,7 @@ const hasValidPhone = (phone: string | null): boolean => {
 // Helper: Generate WhatsApp URL
 const getWhatsAppUrl = (phone: string | null): string => {
   const cleaned = cleanPhone(phone);
-  const message = encodeURIComponent('Olá! Sou da Igreja da Promessa. Estou entrando em contato sobre sua visita :)');
+  const message = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}. Estou entrando em contato sobre sua visita :)`);
   return `https://wa.me/55${cleaned}?text=${message}`;
 };
 
@@ -114,6 +115,7 @@ const exportToCSV = (data: Visitante[]) => {
 
 export default function Visitantes() {
   const { churchId } = useAuth();
+  const { churchNome } = useIgrejaSlug();
   const [visitantes, setVisitantes] = useState<Visitante[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState<string>('ativos');
