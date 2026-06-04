@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       .select('role')
       .eq('user_id', user.id);
 
-    const isAdmin = userRoles?.some((r: { role: string }) => r.role === 'admin');
+    const isAdmin = userRoles?.some((r: { role: string }) => r.role === 'admin' || r.role === 'superadmin');
     const isLeader = userRoles?.some((r: { role: string }) => r.role === 'lider');
 
     const body: NotificationRequest = await req.json();

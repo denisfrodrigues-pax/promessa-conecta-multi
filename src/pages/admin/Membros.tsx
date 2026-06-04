@@ -152,7 +152,7 @@ const exportToCSV = (data: Membro[]) => {
 
 export default function Membros() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
+  const { church, p } = useIgrejaSlug();
   const churchId = authChurchId ?? church?.id ?? null;
   const [membros, setMembros] = useState<Membro[]>([]);
   const [bases, setBases] = useState<Base[]>([]);
@@ -363,7 +363,7 @@ export default function Membros() {
           <p className="text-muted-foreground">Gerencie os membros da igreja</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/admin/membros/relatorio')}>
+          <Button variant="outline" onClick={() => navigate(p('/admin/membros/relatorio'))}>
             <BarChart3 className="w-4 h-4 mr-2" />
             Relatório
           </Button>
@@ -371,7 +371,7 @@ export default function Membros() {
             <Download className="w-4 h-4 mr-2" />
             Exportar CSV
           </Button>
-          <Button onClick={() => navigate('/admin/membros/novo')}>
+          <Button onClick={() => navigate(p('/admin/membros/novo'))}>
             <Plus className="w-4 h-4 mr-2" />
             Novo Membro
           </Button>
@@ -643,7 +643,7 @@ export default function Membros() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => navigate(`/admin/membros/${membro.id}`)}
+                      onClick={() => navigate(p(`/admin/membros/${membro.id}`))}
                     >
                       <Eye className="w-4 h-4 mr-1" />
                       Detalhes

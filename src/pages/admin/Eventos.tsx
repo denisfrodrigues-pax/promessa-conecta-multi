@@ -213,6 +213,7 @@ export default function Eventos() {
             data_fim: formData.data_fim || null,
             local: formData.local || null,
             vagas: formData.vagas ? parseInt(formData.vagas) : null,
+            church_id: churchId!,
           })
           .select('id')
           .single();

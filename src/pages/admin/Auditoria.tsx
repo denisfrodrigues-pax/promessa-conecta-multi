@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -105,8 +106,9 @@ function LoadingSkeleton() {
 // ── Componente principal ───────────────────────────────────────────────────────
 
 export default function Auditoria() {
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { p } = useIgrejaSlug();
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -121,8 +123,9 @@ export default function Auditoria() {
   const [detailOpen, setDetailOpen]   = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !user) navigate('/auth');
-    else if (!authLoading && !isAdmin) navigate('/home');
+    const canAccess = isAdmin || roles.includes('superadmin');
+    if (!authLoading && !user) navigate(p('/login'));
+    else if (!authLoading && !canAccess) navigate(p('/app'));
   }, [user, authLoading, isAdmin, navigate]);
 
   const fetchLogs = useCallback(async () => {

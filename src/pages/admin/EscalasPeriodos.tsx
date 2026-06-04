@@ -41,7 +41,7 @@ const ANOS = Array.from({ length: 5 }, (_, i) => currentYear - 1 + i);
 
 export default function AdminEscalasPeriodos() {
   const { profile, churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
+  const { church, p: pathFn } = useIgrejaSlug();
   const churchId = authChurchId ?? church?.id ?? null;
   const queryClient = useQueryClient();
 
@@ -212,7 +212,7 @@ export default function AdminEscalasPeriodos() {
                       }
                     </Button>
                     <Button size="sm" variant="default" asChild>
-                      <Link to={`/admin/escalas/periodos/${p.id}`}>
+                      <Link to={pathFn(`/admin/escalas/periodos/${p.id}`)}>
                         Gerenciar
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </Link>

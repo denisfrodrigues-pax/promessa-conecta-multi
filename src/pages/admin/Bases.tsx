@@ -102,7 +102,7 @@ const exportToCSV = (bases: Base[]) => {
 // ===== COMPONENT =====
 export default function Bases() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
+  const { church, p } = useIgrejaSlug();
   const churchId = authChurchId ?? church?.id ?? null;
   const navigate = useNavigate();
   const [bases, setBases] = useState<Base[]>([]);
@@ -209,9 +209,9 @@ export default function Bases() {
             <Download className="h-4 w-4 mr-1" />
             Exportar CSV
           </Button>
-          <Button onClick={() => navigate("/admin/bases/nova")}>
+          <Button onClick={() => navigate(p("/admin/bases/nova"))}>
             <Plus className="h-4 w-4 mr-1" />
-            Nova Base
+            Novo Grupo
           </Button>
         </div>
       </div>
@@ -326,7 +326,7 @@ export default function Bases() {
                     </div>
                   </div>
 
-                  <Button variant="outline" size="sm" onClick={() => navigate(`/admin/bases/${base.id}`)}>
+                  <Button variant="outline" size="sm" onClick={() => navigate(p(`/admin/bases/${base.id}`))}>
                     <Eye className="h-4 w-4 mr-1" />
                     Ver detalhes
                   </Button>

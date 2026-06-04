@@ -644,11 +644,11 @@ export default function ConfiguracaoIgreja() {
       {/* Abas */}
       <Tabs defaultValue="visual">
         <TabsList className="mb-4 flex-wrap">
-          <TabsTrigger value="visual">🎨 Visual</TabsTrigger>
-          <TabsTrigger value="sobre">📖 Sobre</TabsTrigger>
-          <TabsTrigger value="localizacao">📍 Localização</TabsTrigger>
-          <TabsTrigger value="modulos">🧩 Módulos</TabsTrigger>
-          <TabsTrigger value="cultos">⛪ Cultos</TabsTrigger>
+          <TabsTrigger value="visual" className="flex items-center gap-1.5"><Palette className="w-4 h-4" /> Visual</TabsTrigger>
+          <TabsTrigger value="sobre" className="flex items-center gap-1.5"><BookOpen className="w-4 h-4" /> Sobre</TabsTrigger>
+          <TabsTrigger value="localizacao" className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> Localização</TabsTrigger>
+          <TabsTrigger value="modulos" className="flex items-center gap-1.5"><Puzzle className="w-4 h-4" /> Módulos</TabsTrigger>
+          <TabsTrigger value="cultos" className="flex items-center gap-1.5"><Building2 className="w-4 h-4" /> Cultos</TabsTrigger>
         </TabsList>
 
         {/* ─── Aba Visual ─────────────────────────────────────────────────── */}
