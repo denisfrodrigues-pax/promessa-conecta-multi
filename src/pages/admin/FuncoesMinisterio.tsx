@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +40,9 @@ const initialFormData: FuncaoFormData = {
 };
 
 export default function AdminFuncoesMinisterio() {
-  const { churchId } = useAuth();
+  const { churchId: authChurchId } = useAuth();
+  const { church } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
   const [funcoes, setFuncoes] = useState<Funcao[]>([]);
   const [selectedMinisterio, setSelectedMinisterio] = useState<string | null>(null);

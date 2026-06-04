@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -64,18 +65,10 @@ const TIPOS_EVENTO = ['culto', 'escola_biblica', 'ensaio', 'reuniao', 'conferenc
 
 export default function AdminEscalasPeriodoDetalhe() {
   const { id: periodoId } = useParams<{ id: string }>();
-  const { profile } = useAuth();
+  const { profile, churchId: authChurchId } = useAuth();
+  const { church } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
   const queryClient = useQueryClient();
-
-  // church_id para eventos_escala (NOT NULL) — ministerios não tem essa coluna
-  const { data: churchId } = useQuery({
-    queryKey: ['church_id_igrejas'],
-    staleTime: Infinity,
-    queryFn: async () => {
-      const { data } = await supabase.from('igrejas').select('id').limit(1).maybeSingle();
-      return (data as any)?.id as string | null ?? null;
-    },
-  });
 
   const [isEventoModalOpen, setIsEventoModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

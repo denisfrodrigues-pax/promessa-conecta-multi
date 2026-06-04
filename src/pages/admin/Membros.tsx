@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -150,7 +151,9 @@ const exportToCSV = (data: Membro[]) => {
 };
 
 export default function Membros() {
-  const { churchId } = useAuth();
+  const { churchId: authChurchId } = useAuth();
+  const { church } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
   const [membros, setMembros] = useState<Membro[]>([]);
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,7 +165,7 @@ export default function Membros() {
   const [total, setTotal] = useState(0);
   const [stats, setStats] = useState({ total: 0, ativos: 0, batizados: 0 });
   const limit = 12;
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
 
   // Debounce search

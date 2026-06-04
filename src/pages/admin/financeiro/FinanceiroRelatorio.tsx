@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,7 +62,9 @@ interface Transacao {
 }
 
 export default function FinanceiroRelatorio() {
-  const { churchId } = useAuth();
+  const { churchId: authChurchId } = useAuth();
+  const { church } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState("mes_atual");
   const [dataInicio, setDataInicio] = useState(startOfMonth(new Date()).toISOString().split("T")[0]);

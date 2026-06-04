@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -337,7 +338,9 @@ function SalaForm({ open, initial, responsaveis, onClose, onSaved }: SalaFormPro
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AdminKids() {
-  const { churchId } = useAuth();
+  const { churchId: authChurchId } = useAuth();
+  const { church } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
   const [criancas, setCriancas] = useState<Crianca[]>([]);
   const [salas, setSalas] = useState<Sala[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);

@@ -26,7 +26,8 @@ import { useNotifications } from '@/hooks/useNotifications';
 
 export default function AppLayout() {
   const { roles } = useAuth();
-  const { p } = useIgrejaSlug();
+  const { slug, p } = useIgrejaSlug();
+  console.log('[PAINEIS DEBUG] slug:', slug, 'p leader:', p('/leader/hub'));
   const { nomeModulo } = useIgrejaConfig();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();

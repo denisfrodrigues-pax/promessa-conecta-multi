@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface Aviso {
   id: string;
@@ -26,7 +27,9 @@ interface Aviso {
 }
 
 export default function Avisos() {
-  const { profile, churchId } = useAuth();
+  const { profile, churchId: authChurchId } = useAuth();
+  const { church } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

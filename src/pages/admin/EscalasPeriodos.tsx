@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,7 +40,9 @@ const currentYear = new Date().getFullYear();
 const ANOS = Array.from({ length: 5 }, (_, i) => currentYear - 1 + i);
 
 export default function AdminEscalasPeriodos() {
-  const { profile } = useAuth();
+  const { profile, churchId: authChurchId } = useAuth();
+  const { church } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState('');
@@ -49,20 +52,6 @@ export default function AdminEscalasPeriodos() {
     nome: '',
     mes: String(new Date().getMonth() + 1),
     ano: String(currentYear),
-  });
-
-  // Fetch church_id from igrejas — profiles.church_id is not in the schema cache
-  const { data: churchId } = useQuery({
-    queryKey: ['my_church_id'],
-    staleTime: Infinity,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('igrejas')
-        .select('id')
-        .limit(1)
-        .maybeSingle();
-      return (data as any)?.id as string | null ?? null;
-    },
   });
 
   // ── Fetch ──────────────────────────────────────────────────────────────────

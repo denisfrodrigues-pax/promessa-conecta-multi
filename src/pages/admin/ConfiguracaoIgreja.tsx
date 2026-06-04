@@ -169,8 +169,9 @@ const EMPTY_EVENTO = {
 const PLANO_OPTIONS: Plano[] = ['teste', 'basico', 'completo'];
 
 export default function ConfiguracaoIgreja() {
-  const { churchId, roles } = useAuth();
-  const { slug } = useIgrejaSlug();
+  const { churchId: authChurchId, roles } = useAuth();
+  const { slug, church } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
   const isSuperAdmin = roles.includes('superadmin');
   const publicUrl = `https://promessa-conecta-multi.vercel.app/i/${slug}/publico`;
   const [form, setForm] = useState<IgrejaForm>(EMPTY_FORM);

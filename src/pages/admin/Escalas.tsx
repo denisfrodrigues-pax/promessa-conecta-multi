@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -105,7 +106,9 @@ interface AdminEscalasProps {
 }
 
 export default function AdminEscalas({ ministerioId: propMinisterioId, canManage = true }: AdminEscalasProps = {}) {
-  const { profile, churchId } = useAuth();
+  const { profile, churchId: authChurchId } = useAuth();
+  const { church } = useIgrejaSlug();
+  const churchId = authChurchId ?? church?.id ?? null;
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [escalaGroups, setEscalaGroups] = useState<EscalaGroup[]>([]);
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
