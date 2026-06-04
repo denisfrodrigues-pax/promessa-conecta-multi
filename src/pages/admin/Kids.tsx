@@ -79,8 +79,8 @@ interface CriancaFormProps {
 
 function CriancaForm({ open, initial, salas, onClose, onSaved }: CriancaFormProps) {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const editing = !!initial?.id;
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -228,8 +228,8 @@ interface SalaFormProps {
 
 function SalaForm({ open, initial, responsaveis, onClose, onSaved }: SalaFormProps) {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const editing = !!initial?.id;
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({

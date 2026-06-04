@@ -447,9 +447,9 @@ export default function Eventos() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white"
+                        variant="secondary"
+                        size="icon"
+                        className="absolute top-3 right-3 bg-black/40 hover:bg-black/60 text-white border-0"
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>

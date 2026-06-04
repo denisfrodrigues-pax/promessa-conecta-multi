@@ -74,10 +74,10 @@ export default function BaseNova() {
       if (endereco) {
         setFormData(prev => ({
           ...prev,
-          rua: endereco.logradouro || prev.rua,
+          rua: endereco.rua || prev.rua,
           bairro: endereco.bairro || prev.bairro,
-          cidade: endereco.localidade || prev.cidade,
-          uf: endereco.uf || prev.uf,
+          cidade: endereco.cidade || prev.cidade,
+          uf: endereco.estado || prev.uf,
         }));
       }
     } catch {
