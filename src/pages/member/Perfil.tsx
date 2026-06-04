@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -173,7 +174,7 @@ function InfoRow({ icon: Icon, label, value, last }: InfoRowProps) {
   const isEmpty = !value || value === '—';
   return (
     <div className={cn('flex items-center gap-4 px-4 py-3.5', !last && 'border-b border-gray-100')}>
-      <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center flex-shrink-0">
+      <div className="w-8 h-8 rounded-full bg-promessa-50 flex items-center justify-center flex-shrink-0">
         <Icon className="w-4 h-4 text-[#1a5c38]" />
       </div>
       <div className="flex-1 min-w-0">
@@ -226,7 +227,7 @@ function SectionCard({ title, editing, saving, onEdit, onSave, onCancel, childre
             <button
               onClick={onSave}
               disabled={saving}
-              className="flex items-center gap-1.5 text-[13px] font-semibold text-white bg-[#1a5c38] px-3 py-1.5 rounded-full active:opacity-80"
+              className="flex items-center gap-1.5 text-[13px] font-semibold text-white bg-promessa-800 px-3 py-1.5 rounded-full active:opacity-80"
             >
               {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
               Salvar
@@ -311,6 +312,9 @@ interface MinisterialData {
 
 export default function MemberPerfil() {
   const { profile, signOut, user } = useAuth();
+  const { config: igrejaConfig } = useIgrejaConfig();
+  const cor1 = igrejaConfig?.cor_primaria ?? '#1a5c38';
+  const cor2 = igrejaConfig?.cor_secundaria ?? '#2d8a57';
   const [data, setData] = useState<ProfileState>(EMPTY_PROFILE);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -749,7 +753,7 @@ export default function MemberPerfil() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div
         className="relative"
-        style={{ background: 'linear-gradient(160deg, #1a5c38 0%, #2d8a57 100%)', minHeight: 180, paddingBottom: 52 }}
+        style={{ background: `linear-gradient(160deg, ${cor1} 0%, ${cor2} 100%)`, minHeight: 180, paddingBottom: 52 }}
       >
         <div className="absolute top-4 left-4 opacity-80">
           <ChurchLogo size={26} maxWidth={72} />
@@ -763,7 +767,8 @@ export default function MemberPerfil() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingAvatar}
-            className="relative w-[90px] h-[90px] rounded-full overflow-hidden border-[3px] border-white shadow-xl bg-gradient-to-br from-[#2d8a57] to-[#1a5c38] focus:outline-none"
+            className="relative w-[90px] h-[90px] rounded-full overflow-hidden border-[3px] border-white shadow-xl focus:outline-none"
+            style={{ background: `linear-gradient(135deg, ${cor2}, ${cor1})` }}
             aria-label="Alterar foto"
           >
             {avatarSrc ? (
@@ -1202,7 +1207,7 @@ export default function MemberPerfil() {
               ) : (
                 <div className="flex items-center justify-between px-4 py-4">
                   <div className="flex items-start gap-3 flex-1 min-w-0 pr-4">
-                    <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-full bg-promessa-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                       {pushEnabled
                         ? <Bell className="w-4 h-4 text-[#1a5c38]" />
                         : <BellOff className="w-4 h-4 text-gray-400" />}
@@ -1245,7 +1250,7 @@ export default function MemberPerfil() {
                 className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 active:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#eef7f2] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-promessa-50 flex items-center justify-center">
                     <Lock className="w-4 h-4 text-[#1a5c38]" />
                   </div>
                   <span className="text-[14px] font-medium text-gray-800">Alterar senha</span>

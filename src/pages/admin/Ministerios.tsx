@@ -89,6 +89,7 @@ export default function AdminMinisterios() {
   const { data: ministerios = [], isLoading } = useQuery({
     queryKey: ['ministerios', churchId],
     enabled: !!churchId,
+    staleTime: 0,          // sempre re-busca ao montar (evita cache desatualizado para superadmin)
     queryFn: async () => {
       const { data, error } = await supabase
         .from('ministerios')

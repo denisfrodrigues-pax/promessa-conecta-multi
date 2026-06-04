@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
+import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
@@ -28,18 +28,18 @@ export default function AppLayout() {
   const { roles } = useAuth();
   const { p } = useIgrejaSlug();
   const { nomeModulo } = useIgrejaConfig();
-  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
 
   const isSuperAdmin = roles.includes('superadmin');
 
   // Painéis: apenas superadmin vê o dropdown de troca de painel
+  // Usa window.location.href para garantir navegação completa (evita issues com PrivateRoute + router)
   const panelItems = isSuperAdmin ? [
-    { route: '/admin',               label: '⚡ Super Admin' },
-    { route: p('/admin/dashboard'),  label: 'Admin da Igreja' },
-    { route: p('/leader/hub'),       label: 'Painel Líder' },
-    { route: p('/voluntario'),       label: 'Painel Voluntário' },
+    { href: '/admin',                          label: '⚡ Super Admin' },
+    { href: `${p('/admin/dashboard')}`,        label: 'Admin da Igreja' },
+    { href: `${p('/leader/hub')}`,             label: 'Painel Líder' },
+    { href: `${p('/voluntario')}`,             label: 'Painel Voluntário' },
   ] : [];
 
   const nomeBase = nomeModulo.bases ?? 'PG';
@@ -112,8 +112,8 @@ export default function AppLayout() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {panelItems.map((item) => (
-                      <DropdownMenuItem key={item.route} asChild>
-                        <Link to={item.route} className="w-full cursor-pointer">{item.label}</Link>
+                      <DropdownMenuItem key={item.href} onClick={() => { window.location.href = item.href; }}>
+                        {item.label}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
@@ -186,8 +186,8 @@ export default function AppLayout() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-full">
                     {panelItems.map((item) => (
-                      <DropdownMenuItem key={item.route} asChild onClick={() => setMobileMenuOpen(false)}>
-                        <Link to={item.route} className="w-full cursor-pointer">{item.label}</Link>
+                      <DropdownMenuItem key={item.href} onClick={() => { window.location.href = item.href; setMobileMenuOpen(false); }}>
+                        {item.label}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
