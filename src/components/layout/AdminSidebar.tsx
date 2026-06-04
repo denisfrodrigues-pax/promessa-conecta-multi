@@ -1,5 +1,5 @@
 import { NavLink } from '@/components/NavLink';
-import { Logo } from '@/components/Logo';
+import { ChurchLogo } from '@/components/ChurchLogo';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { PlanoInfo } from '@/components/PlanoInfo';
 import { useAuth } from '@/contexts/AuthContext';
@@ -205,7 +205,7 @@ export default function AdminSidebar() {
             )}
           />
         ) : (
-          <Logo size={collapsed ? 32 : 40} />
+          <ChurchLogo size={collapsed ? 32 : 40} />
         )}
         {!collapsed && (
           <div className="animate-fade-in min-w-0">

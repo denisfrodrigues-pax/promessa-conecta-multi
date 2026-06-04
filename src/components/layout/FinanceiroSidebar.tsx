@@ -1,5 +1,5 @@
 import { NavLink } from '@/components/NavLink';
-import { Logo } from '@/components/Logo';
+import { ChurchLogo } from '@/components/ChurchLogo';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
@@ -66,7 +66,7 @@ export default function FinanceiroSidebar() {
             )}
           />
         ) : (
-          <Logo size={collapsed ? 32 : 40} />
+          <ChurchLogo size={collapsed ? 32 : 40} />
         )}
         {!collapsed && (
           <div className="animate-fade-in min-w-0">

@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIgrejaConfig } from "@/hooks/useIgrejaConfig";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Logo } from "@/components/Logo";
+import { ChurchLogo } from "@/components/ChurchLogo";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -207,7 +207,7 @@ export default function LeaderMinisterioLayout() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <RouterNavLink to={p('/leader/hub')} className="flex items-center gap-3">
-              <Logo size={40} />
+              <ChurchLogo size={40} />
             </RouterNavLink>
             <div>
               <h1 className="font-display font-bold text-promessa-700">{ministerio.nome}</h1>
