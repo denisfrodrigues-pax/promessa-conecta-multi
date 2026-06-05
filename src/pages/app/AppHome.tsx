@@ -12,6 +12,8 @@ import {
   Calendar,
   BookOpen,
   Bell,
+  LayoutDashboard,
+  Building2,
 } from "lucide-react";
 import DevocionaldaSemana from "@/components/app/DevocionaldaSemana";
 import AniversariantesDoMes from "@/components/app/AniversariantesDoMes";
