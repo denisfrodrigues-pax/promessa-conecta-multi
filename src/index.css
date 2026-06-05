@@ -9,6 +9,28 @@
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
+/* ── Tipografia e espaçamento global ────────────────────────────── */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1 { font-size: 1.875rem; font-weight: 700; line-height: 1.2; }
+h2 { font-size: 1.5rem;   font-weight: 600; line-height: 1.3; }
+h3 { font-size: 1.25rem;  font-weight: 600; line-height: 1.4; }
+
+.card-modern {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  padding: 24px;
+  transition: box-shadow 0.2s ease;
+}
+.card-modern:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
 /* ── Rede Conect System Identity ────────────────────────────────── */
 :root {
   --rc-bg-deep: #020F1E;

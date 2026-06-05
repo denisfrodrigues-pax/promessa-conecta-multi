@@ -192,15 +192,16 @@ export default function AdminDevocionais() {
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : devocionais.length === 0 ? (
-        <Card>
-          <CardContent className="py-14 text-center space-y-3">
-            <BookOpen className="w-12 h-12 mx-auto text-muted-foreground/40" />
-            <p className="text-muted-foreground">Nenhum devocional cadastrado.</p>
-            <Button variant="outline" onClick={openNew}>
-              <Plus className="w-4 h-4 mr-2" />Criar primeiro devocional
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+            <BookOpen className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-base font-semibold text-gray-700 mb-1">Nenhum devocional cadastrado</h3>
+          <p className="text-sm text-gray-400 max-w-xs">Publique devocionais para inspirar e edificar os membros diariamente.</p>
+          <Button size="sm" className="mt-4" onClick={openNew}>
+            <Plus className="w-4 h-4 mr-1" /> Criar primeiro devocional
+          </Button>
+        </div>
       ) : (
         <div className="space-y-2">
           {devocionais.map((d) => (

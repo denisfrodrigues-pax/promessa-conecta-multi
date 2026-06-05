@@ -17,7 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, CheckCircle, Clock, XCircle, Search, Eye, MessageCircle, Send, Loader2, History, Bell } from 'lucide-react';
+import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, CheckCircle, Clock, XCircle, Search, Eye, MessageCircle, Send, Loader2, History, Bell, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -997,8 +997,14 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                 <TableBody>
                   {filteredGroups.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        Nenhuma escala encontrada
+                      <TableCell colSpan={6}>
+                        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                          <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-3">
+                            <ClipboardList className="h-7 w-7 text-gray-400" />
+                          </div>
+                          <h3 className="text-sm font-semibold text-gray-700 mb-1">Nenhuma escala encontrada</h3>
+                          <p className="text-xs text-gray-400 max-w-xs">Ajuste os filtros ou crie uma nova escala para sua equipe.</p>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ) : (

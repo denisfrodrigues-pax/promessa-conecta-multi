@@ -467,45 +467,30 @@ export default function AdminDashboard() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Visão geral do ministério</p>
-        </div>
-        <Button
-          onClick={() => navigate('/admin/igrejas/nova')}
-          className="bg-emerald-700 hover:bg-emerald-800 shrink-0"
-        >
-          <Building2 className="h-4 w-4 mr-2" />
-          Nova Igreja
-        </Button>
+      <div>
+        <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground mt-1">Visão geral do ministério</p>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {kpiCards.map((kpi, index) => (
-          <Card
+      {/* KPI Cards — design moderno com barra de cor primária */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        {kpiCards.map((kpi) => (
+          <Link
             key={kpi.title}
-            className="shadow-card hover:shadow-elevated transition-all duration-300 cursor-pointer group"
-            style={{ animationDelay: `${index * 50}ms` }}
+            to={kpi.link}
+            className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-all duration-200 relative overflow-hidden group block"
           >
-            <Link to={kpi.link}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`w-10 h-10 rounded-xl ${kpi.color} flex items-center justify-center transition-transform group-hover:scale-110`}>
-                    <kpi.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                {loading ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <p className="text-2xl font-bold font-display">{kpi.value}</p>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">{kpi.title}</p>
-              </CardContent>
-            </Link>
-          </Card>
+            <div
+              className="absolute top-0 left-0 right-0 h-1 rounded-t-xl"
+              style={{ background: 'var(--color-primary, #2D6A4F)' }}
+            />
+            {loading ? (
+              <Skeleton className="h-9 w-16 mb-1" />
+            ) : (
+              <p className="text-4xl font-bold text-gray-900 leading-none">{kpi.value}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-2 leading-snug">{kpi.title}</p>
+          </Link>
         ))}
       </div>
 

@@ -324,16 +324,16 @@ export default function AdminMinisterios() {
       {isLoading ? (
         <div className="text-center py-8 text-muted-foreground">Carregando...</div>
       ) : ministerios.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Music className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Nenhum ministério cadastrado</p>
-            <Button className="mt-4" onClick={handleOpenCreate}>
-              <Plus className="w-4 h-4 mr-2" />
-              Criar primeiro ministério
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+            <Music className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-base font-semibold text-gray-700 mb-1">Nenhum ministério cadastrado</h3>
+          <p className="text-sm text-gray-400 max-w-xs">Crie o primeiro ministério para organizar equipes e voluntários.</p>
+          <Button size="sm" className="mt-4" onClick={handleOpenCreate}>
+            <Plus className="w-4 h-4 mr-1" /> Criar primeiro ministério
+          </Button>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {ministerios.map((ministerio) => (

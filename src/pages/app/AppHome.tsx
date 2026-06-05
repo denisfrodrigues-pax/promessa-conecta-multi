@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIgrejaConfig } from "@/hooks/useIgrejaConfig";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
-import { Building2, LayoutDashboard } from "lucide-react";
 import {
   Heart,
   Sparkles,
   Clock,
   Users,
-  ArrowRight
+  ArrowRight,
+  Calendar,
+  BookOpen,
+  Bell,
 } from "lucide-react";
 import DevocionaldaSemana from "@/components/app/DevocionaldaSemana";
 import AniversariantesDoMes from "@/components/app/AniversariantesDoMes";
@@ -33,20 +35,55 @@ export default function AppHome() {
   const visao  = config?.visao  ?? null;
   const nomeIgreja = config?.nome ?? 'Igreja';
 
+  const quickActions = [
+    { label: 'Minha Base', icon: Users,    href: p('/app/minha-base') },
+    { label: 'Eventos',    icon: Calendar, href: p('/app/eventos') },
+    { label: 'Devocionais',icon: BookOpen, href: p('/app/meu-ensino') },
+    { label: 'Notificações',icon: Bell,   href: p('/app/notificacoes') },
+  ];
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* ============================================
-          HERO SECTION - Authenticated
+          HERO SECTION — compacto
       ============================================ */}
-      <section className="relative flex flex-col items-center justify-center text-center py-20 md:py-28 px-4 overflow-hidden bg-gradient-to-b from-promessa-50/60 to-background">
-        {/* Content */}
-        <div className="relative z-10 max-w-3xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground mb-4">
-            Olá, <span className="text-promessa-600">{firstName}</span>!
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground font-normal max-w-xl mx-auto leading-relaxed">
-            Você faz parte dessa missão. Juntos, amamos e servimos a Deus e às pessoas.
-          </p>
+      <section className="relative py-8 md:py-10 px-4 bg-gradient-to-b from-promessa-50/50 to-background">
+        <div className="container mx-auto max-w-4xl">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">
+                Olá, <span style={{ color: 'var(--color-primary)' }}>{firstName}</span>!
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Você faz parte dessa missão. Bem-vindo(a), {nomeIgreja}.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================
+          AÇÕES RÁPIDAS
+      ============================================ */}
+      <section className="py-6 px-4 bg-background">
+        <div className="container mx-auto max-w-4xl">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {quickActions.map(({ label, icon: Icon, href }) => (
+              <Link
+                key={label}
+                to={href}
+                className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200 group"
+              >
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ background: 'color-mix(in srgb, var(--color-primary) 12%, transparent)' }}
+                >
+                  <Icon className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center">{label}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -69,32 +106,36 @@ export default function AppHome() {
       {/* ============================================
           SEÇÃO: QUEM SOMOS (RESUMO)
       ============================================ */}
-      <section className="py-16 md:py-20 bg-background">
+      <section className="py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-semibold text-foreground mb-10">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-xl md:text-2xl font-display font-semibold text-foreground mb-6 text-center">
               Quem Somos
             </h2>
-            
-            {/* Mission & Vision cards */}
-            <div className="grid md:grid-cols-2 gap-6 mb-10">
-              {/* Mission */}
-              <div className="bg-card rounded-2xl p-6 md:p-8 border border-border shadow-soft hover:shadow-elevated transition-shadow duration-300">
-                <div className="w-12 h-12 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-5">
-                  <Heart className="w-6 h-6 text-promessa-600" />
+
+            {/* Mission & Vision — borda esquerda com cor primária */}
+            <div className="grid md:grid-cols-2 gap-4 mb-8">
+              <div
+                className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition-shadow duration-200"
+                style={{ borderLeft: '4px solid var(--color-primary)' }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Heart className="w-4 h-4" style={{ color: 'var(--color-primary)' }} />
+                  <h3 className="text-sm font-semibold text-foreground">Nossa Missão</h3>
                 </div>
-                <h3 className="text-lg font-display font-semibold text-foreground mb-3">Nossa Missão</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   {missao ? `"${missao}"` : 'Em breve'}
                 </p>
               </div>
 
-              {/* Vision */}
-              <div className="bg-card rounded-2xl p-6 md:p-8 border border-border shadow-soft hover:shadow-elevated transition-shadow duration-300">
-                <div className="w-12 h-12 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-5">
-                  <Sparkles className="w-6 h-6 text-promessa-600" />
+              <div
+                className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition-shadow duration-200"
+                style={{ borderLeft: '4px solid var(--color-primary)' }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4" style={{ color: 'var(--color-primary)' }} />
+                  <h3 className="text-sm font-semibold text-foreground">Nossa Visão</h3>
                 </div>
-                <h3 className="text-lg font-display font-semibold text-foreground mb-3">Nossa Visão</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   {visao ? `"${visao}"` : 'Em breve'}
                 </p>

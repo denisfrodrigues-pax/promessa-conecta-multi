@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Eye, Download, Search, ChevronLeft, ChevronRight, MessageCircle, Trash2 } from 'lucide-react';
+import { Users, UserPlus, Eye, Download, Search, ChevronLeft, ChevronRight, MessageCircle, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -329,9 +329,13 @@ export default function Visitantes() {
               ))}
             </div>
           ) : visitantes.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Nenhum visitante encontrado
-            </p>
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                <UserPlus className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-base font-semibold text-gray-700 mb-1">Nenhum visitante encontrado</h3>
+              <p className="text-sm text-gray-400 max-w-xs">Registre visitantes para acompanhar sua jornada na igreja.</p>
+            </div>
           ) : (
             <div className="space-y-3">
               {visitantes.map((visitante) => (

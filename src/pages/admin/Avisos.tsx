@@ -231,11 +231,13 @@ export default function Avisos() {
           </Card>
         ))}
         {filteredAvisos.length === 0 && !loading && (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              Nenhum aviso encontrado
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+              <Bell className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-base font-semibold text-gray-700 mb-1">Nenhum aviso encontrado</h3>
+            <p className="text-sm text-gray-400 max-w-xs">Crie avisos para comunicar informações importantes à sua comunidade.</p>
+          </div>
         )}
       </div>
 

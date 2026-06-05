@@ -548,9 +548,12 @@ export default function Membros() {
               ))}
             </div>
           ) : membros.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhum membro encontrado</p>
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                <Users className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-base font-semibold text-gray-700 mb-1">Nenhum membro encontrado</h3>
+              <p className="text-sm text-gray-400 max-w-xs">Tente ajustar os filtros ou cadastre novos membros.</p>
             </div>
           ) : (
             <div className="space-y-3">
