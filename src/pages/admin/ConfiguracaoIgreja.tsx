@@ -170,12 +170,12 @@ const PLANO_OPTIONS: Plano[] = ['teste', 'basico', 'completo'];
 
 export default function ConfiguracaoIgreja() {
   const { churchId: authChurchId, roles } = useAuth();
-  const { slug, church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { slug, churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const isSuperAdmin = roles.includes('superadmin');
   const publicUrl = `https://promessa-conecta-multi.vercel.app/i/${slug}/publico`;
   const [form, setForm] = useState<IgrejaForm>(EMPTY_FORM);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
@@ -203,6 +203,7 @@ export default function ConfiguracaoIgreja() {
 
   // ─── Fetch ────────────────────────────────────────────────────────────────
   const fetchIgreja = async () => {
+    console.log('[CONFIG DEBUG] fetchIgreja chamado com churchId:', churchId);
     setLoading(true);
     const { data, error } = await supabase
       .from('igrejas')
