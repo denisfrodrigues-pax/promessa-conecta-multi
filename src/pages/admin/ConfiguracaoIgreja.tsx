@@ -226,7 +226,13 @@ export default function ConfiguracaoIgreja() {
       .eq('id', churchId!)
       .single();
 
-    if (!error && data) {
+    if (error) {
+      console.error('[CONFIG] Erro ao buscar dados da igreja:', error);
+      toast.error('Erro ao carregar configurações: ' + error.message);
+      setLoading(false);
+      return;
+    }
+    if (data) {
       setForm({
         nome: data.nome ?? '',
         logo_url: data.logo_url ?? '',
