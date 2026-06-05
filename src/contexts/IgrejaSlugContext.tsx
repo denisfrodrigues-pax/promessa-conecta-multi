@@ -39,6 +39,19 @@ export function IgrejaSlugLayout() {
     };
   }, [church?.id, setChurchIdOverride]);
 
+  // Aplica cores da igreja nas CSS variables; restaura cores do sistema ao sair
+  useEffect(() => {
+    if (!church) return;
+    const root = document.documentElement;
+    const primary = church.cor_primaria || '#2D6A4F';
+    root.style.setProperty('--color-primary', primary);
+    root.style.setProperty('--color-primary-foreground', '#ffffff');
+    return () => {
+      root.style.setProperty('--color-primary', '#00B4D8');
+      root.style.setProperty('--color-primary-foreground', '#ffffff');
+    };
+  }, [church?.cor_primaria]);
+
   // 4.1 — favicon dinâmico + título por igreja
   useEffect(() => {
     if (!church) return;

@@ -27,7 +27,6 @@ import { useNotifications } from '@/hooks/useNotifications';
 export default function AppLayout() {
   const { roles } = useAuth();
   const { slug, p } = useIgrejaSlug();
-  console.log('[PAINEIS DEBUG] slug:', slug, 'p leader:', p('/leader/hub'));
   const { nomeModulo } = useIgrejaConfig();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
@@ -54,9 +53,10 @@ export default function AppLayout() {
   ];
 
   const mobileBottomNavItems = [
-    { icon: Home,          label: 'Início',  path: p('/app') },
-    { icon: Users,         label: nomeBase,   path: p('/app/minha-base') },
-    { icon: BookOpenCheck, label: 'Ensino',   path: p('/app/meu-ensino') },
+    { icon: Home,          label: 'Início',       path: p('/app') },
+    { icon: Users,         label: nomeBase,        path: p('/app/minha-base') },
+    { icon: BookOpenCheck, label: 'Ensino',        path: p('/app/meu-ensino') },
+    { icon: User,          label: 'Perfil',        path: p('/app/perfil') },
   ];
 
   return (

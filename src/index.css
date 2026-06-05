@@ -9,6 +9,21 @@
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
+/* ── Rede Conect System Identity ────────────────────────────────── */
+:root {
+  --rc-bg-deep: #020F1E;
+  --rc-bg-surface: #0A1628;
+  --rc-bg-card: #0F1F35;
+  --rc-border: #1E3A5F;
+  --rc-primary: #00B4D8;
+  --rc-primary-hover: #0096B7;
+  --rc-secondary: #0077B6;
+  --rc-text-primary: #F0F4F8;
+  --rc-text-secondary: #94A3B8;
+  --rc-text-muted: #64748B;
+  --rc-accent-glow: rgba(0, 180, 216, 0.15);
+}
+
 @layer base {
   :root {
     /* ------------------------------
