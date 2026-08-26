@@ -67,8 +67,8 @@ const sanitizeSearch = (input: string): string => {
 
 export default function Transacoes() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);

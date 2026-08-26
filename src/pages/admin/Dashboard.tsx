@@ -103,8 +103,8 @@ const statusLabels: Record<string, string> = {
 
 export default function AdminDashboard() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     visitantesNoMes: 0,

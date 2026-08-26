@@ -15,8 +15,8 @@ const MES_ATUAL = new Date().getMonth() + 1;
 
 export default function AdminEnsino() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [cicloId, setCicloId] = useState('');

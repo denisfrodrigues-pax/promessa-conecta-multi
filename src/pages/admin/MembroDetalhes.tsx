@@ -225,7 +225,7 @@ const hasValidPhone = (phone: string | null | undefined): boolean => {
   return cleanPhone(phone || null).length >= 10;
 };
 
-const getWhatsAppUrl = (phone: string | null | undefined): string => {
+const getWhatsAppUrl = (phone: string | null | undefined, churchNome?: string | null): string => {
   const cleaned = cleanPhone(phone || null);
   const msg = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}. Estou entrando em contato :)`);
   return `https://wa.me/55${cleaned}?text=${msg}`;
@@ -737,7 +737,7 @@ export default function MembroDetalhes() {
             </div>
             {hasValidPhone(displayPhone) && (
               <button
-                onClick={() => window.open(getWhatsAppUrl(displayPhone), '_blank')}
+                onClick={() => window.open(getWhatsAppUrl(displayPhone, churchNome), '_blank')}
                 className="text-green-600 hover:text-green-700"
                 title="Abrir WhatsApp"
               >
@@ -910,7 +910,7 @@ export default function MembroDetalhes() {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span>Líder: {baseAtual.base.lider.nome}</span>
                     {hasValidPhone(baseAtual.base.lider.telefone) && (
-                      <button onClick={() => window.open(getWhatsAppUrl(baseAtual.base.lider!.telefone), '_blank')} className="text-green-600 hover:text-green-700">
+                      <button onClick={() => window.open(getWhatsAppUrl(baseAtual.base.lider!.telefone, churchNome), '_blank')} className="text-green-600 hover:text-green-700">
                         <MessageCircle className="w-4 h-4" />
                       </button>
                     )}
@@ -1028,7 +1028,7 @@ export default function MembroDetalhes() {
                           <p className="font-medium">{formatPhoneBR(profileData.telefone) || '–'}</p>
                           {hasValidPhone(profileData.telefone) && (
                             <button
-                              onClick={() => window.open(getWhatsAppUrl(profileData.telefone), '_blank')}
+                              onClick={() => window.open(getWhatsAppUrl(profileData.telefone, churchNome), '_blank')}
                               className="text-green-600 hover:text-green-700"
                             >
                               <MessageCircle className="w-4 h-4" />

@@ -4,13 +4,15 @@ const mockSubscription = { unsubscribe: vi.fn() };
 
 export const mockSupabase = {
   auth: {
-    onAuthStateChange: vi.fn(() => ({ data: { subscription: mockSubscription } })),
+    onAuthStateChange: vi.fn((_cb?: (event: string, session: unknown) => void) => ({
+      data: { subscription: mockSubscription },
+    })),
     getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
     signInWithPassword: vi.fn(),
     signUp: vi.fn(),
     signOut: vi.fn(),
   },
-  from: vi.fn(() => mockSupabase._query),
+  from: vi.fn((_table?: string): any => mockSupabase._query),
   rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
   _query: {
     select: vi.fn().mockReturnThis(),

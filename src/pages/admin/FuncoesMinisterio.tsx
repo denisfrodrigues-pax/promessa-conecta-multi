@@ -41,8 +41,8 @@ const initialFormData: FuncaoFormData = {
 
 export default function AdminFuncoesMinisterio() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
   const [funcoes, setFuncoes] = useState<Funcao[]>([]);
   const [selectedMinisterio, setSelectedMinisterio] = useState<string | null>(null);

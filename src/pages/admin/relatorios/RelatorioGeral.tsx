@@ -41,8 +41,8 @@ const COLORS = ["#5A9462", "#396939", "#73A97A", "#D9534F", "#85A89A", "#E6A327"
 
 export default function RelatorioGeral() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);

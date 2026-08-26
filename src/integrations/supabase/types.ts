@@ -2164,6 +2164,7 @@ export type Database = {
           liturgia_id: string
           observacao: string | null
           ordem: number
+          origem: string
           responsavel: string | null
           tipo: string
           titulo: string
@@ -2175,6 +2176,7 @@ export type Database = {
           liturgia_id: string
           observacao?: string | null
           ordem?: number
+          origem?: string
           responsavel?: string | null
           tipo?: string
           titulo: string
@@ -2186,6 +2188,7 @@ export type Database = {
           liturgia_id?: string
           observacao?: string | null
           ordem?: number
+          origem?: string
           responsavel?: string | null
           tipo?: string
           titulo?: string

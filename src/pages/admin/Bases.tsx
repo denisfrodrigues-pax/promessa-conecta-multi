@@ -41,7 +41,7 @@ const hasValidPhone = (phone: string | null): boolean => {
   return cleanPhone(phone).length >= 10;
 };
 
-const getWhatsAppUrl = (phone: string | null): string => {
+const getWhatsAppUrl = (phone: string | null, churchNome?: string | null): string => {
   const digits = cleanPhone(phone);
   const phoneWithCountry = digits.startsWith("55") ? digits : `55${digits}`;
   const message = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}.`);
@@ -102,8 +102,8 @@ const exportToCSV = (bases: Base[]) => {
 // ===== COMPONENT =====
 export default function Bases() {
   const { churchId: authChurchId } = useAuth();
-  const { church, p, churchNome } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId, p, churchNome } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const navigate = useNavigate();
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
@@ -299,7 +299,7 @@ export default function Bases() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                window.open(getWhatsAppUrl(base.lider_telefone), "_blank");
+                                window.open(getWhatsAppUrl(base.lider_telefone, churchNome), "_blank");
                               }}
                               className="text-green-600 hover:text-green-700 p-0.5"
                               title="WhatsApp do líder"

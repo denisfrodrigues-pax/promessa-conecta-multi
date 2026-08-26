@@ -25,7 +25,6 @@ interface OutletCtx {
   ministerioId: string;
   ministerioNome: string;
   papel: string;
-  filosofiaPdf: string | null;
 }
 
 interface EventoMusicaVol {
@@ -50,7 +49,7 @@ type PeriodoGroup = {
 };
 
 export default function VolunteerMinisterioDashboard() {
-  const { ministerioId, papel, filosofiaPdf: _filosofiaPdf } = useOutletContext<OutletCtx>();
+  const { ministerioId, papel } = useOutletContext<OutletCtx>();
   const { profile } = useAuth();
   const qc = useQueryClient();
   const [tab, setTab] = useState("resumo");

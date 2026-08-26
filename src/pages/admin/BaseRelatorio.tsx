@@ -76,7 +76,7 @@ export default function BaseRelatorio() {
         return;
       }
 
-      const basesResult: BaseResumo[] = (rpcData || []).map((b: Record<string, unknown>) => ({
+      const basesResult: BaseResumo[] = (rpcData || []).map((b) => ({
         base_id: b.base_id,
         nome: b.nome,
         status: b.status,

@@ -16,8 +16,8 @@ const COLORS = ['#5A9462', '#D9534F', '#396939', '#E6A327', '#73A97A', '#85A89A'
 
 export default function RelatorioFinanceiro() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);

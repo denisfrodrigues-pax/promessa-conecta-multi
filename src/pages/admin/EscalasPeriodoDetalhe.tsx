@@ -66,8 +66,8 @@ const TIPOS_EVENTO = ['culto', 'escola_biblica', 'ensaio', 'reuniao', 'conferenc
 export default function AdminEscalasPeriodoDetalhe() {
   const { id: periodoId } = useParams<{ id: string }>();
   const { profile, churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const queryClient = useQueryClient();
 
   const [isEventoModalOpen, setIsEventoModalOpen] = useState(false);

@@ -16,8 +16,8 @@ import { exportToCSV, exportToPDF } from '@/utils/exportUtils';
 
 export default function RelatorioBases() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);

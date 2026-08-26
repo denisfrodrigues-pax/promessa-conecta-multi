@@ -13,7 +13,6 @@ interface MinisterioInfo {
   id: string;
   nome: string;
   papel: string;
-  filosofia_pdf: string | null;
 }
 
 export default function VolunteerMinisterioLayout() {
@@ -41,7 +40,6 @@ export default function VolunteerMinisterioLayout() {
         id: match.ministerio_id,
         nome: match.nome,
         papel: match.papel ?? "voluntario",
-        filosofia_pdf: null,
       });
       setLoadingMin(false);
       return;
@@ -51,7 +49,7 @@ export default function VolunteerMinisterioLayout() {
     if (isAdmin) {
       supabase
         .from("ministerios")
-        .select("id, nome, filosofia_pdf")
+        .select("id, nome")
         .eq("slug", slug)
         .eq("ativo", true)
         .maybeSingle()
@@ -61,7 +59,6 @@ export default function VolunteerMinisterioLayout() {
               id: data.id,
               nome: data.nome,
               papel: "admin",
-              filosofia_pdf: (data as any).filosofia_pdf ?? null,
             });
           } else {
             setNoAccess(true);
@@ -120,7 +117,7 @@ export default function VolunteerMinisterioLayout() {
       </header>
 
       <main className="container mx-auto px-4 py-6">
-        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, papel: ministerio.papel, filosofiaPdf: ministerio.filosofia_pdf }} />
+        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, papel: ministerio.papel }} />
       </main>
     </div>
   );

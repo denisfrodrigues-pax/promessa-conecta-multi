@@ -72,9 +72,9 @@ interface Profile {
 export default function AdminMinisterios() {
   const queryClient = useQueryClient();
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
-  console.log('[MIN DEBUG] authChurchId:', authChurchId, 'church?.id:', church?.id, 'churchId final:', churchId);
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
+  console.log('[MIN DEBUG] authChurchId:', authChurchId, 'slugChurchId:', slugChurchId, 'churchId final:', churchId);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);

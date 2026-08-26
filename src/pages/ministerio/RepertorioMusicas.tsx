@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Music, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -27,23 +26,11 @@ export default function RepertorioMusicas() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // "musicas_ministerio" nunca existiu no banco (single ou multi) — funcionalidade
+    // nunca implementada. Mantém a tela em estado vazio em vez de consultar uma tabela inexistente.
     if (!ministerioId) return;
-
-    setLoading(true);
-    supabase
-      .from("musicas_ministerio")
-      .select("*")
-      .eq("ministerio_id", ministerioId)
-      .order("nome", { ascending: true })
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("Erro ao buscar músicas:", error);
-          setMusicas([]);
-        } else {
-          setMusicas(data ?? []);
-        }
-        setLoading(false);
-      });
+    setMusicas([]);
+    setLoading(false);
   }, [ministerioId]);
 
   if (!ministerioId) {

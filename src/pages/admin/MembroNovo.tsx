@@ -125,8 +125,8 @@ export default function MembroNovo() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { churchId: authChurchId } = useAuth();
-  const { church, p } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId, p } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const fromVisitante = searchParams.get('fromVisitante');
   const fotoInputRef = useRef<HTMLInputElement>(null);
 
