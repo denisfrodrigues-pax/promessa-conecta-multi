@@ -167,7 +167,6 @@ const LideresMinisterios = lazy(() => import("@/pages/institutional/quem-somos/L
 const TrilhaAmarServir = lazy(() => import("@/pages/institutional/TrilhaAmarServir"));
 const BasesPublicas = lazy(() => import("@/pages/institutional/BasesPublicas"));
 const SejaVoluntario = lazy(() => import("@/pages/institutional/SejaVoluntario"));
-const CadastroInfantil = lazy(() => import("@/pages/institutional/CadastroInfantil"));
 // ─────────────────────────────────────────────────────────────────────────────
 
 function PlanosDispatch() {
@@ -243,7 +242,6 @@ const App = () => (
               <Route path="trilha-amar-servir" element={<TrilhaAmarServir />} />
               <Route path="bases-publicas" element={<BasesPublicas />} />
               <Route path="seja-voluntario" element={<SejaVoluntario />} />
-              <Route path="cadastro-infantil" element={<CadastroInfantil />} />
               <Route path="contato" element={<Contato />} />
               <Route path="contato/:section" element={<Contato />} />
 
