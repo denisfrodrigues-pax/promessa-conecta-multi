@@ -331,9 +331,9 @@ export default function NovaIgreja() {
         telefone: form.telefone.trim() || null, email: form.email.trim() || null,
         google_maps_url: form.google_maps_url.trim() || null,
         cultos_config: cc as any,
-        horario_ebd:   cc.escola_biblica.ativo   ? `${cc.escola_biblica.nome} — ${labelDia(cc.escola_biblica.dia)} às ${cc.escola_biblica.horario}` : null,
-        horario_culto: cc.culto_principal.ativo  ? `${cc.culto_principal.nome} — ${labelDia(cc.culto_principal.dia)} às ${cc.culto_principal.horario}` : null,
-        horario_bases: cc.pequenos_grupos.ativo  ? `${cc.pequenos_grupos.nome} — ${cc.pequenos_grupos.descricao}` : null,
+        horario_ebd:   cc.escola_biblica.ativo   ? `Escola Bíblica — ${labelDia(cc.escola_biblica.dia)} às ${cc.escola_biblica.horario}` : null,
+        horario_culto: cc.culto_principal.ativo  ? `Culto — ${labelDia(cc.culto_principal.dia)} às ${cc.culto_principal.horario}` : null,
+        horario_bases: cc.pequenos_grupos.ativo  ? `Base — ${cc.pequenos_grupos.descricao}` : null,
         whatsapp: form.whatsapp.trim() || null,
         instagram_url: form.instagram_url.trim() || null, youtube_url: form.youtube_url.trim() || null,
         facebook_url:  form.facebook_url.trim() || null, site_url: form.site_url.trim() || null,
@@ -651,14 +651,17 @@ export default function NovaIgreja() {
 
               <CultoPrincipalBlock
                 config={form.cultos_config.culto_principal}
+                nome="Culto"
                 onChange={(field, value) => setCulto('culto_principal', field, value)}
               />
               <EscolaBiblicaBlock
                 config={form.cultos_config.escola_biblica}
+                nome="Escola Bíblica"
                 onChange={(field, value) => setCulto('escola_biblica', field, value)}
               />
               <PequenosGruposBlock
                 config={form.cultos_config.pequenos_grupos}
+                nome="Base"
                 onChange={(field, value) => setCulto('pequenos_grupos', field, value)}
               />
             </CardContent>
