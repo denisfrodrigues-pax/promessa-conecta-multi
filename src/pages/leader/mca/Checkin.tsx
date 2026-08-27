@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -153,7 +154,8 @@ function CadastrarVisitanteForm({ open, nome, responsavel, nasc, salas, churchId
 export default function Checkin({ ministerioId: propMid }: { ministerioId?: string } = {}) {
   const ctx = useOutletContext<{ ministerioId: string } | null>();
   const ministerioId = propMid ?? ctx?.ministerioId ?? '';
-  const { user } = useAuth();
+  const { user, churchId: authChurchId } = useAuth();
+  const { churchId: slugChurchId } = useIgrejaSlug();
   const qc = useQueryClient();
 
   const [selectedDate, setSelectedDate] = useState(todayStr);
@@ -183,14 +185,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
     setNascVisitante('');
   }
 
-  const { data: churchId } = useQuery({
-    queryKey: ['my_church_id'],
-    staleTime: Infinity,
-    queryFn: async () => {
-      const { data } = await supabase.from('igrejas').select('id').limit(1).maybeSingle();
-      return (data as any)?.id as string | null ?? null;
-    },
-  });
+  const churchId = authChurchId ?? slugChurchId ?? null;
 
   const { data: salas = [] } = useQuery({
     queryKey: ['mca_salas', ministerioId],

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -75,14 +77,9 @@ export default function Criancas({ ministerioId: propMid }: { ministerioId?: str
   const ministerioId = propMid ?? ctx?.ministerioId ?? '';
   const qc = useQueryClient();
 
-  const { data: churchId } = useQuery({
-    queryKey: ['my_church_id'],
-    staleTime: Infinity,
-    queryFn: async () => {
-      const { data } = await supabase.from('igrejas').select('id').limit(1).maybeSingle();
-      return (data as any)?.id as string | null ?? null;
-    },
-  });
+  const { churchId: authChurchId } = useAuth();
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
 
   const [search, setSearch] = useState('');
   const [salaFilter, setSalaFilter] = useState('todas');
