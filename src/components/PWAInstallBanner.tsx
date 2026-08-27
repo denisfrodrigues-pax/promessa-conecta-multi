@@ -55,7 +55,7 @@ export default function PWAInstallBanner() {
         <img src="/pwa-192x192.png" alt="App" className="w-10 h-10 rounded-xl shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-semibold text-gray-800 leading-tight">
-            Instale o app da Igreja da Promessa
+            Instale o app do Rede Conect
           </p>
           <p className="text-[11px] text-gray-500 leading-tight mt-0.5">
             Acesse mais rápido e receba notificações
