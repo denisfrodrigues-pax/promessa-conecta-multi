@@ -28,9 +28,7 @@ interface Checkin {
   sala_id: string;
   checkin_at: string;
   checkout_at: string | null;
-  visitante: boolean;
-  nome_visitante: string | null;
-  responsavel_visitante: string | null;
+  observacao: string | null;
   mca_criancas: { nome: string } | null;
   mca_salas: { nome: string } | null;
 }
@@ -39,8 +37,16 @@ function todayStr() {
   return format(new Date(), 'yyyy-MM-dd');
 }
 
+// Visitante = check-in sem crianca_id (mca_checkins não tem coluna própria para isso).
+// O nome do visitante fica registrado em observacao ("Visitante: Nome — Responsável: X").
+function isVisitanteCheckin(ci: Checkin): boolean {
+  return !ci.crianca_id;
+}
+
 function checkinNome(ci: Checkin): string {
-  return ci.visitante && ci.nome_visitante ? ci.nome_visitante : (ci.mca_criancas?.nome ?? '–');
+  if (!isVisitanteCheckin(ci)) return ci.mca_criancas?.nome ?? '–';
+  const nome = ci.observacao?.match(/^Visitante:\s*(.+?)\s*—/)?.[1];
+  return nome || 'Visitante';
 }
 
 // ── Cadastrar visitante como membro ──────────────────────────────────────────
@@ -258,12 +264,10 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
         church_id: churchId,
         registrado_por: user?.id,
         checkin_at: checkinAt,
-        visitante: isVisitante,
         crianca_id: isVisitante ? null : selectedCrianca,
       };
       if (isVisitante) {
-        payload.nome_visitante = nomeVisitante.trim();
-        payload.responsavel_visitante = responsavelVisitante.trim();
+        payload.observacao = `Visitante: ${nomeVisitante.trim()} — Responsável: ${responsavelVisitante.trim()}`;
       }
 
       const { error } = await (supabase as any).from('mca_checkins').insert(payload);
@@ -404,7 +408,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
                       <div className="flex items-center gap-2 flex-wrap">
                         <Baby className="w-4 h-4 text-promessa-400 shrink-0" />
                         <span className="text-sm font-medium">{checkinNome(ci)}</span>
-                        {ci.visitante && (
+                        {isVisitanteCheckin(ci) && (
                           <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs px-1.5 py-0">
                             Visitante
                           </Badge>
@@ -442,7 +446,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
               <div key={ci.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-neutral-50 text-sm">
                 <Baby className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                 <span className="flex-1 text-neutral-500 line-through">{checkinNome(ci)}</span>
-                {ci.visitante && (
+                {isVisitanteCheckin(ci) && (
                   <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">Visitante</Badge>
                 )}
                 <Badge variant="secondary" className="text-xs shrink-0">
