@@ -468,7 +468,7 @@ export default function SitePublicoIgreja() {
           <div className="pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
             <p>© {new Date().getFullYear()} {igreja.nome}. Todos os direitos reservados.</p>
             <div className="flex gap-4">
-              <Link to="/auth" className="hover:text-white transition-colors">Login</Link>
+              <Link to={`/i/${slug}/login`} className="hover:text-white transition-colors">Login</Link>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useEffect, useState, ReactNode } fr
 import { Outlet, useParams } from 'react-router-dom';
 import { useIgrejaBySlug } from '@/hooks/useIgrejaBySlug';
 import { useAuth } from '@/contexts/AuthContext';
+import { applyChurchTheme, resetChurchTheme } from '@/lib/churchTheme';
 
 interface IgrejaSlugContextType {
   slug: string;
@@ -39,18 +40,23 @@ export function IgrejaSlugLayout() {
     };
   }, [church?.id, setChurchIdOverride]);
 
-  // Aplica cores da igreja nas CSS variables; restaura cores do sistema ao sair
+  // Aplica cores da igreja nas CSS variables; restaura cores do sistema ao sair.
+  // Cobre também usuários não autenticados (site institucional, tela de login),
+  // já que resolve a igreja pelo slug da URL em vez da sessão — diferente de
+  // ChurchThemeApplier, que só cobre usuários logados.
   useEffect(() => {
     if (!church) return;
     const root = document.documentElement;
     const primary = church.cor_primaria || '#2D6A4F';
     root.style.setProperty('--color-primary', primary);
     root.style.setProperty('--color-primary-foreground', '#ffffff');
+    applyChurchTheme(church.cor_primaria, church.cor_secundaria);
     return () => {
       root.style.setProperty('--color-primary', '#00B4D8');
       root.style.setProperty('--color-primary-foreground', '#ffffff');
+      resetChurchTheme();
     };
-  }, [church?.cor_primaria]);
+  }, [church?.cor_primaria, church?.cor_secundaria]);
 
   // 4.1 — favicon dinâmico + título por igreja
   useEffect(() => {

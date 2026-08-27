@@ -7,6 +7,8 @@ export interface IgrejaBasica {
   slug: string;
   logo_url: string | null;
   cor_primaria: string | null;
+  cor_secundaria: string | null;
+  foto_login_url: string | null;
   subdominio: string | null;
   plano: string | null;
   ativo: boolean;
@@ -25,7 +27,7 @@ export function useIgrejaBySlug(slug: string | undefined) {
     setLoading(true);
     supabase
       .from('igrejas')
-      .select('id, nome, slug, logo_url, cor_primaria, subdominio, plano, ativo')
+      .select('id, nome, slug, logo_url, cor_primaria, cor_secundaria, foto_login_url, subdominio, plano, ativo')
       .eq('slug', slug)
       .maybeSingle()
       .then(({ data, error: err }) => {
