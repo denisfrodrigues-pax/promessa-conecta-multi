@@ -10,7 +10,7 @@ import {
   Building2,
 } from 'lucide-react';
 
-interface CultoBlock { ativo?: boolean; nome?: string; dia?: string; horario?: string; descricao?: string; }
+interface CultoBlock { ativo?: boolean; dia?: string; horario?: string; descricao?: string; }
 interface CultosConfig { culto_principal?: CultoBlock; escola_biblica?: CultoBlock; pequenos_grupos?: CultoBlock; }
 
 interface Igreja {
@@ -37,6 +37,9 @@ interface Igreja {
   horario_ebd: string | null;
   horario_culto: string | null;
   horario_bases: string | null;
+  nome_modulo_culto: string | null;
+  nome_modulo_escola_biblica: string | null;
+  nome_modulo_pequenos_grupos: string | null;
   whatsapp: string | null;
   instagram_url: string | null;
   youtube_url: string | null;
@@ -73,6 +76,7 @@ export default function SitePublicoIgreja() {
           foto_hero_urls, missao, visao, historia,
           cidade, estado, endereco, telefone, email,
           google_maps_url, cultos_config, horario_ebd, horario_culto, horario_bases,
+          nome_modulo_culto, nome_modulo_escola_biblica, nome_modulo_pequenos_grupos,
           whatsapp, instagram_url, youtube_url, facebook_url, site_url
         `)
         .eq('slug', slug)
@@ -115,21 +119,27 @@ export default function SitePublicoIgreja() {
     return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
   };
 
+  // Nome de cada encontro — fonte única (aba Módulos), usado no card de "Nossos
+  // Encontros" abaixo e no rodapé "Horários".
+  const nomeEB    = igreja?.nome_modulo_escola_biblica    || 'Escola Bíblica';
+  const nomeCulto = igreja?.nome_modulo_culto              || 'Culto';
+  const nomePG    = igreja?.nome_modulo_pequenos_grupos    || 'Base';
+
   // 4.1 — cultos dinâmicos
   const cultosBlocos = (() => {
     const cc = igreja?.cultos_config;
     if (!cc) {
       // fallback para colunas legadas
       return [
-        igreja?.horario_ebd   ? { nome: 'Escola Bíblica',      detalhe: igreja.horario_ebd,   icon: Clock } : null,
-        igreja?.horario_culto ? { nome: 'Culto de Celebração', detalhe: igreja.horario_culto, icon: Clock } : null,
-        igreja?.horario_bases ? { nome: 'Pequenos Grupos',     detalhe: igreja.horario_bases, icon: Users } : null,
+        igreja?.horario_ebd   ? { nome: nomeEB,    detalhe: igreja.horario_ebd,   icon: Clock } : null,
+        igreja?.horario_culto ? { nome: nomeCulto, detalhe: igreja.horario_culto, icon: Clock } : null,
+        igreja?.horario_bases ? { nome: nomePG,    detalhe: igreja.horario_bases, icon: Users } : null,
       ].filter(Boolean);
     }
     return [
-      cc.escola_biblica?.ativo  !== false  ? { nome: cc.escola_biblica?.nome  ?? 'Escola Bíblica',      detalhe: cc.escola_biblica?.horario  ? `${cc.escola_biblica?.dia ?? ''} às ${cc.escola_biblica.horario}`  : (cc.escola_biblica?.descricao ?? 'A confirmar'), icon: Clock } : null,
-      cc.culto_principal?.ativo !== false  ? { nome: cc.culto_principal?.nome ?? 'Culto de Celebração', detalhe: cc.culto_principal?.horario ? `${cc.culto_principal?.dia ?? ''} às ${cc.culto_principal.horario}` : (cc.culto_principal?.descricao ?? 'A confirmar'), icon: Clock } : null,
-      cc.pequenos_grupos?.ativo !== false  ? { nome: cc.pequenos_grupos?.nome ?? 'Pequenos Grupos',     detalhe: cc.pequenos_grupos?.descricao ?? 'A confirmar', icon: Users } : null,
+      cc.escola_biblica?.ativo  !== false  ? { nome: nomeEB,    detalhe: cc.escola_biblica?.horario  ? `${cc.escola_biblica?.dia ?? ''} às ${cc.escola_biblica.horario}`  : (cc.escola_biblica?.descricao ?? 'A confirmar'), icon: Clock } : null,
+      cc.culto_principal?.ativo !== false  ? { nome: nomeCulto, detalhe: cc.culto_principal?.horario ? `${cc.culto_principal?.dia ?? ''} às ${cc.culto_principal.horario}` : (cc.culto_principal?.descricao ?? 'A confirmar'), icon: Clock } : null,
+      cc.pequenos_grupos?.ativo !== false  ? { nome: nomePG,    detalhe: cc.pequenos_grupos?.descricao ?? 'A confirmar', icon: Users } : null,
     ].filter(Boolean);
   })() as { nome: string; detalhe: string; icon: typeof Clock }[];
   const localidade = [igreja?.cidade, igreja?.estado].filter(Boolean).join(', ');
@@ -457,9 +467,9 @@ export default function SitePublicoIgreja() {
                 <>
                   <h4 className="font-semibold text-white mb-4">Horários</h4>
                   <ul className="space-y-2 text-sm">
-                    {igreja.horario_ebd    && <li>{igreja.horario_ebd} — Escola Bíblica</li>}
-                    {igreja.horario_culto  && <li>{igreja.horario_culto} — Culto de Celebração</li>}
-                    {igreja.horario_bases  && <li>{igreja.horario_bases} — Bases</li>}
+                    {igreja.horario_ebd    && <li>{igreja.horario_ebd} — {nomeEB}</li>}
+                    {igreja.horario_culto  && <li>{igreja.horario_culto} — {nomeCulto}</li>}
+                    {igreja.horario_bases  && <li>{igreja.horario_bases} — {nomePG}</li>}
                   </ul>
                 </>
               )}

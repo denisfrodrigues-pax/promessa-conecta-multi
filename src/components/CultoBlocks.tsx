@@ -2,6 +2,11 @@
  * Componentes compartilhados para blocos de configuração de cultos/encontros.
  * Definidos fora do render de qualquer componente pai para evitar perda de foco
  * nos inputs quando o estado do pai atualiza.
+ *
+ * O nome exibido para cada encontro (Culto, Escola Bíblica, Pequenos Grupos)
+ * vem de nome_modulo_culto/nome_modulo_escola_biblica/nome_modulo_pequenos_grupos
+ * (aba Módulos) — fonte única, usada tanto no menu de navegação quanto nos
+ * cards públicos. Estes blocos só cuidam de dia/horário/descrição/ativo.
  */
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
@@ -21,8 +26,8 @@ export const DIAS_SEMANA = [
   { value: 'sabado',   label: 'Sábado' },
 ];
 
-export interface CultoBlock   { ativo: boolean; nome: string; dia: string; horario: string; }
-export interface PgBlock       { ativo: boolean; nome: string; descricao: string; }
+export interface CultoBlock   { ativo: boolean; dia: string; horario: string; }
+export interface PgBlock       { ativo: boolean; descricao: string; }
 export interface CultosConfig {
   culto_principal: CultoBlock;
   escola_biblica:  CultoBlock;
@@ -30,9 +35,9 @@ export interface CultosConfig {
 }
 
 export const DEFAULT_CULTOS_CONFIG: CultosConfig = {
-  culto_principal: { ativo: true, nome: 'Culto de Celebração', dia: 'sabado', horario: '19:00' },
-  escola_biblica:  { ativo: true, nome: 'Escola Bíblica',      dia: 'sabado', horario: '18:00' },
-  pequenos_grupos: { ativo: true, nome: 'Pequenos Grupos',     descricao: 'Durante a semana' },
+  culto_principal: { ativo: true, dia: 'sabado', horario: '19:00' },
+  escola_biblica:  { ativo: true, dia: 'sabado', horario: '18:00' },
+  pequenos_grupos: { ativo: true, descricao: 'Durante a semana' },
 };
 
 // ─── CultoToggleBlock ─────────────────────────────────────────────────────────
@@ -56,14 +61,6 @@ export function CultoToggleBlock({ title, ativo, onToggle, children }: CultoTogg
   );
 }
 
-// ─── CultoNameInput (local state → sync onBlur, sem re-render do pai) ─────────
-
-export function CultoNameInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [local, setLocal] = useState(value);
-  useEffect(() => setLocal(value), [value]);
-  return <Input value={local} onChange={e => setLocal(e.target.value)} onBlur={() => onChange(local)} />;
-}
-
 // ─── CultoDescInput ───────────────────────────────────────────────────────────
 
 export function CultoDescInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
@@ -76,15 +73,14 @@ export function CultoDescInput({ value, onChange, placeholder }: { value: string
 
 interface CultoPrincipalBlockProps {
   config: CultoBlock;
+  /** Nome exibido — vem de nome_modulo_culto/nome_modulo_escola_biblica (aba Módulos). Só leitura aqui. */
+  nome: string;
   onChange: (field: string, value: unknown) => void;
 }
 
-export function CultoPrincipalBlock({ config, onChange }: CultoPrincipalBlockProps) {
+export function CultoPrincipalBlock({ config, nome, onChange }: CultoPrincipalBlockProps) {
   return (
-    <CultoToggleBlock title="Culto Principal" ativo={config.ativo} onToggle={v => onChange('ativo', v)}>
-      <div className="space-y-1"><Label className="text-xs">Nome</Label>
-        <CultoNameInput value={config.nome} onChange={v => onChange('nome', v)} />
-      </div>
+    <CultoToggleBlock title={nome} ativo={config.ativo} onToggle={v => onChange('ativo', v)}>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1"><Label className="text-xs">Dia da semana</Label>
           <Select value={config.dia} onValueChange={v => onChange('dia', v)}>
@@ -100,12 +96,9 @@ export function CultoPrincipalBlock({ config, onChange }: CultoPrincipalBlockPro
   );
 }
 
-export function EscolaBiblicaBlock({ config, onChange }: CultoPrincipalBlockProps) {
+export function EscolaBiblicaBlock({ config, nome, onChange }: CultoPrincipalBlockProps) {
   return (
-    <CultoToggleBlock title="Escola Bíblica" ativo={config.ativo} onToggle={v => onChange('ativo', v)}>
-      <div className="space-y-1"><Label className="text-xs">Nome</Label>
-        <CultoNameInput value={config.nome} onChange={v => onChange('nome', v)} />
-      </div>
+    <CultoToggleBlock title={nome} ativo={config.ativo} onToggle={v => onChange('ativo', v)}>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1"><Label className="text-xs">Dia da semana</Label>
           <Select value={config.dia} onValueChange={v => onChange('dia', v)}>
@@ -121,14 +114,16 @@ export function EscolaBiblicaBlock({ config, onChange }: CultoPrincipalBlockProp
   );
 }
 
-interface PgBlockProps { config: PgBlock; onChange: (field: string, value: unknown) => void; }
+interface PgBlockProps {
+  config: PgBlock;
+  /** Nome exibido — vem de nome_modulo_pequenos_grupos (aba Módulos). Só leitura aqui. */
+  nome: string;
+  onChange: (field: string, value: unknown) => void;
+}
 
-export function PequenosGruposBlock({ config, onChange }: PgBlockProps) {
+export function PequenosGruposBlock({ config, nome, onChange }: PgBlockProps) {
   return (
-    <CultoToggleBlock title="Pequenos Grupos" ativo={config.ativo} onToggle={v => onChange('ativo', v)}>
-      <div className="space-y-1"><Label className="text-xs">Nome</Label>
-        <CultoNameInput value={config.nome} onChange={v => onChange('nome', v)} />
-      </div>
+    <CultoToggleBlock title={nome} ativo={config.ativo} onToggle={v => onChange('ativo', v)}>
       <div className="space-y-1"><Label className="text-xs">Descrição</Label>
         <CultoDescInput value={config.descricao} onChange={v => onChange('descricao', v)} placeholder="Ex: Durante a semana" />
       </div>

@@ -25,12 +25,15 @@ export default function AppHome() {
   const isSuperAdmin = roles.includes('superadmin');
   const firstName = profile?.nome?.split(' ')[0] || 'membro';
 
-  // Cultos dinâmicos a partir de cultos_config
-  const cc = config?.cultos_config as Record<string, { ativo?: boolean; nome?: string; dia?: string; horario?: string; descricao?: string }> | null | undefined;
+  // Cultos dinâmicos a partir de cultos_config — nome vem de nome_modulo_* (fonte única)
+  const cc = config?.cultos_config as Record<string, { ativo?: boolean; dia?: string; horario?: string; descricao?: string }> | null | undefined;
+  const nomeEB    = config?.nome_modulo_escola_biblica    || 'Escola Bíblica';
+  const nomeCulto = config?.nome_modulo_culto              || 'Culto';
+  const nomePG    = config?.nome_modulo_pequenos_grupos    || 'Base';
   const cultosAtivos = [
-    cc?.escola_biblica?.ativo  !== false && cc?.escola_biblica  ? { nome: cc.escola_biblica.nome  ?? 'Escola Bíblica',    detalhe: cc.escola_biblica.descricao  ?? (cc.escola_biblica.dia  ? `${cc.escola_biblica.dia} ${cc.escola_biblica.horario}` : ''), icon: Clock } : null,
-    cc?.culto_principal?.ativo !== false && cc?.culto_principal ? { nome: cc.culto_principal.nome ?? 'Culto de Celebração', detalhe: cc.culto_principal.descricao ?? (cc.culto_principal.dia ? `${cc.culto_principal.dia} ${cc.culto_principal.horario}` : ''), icon: Clock } : null,
-    cc?.pequenos_grupos?.ativo !== false && cc?.pequenos_grupos ? { nome: cc.pequenos_grupos.nome  ?? 'Pequenos Grupos',    detalhe: cc.pequenos_grupos.descricao ?? '', icon: Users } : null,
+    cc?.escola_biblica?.ativo  !== false && cc?.escola_biblica  ? { nome: nomeEB,    detalhe: cc.escola_biblica.descricao  ?? (cc.escola_biblica.dia  ? `${cc.escola_biblica.dia} ${cc.escola_biblica.horario}` : ''), icon: Clock } : null,
+    cc?.culto_principal?.ativo !== false && cc?.culto_principal ? { nome: nomeCulto, detalhe: cc.culto_principal.descricao ?? (cc.culto_principal.dia ? `${cc.culto_principal.dia} ${cc.culto_principal.horario}` : ''), icon: Clock } : null,
+    cc?.pequenos_grupos?.ativo !== false && cc?.pequenos_grupos ? { nome: nomePG,    detalhe: cc.pequenos_grupos.descricao ?? '', icon: Users } : null,
   ].filter(Boolean) as { nome: string; detalhe: string; icon: typeof Clock }[];
 
   const missao = config?.missao ?? null;

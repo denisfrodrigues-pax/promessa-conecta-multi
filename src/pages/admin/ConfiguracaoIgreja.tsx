@@ -1109,19 +1109,27 @@ export default function ConfiguracaoIgreja() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2"><Clock className="w-4 h-4" />Configuração Rápida de Cultos</CardTitle>
-              <CardDescription>Configure os encontros principais exibidos no site público e na área do membro.</CardDescription>
+              <CardDescription>
+                Configure dia, horário e descrição dos encontros exibidos no site público e na área do membro.
+                {isSuperAdmin
+                  ? ' Para renomear, use a aba Módulos.'
+                  : ' O nome de cada encontro é definido pela equipe Promessa Conecta.'}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <CultoPrincipalBlock
                 config={form.cultos_config.culto_principal}
+                nome={form.nome_modulo_culto}
                 onChange={(field, value) => setCulto('culto_principal', field, value)}
               />
               <EscolaBiblicaBlock
                 config={form.cultos_config.escola_biblica}
+                nome={form.nome_modulo_escola_biblica}
                 onChange={(field, value) => setCulto('escola_biblica', field, value)}
               />
               <PequenosGruposBlock
                 config={form.cultos_config.pequenos_grupos}
+                nome={form.nome_modulo_pequenos_grupos}
                 onChange={(field, value) => setCulto('pequenos_grupos', field, value)}
               />
             </CardContent>
