@@ -654,7 +654,9 @@ export default function ConfiguracaoIgreja() {
           <TabsTrigger value="visual" className="flex items-center gap-1.5"><Palette className="w-4 h-4" /> Visual</TabsTrigger>
           <TabsTrigger value="sobre" className="flex items-center gap-1.5"><BookOpen className="w-4 h-4" /> Sobre</TabsTrigger>
           <TabsTrigger value="localizacao" className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> Localização</TabsTrigger>
-          <TabsTrigger value="modulos" className="flex items-center gap-1.5"><Puzzle className="w-4 h-4" /> Módulos</TabsTrigger>
+          {isSuperAdmin && (
+            <TabsTrigger value="modulos" className="flex items-center gap-1.5"><Puzzle className="w-4 h-4" /> Módulos</TabsTrigger>
+          )}
           <TabsTrigger value="cultos" className="flex items-center gap-1.5"><Building2 className="w-4 h-4" /> Cultos</TabsTrigger>
         </TabsList>
 
@@ -1007,7 +1009,8 @@ export default function ConfiguracaoIgreja() {
           </div>
         </TabsContent>
 
-        {/* ─── Aba Módulos ─────────────────────────────────────────────────── */}
+        {/* ─── Aba Módulos (exclusiva de superadmin) ─────────────────────────── */}
+        {isSuperAdmin && (
         <TabsContent value="modulos" className="space-y-6">
           <Card>
             <CardHeader>
@@ -1098,6 +1101,7 @@ export default function ConfiguracaoIgreja() {
             </Button>
           </div>
         </TabsContent>
+        )}
 
         {/* ─── Aba Cultos ─────────────────────────────────────────────────── */}
         <TabsContent value="cultos" className="space-y-6">

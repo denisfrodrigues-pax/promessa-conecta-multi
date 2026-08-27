@@ -1,14 +1,17 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 export function useAdminNotifications() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, churchId: authChurchId } = useAuth();
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const fetchUnreadCount = useCallback(async () => {
-    if (!isAdmin) {
+    if (!isAdmin || !churchId) {
       setUnreadCount(0);
       setLoading(false);
       return;
@@ -18,6 +21,7 @@ export function useAdminNotifications() {
       const { count, error } = await supabase
         .from('notificacoes')
         .select('*', { count: 'exact', head: true })
+        .eq('church_id', churchId)
         .eq('lido', false);
 
       if (error) throw error;
@@ -27,17 +31,17 @@ export function useAdminNotifications() {
     } finally {
       setLoading(false);
     }
-  }, [isAdmin]);
+  }, [isAdmin, churchId]);
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin && churchId) {
       fetchUnreadCount();
     }
-  }, [isAdmin, fetchUnreadCount]);
+  }, [isAdmin, churchId, fetchUnreadCount]);
 
   // Realtime subscription para atualizar badge quando notificações são criadas/atualizadas/deletadas
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin || !churchId) return;
 
     const channel = supabase
       .channel('admin_notificacoes_changes')
@@ -47,6 +51,7 @@ export function useAdminNotifications() {
           event: '*',
           schema: 'public',
           table: 'notificacoes',
+          filter: `church_id=eq.${churchId}`,
         },
         () => {
           // Refetch count when any change happens
@@ -58,7 +63,7 @@ export function useAdminNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, fetchUnreadCount]);
+  }, [isAdmin, churchId, fetchUnreadCount]);
 
   // Função para decrementar manualmente o contador (para atualizações otimistas)
   const decrementUnread = useCallback((count: number = 1) => {
