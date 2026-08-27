@@ -66,7 +66,7 @@ const TIPOS_EVENTO = ['culto', 'escola_biblica', 'ensaio', 'reuniao', 'conferenc
 export default function AdminEscalasPeriodoDetalhe() {
   const { id: periodoId } = useParams<{ id: string }>();
   const { profile, churchId: authChurchId } = useAuth();
-  const { churchId: slugChurchId } = useIgrejaSlug();
+  const { churchId: slugChurchId, p } = useIgrejaSlug();
   const churchId = authChurchId ?? slugChurchId ?? null;
   const queryClient = useQueryClient();
 
@@ -342,7 +342,7 @@ export default function AdminEscalasPeriodoDetalhe() {
       <div className="text-center py-16 space-y-4">
         <p className="text-muted-foreground">Período não encontrado.</p>
         <Button asChild variant="outline">
-          <Link to="/admin/escalas/periodos">
+          <Link to={p('/admin/escalas/periodos')}>
             <ArrowLeft className="w-4 h-4 mr-2" />Voltar
           </Link>
         </Button>
@@ -355,7 +355,7 @@ export default function AdminEscalasPeriodoDetalhe() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button asChild variant="ghost" size="sm">
-          <Link to="/admin/escalas/periodos">
+          <Link to={p('/admin/escalas/periodos')}>
             <ArrowLeft className="w-4 h-4 mr-2" />Períodos
           </Link>
         </Button>

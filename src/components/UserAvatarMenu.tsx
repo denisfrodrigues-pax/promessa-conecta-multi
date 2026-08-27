@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { LogOut, User } from 'lucide-react';
 import {
   DropdownMenu,
@@ -20,11 +21,12 @@ interface UserAvatarMenuProps {
 
 export function UserAvatarMenu({ size = 'md', showName = false, className }: UserAvatarMenuProps) {
   const { profile, signOut } = useAuth();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await signOut();
-    navigate('/auth');
+    navigate(p('/login'));
   };
 
   const sizeMap = {
