@@ -32,14 +32,21 @@ export default function AppLayout() {
   const { unreadCount } = useNotifications();
 
   const isSuperAdmin = roles.includes('superadmin');
+  const isAdmin = roles.includes('admin');
 
-  // Painéis: URLs absolutas com slug direto (sem p() que adicionaria /app/ desnecessário)
-  const panelItems = isSuperAdmin ? [
-    { href: '/admin',                           label: '⚡ Super Admin' },
-    { href: `/i/${slug}/admin/dashboard`,       label: 'Admin da Igreja' },
-    { href: `/i/${slug}/leader/hub`,            label: 'Painel Líder' },
-    { href: `/i/${slug}/voluntario`,            label: 'Painel Voluntário' },
-  ] : [];
+  // Painéis: URLs absolutas com slug direto (sem p() que adicionaria /app/ desnecessário).
+  // Admin da Igreja/Painel Líder/Painel Voluntário aparecem para quem realmente tem acesso
+  // a essas rotas (admin e superadmin — ver hierarquia de roles em AuthContext.tsx e os
+  // allowedRoles de /leader e /voluntario em App.tsx). "Super Admin" fica exclusivo do
+  // superadmin, único com acesso à rota /admin (painel entre múltiplas igrejas).
+  const panelItems = [
+    ...(isSuperAdmin ? [{ href: '/admin', label: '⚡ Super Admin' }] : []),
+    ...(isSuperAdmin || isAdmin ? [
+      { href: `/i/${slug}/admin/dashboard`, label: 'Admin da Igreja' },
+      { href: `/i/${slug}/leader/hub`,      label: 'Painel Líder' },
+      { href: `/i/${slug}/voluntario`,      label: 'Painel Voluntário' },
+    ] : []),
+  ];
 
   const nomeBase = nomeModulo.bases ?? 'PG';
 
