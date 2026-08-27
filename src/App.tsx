@@ -34,7 +34,6 @@ const PainelSuperAdmin = lazy(() => import("@/pages/superadmin/PainelSuperAdmin"
 const Auth = lazy(() => import("@/pages/Auth"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const InstallPWA = lazy(() => import("@/pages/InstallPWA"));
-const Index = lazy(() => import("@/pages/Index"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
 
