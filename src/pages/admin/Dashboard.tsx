@@ -181,11 +181,12 @@ export default function AdminDashboard() {
           .eq('church_id', churchId)
           .eq('status', 'ativo'),
         
-        // Crianças presentes hoje
+        // Crianças presentes hoje (mca_checkins: ainda presente = checkout_at IS NULL)
         supabase
-          .from('checkins_kids')
+          .from('mca_checkins')
           .select('id', { count: 'exact', head: true })
-          .eq('status', 'presente')
+          .eq('church_id', churchId)
+          .is('checkout_at', null)
           .gte('checkin_at', today),
         
         // Últimos 5 visitantes

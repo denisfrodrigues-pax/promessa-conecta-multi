@@ -85,10 +85,12 @@ export default function RelatorioGeral() {
           .lte("created_at", fimMes.toISOString()),
         supabase.from("bases").select("*", { count: "exact", head: true }).eq("church_id", churchId).eq("status", "ativo"),
         supabase.from("membros").select("*", { count: "exact", head: true }).eq("church_id", churchId).eq("status", "ativo"),
+        // mca_checkins: ainda presente = checkout_at IS NULL
         supabase
-          .from("checkins_kids")
+          .from("mca_checkins")
           .select("*", { count: "exact", head: true })
-          .eq("status", "presente")
+          .eq("church_id", churchId)
+          .is("checkout_at", null)
           .gte("checkin_at", format(new Date(), "yyyy-MM-dd")),
         supabase
           .from("transacoes_financeiras")
@@ -167,12 +169,13 @@ export default function RelatorioGeral() {
     ];
 
     // Check-ins por sala
-    const { data: salasData } = await supabase.from("salas").select("id, nome");
+    const { data: salasData } = await supabase.from("mca_salas").select("id, nome").eq("church_id", churchId);
     const checkinsSalas = await Promise.all(
       (salasData || []).map(async (sala) => {
         const { count } = await supabase
-          .from("checkins_kids")
+          .from("mca_checkins")
           .select("*", { count: "exact", head: true })
+          .eq("church_id", churchId)
           .eq("sala_id", sala.id)
           .gte("checkin_at", format(startOfMonth(new Date()), "yyyy-MM-dd"));
         return { sala: sala.nome, checkins: count || 0 };
