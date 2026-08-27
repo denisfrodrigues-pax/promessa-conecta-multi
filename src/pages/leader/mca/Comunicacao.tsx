@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -35,7 +36,8 @@ function cleanPhone(tel: string): string {
 export default function Comunicacao({ ministerioId: propMid }: { ministerioId?: string } = {}) {
   const ctx = useOutletContext<{ ministerioId: string } | null>();
   const ministerioId = propMid ?? ctx?.ministerioId ?? '';
-  const { user } = useAuth();
+  const { user, churchId: authChurchId } = useAuth();
+  const { churchId: slugChurchId } = useIgrejaSlug();
   const qc = useQueryClient();
 
   const [criancaId, setCriancaId] = useState('');
@@ -46,14 +48,7 @@ export default function Comunicacao({ ministerioId: propMid }: { ministerioId?: 
   const [melhorando, setMelhorando] = useState(false);
   const [usarMelhorada, setUsarMelhorada] = useState(false);
 
-  const { data: churchId } = useQuery({
-    queryKey: ['my_church_id'],
-    staleTime: Infinity,
-    queryFn: async () => {
-      const { data } = await supabase.from('igrejas').select('id').limit(1).maybeSingle();
-      return (data as any)?.id as string | null ?? null;
-    },
-  });
+  const churchId = authChurchId ?? slugChurchId ?? null;
 
   const { data: criancas = [] } = useQuery({
     queryKey: ['mca_criancas_simples', churchId],
