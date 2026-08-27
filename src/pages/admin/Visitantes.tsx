@@ -69,7 +69,7 @@ const hasValidPhone = (phone: string | null): boolean => {
 };
 
 // Helper: Generate WhatsApp URL
-const getWhatsAppUrl = (phone: string | null): string => {
+const getWhatsAppUrl = (phone: string | null, churchNome?: string | null): string => {
   const cleaned = cleanPhone(phone);
   const message = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}. Estou entrando em contato sobre sua visita :)`);
   return `https://wa.me/55${cleaned}?text=${message}`;
@@ -234,7 +234,7 @@ export default function Visitantes() {
 
   const handleWhatsAppClick = (phone: string | null) => {
     if (!hasValidPhone(phone)) return;
-    window.open(getWhatsAppUrl(phone), '_blank');
+    window.open(getWhatsAppUrl(phone, churchNome), '_blank');
   };
 
   // Abrir modal de confirmação de exclusão

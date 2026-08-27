@@ -69,6 +69,8 @@ interface MusicaRepertorio {
   artista: string | null;
   tom: string | null;
   link_youtube: string | null;
+  link_deezer: string | null;
+  capa_url: string | null;
 }
 
 interface PaletaCores {
@@ -191,7 +193,7 @@ export default function EscalaCultoDetalhe() {
     queryFn: async () => {
       let query = supabase
         .from('musicas_repertorio')
-        .select('id, titulo, artista, tom, link_youtube')
+        .select('id, titulo, artista, tom, link_youtube, link_deezer, capa_url')
         .eq('ministerio_id', ministerioId)
         .limit(8);
 
@@ -343,6 +345,8 @@ export default function EscalaCultoDetalhe() {
       artista: m.artista ?? '',
       tom: m.tom ?? '',
       link_youtube: m.link_youtube ?? '',
+      link_deezer: m.link_deezer ?? '',
+      capa_url: m.capa_url ?? '',
     });
   };
 

@@ -126,7 +126,7 @@ const hasValidPhone = (phone: string | null): boolean => {
   return cleanPhone(phone).length >= 10;
 };
 
-const getWhatsAppUrl = (phone: string | null, message?: string): string => {
+const getWhatsAppUrl = (phone: string | null, message?: string, churchNome?: string | null): string => {
   const digits = cleanPhone(phone);
   const phoneWithCountry = digits.startsWith('55') ? digits : `55${digits}`;
   const msg = encodeURIComponent(message || `Olá! Sou da ${churchNome || 'nossa Igreja'}.`);
@@ -902,7 +902,7 @@ export default function LeaderBaseDetalhes() {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                    onClick={() => window.open(getWhatsAppUrl(bm.telefone), '_blank')}
+                                    onClick={() => window.open(getWhatsAppUrl(bm.telefone, undefined, churchNome), '_blank')}
                                     title="WhatsApp"
                                   >
                                     <MessageCircle className="h-4 w-4" />
@@ -1083,7 +1083,7 @@ export default function LeaderBaseDetalhes() {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                    onClick={() => window.open(getWhatsAppUrl(bv.visitante?.telefone), '_blank')}
+                                    onClick={() => window.open(getWhatsAppUrl(bv.visitante?.telefone, undefined, churchNome), '_blank')}
                                     title="WhatsApp"
                                   >
                                     <MessageCircle className="h-4 w-4" />
@@ -1259,7 +1259,7 @@ export default function LeaderBaseDetalhes() {
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6 text-green-600"
-                          onClick={() => window.open(getWhatsAppUrl(base.lider?.telefone), '_blank')}
+                          onClick={() => window.open(getWhatsAppUrl(base.lider?.telefone, undefined, churchNome), '_blank')}
                         >
                           <MessageCircle className="h-3 w-3" />
                         </Button>

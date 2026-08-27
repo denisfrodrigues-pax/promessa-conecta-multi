@@ -24,8 +24,8 @@ const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado',
 export default function BaseNova() {
   const navigate = useNavigate();
   const { churchId: authChurchId } = useAuth();
-  const { church, p } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId, p } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
 
   const [loading, setLoading] = useState(false);
   const [buscandoCep, setBuscandoCep] = useState(false);

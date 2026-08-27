@@ -65,7 +65,7 @@ const hasValidPhone = (phone: string | null): boolean => {
 };
 
 // Helper: Generate WhatsApp URL
-const getWhatsAppUrl = (phone: string | null): string => {
+const getWhatsAppUrl = (phone: string | null, churchNome?: string | null): string => {
   const cleaned = cleanPhone(phone);
   const message = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}. Estou entrando em contato sobre sua visita recente :)`);
   return `https://wa.me/55${cleaned}?text=${message}`;
@@ -112,8 +112,8 @@ const exportToCSV = (data: Acompanhamento[]) => {
 
 export default function Acompanhamento() {
   const { churchId: authChurchId } = useAuth();
-  const { church, churchNome } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId, churchNome } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const [acompanhamentos, setAcompanhamentos] = useState<Acompanhamento[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -259,7 +259,7 @@ export default function Acompanhamento() {
 
   const handleWhatsAppClick = (phone: string | null) => {
     if (!hasValidPhone(phone)) return;
-    window.open(getWhatsAppUrl(phone), '_blank');
+    window.open(getWhatsAppUrl(phone, churchNome), '_blank');
   };
 
   return (

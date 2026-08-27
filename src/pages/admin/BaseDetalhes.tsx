@@ -96,7 +96,7 @@ const hasValidPhone = (phone: string | null): boolean => {
   return cleanPhone(phone).length >= 10;
 };
 
-const getWhatsAppUrl = (phone: string | null): string => {
+const getWhatsAppUrl = (phone: string | null, churchNome?: string | null): string => {
   const digits = cleanPhone(phone);
   const phoneWithCountry = digits.startsWith('55') ? digits : `55${digits}`;
   const message = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}.`);
@@ -473,7 +473,7 @@ export default function BaseDetalhes() {
             <h1 className="text-xl font-display font-bold">{base.nome}</h1>
             {liderInfo && hasValidPhone(liderInfo.telefone) && (
               <button
-                onClick={() => window.open(getWhatsAppUrl(liderInfo.telefone), '_blank')}
+                onClick={() => window.open(getWhatsAppUrl(liderInfo.telefone, churchNome), '_blank')}
                 className="text-green-600 hover:text-green-700 p-1"
                 title="WhatsApp do líder"
               >
@@ -705,7 +705,7 @@ export default function BaseDetalhes() {
                   </div>
                   {hasValidPhone(liderInfo.telefone) && (
                     <button
-                      onClick={() => window.open(getWhatsAppUrl(liderInfo.telefone), '_blank')}
+                      onClick={() => window.open(getWhatsAppUrl(liderInfo.telefone, churchNome), '_blank')}
                       className="text-green-600 hover:text-green-700 p-1"
                     >
                       <MessageCircle className="w-5 h-5" />
@@ -810,7 +810,7 @@ export default function BaseDetalhes() {
                   <div className="flex items-center gap-1">
                     {hasValidPhone(bm.telefone) && (
                       <button
-                        onClick={() => window.open(getWhatsAppUrl(bm.telefone), '_blank')}
+                        onClick={() => window.open(getWhatsAppUrl(bm.telefone, churchNome), '_blank')}
                         className="text-green-600 hover:text-green-700 p-1.5"
                       >
                         <MessageCircle className="h-4 w-4" />
@@ -876,7 +876,7 @@ export default function BaseDetalhes() {
                     </Badge>
                     {hasValidPhone(bv.visitante?.telefone) && (
                       <button
-                        onClick={() => window.open(getWhatsAppUrl(bv.visitante?.telefone), '_blank')}
+                        onClick={() => window.open(getWhatsAppUrl(bv.visitante?.telefone, churchNome), '_blank')}
                         className="text-green-600 hover:text-green-700 p-1.5"
                       >
                         <MessageCircle className="h-4 w-4" />

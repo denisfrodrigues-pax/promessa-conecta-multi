@@ -45,8 +45,8 @@ interface Conta {
 
 export default function Contas() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const [loading, setLoading] = useState(true);
   const [contas, setContas] = useState<Conta[]>([]);
   const [modalOpen, setModalOpen] = useState(false);

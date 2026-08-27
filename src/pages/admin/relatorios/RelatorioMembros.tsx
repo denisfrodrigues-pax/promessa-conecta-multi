@@ -9,7 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Download, FileText, UserPlus, UserMinus, Calendar, MessageCircle, Loader2, Baby } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { format, subMonths, startOfMonth, endOfMonth, differenceInYears } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from 'recharts';
@@ -21,8 +20,8 @@ const statusLabels: Record<string, string> = { ativo: 'Ativo', inativo: 'Inativo
 
 export default function RelatorioMembros() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);
@@ -31,7 +30,7 @@ export default function RelatorioMembros() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 20;
-  const [kpis, setKpis] = useState({ ativos: 0, novosMes: 0, desligados: 0, idadeMedia: 0, criancas: 0 });
+  const [kpis, setKpis] = useState({ ativos: 0, novosMes: 0, desligados: 0, idadeMedia: 0 });
   const [totalCriancas, setTotalCriancas] = useState(0);
   const [chartData, setChartData] = useState({ entradas: [] as any[], faixaEtaria: [] as any[], status: [] as any[] });
 

@@ -145,7 +145,12 @@ export function useIgrejaConfig() {
           ...data,
           nome: data.nome ?? DEFAULT_CONFIG.nome,
           cor_primaria: data.cor_primaria ?? DEFAULT_CONFIG.cor_primaria,
-          foto_hero_urls: Array.isArray(data.foto_hero_urls) ? data.foto_hero_urls : [],
+          foto_hero_urls: Array.isArray(data.foto_hero_urls)
+            ? data.foto_hero_urls.filter((v): v is string => typeof v === 'string')
+            : [],
+          cultos_config: data.cultos_config && typeof data.cultos_config === 'object' && !Array.isArray(data.cultos_config)
+            ? (data.cultos_config as Record<string, unknown>)
+            : null,
           nome_modulo_pequenos_grupos: data.nome_modulo_pequenos_grupos ?? DEFAULT_CONFIG.nome_modulo_pequenos_grupos,
           nome_modulo_culto: data.nome_modulo_culto ?? DEFAULT_CONFIG.nome_modulo_culto,
           nome_modulo_escola_biblica: data.nome_modulo_escola_biblica ?? DEFAULT_CONFIG.nome_modulo_escola_biblica,

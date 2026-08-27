@@ -84,7 +84,7 @@ const hasValidPhone = (phone: string | null): boolean => {
   return digits.length >= 10;
 };
 
-const getWhatsAppUrl = (phone: string | null): string => {
+const getWhatsAppUrl = (phone: string | null, churchNome?: string | null): string => {
   const digits = cleanPhone(phone);
   const phoneWithCountry = digits.startsWith('55') ? digits : `55${digits}`;
   const message = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}. Estou entrando em contato sobre sua visita :)`);
@@ -331,7 +331,7 @@ export default function VisitanteDetalhes() {
 
   const handleWhatsAppClick = () => {
     if (!hasValidPhone(formData.telefone)) return;
-    window.open(getWhatsAppUrl(formData.telefone), '_blank');
+    window.open(getWhatsAppUrl(formData.telefone, churchNome), '_blank');
   };
 
   // ===== RENDER =====

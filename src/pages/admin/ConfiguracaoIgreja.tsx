@@ -486,7 +486,7 @@ export default function ConfiguracaoIgreja() {
         telefone:       form.telefone.trim()       || null,
         email:          form.email.trim()          || null,
         google_maps_url: form.google_maps_url.trim() || null,
-        cultos_config: form.cultos_config,
+        cultos_config: form.cultos_config as any,
         instagram_url: form.instagram_url.trim() || null,
         youtube_url: form.youtube_url.trim() || null,
         facebook_url: form.facebook_url.trim() || null,

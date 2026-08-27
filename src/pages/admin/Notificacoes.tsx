@@ -52,8 +52,8 @@ interface Profile {
 
 export default function AdminNotificacoes() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
   const [usuarios, setUsuarios] = useState<Profile[]>([]);

@@ -33,8 +33,8 @@ type StatusFilter = 'all' | 'sucesso' | 'sem_telefone' | 'erro_api';
 
 export default function RelatorioComunicacoes() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const [records, setRecords] = useState<CommunicationRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');

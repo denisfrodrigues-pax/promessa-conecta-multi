@@ -330,7 +330,7 @@ export default function NovaIgreja() {
         complemento_endereco: form.complemento_endereco.trim() || null,
         telefone: form.telefone.trim() || null, email: form.email.trim() || null,
         google_maps_url: form.google_maps_url.trim() || null,
-        cultos_config: cc,
+        cultos_config: cc as any,
         horario_ebd:   cc.escola_biblica.ativo   ? `${cc.escola_biblica.nome} — ${labelDia(cc.escola_biblica.dia)} às ${cc.escola_biblica.horario}` : null,
         horario_culto: cc.culto_principal.ativo  ? `${cc.culto_principal.nome} — ${labelDia(cc.culto_principal.dia)} às ${cc.culto_principal.horario}` : null,
         horario_bases: cc.pequenos_grupos.ativo  ? `${cc.pequenos_grupos.nome} — ${cc.pequenos_grupos.descricao}` : null,

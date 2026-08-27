@@ -97,7 +97,7 @@ const hasValidPhone = (phone: string | null): boolean => {
   return cleaned.length >= 10;
 };
 
-const getWhatsAppUrl = (phone: string | null): string => {
+const getWhatsAppUrl = (phone: string | null, churchNome?: string | null): string => {
   const cleaned = cleanPhone(phone);
   const msg = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}. Estou entrando em contato :)`);
   return `https://wa.me/55${cleaned}?text=${msg}`;
@@ -152,8 +152,8 @@ const exportToCSV = (data: Membro[]) => {
 
 export default function Membros() {
   const { churchId: authChurchId } = useAuth();
-  const { church, p, churchNome } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId, p, churchNome } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const [membros, setMembros] = useState<Membro[]>([]);
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
@@ -345,7 +345,7 @@ export default function Membros() {
   const handleWhatsAppClick = (e: React.MouseEvent, telefone: string | null) => {
     e.stopPropagation();
     if (hasValidPhone(telefone)) {
-      window.open(getWhatsAppUrl(telefone), '_blank');
+      window.open(getWhatsAppUrl(telefone, churchNome), '_blank');
     }
   };
 

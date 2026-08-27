@@ -63,8 +63,8 @@ interface Transacao {
 
 export default function FinanceiroRelatorio() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState("mes_atual");
   const [dataInicio, setDataInicio] = useState(startOfMonth(new Date()).toISOString().split("T")[0]);

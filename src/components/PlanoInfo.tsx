@@ -48,18 +48,21 @@ export function PlanoInfo({ compact = false }: PlanoInfoProps) {
 
   useEffect(() => {
     if (!churchId) { setLoading(false); return; }
-    supabase
-      .from('igrejas')
-      .select('nome, plano')
-      .eq('id', churchId)
-      .maybeSingle()
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('igrejas')
+          .select('nome, plano')
+          .eq('id', churchId)
+          .maybeSingle();
         if (data) {
           setNomeIgreja(data.nome);
           setPlano((data.plano as Plano) ?? 'teste');
         }
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [churchId]);
 
   if (loading || !plano) return null;

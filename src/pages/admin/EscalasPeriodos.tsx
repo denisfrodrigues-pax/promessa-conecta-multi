@@ -41,8 +41,8 @@ const ANOS = Array.from({ length: 5 }, (_, i) => currentYear - 1 + i);
 
 export default function AdminEscalasPeriodos() {
   const { profile, churchId: authChurchId } = useAuth();
-  const { church, p: pathFn } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId, p: pathFn } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState('');

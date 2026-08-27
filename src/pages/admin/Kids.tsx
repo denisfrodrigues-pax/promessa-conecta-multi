@@ -260,7 +260,7 @@ function SalaForm({ open, initial, responsaveis, onClose, onSaved }: SalaFormPro
     if (!form.nome.trim()) { toast.error('Nome é obrigatório'); return; }
     setSaving(true);
     try {
-      const payload: Record<string, any> = {
+      const payload = {
         nome: form.nome.trim(),
         faixa_etaria_min: form.faixa_etaria_min !== '' ? Number(form.faixa_etaria_min) : null,
         faixa_etaria_max: form.faixa_etaria_max !== '' ? Number(form.faixa_etaria_max) : null,
@@ -345,8 +345,8 @@ function SalaForm({ open, initial, responsaveis, onClose, onSaved }: SalaFormPro
 
 export default function AdminKids() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const [criancas, setCriancas] = useState<Crianca[]>([]);
   const [salas, setSalas] = useState<Sala[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);

@@ -59,8 +59,8 @@ const EventCardSkeleton = () => (
 
 export default function Eventos() {
   const { churchId: authChurchId } = useAuth();
-  const { church } = useIgrejaSlug();
-  const churchId = authChurchId ?? church?.id ?? null;
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [inscricoes, setInscricoes] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
