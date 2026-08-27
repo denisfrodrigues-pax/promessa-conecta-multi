@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, LogIn } from "lucide-react";
-import logoPromessaHortolandia from "@/assets/logo-promessa-hortolandia.png";
+import { Menu, X, ChevronDown, LogIn, Church } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
+import { useIgrejaBySlug } from "@/hooks/useIgrejaBySlug";
 import {
   Accordion,
   AccordionContent,
@@ -10,10 +11,48 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+/** Logo da igreja atual (por slug); cai num placeholder neutro se a igreja
+ *  não tiver logo cadastrada — nunca a logo de uma igreja real específica. */
+function HeaderLogo({
+  logoUrl,
+  nome,
+  loading,
+  size,
+}: {
+  logoUrl: string | null | undefined;
+  nome: string | null | undefined;
+  loading: boolean;
+  size: number;
+}) {
+  if (loading) {
+    return <div className="animate-pulse bg-muted rounded-lg" style={{ height: size, width: size }} />;
+  }
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt={nome || "Logo"}
+        style={{ height: size }}
+        className="w-auto object-contain"
+      />
+    );
+  }
+  return (
+    <div
+      className="flex items-center justify-center rounded-lg bg-muted text-muted-foreground"
+      style={{ height: size, width: size }}
+    >
+      <Church style={{ width: size * 0.55, height: size * 0.55 }} />
+    </div>
+  );
+}
+
 export function InstitutionalHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  const { slug, p } = useIgrejaSlug();
+  const { church, loading: churchLoading } = useIgrejaBySlug(slug);
 
   const closeMenu = () => setMobileMenuOpen(false);
 
@@ -22,12 +61,8 @@ export function InstitutionalHeader() {
       {/* ================= MOBILE HEADER ================= */}
       <div className="flex items-center justify-between px-4 py-3 lg:hidden">
         {/* Logo */}
-        <Link to="/">
-          <img
-            src={logoPromessaHortolandia}
-            alt="Igreja da Promessa"
-            className="h-10"
-          />
+        <Link to={p('/publico')}>
+          <HeaderLogo logoUrl={church?.logo_url} nome={church?.nome} loading={churchLoading} size={40} />
         </Link>
 
         {/* Botão Hambúrguer */}
@@ -45,8 +80,8 @@ export function InstitutionalHeader() {
         <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
           {/* Topo */}
           <div className="flex items-center justify-between px-4 py-4 border-b">
-            <Link to="/" onClick={closeMenu}>
-              <img src={logoPromessaHortolandia} className="h-8" alt="Logo" />
+            <Link to={p('/publico')} onClick={closeMenu}>
+              <HeaderLogo logoUrl={church?.logo_url} nome={church?.nome} loading={churchLoading} size={32} />
             </Link>
             <button onClick={closeMenu} aria-label="Fechar menu">
               <X className="h-7 w-7" />
@@ -58,7 +93,7 @@ export function InstitutionalHeader() {
             {/* Login - Item independente com destaque no topo */}
             <div className="pb-4 mb-2">
               <Button asChild className="w-full" size="lg">
-                <Link onClick={closeMenu} to="/auth" className="flex items-center justify-center gap-2">
+                <Link onClick={closeMenu} to={p('/login')} className="flex items-center justify-center gap-2">
                   <LogIn className="w-5 h-5" />
                   Login
                 </Link>
@@ -73,39 +108,39 @@ export function InstitutionalHeader() {
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
                   <div className="flex flex-col gap-3 pl-4">
-                    <Link onClick={closeMenu} to="/quem-somos/historia" className="text-muted-foreground hover:text-foreground">Nossa História</Link>
-                    <Link onClick={closeMenu} to="/quem-somos/missao-visao" className="text-muted-foreground hover:text-foreground">Missão e Visão</Link>
-                    <Link onClick={closeMenu} to="/quem-somos/teologia" className="text-muted-foreground hover:text-foreground">Nossa Teologia</Link>
-                    <Link onClick={closeMenu} to="/quem-somos/pastores" className="text-muted-foreground hover:text-foreground">Pastores</Link>
-                    <Link onClick={closeMenu} to="/quem-somos/lideres-ministerios" className="text-muted-foreground hover:text-foreground">Líderes e Ministérios</Link>
+                    <Link onClick={closeMenu} to={p('/quem-somos/historia')} className="text-muted-foreground hover:text-foreground">Nossa História</Link>
+                    <Link onClick={closeMenu} to={p('/quem-somos/missao-visao')} className="text-muted-foreground hover:text-foreground">Missão e Visão</Link>
+                    <Link onClick={closeMenu} to={p('/quem-somos/teologia')} className="text-muted-foreground hover:text-foreground">Nossa Teologia</Link>
+                    <Link onClick={closeMenu} to={p('/quem-somos/pastores')} className="text-muted-foreground hover:text-foreground">Pastores</Link>
+                    <Link onClick={closeMenu} to={p('/quem-somos/lideres-ministerios')} className="text-muted-foreground hover:text-foreground">Líderes e Ministérios</Link>
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
               {/* 2. Bases - SIMPLES */}
               <div className="border-b py-4">
-                <Link onClick={closeMenu} to="/bases-publicas" className="text-lg font-medium">
+                <Link onClick={closeMenu} to={p('/bases-publicas')} className="text-lg font-medium">
                   Bases
                 </Link>
               </div>
 
               {/* 3. Trilha Amar e Servir - SIMPLES (sem destaque) */}
               <div className="border-b py-4">
-                <Link onClick={closeMenu} to="/trilha-amar-servir" className="text-lg font-medium">
+                <Link onClick={closeMenu} to={p('/trilha-amar-servir')} className="text-lg font-medium">
                   Trilha Amar e Servir
                 </Link>
               </div>
 
               {/* 4. Contribua - SIMPLES */}
               <div className="border-b py-4">
-                <Link onClick={closeMenu} to="/contribuicoes" className="text-lg font-medium">
+                <Link onClick={closeMenu} to={p('/contribuicoes')} className="text-lg font-medium">
                   Contribua
                 </Link>
               </div>
 
               {/* 5. Contato - SIMPLES */}
               <div className="border-b py-4">
-                <Link onClick={closeMenu} to="/contato" className="text-lg font-medium">
+                <Link onClick={closeMenu} to={p('/contato')} className="text-lg font-medium">
                   Contato
                 </Link>
               </div>
@@ -117,8 +152,8 @@ export function InstitutionalHeader() {
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
                   <div className="flex flex-col gap-3 pl-4">
-                    <Link onClick={closeMenu} to="/sou-novo" className="text-muted-foreground hover:text-foreground">Sou Novo</Link>
-                    <Link onClick={closeMenu} to="/seja-voluntario" className="text-muted-foreground hover:text-foreground">Seja Voluntário</Link>
+                    <Link onClick={closeMenu} to={p('/sou-novo')} className="text-muted-foreground hover:text-foreground">Sou Novo</Link>
+                    <Link onClick={closeMenu} to={p('/seja-voluntario')} className="text-muted-foreground hover:text-foreground">Seja Voluntário</Link>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -132,12 +167,8 @@ export function InstitutionalHeader() {
       {/* ================= DESKTOP HEADER ================= */}
       <div className="hidden lg:flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
         {/* Logo */}
-        <Link to="/">
-          <img
-            src={logoPromessaHortolandia}
-            alt="Igreja da Promessa"
-            className="h-12"
-          />
+        <Link to={p('/publico')}>
+          <HeaderLogo logoUrl={church?.logo_url} nome={church?.nome} loading={churchLoading} size={48} />
         </Link>
 
         {/* Menu Desktop */}
@@ -153,26 +184,26 @@ export function InstitutionalHeader() {
             {/* Dropdown com delay e transição suave */}
             <div className="absolute top-[calc(100%+0.5rem)] left-0 opacity-0 invisible translate-y-1 group-hover/dropdown:opacity-100 group-hover/dropdown:visible group-hover/dropdown:translate-y-0 transition-all duration-200 delay-150 ease-out z-50">
               <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
-                <Link to="/quem-somos/historia" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa História</Link>
-                <Link to="/quem-somos/missao-visao" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Missão e Visão</Link>
-                <Link to="/quem-somos/teologia" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa Teologia</Link>
-                <Link to="/quem-somos/pastores" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Pastores</Link>
-                <Link to="/quem-somos/lideres-ministerios" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Líderes e Ministérios</Link>
+                <Link to={p('/quem-somos/historia')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa História</Link>
+                <Link to={p('/quem-somos/missao-visao')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Missão e Visão</Link>
+                <Link to={p('/quem-somos/teologia')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa Teologia</Link>
+                <Link to={p('/quem-somos/pastores')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Pastores</Link>
+                <Link to={p('/quem-somos/lideres-ministerios')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Líderes e Ministérios</Link>
               </div>
             </div>
           </div>
 
           {/* 2. Bases - SIMPLES */}
-          <Link to="/bases-publicas" className="hover:text-primary transition-colors">Bases</Link>
+          <Link to={p('/bases-publicas')} className="hover:text-primary transition-colors">Bases</Link>
 
           {/* 3. Trilha Amar e Servir - SIMPLES (sem destaque) */}
-          <Link to="/trilha-amar-servir" className="hover:text-primary transition-colors">Trilha Amar e Servir</Link>
+          <Link to={p('/trilha-amar-servir')} className="hover:text-primary transition-colors">Trilha Amar e Servir</Link>
 
           {/* 4. Contribua - SIMPLES */}
-          <Link to="/contribuicoes" className="hover:text-primary transition-colors">Contribua</Link>
+          <Link to={p('/contribuicoes')} className="hover:text-primary transition-colors">Contribua</Link>
 
           {/* 5. Contato - SIMPLES */}
-          <Link to="/contato" className="hover:text-primary transition-colors">Contato</Link>
+          <Link to={p('/contato')} className="hover:text-primary transition-colors">Contato</Link>
 
           {/* 6. Cadastro - COM dropdown (Sou Novo + Seja Voluntário) */}
           <div className="relative group/cadastro">
@@ -185,8 +216,8 @@ export function InstitutionalHeader() {
             {/* Dropdown com delay e transição suave */}
             <div className="absolute top-[calc(100%+0.5rem)] left-0 opacity-0 invisible translate-y-1 group-hover/cadastro:opacity-100 group-hover/cadastro:visible group-hover/cadastro:translate-y-0 transition-all duration-200 delay-150 ease-out z-50">
               <div className="w-48 rounded-lg border bg-white shadow-lg py-2">
-                <Link to="/sou-novo" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Sou Novo</Link>
-                <Link to="/seja-voluntario" className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Seja Voluntário</Link>
+                <Link to={p('/sou-novo')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Sou Novo</Link>
+                <Link to={p('/seja-voluntario')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Seja Voluntário</Link>
               </div>
             </div>
           </div>
@@ -195,7 +226,7 @@ export function InstitutionalHeader() {
 
           {/* 8. Login - Botão independente */}
           <Button asChild variant="outline" size="sm" className="ml-2">
-            <Link to="/auth" className="flex items-center gap-2">
+            <Link to={p('/login')} className="flex items-center gap-2">
               <LogIn className="w-4 h-4" />
               Login
             </Link>

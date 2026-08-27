@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePublicIgreja } from '@/hooks/usePublicIgreja';
+import { useIgrejaBySlug } from '@/hooks/useIgrejaBySlug';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Logo } from '@/components/Logo';
@@ -50,8 +50,8 @@ export default function Auth() {
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   
   const { signIn, signUp, user, roles, loading } = useAuth();
-  const { igreja } = usePublicIgreja();
-  const { p } = useIgrejaSlug();
+  const { slug, p } = useIgrejaSlug();
+  const { church: igreja } = useIgrejaBySlug(slug);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -216,7 +216,7 @@ export default function Auth() {
     setErrors({});
   };
 
-  const churchName = igreja?.nome || 'Igreja da Promessa';
+  const churchName = igreja?.nome || 'Rede Conect';
   const hasCustomLogo = !!igreja?.logo_url;
 
   const features = [
@@ -258,7 +258,7 @@ export default function Auth() {
               className="text-white/80 hover:text-white hover:bg-white/10 -ml-4 mb-8"
               asChild
             >
-              <Link to="/">
+              <Link to={p('/publico')}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar ao início
               </Link>
@@ -326,7 +326,7 @@ export default function Auth() {
             className="text-white/80 hover:text-white hover:bg-white/10 -ml-4 mb-4"
             asChild
           >
-            <Link to="/">
+            <Link to={p('/publico')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Link>
