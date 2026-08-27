@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, LogIn } from "lucide-react";
-import logoPromessaHortolandia from "@/assets/logo-promessa-hortolandia.png";
+import { Menu, X, ChevronDown, LogIn, Church } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
+import { useIgrejaBySlug } from "@/hooks/useIgrejaBySlug";
 import {
   Accordion,
   AccordionContent,
@@ -11,11 +11,48 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+/** Logo da igreja atual (por slug); cai num placeholder neutro se a igreja
+ *  não tiver logo cadastrada — nunca a logo de uma igreja real específica. */
+function HeaderLogo({
+  logoUrl,
+  nome,
+  loading,
+  size,
+}: {
+  logoUrl: string | null | undefined;
+  nome: string | null | undefined;
+  loading: boolean;
+  size: number;
+}) {
+  if (loading) {
+    return <div className="animate-pulse bg-muted rounded-lg" style={{ height: size, width: size }} />;
+  }
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt={nome || "Logo"}
+        style={{ height: size }}
+        className="w-auto object-contain"
+      />
+    );
+  }
+  return (
+    <div
+      className="flex items-center justify-center rounded-lg bg-muted text-muted-foreground"
+      style={{ height: size, width: size }}
+    >
+      <Church style={{ width: size * 0.55, height: size * 0.55 }} />
+    </div>
+  );
+}
+
 export function InstitutionalHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
-  const { p } = useIgrejaSlug();
+  const { slug, p } = useIgrejaSlug();
+  const { church, loading: churchLoading } = useIgrejaBySlug(slug);
 
   const closeMenu = () => setMobileMenuOpen(false);
 
@@ -25,11 +62,7 @@ export function InstitutionalHeader() {
       <div className="flex items-center justify-between px-4 py-3 lg:hidden">
         {/* Logo */}
         <Link to={p('/publico')}>
-          <img
-            src={logoPromessaHortolandia}
-            alt="Igreja da Promessa"
-            className="h-10"
-          />
+          <HeaderLogo logoUrl={church?.logo_url} nome={church?.nome} loading={churchLoading} size={40} />
         </Link>
 
         {/* Botão Hambúrguer */}
@@ -48,7 +81,7 @@ export function InstitutionalHeader() {
           {/* Topo */}
           <div className="flex items-center justify-between px-4 py-4 border-b">
             <Link to={p('/publico')} onClick={closeMenu}>
-              <img src={logoPromessaHortolandia} className="h-8" alt="Logo" />
+              <HeaderLogo logoUrl={church?.logo_url} nome={church?.nome} loading={churchLoading} size={32} />
             </Link>
             <button onClick={closeMenu} aria-label="Fechar menu">
               <X className="h-7 w-7" />
@@ -135,11 +168,7 @@ export function InstitutionalHeader() {
       <div className="hidden lg:flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
         {/* Logo */}
         <Link to={p('/publico')}>
-          <img
-            src={logoPromessaHortolandia}
-            alt="Igreja da Promessa"
-            className="h-12"
-          />
+          <HeaderLogo logoUrl={church?.logo_url} nome={church?.nome} loading={churchLoading} size={48} />
         </Link>
 
         {/* Menu Desktop */}
