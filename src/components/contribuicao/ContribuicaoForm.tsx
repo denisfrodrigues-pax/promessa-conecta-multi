@@ -10,88 +10,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  HandHeart, 
-  Heart, 
-  Sparkles, 
-  CreditCard, 
-  QrCode, 
+import {
+  HandHeart,
+  Heart,
+  Sparkles,
+  CreditCard,
+  QrCode,
   FileText,
-  Copy, 
-  Check, 
+  Copy,
+  Check,
   Building2,
   ArrowLeft,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import QRCode from 'react-qr-code';
-
-// PIX EMV Generator for Brazilian PIX standard (BACEN compliant)
-const PIX_DATA = {
-  chave: 'promessa.hortolandia@gmail.com',
-  nome: 'Conv Reg Paulista Adventist',
-  cidade: 'Hortolandia',
-  banco: 'Bradesco',
-  nomeCompleto: 'Convenção Regional Paulista das Igreja Adventista da Promessa',
-};
-
-// EMV TLV helper function
-function emvTLV(id: string, value: string): string {
-  const length = value.length.toString().padStart(2, '0');
-  return `${id}${length}${value}`;
-}
-
-// CRC16-CCITT-FALSE calculation (polynomial 0x1021)
-function calculateCRC16(payload: string): string {
-  const polynomial = 0x1021;
-  let crc = 0xFFFF;
-  
-  const bytes = new TextEncoder().encode(payload);
-  
-  for (let i = 0; i < bytes.length; i++) {
-    crc ^= bytes[i] << 8;
-    for (let j = 0; j < 8; j++) {
-      if ((crc & 0x8000) !== 0) {
-        crc = ((crc << 1) ^ polynomial) & 0xFFFF;
-      } else {
-        crc = (crc << 1) & 0xFFFF;
-      }
-    }
-  }
-  
-  return crc.toString(16).toUpperCase().padStart(4, '0');
-}
-
-function generatePixPayload(valor?: number): string {
-  const payloadFormatIndicator = emvTLV('00', '01');
-  const gui = emvTLV('00', 'br.gov.bcb.pix');
-  const chavePix = emvTLV('01', PIX_DATA.chave);
-  const merchantAccountInfo = emvTLV('26', gui + chavePix);
-  const merchantCategoryCode = emvTLV('52', '0000');
-  const transactionCurrency = emvTLV('53', '986');
-  const transactionAmount = valor && valor > 0 ? emvTLV('54', valor.toFixed(2)) : '';
-  const countryCode = emvTLV('58', 'BR');
-  const merchantName = emvTLV('59', PIX_DATA.nome.toUpperCase().substring(0, 25));
-  const merchantCity = emvTLV('60', PIX_DATA.cidade.toUpperCase().substring(0, 15));
-  const referenceLabel = emvTLV('05', '***');
-  const additionalDataField = emvTLV('62', referenceLabel);
-  
-  const payloadWithoutCRC = 
-    payloadFormatIndicator +
-    merchantAccountInfo +
-    merchantCategoryCode +
-    transactionCurrency +
-    transactionAmount +
-    countryCode +
-    merchantName +
-    merchantCity +
-    additionalDataField +
-    '6304';
-  
-  const crc = calculateCRC16(payloadWithoutCRC);
-  
-  return payloadWithoutCRC + crc;
-}
+import { generatePixPayload } from '@/lib/pixPayload';
+import { usePixInfo } from '@/hooks/usePixInfo';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
+import { getWhatsAppUrl } from '@/lib/formatters';
 
 // FREQUENCIAS removido - campo não mais utilizado
 
@@ -134,7 +72,9 @@ export function ContribuicaoForm({
   } | null>(null);
   const comprovanteRef = useRef<HTMLDivElement>(null);
 
-  const WHATSAPP_SECRETARIA = '19995735855';
+  const { pixInfo, whatsapp, loading: loadingPixInfo } = usePixInfo();
+  const { churchNome } = useIgrejaSlug();
+  const nomeIgreja = churchNome || 'a igreja';
 
   const formaLabel: Record<string, string> = {
     pix: 'PIX',
@@ -158,18 +98,20 @@ export function ContribuicaoForm({
   };
 
   const enviarWhatsApp = () => {
-    if (!comprovanteData) return;
+    if (!comprovanteData || !whatsapp) return;
     const msg = `Olá! Gostaria de confirmar minha contribuição:\n• Valor: R$ ${comprovanteData.valor}\n• Forma: ${comprovanteData.forma}\n• Data: ${comprovanteData.dataHora}\n• Nome: ${comprovanteData.nome || 'Não informado'}\nAguardo confirmação. 🙏`;
-    const url = `https://wa.me/55${WHATSAPP_SECRETARIA}?text=${encodeURIComponent(msg)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(getWhatsAppUrl(whatsapp, msg), '_blank', 'noopener,noreferrer');
   };
 
   const valorNumerico = parseFloat(valor.replace(',', '.')) || 0;
-  const pixPayload = generatePixPayload(valorNumerico > 0 ? valorNumerico : undefined);
+  const pixPayload = pixInfo
+    ? generatePixPayload({ chave: pixInfo.chave, nome: pixInfo.nome || nomeIgreja, cidade: 'BRASIL' }, valorNumerico > 0 ? valorNumerico : undefined)
+    : null;
 
   const copyPixKey = async () => {
+    if (!pixInfo) return;
     try {
-      await navigator.clipboard.writeText(PIX_DATA.chave);
+      await navigator.clipboard.writeText(pixInfo.chave);
       setCopiedPix(true);
       toast.success('Chave PIX copiada!', { description: 'Cole no seu aplicativo bancário.' });
       setTimeout(() => setCopiedPix(false), 2000);
@@ -327,7 +269,7 @@ export function ContribuicaoForm({
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
               <p className="font-semibold text-yellow-800 mb-1">⚠️ Aviso importante</p>
               <p className="text-yellow-700 leading-relaxed">
-                Este documento não possui validade fiscal. Sua contribuição será confirmada pelo departamento financeiro da Igreja da Promessa.
+                Este documento não possui validade fiscal. Sua contribuição será confirmada pelo departamento financeiro da {nomeIgreja}.
               </p>
             </div>
           </div>
@@ -338,9 +280,11 @@ export function ContribuicaoForm({
           <Button className="w-full" onClick={downloadComprovante}>
             📥 Baixar comprovante
           </Button>
-          <Button variant="outline" className="w-full border-green-500 text-green-700 hover:bg-green-50" onClick={enviarWhatsApp}>
-            💬 Enviar via WhatsApp
-          </Button>
+          {whatsapp && (
+            <Button variant="outline" className="w-full border-green-500 text-green-700 hover:bg-green-50" onClick={enviarWhatsApp}>
+              💬 Enviar via WhatsApp
+            </Button>
+          )}
           <Button variant="ghost" className="w-full" onClick={() => { setShowComprovante(false); setComprovanteData(null); }}>
             Fazer nova contribuição
           </Button>
@@ -568,65 +512,85 @@ export function ContribuicaoForm({
                     <h3 className="font-semibold text-foreground">Pagar via PIX</h3>
                   </div>
 
-                  <p className="text-sm text-muted-foreground">
-                    Abra o app do seu banco e escaneie o QR Code para contribuir via PIX.
-                  </p>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* QR Code */}
-                    <div className="flex flex-col items-center space-y-4">
-                      <div className="bg-white p-4 rounded-xl shadow-sm border">
-                        <QRCode value={pixPayload} size={180} level="M" />
-                      </div>
-                      {valorNumerico > 0 && (
-                        <p className="text-sm text-muted-foreground text-center">
-                          QR Code com valor de <span className="font-semibold text-foreground">R$ {valorNumerico.toFixed(2).replace('.', ',')}</span>
-                        </p>
-                      )}
+                  {loadingPixInfo ? (
+                    <div className="flex items-center justify-center py-8 text-muted-foreground">
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Carregando dados de PIX...
                     </div>
-
-                    {/* PIX Info */}
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <div className="p-1.5 rounded bg-primary/10">
-                          <QrCode className="w-4 h-4 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-muted-foreground">Chave PIX (E-mail)</p>
-                          <p className="text-sm font-medium text-foreground break-all">{PIX_DATA.chave}</p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={copyPixKey}
-                          className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10"
-                        >
-                          {copiedPix ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        </Button>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <div className="p-1.5 rounded bg-primary/10">
-                          <HandHeart className="w-4 h-4 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-xs text-muted-foreground">Recebedor</p>
-                          <p className="text-sm font-medium text-foreground leading-tight">{PIX_DATA.nomeCompleto}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <div className="p-1.5 rounded bg-primary/10">
-                          <Building2 className="w-4 h-4 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-xs text-muted-foreground">Banco</p>
-                          <p className="text-sm font-medium text-foreground">{PIX_DATA.banco}</p>
-                        </div>
-                      </div>
+                  ) : !pixInfo ? (
+                    <div className="flex items-start gap-3 bg-muted/50 border border-border rounded-lg p-4">
+                      <AlertCircle className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                      <p className="text-sm text-muted-foreground">
+                        Chave PIX não configurada para {nomeIgreja}. Fale com a administração da igreja ou escolha outra forma de pagamento.
+                      </p>
                     </div>
-                  </div>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Abra o app do seu banco e escaneie o QR Code para contribuir via PIX.
+                      </p>
+
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {/* QR Code */}
+                        <div className="flex flex-col items-center space-y-4">
+                          <div className="bg-white p-4 rounded-xl shadow-sm border">
+                            <QRCode value={pixPayload!} size={180} level="M" />
+                          </div>
+                          {valorNumerico > 0 && (
+                            <p className="text-sm text-muted-foreground text-center">
+                              QR Code com valor de <span className="font-semibold text-foreground">R$ {valorNumerico.toFixed(2).replace('.', ',')}</span>
+                            </p>
+                          )}
+                        </div>
+
+                        {/* PIX Info */}
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3">
+                            <div className="p-1.5 rounded bg-primary/10">
+                              <QrCode className="w-4 h-4 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-muted-foreground">Chave PIX</p>
+                              <p className="text-sm font-medium text-foreground break-all">{pixInfo.chave}</p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={copyPixKey}
+                              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10"
+                            >
+                              {copiedPix ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                            </Button>
+                          </div>
+
+                          {pixInfo.nome && (
+                            <div className="flex items-start gap-3">
+                              <div className="p-1.5 rounded bg-primary/10">
+                                <HandHeart className="w-4 h-4 text-primary" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-xs text-muted-foreground">Recebedor</p>
+                                <p className="text-sm font-medium text-foreground leading-tight">{pixInfo.nome}</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {pixInfo.banco && (
+                            <div className="flex items-start gap-3">
+                              <div className="p-1.5 rounded bg-primary/10">
+                                <Building2 className="w-4 h-4 text-primary" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-xs text-muted-foreground">Banco</p>
+                                <p className="text-sm font-medium text-foreground">{pixInfo.banco}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
