@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -93,7 +94,9 @@ function eventoStatusBadge(status: string) {
 
 export default function LeaderEscalas() {
   const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
-  const { user, profile } = useAuth();
+  const { user, profile, churchId: authChurchId } = useAuth();
+  const { churchId: slugChurchId } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const queryClient = useQueryClient();
 
   // Modal state — event-based escala creation/edit
@@ -242,6 +245,7 @@ export default function LeaderEscalas() {
           responsavel_id: profile?.id ?? null,
           status: isLider ? 'confirmado' : 'pendente',
           confirmado_em: isLider ? agora : null,
+          church_id: churchId,
         };
       });
 
@@ -300,6 +304,7 @@ export default function LeaderEscalas() {
         responsavel_id: profile?.id ?? null,
         status: isLider ? 'confirmado' : 'pendente',
         confirmado_em: isLider ? agora : null,
+        church_id: churchId,
       });
       if (error) throw error;
     },

@@ -9,9 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, HandHeart, CheckCircle2, QrCode, Copy, Check, Building2 } from 'lucide-react';
+import { Loader2, HandHeart, CheckCircle2, QrCode, Copy, Check, Building2, AlertCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import QRCode from 'react-qr-code';
+import { generatePixPayload } from '@/lib/pixPayload';
+import { usePixInfo } from '@/hooks/usePixInfo';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface ContribuicaoModalProps {
   open: boolean;
@@ -35,106 +38,26 @@ const TIPOS_CONTRIBUICAO = [
   { value: 'especial', label: 'Contribuição especial' },
 ];
 
-// PIX EMV Generator for Brazilian PIX standard (BACEN compliant)
-const PIX_DATA = {
-  chave: 'promessa.hortolandia@gmail.com',
-  nome: 'Conv Reg Paulista Adventist',
-  cidade: 'Hortolandia',
-  banco: 'Bradesco',
-  nomeCompleto: 'Convenção Regional Paulista das Igreja Adventista da Promessa',
-};
-
-// EMV TLV helper function
-function emvTLV(id: string, value: string): string {
-  const length = value.length.toString().padStart(2, '0');
-  return `${id}${length}${value}`;
-}
-
-// CRC16-CCITT-FALSE calculation (polynomial 0x1021)
-function calculateCRC16(payload: string): string {
-  const polynomial = 0x1021;
-  let crc = 0xFFFF;
-  
-  const bytes = new TextEncoder().encode(payload);
-  
-  for (let i = 0; i < bytes.length; i++) {
-    crc ^= bytes[i] << 8;
-    for (let j = 0; j < 8; j++) {
-      if ((crc & 0x8000) !== 0) {
-        crc = ((crc << 1) ^ polynomial) & 0xFFFF;
-      } else {
-        crc = (crc << 1) & 0xFFFF;
-      }
-    }
-  }
-  
-  return crc.toString(16).toUpperCase().padStart(4, '0');
-}
-
-function generatePixPayload(): string {
-  // ID 00 - Payload Format Indicator (required, value "01")
-  const payloadFormatIndicator = emvTLV('00', '01');
-  
-  // ID 26 - Merchant Account Information - PIX
-  // Sub-ID 00: GUI (globally unique identifier) - must be "br.gov.bcb.pix"
-  const gui = emvTLV('00', 'br.gov.bcb.pix');
-  // Sub-ID 01: Chave PIX (email)
-  const chavePix = emvTLV('01', PIX_DATA.chave);
-  const merchantAccountInfo = emvTLV('26', gui + chavePix);
-  
-  // ID 52 - Merchant Category Code (0000 for general)
-  const merchantCategoryCode = emvTLV('52', '0000');
-  
-  // ID 53 - Transaction Currency (986 = BRL)
-  const transactionCurrency = emvTLV('53', '986');
-  
-  // ID 58 - Country Code (BR)
-  const countryCode = emvTLV('58', 'BR');
-  
-  // ID 59 - Merchant Name (max 25 chars, uppercase, no accents)
-  const merchantName = emvTLV('59', PIX_DATA.nome.toUpperCase().substring(0, 25));
-  
-  // ID 60 - Merchant City (max 15 chars, uppercase, no accents)
-  const merchantCity = emvTLV('60', PIX_DATA.cidade.toUpperCase().substring(0, 15));
-  
-  // ID 62 - Additional Data Field Template
-  // Sub-ID 05: Reference Label (txid) - using *** for dynamic
-  const referenceLabel = emvTLV('05', '***');
-  const additionalDataField = emvTLV('62', referenceLabel);
-  
-  // Build payload without CRC
-  const payloadWithoutCRC = 
-    payloadFormatIndicator +
-    merchantAccountInfo +
-    merchantCategoryCode +
-    transactionCurrency +
-    countryCode +
-    merchantName +
-    merchantCity +
-    additionalDataField +
-    '6304'; // CRC placeholder (ID 63, length 04)
-  
-  // Calculate and append CRC16
-  const crc = calculateCRC16(payloadWithoutCRC);
-  
-  return payloadWithoutCRC + crc;
-}
-
 export function ContribuicaoModal({ open, onOpenChange, onSuccess }: ContribuicaoModalProps) {
   const { profile } = useAuth();
+  const { churchNome } = useIgrejaSlug();
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [contas, setContas] = useState<Conta[]>([]);
   const [copiedPix, setCopiedPix] = useState(false);
-  
+
   const [valor, setValor] = useState('');
   const [tipoContribuicao, setTipoContribuicao] = useState('');
   const [formaContribuicao, setFormaContribuicao] = useState('');
   const [data, setData] = useState(new Date().toISOString().split('T')[0]);
   const [observacao, setObservacao] = useState('');
-  
-  const pixPayload = generatePixPayload();
+
+  const { pixInfo, loading: loadingPixInfo } = usePixInfo();
+  const nomeIgreja = churchNome || 'a igreja';
+  const pixPayload = pixInfo
+    ? generatePixPayload({ chave: pixInfo.chave, nome: pixInfo.nome || nomeIgreja, cidade: 'BRASIL' })
+    : null;
 
   useEffect(() => {
     if (open) {
@@ -166,8 +89,9 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
   };
 
   const copyPixKey = async () => {
+    if (!pixInfo) return;
     try {
-      await navigator.clipboard.writeText(PIX_DATA.chave);
+      await navigator.clipboard.writeText(pixInfo.chave);
       setCopiedPix(true);
       toast.success('Chave PIX copiada!', { description: 'Cole no seu aplicativo bancário.' });
       setTimeout(() => setCopiedPix(false), 2000);
@@ -358,57 +282,77 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
           <QrCode className="w-5 h-5" />
           <span>Pagar via Pix</span>
         </div>
-        
-        <div className="space-y-3">
-          <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded bg-green-100">
-              <QrCode className="w-4 h-4 text-green-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-muted-foreground">Chave PIX (E-mail)</p>
-              <p className="text-sm font-medium text-foreground break-all">{PIX_DATA.chave}</p>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={copyPixKey}
-              className="h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
-            >
-              {copiedPix ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            </Button>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded bg-green-100">
-              <HandHeart className="w-4 h-4 text-green-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Recebedor</p>
-              <p className="text-sm font-medium text-foreground leading-tight">{PIX_DATA.nomeCompleto}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded bg-green-100">
-              <Building2 className="w-4 h-4 text-green-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Banco</p>
-              <p className="text-sm font-medium text-foreground">{PIX_DATA.banco}</p>
-            </div>
-          </div>
-        </div>
 
-        {/* QR Code */}
-        <div className="flex flex-col items-center pt-3 border-t border-green-100">
-          <div className="bg-white p-3 rounded-lg shadow-sm border">
-            <QRCode value={pixPayload} size={140} level="M" />
+        {loadingPixInfo ? (
+          <div className="flex items-center justify-center py-6 text-muted-foreground text-sm">
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Carregando dados de PIX...
           </div>
-          <p className="text-xs text-muted-foreground text-center mt-3 max-w-[200px]">
-            Abra o app do seu banco e use a opção Pix para escanear este QR Code.
-          </p>
-        </div>
+        ) : !pixInfo ? (
+          <div className="flex items-start gap-3 bg-muted/50 border border-border rounded-lg p-3">
+            <AlertCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-sm text-muted-foreground">
+              Chave PIX não configurada para {nomeIgreja}. Fale com a administração da igreja.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 rounded bg-green-100">
+                  <QrCode className="w-4 h-4 text-green-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground">Chave PIX</p>
+                  <p className="text-sm font-medium text-foreground break-all">{pixInfo.chave}</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={copyPixKey}
+                  className="h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+                >
+                  {copiedPix ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+
+              {pixInfo.nome && (
+                <div className="flex items-start gap-3">
+                  <div className="p-1.5 rounded bg-green-100">
+                    <HandHeart className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground">Recebedor</p>
+                    <p className="text-sm font-medium text-foreground leading-tight">{pixInfo.nome}</p>
+                  </div>
+                </div>
+              )}
+
+              {pixInfo.banco && (
+                <div className="flex items-start gap-3">
+                  <div className="p-1.5 rounded bg-green-100">
+                    <Building2 className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground">Banco</p>
+                    <p className="text-sm font-medium text-foreground">{pixInfo.banco}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* QR Code */}
+            <div className="flex flex-col items-center pt-3 border-t border-green-100">
+              <div className="bg-white p-3 rounded-lg shadow-sm border">
+                <QRCode value={pixPayload!} size={140} level="M" />
+              </div>
+              <p className="text-xs text-muted-foreground text-center mt-3 max-w-[200px]">
+                Abra o app do seu banco e use a opção Pix para escanear este QR Code.
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
