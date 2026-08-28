@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, MapPin, Clock, ChevronRight, Search, Home } from 'lucide-react';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface Base {
   id: string;
@@ -39,6 +40,7 @@ const isLotada = (membrosCount: number, capacidade: number | null) => {
 };
 
 export default function BasesPublic() {
+  const { p } = useIgrejaSlug();
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -117,7 +119,7 @@ export default function BasesPublic() {
               Nossas Bases são pequenos grupos onde você pode crescer na fé, fazer amizades e ser acompanhado de perto.
             </p>
             <Button asChild size="lg" className="bg-white text-promessa-700 hover:bg-white/90 shadow-lg">
-              <Link to="/sou-novo">Quero Participar</Link>
+              <Link to={p('/sou-novo')}>Quero Participar</Link>
             </Button>
           </div>
         </div>
@@ -182,7 +184,7 @@ export default function BasesPublic() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((base) => (
-              <Link key={base.id} to={`/bases/${base.id}`}>
+              <Link key={base.id} to={p(`/app/bases/${base.id}`)}>
                 <Card className="shadow-card border-0 hover:shadow-xl transition-all duration-300 h-full group">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">

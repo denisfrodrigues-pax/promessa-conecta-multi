@@ -2,8 +2,10 @@ import { InstitutionalHeader } from "@/components/layout/InstitutionalHeader";
 import { ChevronLeft, Target, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 
 export default function MissaoVisao() {
+  const { p } = useIgrejaSlug();
   return (
     <div className="min-h-screen bg-background">
       <InstitutionalHeader />
@@ -13,8 +15,8 @@ export default function MissaoVisao() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <Link 
-              to="/quem-somos"
+            <Link
+              to={p('/quem-somos')}
               className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 text-sm font-medium transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -64,7 +66,7 @@ export default function MissaoVisao() {
 
             <div className="mt-12 text-center">
               <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700">
-                <Link to="/quem-somos/historia">Conhecer nossa história</Link>
+                <Link to={p('/quem-somos/historia')}>Conhecer nossa história</Link>
               </Button>
             </div>
           </div>

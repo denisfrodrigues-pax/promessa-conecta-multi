@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -164,6 +165,7 @@ function EscalaDateBox({ dateStr, compact }: { dateStr: string; compact?: boolea
 
 export default function MinhasEscalas() {
   const { profile, roles } = useAuth();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
 
   const [escalas, setEscalas] = useState<Escala[]>([]);
@@ -320,13 +322,13 @@ export default function MinhasEscalas() {
               variant="default"
               size="sm"
               className="shadow-sm"
-              onClick={() => navigate('/app/voluntarios-do-dia')}
+              onClick={() => navigate(p('/app/voluntarios-do-dia'))}
             >
               <ClipboardCheck className="w-4 h-4 mr-1" />
               Escala do Dia
             </Button>
           )}
-          <Link to="/historico-escalas">
+          <Link to={p('/app/historico-escalas')}>
             <Button variant="outline" size="sm" className="shadow-sm">
               <History className="w-4 h-4 mr-1" />
               Histórico

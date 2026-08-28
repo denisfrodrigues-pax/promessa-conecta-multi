@@ -315,7 +315,7 @@ export default function SitePublicoIgreja() {
                 <h3 className="font-semibold text-xl mb-3">Seja um Voluntário</h3>
                 <p className="text-muted-foreground text-sm mb-6">Use seus dons para servir a Deus e às pessoas.</p>
                 <Button className="w-full" style={{ backgroundColor: cor1 }} asChild>
-                  <Link to="/seja-voluntario">Quero servir</Link>
+                  <Link to={`/i/${slug}/seja-voluntario`}>Quero servir</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -328,7 +328,7 @@ export default function SitePublicoIgreja() {
                 <h3 className="font-semibold text-xl mb-3">Sou Novo</h3>
                 <p className="text-muted-foreground text-sm mb-6">Cadastre-se e faça parte da nossa família.</p>
                 <Button className="w-full" style={{ backgroundColor: cor1 }} asChild>
-                  <Link to="/sou-novo">Cadastrar</Link>
+                  <Link to={`/i/${slug}/sou-novo`}>Cadastrar</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -347,7 +347,7 @@ export default function SitePublicoIgreja() {
             As contribuições são voluntárias e fazem parte da missão de servir a Deus e às pessoas.
           </p>
           <Button size="lg" className="bg-white hover:bg-white/90 shadow-lg" style={{ color: cor1 }} asChild>
-            <Link to="/contribuicoes" className="flex items-center gap-2">
+            <Link to={`/i/${slug}/contribuicoes`} className="flex items-center gap-2">
               <Heart className="w-5 h-5" /> Contribuir
             </Link>
           </Button>

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface Evento {
   id: string;
@@ -34,6 +35,7 @@ interface Evento {
 export default function MemberEventoDetalhes() {
   const { id } = useParams<{ id: string }>();
   const { profile } = useAuth();
+  const { p } = useIgrejaSlug();
   const [evento, setEvento] = useState<Evento | null>(null);
   const [loading, setLoading] = useState(true);
   const [inscrito, setInscrito] = useState(false);
@@ -166,7 +168,7 @@ export default function MemberEventoDetalhes() {
             <h2 className="text-xl font-display font-semibold mb-2">Evento não encontrado</h2>
             <p className="text-muted-foreground mb-6">Este evento pode ter sido removido ou o link está incorreto.</p>
             <Button asChild>
-              <Link to="/app/eventos">
+              <Link to={p('/app/eventos')}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar para Eventos
               </Link>

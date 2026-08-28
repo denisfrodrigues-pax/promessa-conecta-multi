@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, HandHeart } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ContribuicaoForm } from '@/components/contribuicao/ContribuicaoForm';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 export default function Contribuir() {
   const { profile } = useAuth();
+  const { p } = useIgrejaSlug();
 
   return (
     <div className="min-h-screen bg-background">
@@ -14,7 +16,7 @@ export default function Contribuir() {
         <div className="container max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             <Button asChild variant="ghost" size="icon">
-              <Link to="/app/contribuicoes">
+              <Link to={p('/app/contribuicoes')}>
                 <ArrowLeft className="w-5 h-5" />
               </Link>
             </Button>

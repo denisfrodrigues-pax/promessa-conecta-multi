@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 
 const blocos = [
   {
@@ -57,6 +58,7 @@ const modulos = [
 ];
 
 export default function TrilhaAmarServir() {
+  const { p } = useIgrejaSlug();
   const [formData, setFormData] = useState({
     nome: "",
     telefone: "",
@@ -348,7 +350,7 @@ export default function TrilhaAmarServir() {
                 <a href="#inscricao">Quero me inscrever</a>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-promessa-600 text-promessa-600 hover:bg-promessa-50">
-                <Link to="/contato">Tenho dúvidas</Link>
+                <Link to={p('/contato')}>Tenho dúvidas</Link>
               </Button>
             </div>
           </div>
