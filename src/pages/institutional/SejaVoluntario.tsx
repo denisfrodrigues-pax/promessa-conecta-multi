@@ -14,8 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 
 export default function SejaVoluntario() {
+  const { p } = useIgrejaSlug();
   const [ministerios, setMinisterios] = useState<{ id: string; nome: string }[]>([]);
   const [formData, setFormData] = useState({
     nome: "",
@@ -88,8 +90,8 @@ export default function SejaVoluntario() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <Link 
-              to="/"
+            <Link
+              to={p('/publico')}
               className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 text-sm font-medium transition-colors"
             >
               <Home className="w-4 h-4" />
@@ -213,7 +215,7 @@ export default function SejaVoluntario() {
             </Card>
 
             <p className="text-center text-muted-foreground mt-6 text-sm">
-              Recomendamos que você participe da <Link to="/trilha-amar-servir" className="text-promessa-600 hover:underline">Trilha Amar e Servir</Link> para conhecer melhor a igreja antes de começar a servir.
+              Recomendamos que você participe da <Link to={p('/trilha-amar-servir')} className="text-promessa-600 hover:underline">Trilha Amar e Servir</Link> para conhecer melhor a igreja antes de começar a servir.
             </p>
           </div>
         </div>

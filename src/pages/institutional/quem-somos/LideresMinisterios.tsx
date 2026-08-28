@@ -3,6 +3,7 @@ import { ChevronLeft, Users, Music, Heart, BookOpen, Baby, Video, Camera, Smile,
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 
 const ministerios = [
   {
@@ -62,6 +63,7 @@ const ministerios = [
 ];
 
 export default function LideresMinisterios() {
+  const { p } = useIgrejaSlug();
   return (
     <div className="min-h-screen bg-background">
       <InstitutionalHeader />
@@ -71,8 +73,8 @@ export default function LideresMinisterios() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <Link 
-              to="/quem-somos"
+            <Link
+              to={p('/quem-somos')}
               className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 text-sm font-medium transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -132,7 +134,7 @@ export default function LideresMinisterios() {
                   Use seus dons e talentos para servir a Deus e às pessoas. O primeiro passo é participar da nossa Trilha Amar e Servir.
                 </p>
                 <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700">
-                  <Link to="/trilha-amar-servir">Começar a Trilha</Link>
+                  <Link to={p('/trilha-amar-servir')}>Começar a Trilha</Link>
                 </Button>
               </div>
             </div>

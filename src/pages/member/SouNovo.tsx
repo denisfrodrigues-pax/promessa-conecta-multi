@@ -10,6 +10,7 @@ import { Heart, Users, Calendar, MessageCircle, ChevronRight, Sparkles, Clock, C
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 const RATE_LIMIT_KEY = 'visitor_form_submissions';
 const MAX_SUBMISSIONS_PER_HOUR = 3;
@@ -42,6 +43,7 @@ const recordSubmission = (): void => {
 
 export default function SouNovo() {
   const { isAdmin } = useAuth();
+  const { p } = useIgrejaSlug();
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -160,14 +162,14 @@ export default function SouNovo() {
       title: 'Encontre sua Base',
       description: 'Participe de uma base e desenvolva amizades significativas.',
       color: 'bg-primary/10 text-primary',
-      action: { label: 'Ver Bases', path: '/bases' },
+      action: { label: 'Ver Bases', path: p('/app/bases') },
     },
     {
       icon: Calendar,
       title: 'Participe dos Eventos',
       description: 'Venha nos conhecer melhor participando de nossos eventos e programações.',
       color: 'bg-church-gold/10 text-church-gold',
-      action: { label: 'Ver Eventos', path: '/eventos' },
+      action: { label: 'Ver Eventos', path: p('/app/eventos') },
     },
     {
       icon: MessageCircle,
@@ -181,7 +183,7 @@ export default function SouNovo() {
     <div className="pb-24 md:pb-6">
       {/* Back link */}
       <div className="container mx-auto px-4 pt-4">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6">
+        <Link to={p('/publico')} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6">
           ← Voltar ao início
         </Link>
       </div>
@@ -190,7 +192,7 @@ export default function SouNovo() {
       {isAdmin && (
         <div className="container mx-auto px-4 pb-2">
           <Button asChild variant="outline" size="sm" className="gap-2">
-            <Link to="/admin">
+            <Link to={p('/admin/dashboard')}>
               <ArrowLeft className="w-4 h-4" />
               Voltar ao Painel
             </Link>
@@ -385,7 +387,7 @@ export default function SouNovo() {
             Complete seu cadastro e faça parte da nossa comunidade
           </p>
           <Button asChild size="lg" className="h-12 px-8 shadow-lg">
-            <Link to="/perfil">Completar Meu Cadastro</Link>
+            <Link to={p('/app/perfil')}>Completar Meu Cadastro</Link>
           </Button>
         </section>
       </div>

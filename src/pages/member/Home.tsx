@@ -11,6 +11,7 @@ import { Calendar, Bell, Users, ChevronRight, Heart, MapPin, Clock, Sparkles, Ha
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ContribuicaoModal } from '@/components/contribuicao/ContribuicaoModal';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface Aviso {
   id: string;
@@ -29,6 +30,7 @@ interface Evento {
 
 export default function MemberHome() {
   const { profile, churchId } = useAuth();
+  const { p } = useIgrejaSlug();
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,10 +88,10 @@ export default function MemberHome() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="promessa" size="lg" className="bg-white text-promessa-700 hover:bg-white/90 font-semibold">
-                <Link to="/sou-novo">Sou Novo Aqui</Link>
+                <Link to={p('/sou-novo')}>Sou Novo Aqui</Link>
               </Button>
               <Button asChild size="lg" className="bg-white/10 text-white border border-white/30 hover:bg-white/20 font-semibold">
-                <Link to="/app/bases">Encontrar uma Base</Link>
+                <Link to={p('/app/bases')}>Encontrar uma Base</Link>
               </Button>
             </div>
           </div>
@@ -99,7 +101,7 @@ export default function MemberHome() {
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Quick Actions - Premium Cards */}
         <section className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Link to="/app/bases" className="group">
+          <Link to={p('/app/bases')} className="group">
             <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
                 <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
@@ -110,7 +112,7 @@ export default function MemberHome() {
               </CardContent>
             </Card>
           </Link>
-          <Link to="/app/eventos" className="group">
+          <Link to={p('/app/eventos')} className="group">
             <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
                 <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
@@ -121,7 +123,7 @@ export default function MemberHome() {
               </CardContent>
             </Card>
           </Link>
-          <Link to="/app/oracao" className="group">
+          <Link to={p('/app/oracao')} className="group">
             <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
                 <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
@@ -132,7 +134,7 @@ export default function MemberHome() {
               </CardContent>
             </Card>
           </Link>
-          <Link to="/app/avisos" className="group">
+          <Link to={p('/app/avisos')} className="group">
             <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full">
               <CardContent className="p-4 flex flex-col items-center text-center">
                 <div className="p-3 rounded-xl bg-neutral-100 text-promessa-700 mb-3 group-hover:bg-promessa-100 transition-colors">
@@ -161,7 +163,7 @@ export default function MemberHome() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-display font-bold">Últimos Avisos</h2>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/app/avisos">
+              <Link to={p('/app/avisos')}>
                 Ver todos <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
@@ -200,14 +202,14 @@ export default function MemberHome() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-display font-bold">Próximos Eventos</h2>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/app/eventos">
+              <Link to={p('/app/eventos')}>
                 Ver todos <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {eventos.map((evento) => (
-              <Link key={evento.id} to={`/app/eventos/${evento.id}`}>
+              <Link key={evento.id} to={p(`/app/eventos/${evento.id}`)}>
                 <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full overflow-hidden group">
                   <div className="aspect-video bg-gradient-to-br from-promessa-500 to-promessa-700 relative">
                     <div className="absolute inset-0 flex items-center justify-center">

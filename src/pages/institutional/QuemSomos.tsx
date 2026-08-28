@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 
 const hubCards = [
   {
@@ -51,6 +52,7 @@ const hubCards = [
 ];
 
 export default function QuemSomos() {
+  const { p } = useIgrejaSlug();
   return (
     <div className="min-h-screen bg-background">
       <InstitutionalHeader />
@@ -72,8 +74,8 @@ export default function QuemSomos() {
             <p className="text-base text-white/70 leading-relaxed mb-8 max-w-2xl mx-auto">
               Somos uma igreja cristã em Hortolândia, comprometida com uma fé bíblica, simples e vivida na prática, onde pessoas caminham juntas no relacionamento com Deus e com outras pessoas.
             </p>
-            <Link 
-              to="/quem-somos/historia"
+            <Link
+              to={p('/quem-somos/historia')}
               className="inline-flex items-center gap-2 bg-white text-promessa-700 font-semibold px-6 py-3 rounded-lg hover:bg-white/90 transition-colors duration-200"
             >
               Conheça nossa história
@@ -116,7 +118,7 @@ export default function QuemSomos() {
             
             <div className="text-center mt-8">
               <Button asChild variant="outline" className="border-promessa-600 text-promessa-600 hover:bg-promessa-50">
-                <Link to="/quem-somos/historia">Ver história completa</Link>
+                <Link to={p('/quem-somos/historia')}>Ver história completa</Link>
               </Button>
             </div>
           </div>
@@ -151,7 +153,7 @@ export default function QuemSomos() {
             
             <div className="text-center mt-8">
               <Button asChild variant="outline" className="border-promessa-600 text-promessa-600 hover:bg-promessa-50">
-                <Link to="/quem-somos/pastores">Conhecer os pastores</Link>
+                <Link to={p('/quem-somos/pastores')}>Conhecer os pastores</Link>
               </Button>
             </div>
           </div>
@@ -189,7 +191,7 @@ export default function QuemSomos() {
             </div>
             
             <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700 text-white">
-              <Link to="/sou-novo" className="flex items-center gap-2">
+              <Link to={p('/sou-novo')} className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
                 Quero conhecer a igreja
               </Link>
@@ -215,7 +217,7 @@ export default function QuemSomos() {
               {hubCards.map((card, index) => (
                 <Link
                   key={index}
-                  to={card.link}
+                  to={p(card.link)}
                   className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg hover:border-promessa-200 transition-all duration-300 group"
                 >
                   <div className="w-12 h-12 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
@@ -236,7 +238,7 @@ export default function QuemSomos() {
 
               {/* Trilha Amar e Servir - Card normal */}
               <Link
-                to="/trilha-amar-servir"
+                to={p('/trilha-amar-servir')}
                 className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg hover:border-promessa-200 transition-all duration-300 group"
               >
                 <div className="w-12 h-12 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
@@ -270,10 +272,10 @@ export default function QuemSomos() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700 text-white">
-                <Link to="/trilha-amar-servir">Começar a Trilha Amar e Servir</Link>
+                <Link to={p('/trilha-amar-servir')}>Começar a Trilha Amar e Servir</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-promessa-600 text-promessa-600 hover:bg-promessa-50">
-                <Link to="/contato">Fale Conosco</Link>
+                <Link to={p('/contato')}>Fale Conosco</Link>
               </Button>
             </div>
           </div>

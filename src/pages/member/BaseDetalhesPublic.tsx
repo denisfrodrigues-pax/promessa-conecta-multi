@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, MapPin, Clock, ArrowLeft, User, Info, AlertCircle } from 'lucide-react';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface Base {
   id: string;
@@ -32,6 +33,7 @@ const formatDiaHorario = (dia: string | null, horario: string | null) => {
 
 export default function BaseDetalhesPublic() {
   const { id } = useParams<{ id: string }>();
+  const { p } = useIgrejaSlug();
   const [base, setBase] = useState<Base | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -109,7 +111,7 @@ export default function BaseDetalhesPublic() {
               Esta base não existe ou não está mais disponível.
             </p>
             <Button asChild>
-              <Link to="/bases">Voltar para Bases</Link>
+              <Link to={p('/app/bases')}>Voltar para Bases</Link>
             </Button>
           </CardContent>
         </Card>
@@ -129,7 +131,7 @@ export default function BaseDetalhesPublic() {
             size="sm"
             className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 mb-4"
           >
-            <Link to="/bases">
+            <Link to={p('/app/bases')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar para Bases
             </Link>
@@ -260,7 +262,7 @@ export default function BaseDetalhesPublic() {
                   Entre em contato conosco para conhecer esta base e começar a participar.
                 </p>
                 <Button asChild className="w-full">
-                  <Link to="/sou-novo">Quero Participar</Link>
+                  <Link to={p('/sou-novo')}>Quero Participar</Link>
                 </Button>
               </CardContent>
             </Card>

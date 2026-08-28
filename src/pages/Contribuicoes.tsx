@@ -1,18 +1,20 @@
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { InstitutionalHeader } from '@/components/layout/InstitutionalHeader';
 import { ContribuicaoForm } from '@/components/contribuicao/ContribuicaoForm';
 
 export default function Contribuicoes() {
   const { user, profile } = useAuth();
+  const { p } = useIgrejaSlug();
   const [searchParams] = useSearchParams();
   const origem = searchParams.get('origem');
-  
+
   // Determine back URL based on auth state and origin
   const getBackUrl = () => {
-    if (!user) return '/';
-    if (origem === 'contribuicoes') return '/app/contribuicoes';
-    return '/app';
+    if (!user) return p('/publico');
+    if (origem === 'contribuicoes') return p('/app/contribuicoes');
+    return p('/app');
   };
   
   const backUrl = getBackUrl();

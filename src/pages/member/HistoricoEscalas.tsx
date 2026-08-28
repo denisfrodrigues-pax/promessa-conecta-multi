@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { parseLocalDate, getTodayString } from '@/lib/dateUtils';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface Escala {
   id: string;
@@ -21,6 +22,7 @@ interface Escala {
 
 export default function HistoricoEscalas() {
   const { profile } = useAuth();
+  const { p } = useIgrejaSlug();
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -92,7 +94,7 @@ export default function HistoricoEscalas() {
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
       <div className="mb-6">
-        <Link to="/app/escalas">
+        <Link to={p('/app/escalas')}>
           <Button variant="ghost" size="sm" className="mb-2">
             <ArrowLeft className="w-4 h-4 mr-1" />
             Voltar

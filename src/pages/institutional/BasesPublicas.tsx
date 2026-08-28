@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { FotoCapa } from "@/components/ui/foto-capa";
 import { Link } from "react-router-dom";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 
 interface Base {
   id: string;
@@ -34,6 +35,7 @@ interface Base {
 }
 
 export default function BasesPublicas() {
+  const { p } = useIgrejaSlug();
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBase, setSelectedBase] = useState<string>("");
@@ -168,7 +170,7 @@ export default function BasesPublicas() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <Link
-              to="/"
+              to={p('/publico')}
               className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 text-sm font-medium transition-colors"
             >
               <Home className="w-4 h-4" />

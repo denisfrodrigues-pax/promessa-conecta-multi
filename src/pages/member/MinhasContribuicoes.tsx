@@ -15,6 +15,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface Contribuicao {
   id: string;
@@ -35,6 +36,7 @@ const chartConfig = {
 
 export default function MinhasContribuicoes() {
   const { profile } = useAuth();
+  const { p } = useIgrejaSlug();
   const [contribuicoes, setContribuicoes] = useState<Contribuicao[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -129,7 +131,7 @@ export default function MinhasContribuicoes() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="icon">
-            <Link to="/app">
+            <Link to={p('/app')}>
               <ArrowLeft className="w-5 h-5" />
             </Link>
           </Button>
@@ -144,7 +146,7 @@ export default function MinhasContribuicoes() {
           asChild
           className="bg-green-600 hover:bg-green-700"
         >
-          <Link to="/app/contribuir">
+          <Link to={p('/app/contribuir')}>
             <HandHeart className="w-4 h-4 mr-2" />
             Contribuir
           </Link>
@@ -249,7 +251,7 @@ export default function MinhasContribuicoes() {
                   asChild
                   className="mt-2 bg-green-600 hover:bg-green-700"
                 >
-                  <Link to="/app/contribuir">
+                  <Link to={p('/app/contribuir')}>
                     Fazer primeira contribuição
                   </Link>
                 </Button>
