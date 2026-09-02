@@ -165,10 +165,11 @@ export default function FinanceiroRelatorio() {
         transacoes: transacoesList.length,
       });
 
-      // Buscar todas as categorias
+      // Buscar todas as categorias da igreja atual
       const { data: categoriasData } = await supabase
         .from("categorias_financeiras")
-        .select("id, nome, natureza");
+        .select("id, nome, natureza")
+        .eq("church_id", churchId!);
 
       const categorias = categoriasData || [];
 
