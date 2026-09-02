@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarioEscalas } from '@/components/calendario/CalendarioEscalas';
@@ -35,20 +36,22 @@ function statusLabel(s: string) {
 }
 
 export default function Calendario() {
+  const { churchId } = useAuth();
   const hoje = new Date();
   const [mes, setMes] = useState(hoje.getMonth() + 1);
   const [ano, setAno] = useState(hoje.getFullYear());
 
   const { data: calendarUrl } = useQuery({
-    queryKey: ['google_calendar_url'],
+    queryKey: ['google_calendar_url', churchId],
     queryFn: async () => {
       const { data } = await supabase
         .from('configuracoes_instituicao')
         .select('google_calendar_embed_url')
-        .limit(1)
+        .eq('church_id', churchId!)
         .maybeSingle();
       return (data as any)?.google_calendar_embed_url as string | null ?? null;
     },
+    enabled: !!churchId,
   });
 
   const { data: escalas = [], isLoading } = useMinhasEscalas(mes, ano);

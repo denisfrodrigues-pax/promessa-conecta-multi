@@ -248,14 +248,16 @@ export default function EscolaBiblica() {
   });
 
   const { data: disciplinas = [] } = useQuery<Disciplina[]>({
-    queryKey: ['eb_disciplinas'],
+    queryKey: ['eb_disciplinas', churchId],
     queryFn: async () => {
       const { data, error } = await supabase.from('eb_disciplinas')
         .select('id, ciclo_id, mes, eixo_tematico, titulo, subtitulo, ordem')
+        .eq('church_id', churchId!)
         .order('ordem');
       if (error) throw error;
       return data || [];
     },
+    enabled: !!churchId,
   });
 
   // Aulas globais para cálculo de stats
@@ -300,25 +302,29 @@ export default function EscolaBiblica() {
 
   // Matrículas com join explícito via FK hint (perfil_id → profiles.id)
   const { data: matriculas = [], isLoading: loadingMatriculas } = useQuery<Matricula[]>({
-    queryKey: ['eb_matriculas'],
+    queryKey: ['eb_matriculas', churchId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('eb_matriculas')
         .select('id, perfil_id, ciclo_id, ativo, profiles!eb_matriculas_perfil_id_fkey(id, nome)')
+        .eq('church_id', churchId!)
         .eq('ativo', true);
-      console.log('[eb_matriculas]', { count: data?.length, error }); // debug
       if (error) throw error;
       return (data || []) as Matricula[];
     },
+    enabled: !!churchId,
   });
 
   const { data: presencas = [] } = useQuery<Presenca[]>({
-    queryKey: ['eb_presencas'],
+    queryKey: ['eb_presencas', churchId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('eb_presencas').select('*');
+      const { data, error } = await supabase.from('eb_presencas')
+        .select('*')
+        .eq('church_id', churchId!);
       if (error) throw error;
       return data || [];
     },
+    enabled: !!churchId,
   });
 
   // profiles.id = perfil_id

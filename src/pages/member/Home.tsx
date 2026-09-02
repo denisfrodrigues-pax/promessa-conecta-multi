@@ -53,6 +53,7 @@ export default function MemberHome() {
         supabase
           .from('eventos')
           .select('*')
+          .eq('church_id', churchId ?? '')
           .gte('data_inicio', new Date().toISOString())
           .order('data_inicio', { ascending: true })
           .limit(3),

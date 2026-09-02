@@ -35,7 +35,7 @@ interface Base {
 }
 
 export default function BasesPublicas() {
-  const { p } = useIgrejaSlug();
+  const { p, churchId } = useIgrejaSlug();
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBase, setSelectedBase] = useState<string>("");
@@ -48,8 +48,8 @@ export default function BasesPublicas() {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    fetchBases();
-  }, []);
+    if (churchId) fetchBases();
+  }, [churchId]);
 
   const fetchBases = async () => {
     try {
@@ -75,6 +75,7 @@ export default function BasesPublicas() {
           )
         `,
         )
+        .eq("church_id", churchId)
         .eq("status", "ativo")
         .eq("visibilidade", "publico")
         .order("nome");

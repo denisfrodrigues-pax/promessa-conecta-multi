@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useChurchConfig } from '@/hooks/useChurchConfig';
+import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
 import { toast } from 'sonner';
 import { Search, Calendar, MapPin, Clock, Users, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -25,7 +25,7 @@ interface Evento {
 
 export default function MemberEventos() {
   const { profile } = useAuth();
-  const { config } = useChurchConfig();
+  const { config } = useIgrejaConfig();
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [inscricoes, setInscricoes] = useState<string[]>([]);
   const [inscricoesCount, setInscricoesCount] = useState<Record<string, number>>({});
@@ -119,7 +119,7 @@ export default function MemberEventos() {
   );
 
   const hasCustomLogo = config?.logo_url && !config.logo_url.includes('placeholder');
-  const churchName = config?.nome_igreja || 'Igreja da Promessa';
+  const churchName = config?.nome || 'Igreja';
 
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
