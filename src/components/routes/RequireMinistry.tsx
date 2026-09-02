@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -11,6 +12,7 @@ type Props = {
 
 export default function RequireMinistry({ slug, children }: Props) {
   const { roles, myMinistries, myMinistriesLoading, refreshMyMinistries } = useAuth();
+  const { p } = useIgrejaSlug();
 
   const isAdmin = roles?.includes("admin");
 
@@ -40,7 +42,7 @@ export default function RequireMinistry({ slug, children }: Props) {
 
   if (!hasAccess) {
     toast.error('Sem permissão', { description: 'Você não tem acesso a este módulo.' });
-    return <Navigate to="/voluntario" replace />;
+    return <Navigate to={p("/voluntario")} replace />;
   }
 
   return <>{children}</>;

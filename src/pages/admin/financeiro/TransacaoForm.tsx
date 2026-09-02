@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ export default function TransacaoForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const { p } = useIgrejaSlug();
   const isEditing = !!id;
 
   const [loading, setLoading] = useState(isEditing);
@@ -111,7 +113,7 @@ export default function TransacaoForm() {
       if (error) throw error;
       if (!data) {
         toast.error("Transação não encontrada");
-        navigate("/admin/financeiro/transacoes");
+        navigate(p('/admin/financeiro/transacoes'));
         return;
       }
       if (data) {
@@ -202,7 +204,7 @@ export default function TransacaoForm() {
       // Recalcular saldo da conta
       await supabase.rpc("recalcula_saldo_conta", { p_conta_id: contaId });
 
-      navigate("/admin/financeiro/transacoes");
+      navigate(p('/admin/financeiro/transacoes'));
     } catch (error) {
       console.error("Erro ao salvar transação:", error);
       toast.error("Erro ao salvar transação");
@@ -238,7 +240,7 @@ export default function TransacaoForm() {
       }
 
       toast.success("Transação cancelada!");
-      navigate("/admin/financeiro/transacoes");
+      navigate(p('/admin/financeiro/transacoes'));
     } catch (error) {
       console.error("Erro ao cancelar transação:", error);
       toast.error("Erro ao cancelar transação");

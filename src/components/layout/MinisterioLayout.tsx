@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { Outlet, Link, useParams, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Home, LogOut, Loader2 } from "lucide-react";
@@ -20,6 +21,7 @@ type PapelMinisterial = "admin" | "lider" | "voluntario" | null;
 const MinisterioLayout = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user, roles, loading, signOut } = useAuth();
+  const { p } = useIgrejaSlug();
   const { config } = useChurchConfig();
   const navigate = useNavigate();
 
@@ -95,7 +97,7 @@ const MinisterioLayout = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/auth");
+    navigate(p("/login"));
   };
 
   if (loading || loadingPage) {
@@ -106,12 +108,12 @@ const MinisterioLayout = () => {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
-  if (notFound) return <Navigate to="/voluntario" replace />;
+  if (!user) return <Navigate to={p("/login")} replace />;
+  if (notFound) return <Navigate to={p("/voluntario")} replace />;
 
   // 🔥 Se tiver apenas um módulo, redireciona automaticamente
   if (modulos.length === 1) {
-    return <Navigate to={`/ministerio/${slug}/${modulos[0].modulo_slug}`} replace />;
+    return <Navigate to={p(`/ministerio/${slug}/${modulos[0].modulo_slug}`)} replace />;
   }
 
   return (
@@ -125,7 +127,7 @@ const MinisterioLayout = () => {
 
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" asChild>
-              <Link to={roles.includes("lider") ? "/leader/hub" : "/voluntario"}>
+              <Link to={roles.includes("lider") ? p("/leader/hub") : p("/voluntario")}>
                 <Home className="w-4 h-4 mr-1" />
                 Hub
               </Link>

@@ -232,7 +232,7 @@ export default function LeaderBaseDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { profile, isLider, loading: authLoading } = useAuth();
-  const { churchNome } = useIgrejaSlug();
+  const { churchNome, p } = useIgrejaSlug();
 
   const [base, setBase] = useState<Base | null>(null);
   const [membrosBase, setMembrosBase] = useState<BaseMemberUnified[]>([]);
@@ -338,7 +338,7 @@ export default function LeaderBaseDetalhes() {
   // Redirect if not leader
   useEffect(() => {
     if (!authLoading && !isLider) {
-      navigate('/member');
+      navigate(p('/app'));
     }
   }, [authLoading, isLider, navigate]);
 
@@ -413,7 +413,7 @@ export default function LeaderBaseDetalhes() {
     // Verify the leader owns this base
     if (data && data.lider_id !== profile?.id) {
       toast.error('Você não tem permissão para acessar esta base');
-      navigate('/leader/bases');
+      navigate(p('/leader/bases'));
       return;
     }
 
@@ -599,7 +599,7 @@ export default function LeaderBaseDetalhes() {
         <p className="text-sm text-muted-foreground/70 mt-1">
           A base pode ter sido removida ou você não tem permissão para acessá-la.
         </p>
-        <Button variant="link" onClick={() => navigate('/leader/bases')} className="mt-4">
+        <Button variant="link" onClick={() => navigate(p('/leader/bases'))} className="mt-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar para Minhas Bases
         </Button>
@@ -617,11 +617,11 @@ export default function LeaderBaseDetalhes() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/lider">Início</BreadcrumbLink>
+            <BreadcrumbLink href={p('/leader/hub')}>Início</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/leader/bases">Minhas Bases</BreadcrumbLink>
+            <BreadcrumbLink href={p('/leader/bases')}>Minhas Bases</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -633,7 +633,7 @@ export default function LeaderBaseDetalhes() {
       {/* ===== HEADER ===== */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/leader/bases')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/leader/bases'))}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>

@@ -39,7 +39,7 @@ export default function Contribuir() {
       <main className="py-8">
         <ContribuicaoForm
           origem="app"
-          backUrl="/app/contribuicoes"
+          backUrl={p('/app/contribuicoes')}
           backLabel="Voltar para Contribuições"
           showHeader={false}
           profileId={profile?.id}

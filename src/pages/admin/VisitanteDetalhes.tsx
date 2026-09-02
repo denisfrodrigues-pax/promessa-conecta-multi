@@ -104,7 +104,7 @@ const isBaseLotada = (membrosCount: number, capacidade: number | null): boolean 
 export default function VisitanteDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { churchNome } = useIgrejaSlug();
+  const { churchNome, p } = useIgrejaSlug();
 
   // States
   const [visitante, setVisitante] = useState<Visitante | null>(null);
@@ -153,13 +153,13 @@ export default function VisitanteDetalhes() {
 
     if (error) {
       toast.error('Erro ao carregar visitante');
-      navigate('/admin/visitantes');
+      navigate(p('/admin/visitantes'));
       return;
     }
 
     if (!data) {
       toast.error('Visitante não encontrado');
-      navigate('/admin/visitantes');
+      navigate(p('/admin/visitantes'));
       return;
     }
 
@@ -282,7 +282,7 @@ export default function VisitanteDetalhes() {
     }
 
     toast.success('Visitante atualizado!');
-    navigate('/admin/visitantes');
+    navigate(p('/admin/visitantes'));
   };
 
   const handleStartAcompanhamento = async () => {
@@ -367,7 +367,7 @@ export default function VisitanteDetalhes() {
       {/* ===== HEADER ===== */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/visitantes')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/visitantes'))}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-3">
@@ -456,7 +456,7 @@ export default function VisitanteDetalhes() {
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => navigate('/admin/visitantes')}>
+            <Button variant="outline" onClick={() => navigate(p('/admin/visitantes'))}>
               Voltar
             </Button>
             <Button onClick={handleSave} disabled={saving}>
@@ -549,7 +549,7 @@ export default function VisitanteDetalhes() {
               <p className="text-sm text-blue-600">Transfira este visitante para o cadastro de membros</p>
             </div>
             <Button
-              onClick={() => navigate(`/admin/membros/novo?fromVisitante=${id}`)}
+              onClick={() => navigate(p(`/admin/membros/novo?fromVisitante=${id}`))}
               variant="outline"
               className="border-blue-300 text-blue-700 hover:bg-blue-100"
             >

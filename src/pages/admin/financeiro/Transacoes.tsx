@@ -67,7 +67,7 @@ const sanitizeSearch = (input: string): string => {
 
 export default function Transacoes() {
   const { churchId: authChurchId } = useAuth();
-  const { churchId: slugChurchId } = useIgrejaSlug();
+  const { churchId: slugChurchId, p } = useIgrejaSlug();
   const churchId = authChurchId ?? slugChurchId ?? null;
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -256,7 +256,7 @@ export default function Transacoes() {
             <Download className="h-4 w-4 mr-2" />
             Exportar CSV
           </Button>
-          <Button onClick={() => navigate("/admin/financeiro/transacoes/novo")}>
+          <Button onClick={() => navigate(p('/admin/financeiro/transacoes/novo'))}>
             <Plus className="h-4 w-4 mr-2" />
             Novo Lançamento
           </Button>
@@ -412,7 +412,7 @@ export default function Transacoes() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(`/admin/financeiro/transacoes/${t.id}`)}
+                          onClick={() => navigate(p(`/admin/financeiro/transacoes/${t.id}`))}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>

@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface Stats {
   total: number;
@@ -69,6 +70,7 @@ const exportReportCSV = (stats: Stats) => {
 
 export default function MembroRelatorio() {
   const navigate = useNavigate();
+  const { p } = useIgrejaSlug();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stats>({
     total: 0,
@@ -220,7 +222,7 @@ export default function MembroRelatorio() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/membros')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/membros'))}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>

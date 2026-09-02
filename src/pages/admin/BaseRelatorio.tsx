@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,7 @@ const exportToCSV = (bases: BaseResumo[]) => {
 
 export default function BaseRelatorio() {
   const navigate = useNavigate();
+  const { p } = useIgrejaSlug();
   const [loading, setLoading] = useState(true);
   const [bases, setBases] = useState<BaseResumo[]>([]);
   const [stats, setStats] = useState({
@@ -143,7 +145,7 @@ export default function BaseRelatorio() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/bases')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>

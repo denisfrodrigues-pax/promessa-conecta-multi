@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useNotifications, Notification, NotificationType } from '@/hooks/useNotifications';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Bell, Calendar, AlertCircle, CheckCircle, Clock, Check, Users, Megaphone, Trash2, Loader2 } from 'lucide-react';
@@ -17,6 +18,7 @@ const ESCALA_TIPOS: NotificationType[] = ['nova_escala', 'escala', 'lembrete'];
 
 export default function MemberNotificacoes() {
   const { notifications, loading, markAsRead, markAllAsRead, deleteNotification, unreadCount } = useNotifications();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -308,7 +310,7 @@ export default function MemberNotificacoes() {
                   className="w-full mt-2 border-promessa-300 text-promessa-700 hover:bg-promessa-50"
                   onClick={() => {
                     setIsDialogOpen(false);
-                    navigate(ministerioSlug ? `/volunteer/${ministerioSlug}` : '/app/escalas');
+                    navigate(p(ministerioSlug ? `/volunteer/${ministerioSlug}` : '/app/escalas'));
                   }}
                 >
                   <Calendar className="w-4 h-4 mr-2" />

@@ -55,7 +55,7 @@ interface TransacaoRecente {
 
 export default function FinanceiroDashboard() {
   const { churchId: authChurchId } = useAuth();
-  const { churchId: slugChurchId } = useIgrejaSlug();
+  const { churchId: slugChurchId, p } = useIgrejaSlug();
   const churchId = authChurchId ?? slugChurchId ?? null;
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -187,7 +187,7 @@ export default function FinanceiroDashboard() {
             Visão geral das finanças - {format(new Date(), "MMMM yyyy", { locale: ptBR })}
           </p>
         </div>
-        <Button onClick={() => navigate("/admin/financeiro/transacoes/novo")}>
+        <Button onClick={() => navigate(p('/admin/financeiro/transacoes/novo'))}>
           <Plus className="h-4 w-4 mr-2" />
           Novo Lançamento
         </Button>
@@ -283,7 +283,7 @@ export default function FinanceiroDashboard() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/admin/financeiro/transacoes")}
+              onClick={() => navigate(p('/admin/financeiro/transacoes'))}
             >
               Ver todos
             </Button>
@@ -299,7 +299,7 @@ export default function FinanceiroDashboard() {
                   <div
                     key={t.id}
                     className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
-                    onClick={() => navigate(`/admin/financeiro/transacoes/${t.id}`)}
+                    onClick={() => navigate(p(`/admin/financeiro/transacoes/${t.id}`))}
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -343,7 +343,7 @@ export default function FinanceiroDashboard() {
         <Button
           variant="outline"
           className="h-auto py-4 flex flex-col gap-2"
-          onClick={() => navigate("/admin/financeiro/transacoes")}
+          onClick={() => navigate(p('/admin/financeiro/transacoes'))}
         >
           <FileText className="h-5 w-5" />
           <span>Transações</span>
@@ -351,7 +351,7 @@ export default function FinanceiroDashboard() {
         <Button
           variant="outline"
           className="h-auto py-4 flex flex-col gap-2"
-          onClick={() => navigate("/admin/financeiro/contas")}
+          onClick={() => navigate(p('/admin/financeiro/contas'))}
         >
           <Wallet className="h-5 w-5" />
           <span>Contas</span>
@@ -359,7 +359,7 @@ export default function FinanceiroDashboard() {
         <Button
           variant="outline"
           className="h-auto py-4 flex flex-col gap-2"
-          onClick={() => navigate("/admin/financeiro/categorias")}
+          onClick={() => navigate(p('/admin/financeiro/categorias'))}
         >
           <DollarSign className="h-5 w-5" />
           <span>Categorias</span>
@@ -367,7 +367,7 @@ export default function FinanceiroDashboard() {
         <Button
           variant="outline"
           className="h-auto py-4 flex flex-col gap-2"
-          onClick={() => navigate("/admin/financeiro/relatorio")}
+          onClick={() => navigate(p('/admin/financeiro/relatorio'))}
         >
           <TrendingUp className="h-5 w-5" />
           <span>Relatório</span>

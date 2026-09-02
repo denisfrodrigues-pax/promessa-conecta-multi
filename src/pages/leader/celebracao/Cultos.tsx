@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, ChevronRight, ChevronDown, Loader2, Inbox, BookOpen } from 'lucide-react';
@@ -58,6 +59,7 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | '
 export default function Cultos() {
   const { ministerioId } = useOutletContext<OutletCtx>();
   const { slug } = useParams<{ slug: string }>();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const [periodosAbertos, setPeriodosAbertos] = useState<Set<string>>(new Set());
 
@@ -202,7 +204,7 @@ export default function Cultos() {
                         <Card
                           key={ev.id}
                           className="cursor-pointer hover:border-promessa-300 hover:shadow-md transition-all"
-                          onClick={() => navigate(`/leader/${slug}/cultos/${evento.id}`)}
+                          onClick={() => navigate(p(`/leader/${slug}/cultos/${evento.id}`))}
                         >
                           <CardContent className="p-4 flex items-center justify-between gap-4">
                             <div className="flex items-center gap-3 min-w-0">

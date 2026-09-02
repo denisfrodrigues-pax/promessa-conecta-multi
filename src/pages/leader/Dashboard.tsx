@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { useChurchConfig } from '@/hooks/useChurchConfig';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, ClipboardList, Calendar, ChevronRight, CheckCircle, Clock, CalendarDays } from 'lucide-react';
@@ -35,6 +36,7 @@ interface AgendaEvento {
 export default function LeaderDashboard() {
   const { ministerioId } = useOutletContext<{ ministerioId: string }>();
   const { slug } = useParams<{ slug: string }>();
+  const { p } = useIgrejaSlug();
   const { profile } = useAuth();
   const { config } = useChurchConfig();
   const [bases, setBases] = useState<Base[]>([]);
@@ -205,7 +207,7 @@ export default function LeaderDashboard() {
               <CardDescription>Bases que você lidera</CardDescription>
             </div>
             <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
-              <Link to={`/leader/${slug}/bases`}>
+              <Link to={p(`/leader/${slug}/bases`)}>
                 Ver todas <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
@@ -221,7 +223,7 @@ export default function LeaderDashboard() {
                 {bases.map((base) => (
                   <Link
                     key={base.id}
-                    to={`/leader/bases/${base.id}`}
+                    to={p(`/leader/${slug}/bases/${base.id}`)}
                     className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-200 cursor-pointer group"
                   >
                     <div>
@@ -248,7 +250,7 @@ export default function LeaderDashboard() {
               <CardDescription>Suas escalas de serviço</CardDescription>
             </div>
             <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
-              <Link to={`/leader/${slug}/escalas`}>
+              <Link to={p(`/leader/${slug}/escalas`)}>
                 Ver todas <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>

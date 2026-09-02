@@ -3,6 +3,7 @@ import { useOutletContext, useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,6 +42,7 @@ export default function Planos({ ministerioId: propMid }: { ministerioId?: strin
   const ministerioId = propMid ?? ctx?.ministerioId ?? '';
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const qc = useQueryClient();
 
@@ -90,7 +92,7 @@ export default function Planos({ ministerioId: propMid }: { ministerioId?: strin
       qc.invalidateQueries({ queryKey: ['mca_planos', ministerioId] });
       toast.success('Plano criado');
       setModal(false);
-      navigate(`/leader/${slug}/planos/${id}`);
+      navigate(p(`/leader/${slug}/planos/${id}`));
     },
     onError: () => toast.error('Erro ao criar plano'),
   });
@@ -150,25 +152,25 @@ export default function Planos({ ministerioId: propMid }: { ministerioId?: strin
         </Card>
       ) : (
         <div className="space-y-2">
-          {planos.map(p => (
-            <Card key={p.id} className="cursor-pointer hover:border-promessa-300 transition-colors"
-              onClick={() => navigate(`/leader/${slug}/planos/${p.id}`)}>
+          {planos.map(plano => (
+            <Card key={plano.id} className="cursor-pointer hover:border-promessa-300 transition-colors"
+              onClick={() => navigate(p(`/leader/${slug}/planos/${plano.id}`))}>
               <CardContent className="py-3 px-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
                     <BookOpen className="w-4 h-4 text-promessa-500 shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{p.titulo}</p>
+                      <p className="font-medium text-sm truncate">{plano.titulo}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="w-3 h-3" />
-                        {format(new Date(p.data_aula + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                        <Badge variant="outline" className="text-xs py-0">{p.mca_salas?.nome}</Badge>
+                        {format(new Date(plano.data_aula + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                        <Badge variant="outline" className="text-xs py-0">{plano.mca_salas?.nome}</Badge>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700"
-                      onClick={e => { e.stopPropagation(); setDeleteTarget(p); }}>
+                      onClick={e => { e.stopPropagation(); setDeleteTarget(plano); }}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />

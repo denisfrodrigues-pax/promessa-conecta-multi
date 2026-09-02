@@ -107,7 +107,7 @@ interface AdminEscalasProps {
 
 export default function AdminEscalas({ ministerioId: propMinisterioId, canManage = true }: AdminEscalasProps = {}) {
   const { profile, churchId: authChurchId } = useAuth();
-  const { churchId: slugChurchId } = useIgrejaSlug();
+  const { churchId: slugChurchId, p } = useIgrejaSlug();
   const churchId = authChurchId ?? slugChurchId ?? null;
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [escalaGroups, setEscalaGroups] = useState<EscalaGroup[]>([]);
@@ -895,7 +895,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
         <div className="flex gap-2 flex-wrap">
           {canManage && !propMinisterioId && (
             <Button asChild variant="outline">
-              <Link to="/admin/escalas/periodos">
+              <Link to={p('/admin/escalas/periodos')}>
                 <CalendarIcon className="w-4 h-4 mr-2" />
                 Períodos de Escala
               </Link>

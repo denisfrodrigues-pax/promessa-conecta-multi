@@ -3,6 +3,7 @@ import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -228,6 +229,7 @@ function SortableLiturgiaItem({ item, idx, total, onEdit, onMoveUp, onMoveDown, 
 export default function CultoDetalhe() {
   const { ministerioId, ministerioNome } = useOutletContext<OutletCtx>();
   const { slug, eventoId } = useParams<{ slug: string; eventoId: string }>();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const { user, profile, churchId } = useAuth();
   const queryClient = useQueryClient();
@@ -1010,7 +1012,7 @@ export default function CultoDetalhe() {
       {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/leader/${slug}/cultos`)}>
+          <Button variant="ghost" size="sm" onClick={() => navigate(p(`/leader/${slug}/cultos`))}>
             <ArrowLeft className="w-4 h-4 mr-1" />
             Voltar
           </Button>

@@ -124,7 +124,7 @@ const getOcupacaoPercent = (membrosCount: number, capacidade: number | null): nu
 export default function BaseDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { churchNome } = useIgrejaSlug();
+  const { churchNome, p } = useIgrejaSlug();
 
   const [base, setBase] = useState<Base | null>(null);
   const [membrosBase, setMembrosBase] = useState<BaseMembroUnificado[]>([]);
@@ -368,7 +368,7 @@ export default function BaseDetalhes() {
       }
 
       toast.success('Base excluída com sucesso!');
-      navigate('/admin/bases');
+      navigate(p('/admin/bases'));
     } catch (error: any) {
       toast.error('Erro ao excluir base: ' + error.message);
     } finally {
@@ -456,7 +456,7 @@ export default function BaseDetalhes() {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">Base não encontrada</p>
-        <Button variant="link" onClick={() => navigate('/admin/bases')}>Voltar para lista</Button>
+        <Button variant="link" onClick={() => navigate(p('/admin/bases'))}>Voltar para lista</Button>
       </div>
     );
   }
@@ -466,7 +466,7 @@ export default function BaseDetalhes() {
       {/* ===== HEADER ===== */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/bases')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">
