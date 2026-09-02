@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ContribuicaoModal } from './ContribuicaoModal';
 import { Link } from 'react-router-dom';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface UltimaContribuicao {
   valor: number;
@@ -16,6 +17,7 @@ interface UltimaContribuicao {
 
 export function ContribuicaoCard() {
   const { profile, isAdmin } = useAuth();
+  const { p } = useIgrejaSlug();
   const [modalOpen, setModalOpen] = useState(false);
   const [ultimaContribuicao, setUltimaContribuicao] = useState<UltimaContribuicao | null>(null);
 
@@ -87,7 +89,7 @@ export function ContribuicaoCard() {
             
             {isAdmin && (
               <Button asChild variant="outline" className="w-full border-green-200 hover:bg-green-50" size="sm">
-                <Link to="/admin/financeiro/transacoes">
+                <Link to={p('/admin/financeiro/transacoes')}>
                   Ver Relatórios Completos
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Link>

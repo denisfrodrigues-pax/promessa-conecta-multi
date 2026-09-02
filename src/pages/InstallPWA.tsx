@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/Logo';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Download, Smartphone, Monitor, CheckCircle, ArrowLeft, Share, MoreVertical } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -16,6 +17,7 @@ export default function InstallPWA() {
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const navigate = useNavigate();
+  const { p } = useIgrejaSlug();
 
   useEffect(() => {
     // Check if running as installed PWA
@@ -73,7 +75,7 @@ export default function InstallPWA() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate('/home')} className="w-full">
+            <Button onClick={() => navigate(p('/app'))} className="w-full">
               Ir para o App
             </Button>
           </CardContent>
@@ -257,7 +259,7 @@ export default function InstallPWA() {
 
         {/* Continue without installing */}
         <div className="text-center">
-          <Button variant="ghost" onClick={() => navigate('/auth')}>
+          <Button variant="ghost" onClick={() => navigate(p('/login'))}>
             Continuar no navegador
           </Button>
         </div>

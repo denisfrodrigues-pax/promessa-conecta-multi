@@ -66,7 +66,7 @@ export function UserAvatarMenu({ size = 'md', showName = false, className }: Use
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
-          onClick={() => navigate('/perfil')}
+          onClick={() => navigate(p('/app/perfil'))}
           className="cursor-pointer"
         >
           <User className="mr-2 h-4 w-4" />

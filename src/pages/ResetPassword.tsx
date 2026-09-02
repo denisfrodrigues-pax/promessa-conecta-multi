@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +29,7 @@ export default function ResetPassword() {
   const [isValidSession, setIsValidSession] = useState<boolean | null>(null);
   
   const navigate = useNavigate();
+  const { p } = useIgrejaSlug();
 
   useEffect(() => {
     // Check if we have a valid recovery session
@@ -101,7 +103,7 @@ export default function ResetPassword() {
         
         // Redirect after a short delay
         setTimeout(() => {
-          navigate('/auth');
+          navigate(p('/login'));
         }, 3000);
       }
     } catch (error) {
@@ -139,7 +141,7 @@ export default function ResetPassword() {
           <CardContent>
             <Button 
               className="w-full" 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate(p('/login'))}
             >
               Voltar para Login
             </Button>
@@ -166,7 +168,7 @@ export default function ResetPassword() {
           <CardContent>
             <Button 
               className="w-full" 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate(p('/login'))}
             >
               Ir para Login
             </Button>

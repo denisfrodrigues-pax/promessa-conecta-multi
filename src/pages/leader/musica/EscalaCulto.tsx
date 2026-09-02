@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, ChevronRight, ChevronDown, Music, Loader2, Inbox } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -54,6 +55,7 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | '
 export default function EscalaCulto() {
   const { ministerioId } = useOutletContext<OutletCtx>();
   const { slug } = useParams<{ slug: string }>();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const [periodosAbertos, setPeriodosAbertos] = useState<Set<string>>(new Set());
 
@@ -179,7 +181,7 @@ export default function EscalaCulto() {
                         <div
                           key={ev.id}
                           className="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer hover:bg-accent/30 transition-colors"
-                          onClick={() => navigate(`/leader/${slug}/escala-culto/${evento.id}`)}
+                          onClick={() => navigate(p(`/leader/${slug}/escala-culto/${evento.id}`))}
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-promessa-100 flex items-center justify-center">

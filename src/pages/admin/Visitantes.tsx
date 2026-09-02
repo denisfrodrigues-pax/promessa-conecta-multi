@@ -115,7 +115,7 @@ const exportToCSV = (data: Visitante[]) => {
 
 export default function Visitantes() {
   const { churchId } = useAuth();
-  const { churchNome } = useIgrejaSlug();
+  const { churchNome, p } = useIgrejaSlug();
   const [visitantes, setVisitantes] = useState<Visitante[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState<string>('ativos');
@@ -370,7 +370,7 @@ export default function Visitantes() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => navigate(`/admin/visitantes/${visitante.id}`)}
+                        onClick={() => navigate(p(`/admin/visitantes/${visitante.id}`))}
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         Ver Detalhes

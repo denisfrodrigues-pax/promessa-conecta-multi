@@ -186,7 +186,7 @@ export default function MemberEventoDetalhes() {
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
       {/* Back button */}
       <Button asChild variant="ghost" className="mb-6 -ml-2">
-        <Link to="/app/eventos">
+        <Link to={p('/app/eventos')}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
         </Link>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -140,6 +141,7 @@ function KPICard({
 export default function LeaderRelatorios() {
   const { ministerioId } = useOutletContext<{ ministerioId: string }>();
   const { user, profile, isLider, loading: authLoading } = useAuth();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState('30');
@@ -160,9 +162,9 @@ export default function LeaderRelatorios() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate(p('/login'));
     } else if (!authLoading && !isLider) {
-      navigate('/home');
+      navigate(p('/app'));
     }
   }, [user, authLoading, isLider, navigate]);
 

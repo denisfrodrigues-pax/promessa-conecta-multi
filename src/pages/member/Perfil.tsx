@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -312,6 +313,7 @@ interface MinisterialData {
 
 export default function MemberPerfil() {
   const { profile, signOut, user } = useAuth();
+  const { p } = useIgrejaSlug();
   const { config: igrejaConfig } = useIgrejaConfig();
   const cor1 = igrejaConfig?.cor_primaria ?? '#1a5c38';
   const cor2 = igrejaConfig?.cor_secundaria ?? '#2d8a57';
@@ -707,7 +709,7 @@ export default function MemberPerfil() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(
         profile.email,
-        { redirectTo: `${window.location.origin}/app/perfil` }
+        { redirectTo: `${window.location.origin}${p('/app/perfil')}` }
       );
       if (error) throw error;
       toast.success('Link de redefinição enviado para seu e-mail');

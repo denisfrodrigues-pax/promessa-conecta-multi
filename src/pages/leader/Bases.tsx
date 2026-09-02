@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -79,6 +80,8 @@ function EmptyState() {
 // ===== MAIN COMPONENT =====
 export default function LeaderBases() {
   const navigate = useNavigate();
+  const { slug } = useParams<{ slug: string }>();
+  const { p } = useIgrejaSlug();
   const { profile, isLider, loading: authLoading } = useAuth();
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +89,7 @@ export default function LeaderBases() {
   // Redirect if not leader
   useEffect(() => {
     if (!authLoading && !isLider) {
-      navigate('/member');
+      navigate(p('/app'));
     }
   }, [authLoading, isLider, navigate]);
 
@@ -333,7 +336,7 @@ export default function LeaderBases() {
                         variant="outline" 
                         size="sm" 
                         className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                        onClick={() => navigate(`/leader/bases/${base.id}`)}
+                        onClick={() => navigate(p(`/leader/${slug}/bases/${base.id}`))}
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         Ver Detalhes

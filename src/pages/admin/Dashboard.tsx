@@ -103,7 +103,7 @@ const statusLabels: Record<string, string> = {
 
 export default function AdminDashboard() {
   const { churchId: authChurchId } = useAuth();
-  const { churchId: slugChurchId } = useIgrejaSlug();
+  const { churchId: slugChurchId, p } = useIgrejaSlug();
   const churchId = authChurchId ?? slugChurchId ?? null;
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
@@ -497,7 +497,7 @@ export default function AdminDashboard() {
 
       {/* Incomplete profiles warning */}
       {!loading && membrosIncompletos > 0 && (
-        <Link to="/admin/membros" className="block">
+        <Link to={p('/admin/membros')} className="block">
           <div className="flex items-center gap-3 rounded-lg border border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-600 px-4 py-3 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors">
             <AlertTriangle className="w-5 h-5 shrink-0 text-yellow-500" />
             <p className="flex-1 text-sm text-yellow-800 dark:text-yellow-300">
@@ -520,7 +520,7 @@ export default function AdminDashboard() {
             <CardDescription>Escalas programadas</CardDescription>
           </div>
           <Button asChild variant="ghost" size="sm">
-            <Link to="/admin/escalas/periodos">Ver todos <ChevronRight className="w-4 h-4 ml-1" /></Link>
+            <Link to={p('/admin/escalas/periodos')}>Ver todos <ChevronRight className="w-4 h-4 ml-1" /></Link>
           </Button>
         </CardHeader>
         <CardContent>
@@ -650,7 +650,7 @@ export default function AdminDashboard() {
               <CardDescription>Cadastros mais recentes</CardDescription>
             </div>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/admin/visitantes">Ver todos</Link>
+              <Link to={p('/admin/visitantes')}>Ver todos</Link>
             </Button>
           </CardHeader>
           <CardContent>
@@ -695,7 +695,7 @@ export default function AdminDashboard() {
                       {statusLabels[visitante.status || 'novo']}
                     </Badge>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                      <Link to={`/admin/visitantes/${visitante.id}`}>
+                      <Link to={p(`/admin/visitantes/${visitante.id}`)}>
                         <ExternalLink className="w-4 h-4" />
                       </Link>
                     </Button>
@@ -714,7 +714,7 @@ export default function AdminDashboard() {
               <CardDescription>Atualizações mais recentes</CardDescription>
             </div>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/admin/acompanhamento">Ver todos</Link>
+              <Link to={p('/admin/acompanhamento')}>Ver todos</Link>
             </Button>
           </CardHeader>
           <CardContent>
@@ -745,7 +745,7 @@ export default function AdminDashboard() {
                       {statusLabels[acomp.status] || acomp.status}
                     </Badge>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                      <Link to="/admin/acompanhamento">
+                      <Link to={p('/admin/acompanhamento')}>
                         <ExternalLink className="w-4 h-4" />
                       </Link>
                     </Button>

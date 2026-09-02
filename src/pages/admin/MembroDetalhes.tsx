@@ -973,7 +973,7 @@ export default function MembroDetalhes() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => navigate('/admin/usuarios')}
+                      onClick={() => navigate(p('/admin/usuarios'))}
                       className="border-blue-300 text-blue-700 hover:bg-blue-100"
                     >
                       <User className="w-3 h-3 mr-1" />
@@ -1806,7 +1806,7 @@ export default function MembroDetalhes() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate('/admin/usuarios')}
+                  onClick={() => navigate(p('/admin/usuarios'))}
                 >
                   <User className="w-3 h-3 mr-1" />
                   Gerenciar usuário

@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +31,7 @@ interface MinisterioGrupo {
 export default function VoluntariosDoDia() {
   const navigate = useNavigate();
   const { user, profile, roles, loading: authLoading } = useAuth();
+  const { p } = useIgrejaSlug();
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [escalas, setEscalas] = useState<EscalaConfirmada[]>([]);
@@ -41,7 +43,7 @@ export default function VoluntariosDoDia() {
   useEffect(() => {
     if (!authLoading && !canAccess) {
       toast.error('Você não tem permissão para acessar esta página');
-      navigate('/app');
+      navigate(p('/app'));
     }
   }, [authLoading, canAccess, navigate]);
 

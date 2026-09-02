@@ -3,6 +3,7 @@ import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -100,6 +101,7 @@ function useDebounceLocal(value: string, delay: number) {
 export default function EscalaCultoDetalhe() {
   const { ministerioId } = useOutletContext<OutletCtx>();
   const { slug, eventoId } = useParams<{ slug: string; eventoId: string }>();
+  const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -366,7 +368,7 @@ export default function EscalaCultoDetalhe() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(`/leader/${slug}/escala-culto`)}
+          onClick={() => navigate(p(`/leader/${slug}/escala-culto`))}
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
           Voltar
