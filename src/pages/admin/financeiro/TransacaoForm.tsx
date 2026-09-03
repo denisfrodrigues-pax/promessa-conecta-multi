@@ -55,8 +55,9 @@ interface Evento {
 export default function TransacaoForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { profile } = useAuth();
-  const { p } = useIgrejaSlug();
+  const { profile, churchId: authChurchId } = useAuth();
+  const { churchId: slugChurchId, p } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const isEditing = !!id;
 
   const [loading, setLoading] = useState(isEditing);
@@ -82,15 +83,16 @@ export default function TransacaoForm() {
   const [nota, setNota] = useState<string>("");
 
   useEffect(() => {
+    if (!churchId) return;
     fetchOptions();
     if (isEditing) {
       fetchTransacao();
     }
-  }, [id]);
+  }, [id, churchId]);
 
   const fetchOptions = async () => {
     const [contasRes, categoriasRes, membrosRes, eventosRes] = await Promise.all([
-      supabase.from("contas_financeiras").select("id, nome").eq("status", "ativa").order("nome"),
+      supabase.from("contas_financeiras").select("id, nome").eq("status", "ativa").eq("church_id", churchId!).order("nome"),
       supabase.from("categorias_financeiras").select("id, nome, natureza").order("nome"),
       supabase.from("membros").select("id, nome").eq("status", "ativo").order("nome"),
       supabase.from("eventos").select("id, titulo").order("data_inicio", { ascending: false }).limit(50),
@@ -108,6 +110,7 @@ export default function TransacaoForm() {
         .from("transacoes_financeiras")
         .select("*")
         .eq("id", id)
+        .eq("church_id", churchId!)
         .maybeSingle();
 
       if (error) throw error;
@@ -160,6 +163,7 @@ export default function TransacaoForm() {
         status,
         nota: nota || null,
         criado_por: profile?.id || null,
+        church_id: churchId,
       };
 
       if (isEditing) {

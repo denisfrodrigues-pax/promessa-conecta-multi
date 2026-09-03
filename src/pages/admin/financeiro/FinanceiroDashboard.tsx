@@ -83,6 +83,7 @@ export default function FinanceiroDashboard() {
       const { data: transacoesMes } = await supabase
         .from("transacoes_financeiras")
         .select("tipo, valor")
+        .eq("church_id", churchId)
         .gte("data_operacao", inicioMes)
         .lte("data_operacao", fimMes)
         .eq("status", "confirmado");
@@ -94,7 +95,8 @@ export default function FinanceiroDashboard() {
       const { data: contas } = await supabase
         .from("contas_financeiras")
         .select("saldo, status")
-        .eq("status", "ativa");
+        .eq("status", "ativa")
+        .eq("church_id", churchId);
 
       const saldoGeral = contas?.reduce((acc, c) => acc + Number(c.saldo), 0) || 0;
       const contasAtivas = contas?.length || 0;
@@ -116,6 +118,7 @@ export default function FinanceiroDashboard() {
         const { data: transacoes } = await supabase
           .from("transacoes_financeiras")
           .select("tipo, valor")
+          .eq("church_id", churchId)
           .gte("data_operacao", inicio)
           .lte("data_operacao", fim)
           .eq("status", "confirmado");
@@ -143,6 +146,7 @@ export default function FinanceiroDashboard() {
           categoria:categorias_financeiras(nome),
           conta:contas_financeiras(nome)
         `)
+        .eq("church_id", churchId)
         .order("data_operacao", { ascending: false })
         .limit(5);
 

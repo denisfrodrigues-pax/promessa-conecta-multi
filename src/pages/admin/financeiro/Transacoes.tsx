@@ -102,6 +102,7 @@ export default function Transacoes() {
       .from("contas_financeiras")
       .select("id, nome")
       .eq("status", "ativa")
+      .eq("church_id", churchId)
       .order("nome");
     setContas(data || []);
   };
@@ -136,6 +137,7 @@ export default function Transacoes() {
         `,
           { count: "exact" }
         )
+        .eq("church_id", churchId)
         .order("data_operacao", { ascending: false })
         .range((page - 1) * limit, page * limit - 1);
 

@@ -41,8 +41,9 @@ const currentYear = new Date().getFullYear();
 const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
 export default function MinhasContribuicoes() {
-  const { profile } = useAuth();
-  const { p } = useIgrejaSlug();
+  const { profile, churchId: authChurchId } = useAuth();
+  const { churchId: slugChurchId, p } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const { config } = useIgrejaConfig();
   const [contribuicoes, setContribuicoes] = useState<Contribuicao[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,10 +52,10 @@ export default function MinhasContribuicoes() {
   const extratoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (profile?.id) {
+    if (profile?.id && churchId) {
       fetchContribuicoes();
     }
-  }, [profile?.id, selectedYear]);
+  }, [profile?.id, churchId, selectedYear]);
 
   const fetchContribuicoes = async () => {
     setLoading(true);
@@ -77,6 +78,7 @@ export default function MinhasContribuicoes() {
           status,
           categoria:categorias_financeiras(nome)
         `)
+        .eq('church_id', churchId ?? '')
         .eq('tipo', 'receita')
         .gte('data_operacao', `${selectedYear}-01-01`)
         .lte('data_operacao', `${selectedYear}-12-31`)

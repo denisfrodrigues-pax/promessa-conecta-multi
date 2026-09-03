@@ -163,10 +163,8 @@ export default function AdminDashboard() {
         membrosChartDataRes,
         alertsData,
         membrosIncompletosRes,
-        // Total arrecadado no mês — mesma lógica de admin/financeiro/FinanceiroDashboard.tsx.
-        // Atenção: transacoes_financeiras não tem church_id (nem contas_financeiras), então
-        // esta soma hoje é global à plataforma, não por igreja — limitação pré-existente,
-        // não introduzida aqui. Ver descrição da PR.
+        // Total arrecadado no mês — mesma lógica de admin/financeiro/FinanceiroDashboard.tsx,
+        // agora escopada por church_id.
         totalArrecadadoMesRes,
         // Aniversariantes da semana — mesmos campos de AniversariantesDoMes.tsx, mas
         // filtrando por semana em vez de mês (ver src/lib/birthdayWeek.ts).
@@ -255,6 +253,7 @@ export default function AdminDashboard() {
         supabase
           .from('transacoes_financeiras')
           .select('valor')
+          .eq('church_id', churchId)
           .eq('tipo', 'receita')
           .eq('status', 'confirmado')
           .gte('data_operacao', inicioMesStr)

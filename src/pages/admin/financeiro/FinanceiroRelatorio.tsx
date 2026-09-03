@@ -139,6 +139,7 @@ export default function FinanceiroRelatorio() {
           categoria:categorias_financeiras(nome),
           conta:contas_financeiras(nome)
         `)
+        .eq("church_id", churchId!)
         .gte("data_operacao", dataInicio)
         .lte("data_operacao", dataFim)
         .eq("status", "confirmado")

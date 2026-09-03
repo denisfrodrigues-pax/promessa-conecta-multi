@@ -28,6 +28,7 @@ import {
 import QRCode from 'react-qr-code';
 import { generatePixPayload } from '@/lib/pixPayload';
 import { usePixInfo } from '@/hooks/usePixInfo';
+import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { getWhatsAppUrl } from '@/lib/formatters';
 
@@ -73,7 +74,9 @@ export function ContribuicaoForm({
   const comprovanteRef = useRef<HTMLDivElement>(null);
 
   const { pixInfo, whatsapp, loading: loadingPixInfo } = usePixInfo();
-  const { churchNome } = useIgrejaSlug();
+  const { churchId: authChurchId } = useAuth();
+  const { churchId: slugChurchId, churchNome } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const nomeIgreja = churchNome || 'a igreja';
 
   const formaLabel: Record<string, string> = {
@@ -150,7 +153,7 @@ export function ContribuicaoForm({
 
     try {
       const [{ data: contas }, { data: membro }] = await Promise.all([
-        supabase.from('contas_financeiras').select('id').eq('status', 'ativa').limit(1),
+        supabase.from('contas_financeiras').select('id').eq('status', 'ativa').eq('church_id', churchId ?? '').limit(1),
         profileId
           ? supabase.from('membros').select('id').eq('user_id', profileId).maybeSingle()
           : Promise.resolve({ data: null as { id: string } | null }),
@@ -177,6 +180,7 @@ export function ContribuicaoForm({
         criado_por: profileId || null,
         membro_id: membro?.id || null,
         referencia: email || profileEmail || null,
+        church_id: churchId,
       });
 
       if (error) throw error;

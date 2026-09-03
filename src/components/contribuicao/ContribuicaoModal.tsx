@@ -39,8 +39,9 @@ const TIPOS_CONTRIBUICAO = [
 ];
 
 export function ContribuicaoModal({ open, onOpenChange, onSuccess }: ContribuicaoModalProps) {
-  const { profile } = useAuth();
-  const { churchNome } = useIgrejaSlug();
+  const { profile, churchId: authChurchId } = useAuth();
+  const { churchId: slugChurchId, churchNome } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -72,6 +73,7 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
         .from('contas_financeiras')
         .select('id, nome')
         .eq('status', 'ativa')
+        .eq('church_id', churchId ?? '')
         .limit(1);
 
       if (contasRes.data) setContas(contasRes.data);
@@ -126,6 +128,7 @@ export function ContribuicaoModal({ open, onOpenChange, onSuccess }: Contribuica
         nota: formaContribuicao,
         criado_por: profile?.id,
         status: 'pendente',
+        church_id: churchId,
       });
 
       if (error) throw error;

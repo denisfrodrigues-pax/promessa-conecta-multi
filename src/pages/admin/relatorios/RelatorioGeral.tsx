@@ -95,6 +95,7 @@ export default function RelatorioGeral() {
         supabase
           .from("transacoes_financeiras")
           .select("tipo, valor")
+          .eq("church_id", churchId)
           .gte("data_operacao", format(inicioMes, "yyyy-MM-dd"))
           .lte("data_operacao", format(fimMes, "yyyy-MM-dd"))
           .eq("status", "confirmado"),
@@ -189,6 +190,7 @@ export default function RelatorioGeral() {
       const { data } = await supabase
         .from("transacoes_financeiras")
         .select("tipo, valor")
+        .eq("church_id", churchId!)
         .gte("data_operacao", format(startOfMonth(mes), "yyyy-MM-dd"))
         .lte("data_operacao", format(endOfMonth(mes), "yyyy-MM-dd"))
         .eq("status", "confirmado");

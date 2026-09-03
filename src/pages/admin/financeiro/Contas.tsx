@@ -70,6 +70,7 @@ export default function Contas() {
       const { data, error } = await supabase
         .from("contas_financeiras")
         .select("*")
+        .eq("church_id", churchId!)
         .order("nome");
 
       if (error) throw error;
@@ -125,7 +126,7 @@ export default function Contas() {
         if (error) throw error;
         toast.success("Conta atualizada!");
       } else {
-        const { error } = await supabase.from("contas_financeiras").insert(payload);
+        const { error } = await supabase.from("contas_financeiras").insert({ ...payload, church_id: churchId });
 
         if (error) throw error;
         toast.success("Conta criada!");
