@@ -13,6 +13,7 @@ import {
   Loader2, Church, MapPin, Clock, ChevronRight, ChevronLeft,
   CheckCircle, Copy, ExternalLink, Users, DollarSign, BookOpen, Calendar,
 } from 'lucide-react';
+import { DIAS_SEMANA as CULTO_DIAS_SEMANA } from '@/components/CultoBlocks';
 
 const DIAS_SEMANA = [
   'Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira',
@@ -101,6 +102,19 @@ export default function Onboarding() {
         versiculo: formLocal.versiculo.trim() || null,
         plano: 'teste',
         ativo: true,
+        // Culto principal já coletado no passo 3 — grava direto em
+        // cultos_config em vez de deixar a coluna no default '{}' (que
+        // travava a aba Cultos antes da guarda em CultoBlocks.tsx).
+        // escola_biblica/pequenos_grupos ficam ausentes: não são
+        // coletados aqui, e normalizeCultosConfig() preenche com os
+        // defaults quando a tela de Configuração carrega.
+        cultos_config: {
+          culto_principal: {
+            ativo: true,
+            dia: CULTO_DIAS_SEMANA[formCulto.dia_semana]?.value ?? 'sabado',
+            horario: formCulto.horario_inicio,
+          },
+        } as any,
       })
       .select('id')
       .single();
