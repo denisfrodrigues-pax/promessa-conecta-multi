@@ -57,7 +57,7 @@ export default function AppHome() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">
-                Olá, <span style={{ color: 'var(--color-primary)' }}>{firstName}</span>!
+                Olá, <span style={{ color: 'hsl(var(--promessa-primary-dark))' }}>{firstName}</span>!
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Você faz parte dessa missão. Bem-vindo(a), {nomeIgreja}.

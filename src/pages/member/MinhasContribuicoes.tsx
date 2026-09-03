@@ -48,7 +48,16 @@ export default function MinhasContribuicoes() {
 
   const fetchContribuicoes = async () => {
     try {
-      const { data, error } = await supabase
+      // Uma contribuição pode ter sido lançada pelo próprio membro (criado_por)
+      // ou por um admin em nome dele (membro_id) — ver o registro do membro
+      // vinculado ao perfil logado para cobrir os dois casos.
+      const { data: membro } = await supabase
+        .from('membros')
+        .select('id')
+        .eq('user_id', profile?.id)
+        .maybeSingle();
+
+      let query = supabase
         .from('transacoes_financeiras')
         .select(`
           id,
@@ -57,9 +66,14 @@ export default function MinhasContribuicoes() {
           status,
           categoria:categorias_financeiras(nome)
         `)
-        .eq('criado_por', profile?.id)
         .eq('tipo', 'receita')
         .order('data_operacao', { ascending: false });
+
+      query = membro?.id
+        ? query.or(`criado_por.eq.${profile?.id},membro_id.eq.${membro.id}`)
+        : query.eq('criado_por', profile?.id);
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setContribuicoes(data || []);

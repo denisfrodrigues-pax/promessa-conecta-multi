@@ -149,11 +149,12 @@ export function ContribuicaoForm({
     setLoading(true);
 
     try {
-      const { data: contas } = await supabase
-        .from('contas_financeiras')
-        .select('id')
-        .eq('status', 'ativa')
-        .limit(1);
+      const [{ data: contas }, { data: membro }] = await Promise.all([
+        supabase.from('contas_financeiras').select('id').eq('status', 'ativa').limit(1),
+        profileId
+          ? supabase.from('membros').select('id').eq('user_id', profileId).maybeSingle()
+          : Promise.resolve({ data: null as { id: string } | null }),
+      ]);
 
       // Build description with origin tracking
       const origemLabel = origem === 'app' ? 'app' : 'site';
@@ -174,6 +175,7 @@ export function ContribuicaoForm({
         nota: formaPagamento,
         status: 'pendente',
         criado_por: profileId || null,
+        membro_id: membro?.id || null,
         referencia: email || profileEmail || null,
       });
 

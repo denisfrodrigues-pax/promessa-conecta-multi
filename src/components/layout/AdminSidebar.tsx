@@ -168,7 +168,7 @@ export default function AdminSidebar() {
   const hasCustomLogo = config?.logo_url && !config.logo_url.includes('placeholder');
   const churchName = config?.nome || 'Igreja';
 
-  const activeBase = 'border-l-2 border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)] font-medium';
+  const activeBase = 'border-l-2 border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10 text-[color:hsl(var(--promessa-primary-dark))] font-medium';
   const inactiveBase = 'text-gray-600 hover:bg-gray-100 hover:text-gray-900';
 
   return (
@@ -237,7 +237,7 @@ export default function AdminSidebar() {
                         key={subItem.path}
                         to={subItem.path}
                         className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all duration-150 text-sm"
-                        activeClassName="bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)] font-medium"
+                        activeClassName="bg-[color:var(--color-primary)]/10 text-[color:hsl(var(--promessa-primary-dark))] font-medium"
                       >
                         <subItem.icon className="w-3.5 h-3.5" />
                         <span>{subItem.label}</span>

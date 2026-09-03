@@ -12,18 +12,6 @@ interface WhatsAppRequest {
   template_id?: string;
 }
 
-interface WhatsAppResponse {
-  success: boolean;
-  message_id?: string;
-  error?: string;
-  details?: {
-    phone_number: string;
-    message_body: string;
-    template_id?: string;
-    sent_at: string;
-  };
-}
-
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -96,12 +84,6 @@ serve(async (req) => {
 
     console.log(`[WhatsApp] User ${userId} authorized with roles:`, userRoles?.map(r => r.role));
 
-    // Get the API key from environment
-    const apiKey = Deno.env.get('WHATSAPP_API_KEY');
-    
-    // Log API key status (don't log actual key!)
-    console.log(`[WhatsApp] API Key configured: ${apiKey ? 'Yes' : 'No (using simulation mode)'}`);
-
     // Parse request body
     const body: WhatsAppRequest = await req.json();
     const { phone_number, message_body, template_id } = body;
@@ -110,9 +92,9 @@ serve(async (req) => {
     if (!phone_number || !message_body) {
       console.error('[WhatsApp] Missing required fields:', { phone_number: !!phone_number, message_body: !!message_body });
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Missing required fields: phone_number and message_body are required' 
+        JSON.stringify({
+          success: false,
+          error: 'Missing required fields: phone_number and message_body are required'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -124,9 +106,9 @@ serve(async (req) => {
     if (!phoneRegex.test(cleanPhone)) {
       console.error('[WhatsApp] Invalid phone number format:', cleanPhone);
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Invalid phone number format. Use international format (e.g., +5511999999999)' 
+        JSON.stringify({
+          success: false,
+          error: 'Invalid phone number format. Use international format (e.g., +5511999999999)'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -136,65 +118,36 @@ serve(async (req) => {
     if (message_body.length > 4096) {
       console.error('[WhatsApp] Message too long:', message_body.length);
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Message body exceeds maximum length of 4096 characters' 
+        JSON.stringify({
+          success: false,
+          error: 'Message body exceeds maximum length of 4096 characters'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Generate message ID and timestamp
-    const messageId = `whatsapp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    const sentAt = new Date().toISOString();
-
-    // If no API key, return success with simulation status (WhatsApp disabled)
-    if (!apiKey) {
-      console.log('[WhatsApp] ⚠️ WHATSAPP_API_KEY not configured - returning simulated success');
-      console.log('[WhatsApp] Details:', {
-        message_id: messageId,
-        phone_number: cleanPhone,
-        message_preview: message_body.substring(0, 100) + (message_body.length > 100 ? '...' : ''),
-        template_id: template_id || 'none',
-        sent_at: sentAt,
-        status: 'simulacao_desativada',
-        user_id: userId
-      });
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message_id: messageId,
-          status: 'simulacao_desativada',
-          details: {
-            phone_number: cleanPhone,
-            message_body: message_body,
-            template_id: template_id,
-            sent_at: sentAt
-          }
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Simulate API call delay (200-500ms) - only if API key is present
-    const delay = Math.floor(Math.random() * 300) + 200;
-    await new Promise(resolve => setTimeout(resolve, delay));
-
-    // Log the simulated message send
-    console.log('[WhatsApp] ✅ Message sent successfully (SIMULATION)');
-    console.log('[WhatsApp] Details:', {
-      message_id: messageId,
+    // No provider is wired up yet — the real API call (e.g. Twilio) below is
+    // still commented out pending a WhatsApp Business account. Until it's
+    // implemented, fail honestly instead of pretending a message was sent, so
+    // callers don't log a false "sucesso" into historico_comunicacoes.
+    console.log('[WhatsApp] ⚠️ Integração de WhatsApp não implementada — recusando simular sucesso', {
       phone_number: cleanPhone,
-      message_preview: message_body.substring(0, 100) + (message_body.length > 100 ? '...' : ''),
       template_id: template_id || 'none',
-      sent_at: sentAt,
-      api_latency_ms: delay,
-      user_id: userId
+      user_id: userId,
     });
 
-    // If we had real credentials, we would call the actual API here:
-    // 
+    return new Response(
+      JSON.stringify({
+        success: false,
+        status: 'nao_configurado',
+        error: 'Envio de WhatsApp ainda não está configurado. A integração com o provedor será adicionada em uma etapa futura.',
+      }),
+      { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+    // Quando a integração real for implementada, o fluxo passa a ser algo como:
+    //
+    // const apiKey = Deno.env.get('WHATSAPP_API_KEY');
     // const response = await fetch('https://api.twilio.com/...', {
     //   method: 'POST',
     //   headers: {
@@ -208,29 +161,13 @@ serve(async (req) => {
     //   })
     // });
 
-    const response: WhatsAppResponse = {
-      success: true,
-      message_id: messageId,
-      details: {
-        phone_number: cleanPhone,
-        message_body: message_body,
-        template_id: template_id,
-        sent_at: sentAt
-      }
-    };
-
-    return new Response(
-      JSON.stringify(response),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
   } catch (error) {
     console.error('[WhatsApp] ❌ Error processing request:', error);
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Internal server error' 
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error'
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
