@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -30,6 +31,7 @@ const statusColors: Record<string, string> = {
 
 export default function RelatorioVisitantes() {
   const { churchId } = useAuth();
+  const { churchNome } = useIgrejaSlug();
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);
@@ -267,7 +269,7 @@ export default function RelatorioVisitantes() {
                       <div className="flex items-center gap-2">
                         {v.telefone ? formatPhoneBR(v.telefone) : '–'}
                         {hasValidPhone(v.telefone) && (
-                          <button onClick={() => window.open(getWhatsAppUrl(v.telefone), '_blank')} className="text-green-600">
+                          <button onClick={() => window.open(getWhatsAppUrl(v.telefone, `Olá! Sou da ${churchNome || 'nossa Igreja'}.`), '_blank')} className="text-green-600">
                             <MessageCircle className="w-4 h-4" />
                           </button>
                         )}

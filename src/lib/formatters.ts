@@ -38,6 +38,6 @@ export const hasValidPhone = (phone: string | null): boolean => {
 // Generate WhatsApp URL
 export const getWhatsAppUrl = (phone: string | null, message?: string): string => {
   const cleaned = cleanPhone(phone);
-  const msg = encodeURIComponent(message || 'Olá! Sou da Igreja da Promessa. Estou entrando em contato :)');
+  const msg = encodeURIComponent(message || 'Olá! Estou entrando em contato :)');
   return `https://wa.me/55${cleaned}?text=${msg}`;
 };

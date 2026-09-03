@@ -2,7 +2,6 @@ import { InstitutionalHeader } from "@/components/layout/InstitutionalHeader";
 import { ChevronLeft, UserCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import familiaPastoral from "@/assets/familia-pastoral.png";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 
 export default function Pastores() {
@@ -40,36 +39,14 @@ export default function Pastores() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-muted/30 rounded-2xl p-6 lg:p-10 border border-border/50">
-              {/* Foto da Família Pastoral */}
-              <div className="w-64 h-64 lg:w-80 lg:h-80 mx-auto mb-8 overflow-hidden rounded-2xl shadow-lg">
-                <img 
-                  src={familiaPastoral} 
-                  alt="Família Pastoral - Denis, Fran, Arthur e Heitor"
-                  className="w-full h-full object-cover"
-                />
+            <div className="bg-muted/30 rounded-2xl p-6 lg:p-10 border border-border/50 text-center">
+              <div className="w-24 h-24 lg:w-28 lg:h-28 mx-auto mb-8 rounded-full bg-promessa-100 flex items-center justify-center">
+                <UserCircle className="w-14 h-14 text-promessa-500" />
               </div>
 
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-foreground mb-2">Denis e Fran</h2>
-                <p className="text-promessa-600 font-medium">Pastores</p>
-              </div>
-
-              <p className="text-muted-foreground text-lg leading-relaxed text-center mb-8 max-w-2xl mx-auto">
-                Denis e Fran pastoreiam a igreja com foco em pessoas, discipulado e uma fé vivida no cotidiano, buscando formar discípulos que reflitam o caráter de Cristo em todas as áreas da vida.
+              <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl mx-auto">
+                Nossa equipe pastoral está comprometida com o cuidado das pessoas, o discipulado e o crescimento espiritual da igreja. Em breve, mais informações sobre nossa liderança.
               </p>
-
-              <div className="bg-white rounded-xl p-6 border border-border/50">
-                <h3 className="font-bold text-foreground mb-4 text-center text-lg">Formação</h3>
-                <div className="space-y-4 text-muted-foreground">
-                  <p>
-                    <strong className="text-foreground">Denis</strong> é bacharel em Teologia, formado em Administração de Empresas e pós-graduado em Plantação e Revitalização de Igrejas.
-                  </p>
-                  <p>
-                    <strong className="text-foreground">Fran</strong> é bacharel em Teologia, licenciada em Matemática, possui MBA em Finanças e Controladoria e pós-graduação em Plantação e Revitalização de Igrejas.
-                  </p>
-                </div>
-              </div>
             </div>
 
             <div className="mt-12 text-center">

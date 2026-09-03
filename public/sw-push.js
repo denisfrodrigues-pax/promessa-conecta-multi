@@ -8,7 +8,7 @@ self.addEventListener('push', function(event) {
   console.log('[Service Worker] Push received:', event);
   
   let data = {
-    title: 'Igreja da Promessa',
+    title: 'Rede Conect',
     body: 'Você tem uma nova notificação',
     icon: '/pwa-192x192.png',
     badge: '/pwa-192x192.png',

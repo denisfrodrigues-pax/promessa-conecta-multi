@@ -6,7 +6,7 @@ import { ContribuicaoForm } from '@/components/contribuicao/ContribuicaoForm';
 
 export default function Contribuicoes() {
   const { user, profile } = useAuth();
-  const { p } = useIgrejaSlug();
+  const { p, churchNome } = useIgrejaSlug();
   const [searchParams] = useSearchParams();
   const origem = searchParams.get('origem');
 
@@ -46,7 +46,7 @@ export default function Contribuicoes() {
       <footer className="py-8 border-t border-border bg-muted/30">
         <div className="container max-w-4xl mx-auto px-4 text-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Igreja Adventista da Promessa de Hortolândia. Todos os direitos reservados.
+            © {new Date().getFullYear()} {churchNome || 'Igreja'}. Todos os direitos reservados.
           </p>
         </div>
       </footer>

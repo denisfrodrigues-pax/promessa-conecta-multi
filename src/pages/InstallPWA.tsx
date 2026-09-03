@@ -17,7 +17,7 @@ export default function InstallPWA() {
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const navigate = useNavigate();
-  const { p } = useIgrejaSlug();
+  const { p, churchNome } = useIgrejaSlug();
 
   useEffect(() => {
     // Check if running as installed PWA
@@ -100,7 +100,7 @@ export default function InstallPWA() {
           <Logo size={50} />
           <div>
             <h1 className="text-2xl font-display font-bold">Instalar App</h1>
-            <p className="text-white/70">Igreja da Promessa</p>
+            <p className="text-white/70">{churchNome || "Igreja"}</p>
           </div>
         </div>
       </div>

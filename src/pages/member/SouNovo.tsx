@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,9 +41,47 @@ const recordSubmission = (): void => {
   }
 };
 
+interface CultoConfig {
+  ativo?: boolean;
+  dia?: string;
+  horario?: string;
+  descricao?: string;
+}
+
+interface ChurchExtra {
+  foto_hero_urls: string[] | null;
+  cultos_config: Record<string, CultoConfig> | null;
+  nome_modulo_escola_biblica: string | null;
+  nome_modulo_culto: string | null;
+}
+
 export default function SouNovo() {
   const { isAdmin } = useAuth();
-  const { p } = useIgrejaSlug();
+  const { p, churchId, churchNome } = useIgrejaSlug();
+  const [churchExtra, setChurchExtra] = useState<ChurchExtra | null>(null);
+
+  useEffect(() => {
+    if (!churchId) return;
+    supabase
+      .from('igrejas')
+      .select('foto_hero_urls, cultos_config, nome_modulo_escola_biblica, nome_modulo_culto')
+      .eq('id', churchId)
+      .maybeSingle()
+      .then(({ data }) => setChurchExtra(data as unknown as ChurchExtra));
+  }, [churchId]);
+
+  const bannerUrl = churchExtra?.foto_hero_urls?.[0] || '/banner_sou_novo_placeholder.png';
+  const cc = churchExtra?.cultos_config;
+  const nomeEB = churchExtra?.nome_modulo_escola_biblica || 'Escola Bíblica';
+  const nomeCulto = churchExtra?.nome_modulo_culto || 'Culto';
+  const encontros = [
+    cc?.escola_biblica?.ativo !== false && cc?.escola_biblica
+      ? { nome: nomeEB, dia: cc.escola_biblica.dia, horario: cc.escola_biblica.horario }
+      : null,
+    cc?.culto_principal?.ativo !== false && cc?.culto_principal
+      ? { nome: nomeCulto, dia: cc.culto_principal.dia, horario: cc.culto_principal.horario }
+      : null,
+  ].filter((e): e is NonNullable<typeof e> => Boolean(e));
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -202,7 +240,7 @@ export default function SouNovo() {
       
       {/* Hero Section - Premium */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/banner_sou_novo_placeholder.png')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${bannerUrl}')` }} />
         <div className="absolute inset-0 bg-gradient-to-r from-promessa-900/90 via-promessa-800/70 to-promessa-700/50" />
         <div className="container mx-auto px-4 py-20 relative z-10 text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl mb-8">
@@ -212,7 +250,7 @@ export default function SouNovo() {
             Sou Novo Aqui
           </h1>
           <p className="text-xl text-white/90 max-w-2xl mx-auto leading-relaxed">
-            Seja muito bem-vindo à Igreja da Promessa! Estamos muito felizes em tê-lo conosco.
+            Seja muito bem-vindo(a) à {churchNome || 'nossa igreja'}! Estamos muito felizes em tê-lo conosco.
             Aqui você vai encontrar uma família que se importa com você.
           </p>
         </div>
@@ -358,24 +396,24 @@ export default function SouNovo() {
           <Card className="shadow-card border-0 bg-gradient-to-br from-promessa/5 to-promessa/10 overflow-hidden">
             <CardContent className="p-8">
               <h2 className="text-2xl font-display font-bold mb-8 text-center">Nossos Encontros</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                <div className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
-                  <div className="inline-flex items-center gap-2 mb-3 text-promessa">
-                    <Clock className="w-5 h-5" />
-                    <span className="font-semibold">Sábado</span>
-                  </div>
-                  <p className="text-4xl font-display font-bold text-promessa-dark mb-1">18:00</p>
-                  <p className="text-muted-foreground">Escola Bíblica</p>
+              {encontros.length > 0 ? (
+                <div className={`grid grid-cols-1 ${encontros.length > 1 ? 'md:grid-cols-2' : 'max-w-sm mx-auto'} gap-6 max-w-2xl mx-auto`}>
+                  {encontros.map((encontro, i) => (
+                    <div key={i} className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
+                      {encontro.dia && (
+                        <div className="inline-flex items-center gap-2 mb-3 text-promessa">
+                          <Clock className="w-5 h-5" />
+                          <span className="font-semibold capitalize">{encontro.dia}</span>
+                        </div>
+                      )}
+                      <p className="text-4xl font-display font-bold text-promessa-dark mb-1">{encontro.horario || '—'}</p>
+                      <p className="text-muted-foreground">{encontro.nome}</p>
+                    </div>
+                  ))}
                 </div>
-                <div className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
-                  <div className="inline-flex items-center gap-2 mb-3 text-promessa">
-                    <Clock className="w-5 h-5" />
-                    <span className="font-semibold">Sábado</span>
-                  </div>
-                  <p className="text-4xl font-display font-bold text-promessa-dark mb-1">19:07</p>
-                  <p className="text-muted-foreground">Culto de Celebração</p>
-                </div>
-              </div>
+              ) : (
+                <p className="text-center text-muted-foreground">Horários em breve</p>
+              )}
             </CardContent>
           </Card>
         </section>

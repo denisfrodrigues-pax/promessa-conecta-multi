@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,8 +57,8 @@ const HORARIOS = ['Manhã', 'Tarde', 'Noite', 'Qualquer horário'];
 const cleanPhone = (phone: string | null) => (phone ?? '').replace(/\D/g, '');
 const hasValidPhone = (phone: string | null) => cleanPhone(phone).length >= 10;
 
-const getWhatsAppUrl = (phone: string | null) => {
-  const msg = encodeURIComponent('Olá! Sou da Igreja da Promessa. Estou entrando em contato sobre sua visita :)');
+const getWhatsAppUrl = (phone: string | null, churchNome?: string | null) => {
+  const msg = encodeURIComponent(`Olá! Sou da ${churchNome || 'nossa Igreja'}. Estou entrando em contato sobre sua visita :)`);
   return `https://wa.me/55${cleanPhone(phone)}?text=${msg}`;
 };
 
@@ -145,6 +146,7 @@ function VisitanteFormFields({
 }
 
 export default function VisitantesDia() {
+  const { churchNome } = useIgrejaSlug();
   const queryClient = useQueryClient();
   const [filtroData, setFiltroData] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [avancando, setAvancando] = useState<string | null>(null);
@@ -348,7 +350,7 @@ export default function VisitantesDia() {
 
                     <div className="flex items-center gap-1 flex-shrink-0">
                       {hasValidPhone(v.telefone) && (
-                        <a href={getWhatsAppUrl(v.telefone)} target="_blank" rel="noopener noreferrer">
+                        <a href={getWhatsAppUrl(v.telefone, churchNome)} target="_blank" rel="noopener noreferrer">
                           <Button variant="outline" size="sm" className="text-green-600 border-green-300 hover:bg-green-50">
                             <MessageCircle className="w-4 h-4 mr-1" />
                             WhatsApp
