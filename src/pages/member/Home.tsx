@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 import { supabase } from '@/integrations/supabase/client';
-import heroHome from '@/assets/hero-home.png';
+import heroHome from '@/assets/hero-home.webp';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Bell, Users, ChevronRight, Heart, MapPin, Clock, Sparkles, HandHeart } from 'lucide-react';
 import { format } from 'date-fns';

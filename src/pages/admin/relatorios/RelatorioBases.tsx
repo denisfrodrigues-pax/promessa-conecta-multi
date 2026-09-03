@@ -13,6 +13,7 @@ import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { exportToCSV, exportToPDF } from '@/utils/exportUtils';
+import { fetchCountsByIds } from '@/lib/batchFetch';
 
 export default function RelatorioBases() {
   const { churchId: authChurchId } = useAuth();
@@ -51,42 +52,39 @@ export default function RelatorioBases() {
       const inicioMes = startOfMonth(new Date()).toISOString();
       const fimMes = endOfMonth(new Date()).toISOString();
 
-      const basesComOcupacao = await Promise.all((basesData || []).map(async (base) => {
-        const { count: membroCount } = await supabase.from('bases_membros').select('*', { count: 'exact', head: true })
-          .eq('base_id', base.id).eq('status', 'ativo');
-        
-        // Contar presenças do mês
-        const { count: presencaCount } = await supabase.from('presencas')
-          .select('*', { count: 'exact', head: true })
-          .eq('referencia_tipo', 'base')
-          .eq('referencia_id', base.id)
-          .gte('data', inicioMes.split('T')[0])
-          .lte('data', fimMes.split('T')[0]);
+      const pageBaseIds = (basesData || []).map((b) => b.id);
+      const [membroCounts, presencaCounts] = await Promise.all([
+        fetchCountsByIds('bases_membros', 'base_id', pageBaseIds, (q) => q.eq('status', 'ativo')),
+        fetchCountsByIds('presencas', 'referencia_id', pageBaseIds, (q) =>
+          q.eq('referencia_tipo', 'base').gte('data', inicioMes.split('T')[0]).lte('data', fimMes.split('T')[0])
+        ),
+      ]);
 
-        const ocupacao = membroCount || 0;
+      const basesComOcupacao = (basesData || []).map((base) => {
+        const ocupacao = membroCounts.get(base.id) ?? 0;
         const percentual = base.capacidade ? Math.round((ocupacao / base.capacidade) * 100) : 0;
         const liderNome = Array.isArray(base.lider) ? base.lider[0]?.nome : base.lider?.nome;
-        
-        return { 
-          ...base, 
-          ocupacao, 
-          percentual, 
+
+        return {
+          ...base,
+          ocupacao,
+          percentual,
           liderNome: liderNome || 'Sem líder',
-          presencasMes: presencaCount || 0
+          presencasMes: presencaCounts.get(base.id) ?? 0,
         };
-      }));
+      });
 
       setBases(basesComOcupacao);
 
       // KPIs (from all bases)
       const { data: allBases } = await supabase.from('bases').select('id, capacidade').eq('church_id', churchId!).eq('status', 'ativo');
-      const allBasesOcupacao = await Promise.all((allBases || []).map(async (base) => {
-        const { count } = await supabase.from('bases_membros').select('*', { count: 'exact', head: true })
-          .eq('base_id', base.id).eq('status', 'ativo');
-        const ocupacao = count || 0;
+      const allBaseIds = (allBases || []).map((b) => b.id);
+      const allMembroCounts = await fetchCountsByIds('bases_membros', 'base_id', allBaseIds, (q) => q.eq('status', 'ativo'));
+      const allBasesOcupacao = (allBases || []).map((base) => {
+        const ocupacao = allMembroCounts.get(base.id) ?? 0;
         const percentual = base.capacidade ? Math.round((ocupacao / base.capacidade) * 100) : 0;
         return { ...base, ocupacao, percentual };
-      }));
+      });
 
       const totalBases = allBasesOcupacao.length;
       const ocupacaoMedia = totalBases > 0 ? Math.round(allBasesOcupacao.reduce((s, b) => s + b.percentual, 0) / totalBases) : 0;

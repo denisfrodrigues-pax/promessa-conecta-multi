@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Save, User, Phone, Clock, MessageCircle, UserPlus, MapPin, Users, CalendarDays, History } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchByIds, fetchCountsByIds } from '@/lib/batchFetch';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -181,33 +182,19 @@ export default function VisitanteDetalhes() {
       .order('created_at', { ascending: false });
 
     if (data && data.length > 0) {
-      // Enrich with leader names and member counts
-      const enriched = await Promise.all(
-        data.map(async (acomp: any) => {
-          let lider_nome = '–';
-          let membros_count = 0;
+      // Enrich with leader names and member counts — uma query por tabela em vez de por linha
+      const baseIds = data.map((a: any) => a.base?.id).filter((id): id is string => !!id);
+      const liderIds = [...new Set(data.map((a: any) => a.base?.lider_id).filter((id): id is string => !!id))];
+      const [lideres, membroCounts] = await Promise.all([
+        fetchByIds<{ id: string; nome: string }>('membros', liderIds, 'id, nome'),
+        fetchCountsByIds('bases_membros', 'base_id', baseIds, (q) => q.eq('status', 'ativo')),
+      ]);
 
-          if (acomp.base?.lider_id) {
-            const { data: lider } = await supabase
-              .from('membros')
-              .select('nome')
-              .eq('id', acomp.base.lider_id)
-              .maybeSingle();
-            if (lider) lider_nome = lider.nome;
-          }
-
-          if (acomp.base?.id) {
-            const { count } = await supabase
-              .from('bases_membros')
-              .select('*', { count: 'exact', head: true })
-              .eq('base_id', acomp.base.id)
-              .eq('status', 'ativo');
-            membros_count = count || 0;
-          }
-
-          return { ...acomp, lider_nome, membros_count };
-        })
-      );
+      const enriched = data.map((acomp: any) => ({
+        ...acomp,
+        lider_nome: (acomp.base?.lider_id && lideres.get(acomp.base.lider_id)?.nome) || '–',
+        membros_count: acomp.base?.id ? membroCounts.get(acomp.base.id) ?? 0 : 0,
+      }));
 
       setAcompanhamentos(enriched as AcompanhamentoHistorico[]);
 
@@ -233,27 +220,17 @@ export default function VisitanteDetalhes() {
       .order('nome');
 
     if (data) {
-      const basesWithCount = await Promise.all(
-        data.map(async (base) => {
-          const { count } = await supabase
-            .from('bases_membros')
-            .select('*', { count: 'exact', head: true })
-            .eq('base_id', base.id)
-            .eq('status', 'ativo');
+      const liderIds = [...new Set(data.map((b) => b.lider_id).filter((id): id is string => !!id))];
+      const [membroCounts, lideres] = await Promise.all([
+        fetchCountsByIds('bases_membros', 'base_id', data.map((b) => b.id), (q) => q.eq('status', 'ativo')),
+        fetchByIds<{ id: string; nome: string }>('membros', liderIds, 'id, nome'),
+      ]);
 
-          let lider_nome = '–';
-          if (base.lider_id) {
-            const { data: lider } = await supabase
-              .from('membros')
-              .select('nome')
-              .eq('id', base.lider_id)
-              .maybeSingle();
-            if (lider) lider_nome = lider.nome;
-          }
-
-          return { ...base, membros_count: count || 0, lider_nome };
-        })
-      );
+      const basesWithCount = data.map((base) => ({
+        ...base,
+        membros_count: membroCounts.get(base.id) ?? 0,
+        lider_nome: (base.lider_id && lideres.get(base.lider_id)?.nome) || '–',
+      }));
       setBasesAtivas(basesWithCount);
     }
   };

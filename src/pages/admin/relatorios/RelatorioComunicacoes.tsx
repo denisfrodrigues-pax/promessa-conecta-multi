@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchByIds } from '@/lib/batchFetch';
 import { toast } from 'sonner';
 import { MessageCircle, Filter, RefreshCw, CheckCircle, XCircle, AlertTriangle, Phone } from 'lucide-react';
 import { format, subDays, startOfMonth } from 'date-fns';
@@ -82,52 +83,26 @@ export default function RelatorioComunicacoes() {
 
       if (error) throw error;
 
-      // Fetch volunteer names and escala details
-      const enrichedRecords = await Promise.all(
-        (data || []).map(async (record) => {
-          let voluntarioNome = 'Desconhecido';
-          let escalaData = '';
-          let escalaFuncao = '';
-          let ministerioNome = '';
+      // Fetch volunteer names and escala details — uma query por tabela em vez de por linha
+      const voluntarioIds = [...new Set((data || []).map((r) => r.voluntario_id).filter((id): id is string => !!id))];
+      const escalaIds = [...new Set((data || []).map((r) => r.escala_id).filter((id): id is string => !!id))];
+      const [profiles, escalas] = await Promise.all([
+        fetchByIds<{ id: string; nome: string }>('profiles', voluntarioIds, 'id, nome'),
+        fetchByIds<{ id: string; data: string; funcao: string; ministerios: { nome: string } | null }>(
+          'escalas', escalaIds, 'id, data, funcao, ministerios(nome)'
+        ),
+      ]);
 
-          // Fetch volunteer name
-          if (record.voluntario_id) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('nome')
-              .eq('id', record.voluntario_id)
-              .maybeSingle();
-            voluntarioNome = profile?.nome || 'Desconhecido';
-          }
-
-          // Fetch escala details
-          if (record.escala_id) {
-            const { data: escala } = await supabase
-              .from('escalas')
-              .select(`
-                data,
-                funcao,
-                ministerios(nome)
-              `)
-              .eq('id', record.escala_id)
-              .maybeSingle();
-            
-            if (escala) {
-              escalaData = escala.data;
-              escalaFuncao = escala.funcao;
-              ministerioNome = (escala.ministerios as { nome: string } | null)?.nome || '';
-            }
-          }
-
-          return {
-            ...record,
-            voluntario_nome: voluntarioNome,
-            escala_data: escalaData,
-            escala_funcao: escalaFuncao,
-            ministerio_nome: ministerioNome,
-          };
-        })
-      );
+      const enrichedRecords = (data || []).map((record) => {
+        const escala = record.escala_id ? escalas.get(record.escala_id) : undefined;
+        return {
+          ...record,
+          voluntario_nome: (record.voluntario_id && profiles.get(record.voluntario_id)?.nome) || 'Desconhecido',
+          escala_data: escala?.data || '',
+          escala_funcao: escala?.funcao || '',
+          ministerio_nome: escala?.ministerios?.nome || '',
+        };
+      });
 
       setRecords(enrichedRecords);
     } catch (error) {

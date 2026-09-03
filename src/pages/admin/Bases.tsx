@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchByIds, fetchCountsByIds } from "@/lib/batchFetch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,35 +133,22 @@ export default function Bases() {
 
       if (error) throw error;
 
-      const basesWithDetails = await Promise.all(
-        (data || []).map(async (base) => {
-          let lider_nome: string | undefined;
-          let lider_telefone: string | undefined;
+      const baseIds = (data || []).map((b) => b.id);
+      const liderIds = [...new Set((data || []).map((b) => b.lider_id).filter((id): id is string => !!id))];
+      const [lideres, membroCounts] = await Promise.all([
+        fetchByIds<{ id: string; nome: string; telefone: string | null }>("profiles", liderIds, "id, nome, telefone"),
+        fetchCountsByIds("bases_membros", "base_id", baseIds, (q) => q.eq("status", "ativo")),
+      ]);
 
-          if (base.lider_id) {
-            const { data: lider } = await supabase
-              .from("profiles")
-              .select("nome, telefone")
-              .eq("id", base.lider_id)
-              .maybeSingle();
-            lider_nome = lider?.nome;
-            lider_telefone = lider?.telefone;
-          }
-
-          const { count } = await supabase
-            .from("bases_membros")
-            .select("*", { count: "exact", head: true })
-            .eq("base_id", base.id)
-            .eq("status", "ativo");
-
-          return {
-            ...base,
-            lider_nome,
-            lider_telefone,
-            membros_count: count || 0,
-          };
-        }),
-      );
+      const basesWithDetails = (data || []).map((base) => {
+        const lider = base.lider_id ? lideres.get(base.lider_id) : undefined;
+        return {
+          ...base,
+          lider_nome: lider?.nome,
+          lider_telefone: lider?.telefone ?? undefined,
+          membros_count: membroCounts.get(base.id) ?? 0,
+        };
+      });
 
       setBases(basesWithDetails);
     } catch (error: any) {
