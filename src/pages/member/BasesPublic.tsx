@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchCountsByIds } from '@/lib/batchFetch';
 import { Users, MapPin, Clock, ChevronRight, Search, Home } from 'lucide-react';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Base {
   id: string;
@@ -42,14 +43,15 @@ const isLotada = (membrosCount: number, capacidade: number | null) => {
 
 export default function BasesPublic() {
   const { p } = useIgrejaSlug();
+  const { churchId } = useAuth();
   const [bases, setBases] = useState<Base[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filtroDia, setFiltroDia] = useState('todos');
 
   useEffect(() => {
-    fetchBases();
-  }, []);
+    if (churchId) fetchBases();
+  }, [churchId]);
 
   const fetchBases = async () => {
     try {
@@ -59,6 +61,7 @@ export default function BasesPublic() {
           id, nome, descricao, dia_semana, horario, local, capacidade, visibilidade, lider_id,
           lider:profiles!bases_lider_id_fkey(nome)
         `)
+        .eq('church_id', churchId)
         .eq('status', 'ativo')
         .order('nome');
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchCountsByIds } from '@/lib/batchFetch';
@@ -59,9 +59,8 @@ const formVazio = () => ({
 
 export default function GruposHub() {
   const navigate = useNavigate();
-  const { ministerioId } = useOutletContext<{ ministerioId: string }>();
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const { profile, churchId } = useAuth();
 
   const [busca, setBusca] = useState('');
   const [filtroDia, setFiltroDia] = useState('');
@@ -69,12 +68,13 @@ export default function GruposHub() {
   const [form, setForm] = useState(formVazio());
 
   const { data: grupos = [], isLoading } = useQuery({
-    queryKey: ['pg_grupos', ministerioId],
+    queryKey: ['pg_grupos', churchId],
+    enabled: !!churchId,
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('bases')
         .select('id, nome, descricao, dia_semana, horario, local, capacidade, status')
-        .eq('ministerio_id', ministerioId)
+        .eq('church_id', churchId)
         .eq('status', 'ativo')
         .order('nome');
 
@@ -108,13 +108,13 @@ export default function GruposHub() {
         observacoes: f.observacoes.trim() || null,
         visibilidade: f.visibilidade,
         status: f.status,
-        ministerio_id: ministerioId,
+        church_id: churchId,
         lider_id: profile?.id ?? null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pg_grupos'] });
+      queryClient.invalidateQueries({ queryKey: ['pg_grupos', churchId] });
       toast.success('Grupo criado com sucesso!');
       setModalAberto(false);
       setForm(formVazio());
