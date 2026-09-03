@@ -63,7 +63,6 @@ const AdminBaseRelatorio = lazy(() => import("@/pages/admin/BaseRelatorio"));
 const AdminAcompanhamento = lazy(() => import("@/pages/admin/Acompanhamento"));
 const AdminAuditoria = lazy(() => import("@/pages/admin/Auditoria"));
 const AdminDevocionais = lazy(() => import("@/pages/admin/Devocionais"));
-const AdminConfiguracoes = lazy(() => import("@/pages/admin/Configuracoes"));
 const AdminConfiguracaoIgreja = lazy(() => import("@/pages/admin/ConfiguracaoIgreja"));
 const WhatsAppTest = lazy(() => import("@/pages/admin/WhatsAppTest"));
 const AdminKids = lazy(() => import("@/pages/admin/Kids"));
