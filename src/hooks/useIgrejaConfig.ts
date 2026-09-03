@@ -21,6 +21,12 @@ export interface IgrejaConfig {
   cidade: string | null;
   estado: string | null;
   endereco: string | null;
+  // Contato
+  telefone: string | null;
+  email: string | null;
+  google_maps_url: string | null;
+  horario_ebd: string | null;
+  horario_culto: string | null;
   // Redes sociais
   instagram_url: string | null;
   youtube_url: string | null;
@@ -68,6 +74,11 @@ const DEFAULT_CONFIG: IgrejaConfig = {
   cidade: null,
   estado: null,
   endereco: null,
+  telefone: null,
+  email: null,
+  google_maps_url: null,
+  horario_ebd: null,
+  horario_culto: null,
   instagram_url: null,
   youtube_url: null,
   facebook_url: null,
@@ -125,6 +136,7 @@ export function useIgrejaConfig() {
           foto_hero_urls, foto_login_url,
           slogan, versiculo, versiculo_referencia,
           cidade, estado, endereco,
+          telefone, email, google_maps_url, horario_ebd, horario_culto,
           instagram_url, youtube_url, facebook_url, whatsapp, site_url,
           nome_modulo_pequenos_grupos, nome_modulo_culto,
           nome_modulo_escola_biblica, nome_modulo_financeiro,

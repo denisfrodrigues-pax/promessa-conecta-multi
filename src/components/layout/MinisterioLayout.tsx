@@ -5,7 +5,7 @@ import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Home, LogOut, Loader2 } from "lucide-react";
-import { useChurchConfig } from "@/hooks/useChurchConfig";
+import { useIgrejaConfig } from "@/hooks/useIgrejaConfig";
 
 interface MinisterioModulo {
   id: string;
@@ -22,7 +22,7 @@ const MinisterioLayout = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user, roles, loading, signOut } = useAuth();
   const { p } = useIgrejaSlug();
-  const { config } = useChurchConfig();
+  const { config } = useIgrejaConfig();
   const navigate = useNavigate();
 
   const [ministerioId, setMinisterioId] = useState<string | null>(null);
@@ -122,7 +122,7 @@ const MinisterioLayout = () => {
         <div className="container mx-auto px-4 h-14 flex justify-between items-center">
           <div>
             <h1 className="font-semibold text-sm">{ministerioNome}</h1>
-            <p className="text-xs text-muted-foreground">{config?.nome_igreja || "Igreja"}</p>
+            <p className="text-xs text-muted-foreground">{config?.nome || "Igreja"}</p>
           </div>
 
           <div className="flex items-center gap-3">

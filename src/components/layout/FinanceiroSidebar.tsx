@@ -2,7 +2,7 @@ import { NavLink } from '@/components/NavLink';
 import { ChurchLogo } from '@/components/ChurchLogo';
 import { UserAvatarMenu } from '@/components/UserAvatarMenu';
 import { useAuth } from '@/contexts/AuthContext';
-import { useChurchConfig } from '@/hooks/useChurchConfig';
+import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import {
   LayoutDashboard,
@@ -29,7 +29,7 @@ interface MenuItem {
 export default function FinanceiroSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { profile, signOut } = useAuth();
-  const { config } = useChurchConfig();
+  const { config } = useIgrejaConfig();
   const { p } = useIgrejaSlug();
 
   const menuItems: MenuItem[] = [
@@ -42,7 +42,7 @@ export default function FinanceiroSidebar() {
   ];
 
   const hasCustomLogo = config?.logo_url && !config.logo_url.includes('placeholder');
-  const churchName = config?.nome_igreja || 'Igreja da Promessa';
+  const churchName = config?.nome || 'Igreja';
 
   return (
     <aside

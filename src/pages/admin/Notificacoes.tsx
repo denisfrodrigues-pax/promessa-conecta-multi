@@ -295,7 +295,8 @@ export default function AdminNotificacoes() {
       const { error } = await supabase
         .from('notificacoes')
         .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+        .eq('church_id', churchId!)
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all da igreja atual
 
       if (error) {
         // Reverter em caso de erro

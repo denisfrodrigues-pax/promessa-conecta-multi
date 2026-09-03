@@ -3,11 +3,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { Button } from "@/components/ui/button";
 import { Heart, LogOut, Home, Loader2 } from "lucide-react";
-import { useChurchConfig } from "@/hooks/useChurchConfig";
+import { useIgrejaConfig } from "@/hooks/useIgrejaConfig";
 
 const VoluntarioLayout = () => {
   const { signOut, profile, user, loading, isVoluntario } = useAuth();
-  const { config } = useChurchConfig();
+  const { config } = useIgrejaConfig();
   const { p } = useIgrejaSlug();
   const navigate = useNavigate();
 
@@ -43,7 +43,7 @@ const VoluntarioLayout = () => {
               </div>
               <div>
                 <h1 className="font-semibold text-foreground text-sm">Painel Voluntário</h1>
-                <p className="text-xs text-muted-foreground">{config?.nome_igreja || "Igreja"}</p>
+                <p className="text-xs text-muted-foreground">{config?.nome || "Igreja"}</p>
               </div>
             </div>
 

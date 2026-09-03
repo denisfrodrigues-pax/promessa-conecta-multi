@@ -15,9 +15,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 
 interface ChurchContact {
-  nome_igreja: string | null;
+  nome: string | null;
   endereco: string | null;
   telefone: string | null;
   email: string | null;
@@ -26,19 +27,19 @@ interface ChurchContact {
   horario_culto: string | null;
 }
 
-const FALLBACK: ChurchContact = {
-  nome_igreja: "Igreja da Promessa",
-  endereco: "R: Dr. Leandro Luis Camargo dos Santos, 31 - Vila São Francisco, Hortolândia-SP 13187-525",
-  telefone: "19 99573-5855",
-  email: "promessa.hortolandia@gmail.com",
-  google_maps_url:
-    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3676.8!2d-47.2147!3d-22.8597!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjLCsDUxJzM1LjAiUyA0N8KwMTInNTMuMCJX!5e0!3m2!1spt-BR!2sbr!4v1",
-  horario_ebd: "18h",
-  horario_culto: "19h07",
+const EMPTY: ChurchContact = {
+  nome: null,
+  endereco: null,
+  telefone: null,
+  email: null,
+  google_maps_url: null,
+  horario_ebd: null,
+  horario_culto: null,
 };
 
 export default function Contato() {
-  const [church, setChurch] = useState<ChurchContact>(FALLBACK);
+  const { churchId, churchNome } = useIgrejaSlug();
+  const [church, setChurch] = useState<ChurchContact>(EMPTY);
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -50,25 +51,16 @@ export default function Contato() {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
+    if (!churchId) return;
     supabase
-      .from("configuracoes_instituicao")
-      .select("nome_igreja, endereco, telefone, email, google_maps_url, horario_ebd, horario_culto")
-      .limit(1)
+      .from("igrejas")
+      .select("nome, endereco, telefone, email, google_maps_url, horario_ebd, horario_culto")
+      .eq("id", churchId)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) {
-          setChurch({
-            nome_igreja: data.nome_igreja || FALLBACK.nome_igreja,
-            endereco: data.endereco || FALLBACK.endereco,
-            telefone: data.telefone || FALLBACK.telefone,
-            email: data.email || FALLBACK.email,
-            google_maps_url: data.google_maps_url || FALLBACK.google_maps_url,
-            horario_ebd: data.horario_ebd || FALLBACK.horario_ebd,
-            horario_culto: data.horario_culto || FALLBACK.horario_culto,
-          });
-        }
+        if (data) setChurch(data);
       });
-  }, []);
+  }, [churchId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -344,7 +336,7 @@ export default function Contato() {
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
                       className="absolute inset-0"
-                      title={`Localização de ${church.nome_igreja}`}
+                      title={`Localização de ${church.nome || churchNome || "igreja"}`}
                     />
                   </div>
                 )}
@@ -358,7 +350,7 @@ export default function Contato() {
       <footer className="bg-promessa-800 text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-white/70 text-sm">
-            © {new Date().getFullYear()} {church.nome_igreja}. Todos os direitos reservados.
+            © {new Date().getFullYear()} {church.nome || churchNome || "Igreja"}. Todos os direitos reservados.
           </p>
         </div>
       </footer>

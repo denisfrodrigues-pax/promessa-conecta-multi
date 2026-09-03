@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
-import { useChurchConfig } from '@/hooks/useChurchConfig';
+import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, ClipboardList, Calendar, ChevronRight, CheckCircle, Clock, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
@@ -38,7 +38,7 @@ export default function LeaderDashboard() {
   const { slug } = useParams<{ slug: string }>();
   const { p } = useIgrejaSlug();
   const { profile } = useAuth();
-  const { config } = useChurchConfig();
+  const { config } = useIgrejaConfig();
   const [bases, setBases] = useState<Base[]>([]);
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [agenda, setAgenda] = useState<AgendaEvento[]>([]);
@@ -101,7 +101,7 @@ export default function LeaderDashboard() {
         {hasCustomLogo && (
           <img 
             src={config.logo_url!} 
-            alt={config.nome_igreja || 'Logo'}
+            alt={config.nome || 'Logo'}
             className="h-12 w-auto object-contain"
           />
         )}
