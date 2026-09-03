@@ -57,7 +57,15 @@ export function applyChurchTheme(corPrimaria: string | null | undefined, corSecu
 
   const [h, s, l] = hexToHsl(corPrimaria);
   const root = document.documentElement;
-  const lDark = Math.max(0, l - 15);
+  // Teto de luminosidade (não um simples "-15%"): um offset fixo não escurece
+  // o suficiente cores de entrada muito claras e saturadas (ex.: amarelo puro
+  // #FFD400, l≈50%) para servirem como texto — a -15% ainda ficava em l=35%,
+  // que mede só ~2.9:1 de contraste contra fundo claro, abaixo do mínimo AA
+  // (4.5:1 texto normal / 3:1 texto grande). Capar em 25% garante >4.5:1 até
+  // no caso mais extremo (amarelo puro, h=60), sem tocar cores que já eram
+  // escuras o bastante (l-15 <= 25, ou seja l <= 40, mantém o comportamento
+  // anterior).
+  const lDark = Math.min(Math.max(0, l - 15), 25);
   const lLight = Math.min(100, l + 10);
   // Texto branco para cores com lightness < 60, escuro para mais claras
   const fg = l < 60 ? '0 0% 100%' : '0 0% 10%';
