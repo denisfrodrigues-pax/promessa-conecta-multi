@@ -12,6 +12,7 @@ import {
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
+import { useIgrejaPublicContent } from "@/hooks/useIgrejaPublicContent";
 
 const hubCards = [
   {
@@ -52,7 +53,9 @@ const hubCards = [
 ];
 
 export default function QuemSomos() {
-  const { p } = useIgrejaSlug();
+  const { p, churchNome } = useIgrejaSlug();
+  const { content } = useIgrejaPublicContent();
+  const nomeIgreja = churchNome || "nossa igreja";
   return (
     <div className="min-h-screen bg-background">
       <InstitutionalHeader />
@@ -72,7 +75,7 @@ export default function QuemSomos() {
               Que estão em busca de conhecer e se relacionar com um Deus real.
             </p>
             <p className="text-base text-white/70 leading-relaxed mb-8 max-w-2xl mx-auto">
-              Somos uma igreja cristã em Hortolândia, comprometida com uma fé bíblica, simples e vivida na prática, onde pessoas caminham juntas no relacionamento com Deus e com outras pessoas.
+              Somos uma igreja cristã{content?.cidade ? ` em ${content.cidade}` : ''}, comprometida com uma fé bíblica, simples e vivida na prática, onde pessoas caminham juntas no relacionamento com Deus e com outras pessoas.
             </p>
             <Link
               to={p('/quem-somos/historia')}
@@ -93,27 +96,10 @@ export default function QuemSomos() {
               Nossa História
             </h2>
             
-            <div className="space-y-8">
-              <div className="bg-muted/30 rounded-2xl p-8 border border-border/50">
-                <h3 className="text-xl font-bold text-foreground mb-4">O chamado</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Essa igreja nasceu do desejo de ver pessoas vivendo uma fé simples, bíblica e relevante, encontrando propósito por meio do relacionamento com Jesus e com outras pessoas.
-                </p>
-              </div>
-              
-              <div className="bg-muted/30 rounded-2xl p-8 border border-border/50">
-                <h3 className="text-xl font-bold text-foreground mb-4">O tempo de preparo</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Em 2023, a família pastoral Denis e Fran, juntamente com seus filhos Arthur e Heitor, foram chamados para liderar um projeto de plantação de uma nova igreja no centro da cidade de Hortolândia. Entre janeiro e março, outras pessoas foram chamadas para compor o grupo base, iniciando reuniões com foco em alinhamento, missão e direção de Deus.
-                </p>
-              </div>
-              
-              <div className="bg-muted/30 rounded-2xl p-8 border border-border/50">
-                <h3 className="text-xl font-bold text-foreground mb-4">O início dos cultos públicos</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Em janeiro de 2024, após a definição do local, iniciamos as adequações do espaço e, em 02 de março de 2024, realizamos nosso primeiro culto público. Desde então, seguimos em processo de consolidação, confiantes de que em cada etapa Deus tem nos direcionado, corrigido e cuidado de nós.
-                </p>
-              </div>
+            <div className="bg-muted/30 rounded-2xl p-8 border border-border/50">
+              <p className="text-muted-foreground leading-relaxed">
+                {content?.historia || 'Em breve, mais sobre nossa história.'}
+              </p>
             </div>
             
             <div className="text-center mt-8">
@@ -133,22 +119,11 @@ export default function QuemSomos() {
               Pastores
             </h2>
             
-            <div className="bg-white rounded-2xl p-8 lg:p-10 border border-border/50">
-              <p className="text-muted-foreground text-lg leading-relaxed mb-8 text-center">
-                Denis e Fran pastoreiam a igreja com foco em pessoas, discipulado e uma fé vivida no cotidiano, buscando formar discípulos que reflitam o caráter de Cristo em todas as áreas da vida.
+            <div className="bg-white rounded-2xl p-8 lg:p-10 border border-border/50 text-center">
+              <UserCircle className="w-12 h-12 text-promessa-400 mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                Nossa liderança pastoral está comprometida com o cuidado das pessoas, o discipulado e o crescimento espiritual da igreja.
               </p>
-
-              <div className="bg-muted/30 rounded-xl p-6 border border-border/50">
-                <h3 className="font-bold text-foreground mb-4 text-center text-lg">Formação</h3>
-                <div className="space-y-4 text-muted-foreground">
-                  <p>
-                    <strong className="text-foreground">Denis</strong> é bacharel em Teologia, formado em Administração de Empresas e pós-graduado em Plantação e Revitalização de Igrejas.
-                  </p>
-                  <p>
-                    <strong className="text-foreground">Fran</strong> é bacharel em Teologia, licenciada em Matemática, possui MBA em Finanças e Controladoria e pós-graduação em Plantação e Revitalização de Igrejas.
-                  </p>
-                </div>
-              </div>
             </div>
             
             <div className="text-center mt-8">
@@ -165,7 +140,7 @@ export default function QuemSomos() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Por que Participar da Igreja da Promessa?
+              Por que Participar da {nomeIgreja}?
             </h2>
             <p className="text-lg text-muted-foreground mb-10">
               Aqui você encontrará:

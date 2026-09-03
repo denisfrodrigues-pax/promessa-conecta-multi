@@ -3,9 +3,11 @@ import { ChevronLeft, Target, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
+import { useIgrejaPublicContent } from "@/hooks/useIgrejaPublicContent";
 
 export default function MissaoVisao() {
   const { p } = useIgrejaSlug();
+  const { content } = useIgrejaPublicContent();
   return (
     <div className="min-h-screen bg-background">
       <InstitutionalHeader />
@@ -46,7 +48,7 @@ export default function MissaoVisao() {
                   <h2 className="text-2xl font-bold text-foreground">Nossa Missão</h2>
                 </div>
                 <p className="text-muted-foreground text-lg leading-relaxed">
-                  Existimos para amar e servir a Deus e às pessoas, por meio de um relacionamento crescente com Jesus.
+                  {content?.missao || 'Em breve, mais sobre nossa missão.'}
                 </p>
               </div>
 
@@ -59,7 +61,7 @@ export default function MissaoVisao() {
                   <h2 className="text-2xl font-bold text-foreground">Nossa Visão</h2>
                 </div>
                 <p className="text-muted-foreground text-lg leading-relaxed">
-                  Ser uma igreja consolidada, saudável, vibrante, relacional e relevante na cidade de Hortolândia.
+                  {content?.visao || 'Em breve, mais sobre nossa visão.'}
                 </p>
               </div>
             </div>

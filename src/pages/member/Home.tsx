@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ContribuicaoModal } from '@/components/contribuicao/ContribuicaoModal';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
+import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
 
 interface Aviso {
   id: string;
@@ -31,6 +32,8 @@ interface Evento {
 export default function MemberHome() {
   const { profile, churchId } = useAuth();
   const { p } = useIgrejaSlug();
+  const { config } = useIgrejaConfig();
+  const heroImage = config.foto_hero_urls?.[0] || heroHome;
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +75,7 @@ export default function MemberHome() {
     <div className="pb-24 md:pb-6">
       {/* Hero Banner - Premium with refined overlay */}
       <section className="relative rounded-xl overflow-hidden mb-10 h-[420px] md:h-[500px] flex items-center">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroHome})` }} />
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }} />
         <div className="absolute inset-0 bg-gradient-to-r from-promessa-900/40 to-promessa-700/20" />
         
         <div className="container mx-auto px-4 relative z-10">
@@ -85,7 +88,7 @@ export default function MemberHome() {
               Olá, {profile?.nome?.split(' ')[0] || 'Visitante'}!
             </h1>
             <p className="text-lg text-white/90">
-              Seja bem-vindo à Igreja da Promessa. Aqui você encontra todas as informações e recursos da nossa comunidade.
+              Seja bem-vindo(a) à {config.nome || 'nossa igreja'}. Aqui você encontra todas as informações e recursos da nossa comunidade.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="promessa" size="lg" className="bg-white text-promessa-700 hover:bg-white/90 font-semibold">

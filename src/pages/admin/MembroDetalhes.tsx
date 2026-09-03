@@ -1329,7 +1329,7 @@ export default function MembroDetalhes() {
                     <div>
                       <Label className="cursor-pointer font-medium">Pai ou Mãe é Promessista</Label>
                       <p className="text-xs text-muted-foreground">
-                        Pelo menos um dos pais é membro da Igreja da Promessa
+                        Pelo menos um dos pais é membro da {churchNome || 'nossa igreja'}
                       </p>
                     </div>
                   </div>

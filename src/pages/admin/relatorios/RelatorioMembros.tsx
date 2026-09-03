@@ -20,7 +20,7 @@ const statusLabels: Record<string, string> = { ativo: 'Ativo', inativo: 'Inativo
 
 export default function RelatorioMembros() {
   const { churchId: authChurchId } = useAuth();
-  const { churchId: slugChurchId } = useIgrejaSlug();
+  const { churchId: slugChurchId, churchNome } = useIgrejaSlug();
   const churchId = authChurchId ?? slugChurchId ?? null;
   const reportRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
@@ -300,7 +300,7 @@ export default function RelatorioMembros() {
                       <div className="flex items-center gap-2">
                         {m.telefone ? formatPhoneBR(m.telefone) : '–'}
                         {hasValidPhone(m.telefone) && (
-                          <button onClick={() => window.open(getWhatsAppUrl(m.telefone), '_blank')} className="text-green-600">
+                          <button onClick={() => window.open(getWhatsAppUrl(m.telefone, `Olá! Sou da ${churchNome || 'nossa Igreja'}.`), '_blank')} className="text-green-600">
                             <MessageCircle className="w-4 h-4" />
                           </button>
                         )}
