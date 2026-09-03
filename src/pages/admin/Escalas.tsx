@@ -17,7 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, CheckCircle, Clock, XCircle, Search, Eye, MessageCircle, Send, Loader2, History, Bell, ClipboardList } from 'lucide-react';
+import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Users, CheckCircle, Clock, XCircle, Search, Eye, Loader2, History, Bell, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -119,19 +119,10 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<EscalaGroup | null>(null);
   const [viewingGroup, setViewingGroup] = useState<EscalaGroup | null>(null);
   const [deletingGroup, setDeletingGroup] = useState<EscalaGroup | null>(null);
   const [formData, setFormData] = useState<EscalaFormData>(initialFormData);
-  const [selectedVoluntarioForWhatsApp, setSelectedVoluntarioForWhatsApp] = useState<{
-    id: string;
-    nome: string;
-    telefone: string | null;
-  } | null>(null);
-  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
-  const [isBatchWhatsAppDialogOpen, setIsBatchWhatsAppDialogOpen] = useState(false);
-  const [sendingBatchWhatsApp, setSendingBatchWhatsApp] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [communicationHistory, setCommunicationHistory] = useState<Array<{
     id: string;
@@ -458,237 +449,13 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
     }
   };
 
-  const handleOpenWhatsAppDialog = async (voluntarioId: string, voluntarioNome: string) => {
-    // Fetch the volunteer's phone number
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('telefone')
-        .eq('id', voluntarioId)
-        .single();
-
-      if (error) throw error;
-
-      setSelectedVoluntarioForWhatsApp({
-        id: voluntarioId,
-        nome: voluntarioNome,
-        telefone: data?.telefone || null,
-      });
-      setIsWhatsAppDialogOpen(true);
-    } catch (error) {
-      console.error('Error fetching volunteer phone:', error);
-      toast.error('Erro ao buscar telefone do voluntário');
-    }
-  };
-
-  const handleSendWhatsAppReminder = async () => {
-    if (!selectedVoluntarioForWhatsApp || !viewingGroup) return;
-    
-    // Find the escala_id for this volunteer
-    const escalaVoluntario = viewingGroup.voluntarios.find(
-      v => v.voluntario_id === selectedVoluntarioForWhatsApp.id
-    );
-    
-    if (!selectedVoluntarioForWhatsApp.telefone) {
-      // Log the attempt with 'sem_telefone' status
-      await supabase.from('historico_comunicacoes').insert({
-        escala_id: escalaVoluntario?.id || null,
-        voluntario_id: selectedVoluntarioForWhatsApp.id,
-        tipo: 'whatsapp',
-        status: 'sem_telefone',
-        mensagem_preview: null,
-        detalhes_erro: 'Voluntário não possui telefone cadastrado',
-      });
-      toast.error('Este voluntário não possui telefone cadastrado');
-      return;
-    }
-
-    setSendingWhatsApp(true);
-
-    try {
-      // Format the reminder message
-      const dataFormatada = format(parseLocalDate(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR });
-      const horario = viewingGroup.horario || 'horário a confirmar';
-      const ministerio = viewingGroup.ministerio_nome || 'ministério';
-      const funcao = viewingGroup.funcao;
-
-      const mensagem = `Olá ${selectedVoluntarioForWhatsApp.nome}, você está escalado(a) para ${funcao} no ${ministerio} no dia ${dataFormatada} às ${horario}. Acesse o sistema para confirmar sua presença.`;
-      const mensagemPreview = mensagem.substring(0, 255);
-
-      // Call the Edge Function
-      const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
-        body: {
-          phone_number: selectedVoluntarioForWhatsApp.telefone,
-          message_body: mensagem,
-          template_id: 'escala_reminder',
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        // Log success
-        await supabase.from('historico_comunicacoes').insert({
-          escala_id: escalaVoluntario?.id || null,
-          voluntario_id: selectedVoluntarioForWhatsApp.id,
-          tipo: 'whatsapp',
-          status: 'sucesso',
-          mensagem_preview: mensagemPreview,
-          detalhes_erro: null,
-        });
-        toast.success(`Lembrete enviado para ${selectedVoluntarioForWhatsApp.nome}`);
-        setIsWhatsAppDialogOpen(false);
-        setSelectedVoluntarioForWhatsApp(null);
-      } else {
-        throw new Error(data?.error || 'Erro ao enviar mensagem');
-      }
-    } catch (error) {
-      console.error('Error sending WhatsApp reminder:', error);
-      // Log error
-      await supabase.from('historico_comunicacoes').insert({
-        escala_id: escalaVoluntario?.id || null,
-        voluntario_id: selectedVoluntarioForWhatsApp.id,
-        tipo: 'whatsapp',
-        status: 'erro_api',
-        mensagem_preview: null,
-        detalhes_erro: error instanceof Error ? error.message : 'Erro desconhecido',
-      });
-      toast.error('Erro ao enviar lembrete via WhatsApp');
-    } finally {
-      setSendingWhatsApp(false);
-    }
-  };
-
-  const handleSendBatchWhatsAppReminders = async () => {
-    if (!viewingGroup) return;
-
-    const pendingVolunteers = viewingGroup.voluntarios;
-    
-    if (pendingVolunteers.length === 0) {
-      toast.info('Não há voluntários pendentes para enviar lembretes');
-      return;
-    }
-
-    setSendingBatchWhatsApp(true);
-    
-    let successCount = 0;
-    let failedNoPhone = 0;
-    let failedError = 0;
-
-    try {
-      // Fetch all volunteer phones in one query
-      const voluntarioIds = pendingVolunteers.map(v => v.voluntario_id);
-      const { data: phonesData, error: phonesError } = await supabase
-        .from('profiles')
-        .select('id, telefone')
-        .in('id', voluntarioIds);
-
-      if (phonesError) throw phonesError;
-
-      const phoneMap = new Map(phonesData?.map(p => [p.id, p.telefone]) || []);
-
-      // Format common message parts
-      const dataFormatada = format(parseLocalDate(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR });
-      const horario = viewingGroup.horario || 'horário a confirmar';
-      const ministerio = viewingGroup.ministerio_nome || 'ministério';
-      const funcao = viewingGroup.funcao;
-
-      // Send messages to each volunteer
-      for (const vol of pendingVolunteers) {
-        const telefone = phoneMap.get(vol.voluntario_id);
-        
-        if (!telefone) {
-          failedNoPhone++;
-          // Log sem_telefone status
-          await supabase.from('historico_comunicacoes').insert({
-            escala_id: vol.id,
-            voluntario_id: vol.voluntario_id,
-            tipo: 'whatsapp',
-            status: 'sem_telefone',
-            mensagem_preview: null,
-            detalhes_erro: 'Voluntário não possui telefone cadastrado',
-          });
-          continue;
-        }
-
-        try {
-          const mensagem = `Olá ${vol.nome}, você está escalado(a) para ${funcao} no ${ministerio} no dia ${dataFormatada} às ${horario}. Acesse o sistema para confirmar sua presença.`;
-          const mensagemPreview = mensagem.substring(0, 255);
-
-          const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
-            body: {
-              phone_number: telefone,
-              message_body: mensagem,
-              template_id: 'escala_reminder',
-            },
-          });
-
-          if (error || !data?.success) {
-            failedError++;
-            // Log error
-            await supabase.from('historico_comunicacoes').insert({
-              escala_id: vol.id,
-              voluntario_id: vol.voluntario_id,
-              tipo: 'whatsapp',
-              status: 'erro_api',
-              mensagem_preview: mensagemPreview,
-              detalhes_erro: error?.message || data?.error || 'Erro na API de WhatsApp',
-            });
-          } else {
-            successCount++;
-            // Log success
-            await supabase.from('historico_comunicacoes').insert({
-              escala_id: vol.id,
-              voluntario_id: vol.voluntario_id,
-              tipo: 'whatsapp',
-              status: 'sucesso',
-              mensagem_preview: mensagemPreview,
-              detalhes_erro: null,
-            });
-          }
-        } catch (err) {
-          failedError++;
-          // Log error
-          await supabase.from('historico_comunicacoes').insert({
-            escala_id: vol.id,
-            voluntario_id: vol.voluntario_id,
-            tipo: 'whatsapp',
-            status: 'erro_api',
-            mensagem_preview: null,
-            detalhes_erro: err instanceof Error ? err.message : 'Erro desconhecido',
-          });
-        }
-      }
-
-      // Show summary toast
-      if (successCount > 0 && failedNoPhone === 0 && failedError === 0) {
-        toast.success(`Lembretes enviados para ${successCount} voluntário(s)`);
-      } else if (successCount > 0) {
-        toast.success(
-          `Lembretes enviados: ${successCount} sucesso, ${failedNoPhone} sem telefone, ${failedError} com erro`
-        );
-      } else if (failedNoPhone > 0 && failedError === 0) {
-        toast.error(`Nenhum lembrete enviado: ${failedNoPhone} voluntário(s) sem telefone cadastrado`);
-      } else {
-        toast.error(`Erro ao enviar lembretes: ${failedError} falha(s)`);
-      }
-
-      setIsBatchWhatsAppDialogOpen(false);
-    } catch (error) {
-      console.error('Error sending batch WhatsApp reminders:', error);
-      toast.error('Erro ao enviar lembretes em lote');
-    } finally {
-      setSendingBatchWhatsApp(false);
-    }
-  };
-
   const handleDelete = async () => {
     if (!deletingGroup) return;
 
     try {
       // Delete all escalas in this group
       const ids = deletingGroup.voluntarios.map((v) => v.id);
-      
+
       const { error } = await supabase
         .from('escalas')
         .delete()
@@ -1320,7 +1087,6 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                   Histórico
                 </Button>
               )}
-              {/* WhatsApp buttons disabled - API not configured */}
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
@@ -1336,165 +1102,6 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                 </Button>
               )}
             </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* WhatsApp Reminder Dialog */}
-      <Dialog open={isWhatsAppDialogOpen} onOpenChange={setIsWhatsAppDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-green-600" />
-              Enviar Lembrete WhatsApp
-            </DialogTitle>
-            <DialogDescription>
-              Enviar lembrete da escala via WhatsApp
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedVoluntarioForWhatsApp && viewingGroup && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-muted/50 space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Voluntário:</span>
-                  <span className="font-medium">{selectedVoluntarioForWhatsApp.nome}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Telefone:</span>
-                  <span className="font-medium">
-                    {selectedVoluntarioForWhatsApp.telefone || (
-                      <span className="text-destructive">Não cadastrado</span>
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-                <p className="text-sm font-medium text-green-800 mb-2">Prévia da mensagem:</p>
-                <p className="text-sm text-green-700">
-                  Olá {selectedVoluntarioForWhatsApp.nome}, você está escalado(a) para {viewingGroup.funcao} no {viewingGroup.ministerio_nome || 'ministério'} no dia {format(parseLocalDate(viewingGroup.data), "dd/MM/yyyy", { locale: ptBR })} às {viewingGroup.horario || 'horário a confirmar'}. Acesse o sistema para confirmar sua presença.
-                </p>
-              </div>
-
-              {!selectedVoluntarioForWhatsApp.telefone && (
-                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                  <p className="text-sm text-destructive">
-                    Este voluntário não possui telefone cadastrado. Por favor, atualize o cadastro antes de enviar o lembrete.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          <DialogFooter className="gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setIsWhatsAppDialogOpen(false);
-                setSelectedVoluntarioForWhatsApp(null);
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSendWhatsAppReminder}
-              disabled={sendingWhatsApp || !selectedVoluntarioForWhatsApp?.telefone}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {sendingWhatsApp ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4 mr-2" />
-                  Enviar Lembrete
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Batch WhatsApp Reminder Dialog */}
-      <Dialog open={isBatchWhatsAppDialogOpen} onOpenChange={setIsBatchWhatsAppDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-green-600" />
-              Lembrar Pendentes via WhatsApp
-            </DialogTitle>
-            <DialogDescription>
-              Enviar lembretes para todos os voluntários pendentes desta escala
-            </DialogDescription>
-          </DialogHeader>
-
-          {viewingGroup && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Data:</span>
-                  <span className="font-medium">{format(parseLocalDate(viewingGroup.data), 'dd/MM/yyyy')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Função:</span>
-                  <span className="font-medium">{viewingGroup.funcao}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Ministério:</span>
-                  <span className="font-medium">{viewingGroup.ministerio_nome || '-'}</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
-                <p className="text-sm font-medium mb-2">
-                  Voluntários nesta escala: {viewingGroup.voluntarios.length}
-                </p>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  {viewingGroup.voluntarios.map(vol => (
-                    <li key={vol.id} className="flex items-center gap-2">
-                      <Users className="w-3 h-3" />
-                      {vol.nome}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="p-3 rounded-lg bg-muted/30 border">
-                <p className="text-sm text-muted-foreground">
-                  Será enviada uma mensagem de lembrete para cada voluntário pendente que tenha telefone cadastrado.
-                </p>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter className="gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsBatchWhatsAppDialogOpen(false)}
-              disabled={sendingBatchWhatsApp}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSendBatchWhatsAppReminders}
-              disabled={sendingBatchWhatsApp}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {sendingBatchWhatsApp ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4 mr-2" />
-                  Enviar para Todos
-                </>
-              )}
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

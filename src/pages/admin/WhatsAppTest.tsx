@@ -98,7 +98,7 @@ export default function WhatsAppTest() {
           Teste de WhatsApp
         </h1>
         <p className="text-muted-foreground mt-2">
-          Teste o envio de mensagens via WhatsApp Business API (simulação)
+          Teste o envio de mensagens via WhatsApp Business API
         </p>
       </div>
 
@@ -213,11 +213,10 @@ export default function WhatsAppTest() {
       {/* Info Card */}
       <Card className="mt-6 bg-muted/50">
         <CardContent className="pt-6">
-          <h3 className="font-semibold mb-2">ℹ️ Modo de Simulação</h3>
+          <h3 className="font-semibold mb-2">ℹ️ Integração ainda não configurada</h3>
           <p className="text-sm text-muted-foreground">
-            Esta é uma simulação do envio de mensagens WhatsApp. Para usar em produção, 
-            configure a variável de ambiente <code className="bg-muted px-1 rounded">WHATSAPP_API_KEY</code> com 
-            suas credenciais do Twilio, Meta ou outro provedor.
+            Nenhum provedor de WhatsApp (Twilio, Meta, etc.) está conectado ainda, então todo
+            envio retorna erro de propósito — a função nunca finge sucesso sem entregar a mensagem.
           </p>
         </CardContent>
       </Card>

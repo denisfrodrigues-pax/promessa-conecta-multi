@@ -65,7 +65,6 @@ const AdminAuditoria = lazy(() => import("@/pages/admin/Auditoria"));
 const AdminDevocionais = lazy(() => import("@/pages/admin/Devocionais"));
 const AdminConfiguracaoIgreja = lazy(() => import("@/pages/admin/ConfiguracaoIgreja"));
 const WhatsAppTest = lazy(() => import("@/pages/admin/WhatsAppTest"));
-const AdminKids = lazy(() => import("@/pages/admin/Kids"));
 const AdminEnsino = lazy(() => import("@/pages/admin/Ensino"));
 const NovaIgreja = lazy(() => import("@/pages/superadmin/NovaIgreja"));
 
