@@ -40,6 +40,25 @@ export const DEFAULT_CULTOS_CONFIG: CultosConfig = {
   pequenos_grupos: { ativo: true, descricao: 'Durante a semana' },
 };
 
+/**
+ * Garante um CultosConfig completo a partir do valor bruto vindo do banco.
+ * igrejas.cultos_config tem default '{}'::jsonb (não null) — uma igreja nova
+ * (ex.: criada via Onboarding.tsx, que não popula essa coluna no insert) chega
+ * aqui como objeto vazio. Um simples `?? DEFAULT_CULTOS_CONFIG` não pega esse
+ * caso (só cobre null/undefined), então os blocos abaixo recebiam
+ * culto_principal/escola_biblica/pequenos_grupos undefined e quebravam ao ler
+ * .ativo/.dia/.horario/.descricao. Preenche por chave (e por campo dentro de
+ * cada chave), preservando o que já existir.
+ */
+export function normalizeCultosConfig(raw: unknown): CultosConfig {
+  const r = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw as Partial<CultosConfig> : {};
+  return {
+    culto_principal: { ...DEFAULT_CULTOS_CONFIG.culto_principal, ...(r.culto_principal ?? {}) },
+    escola_biblica:  { ...DEFAULT_CULTOS_CONFIG.escola_biblica,  ...(r.escola_biblica  ?? {}) },
+    pequenos_grupos: { ...DEFAULT_CULTOS_CONFIG.pequenos_grupos, ...(r.pequenos_grupos ?? {}) },
+  };
+}
+
 // ─── CultoToggleBlock ─────────────────────────────────────────────────────────
 
 interface CultoToggleBlockProps {
@@ -72,24 +91,28 @@ export function CultoDescInput({ value, onChange, placeholder }: { value: string
 // ─── Bloco completo pronto para renderizar ────────────────────────────────────
 
 interface CultoPrincipalBlockProps {
-  config: CultoBlock;
+  config: CultoBlock | undefined;
   /** Nome exibido — vem de nome_modulo_culto/nome_modulo_escola_biblica (aba Módulos). Só leitura aqui. */
   nome: string;
   onChange: (field: string, value: unknown) => void;
 }
 
 export function CultoPrincipalBlock({ config, nome, onChange }: CultoPrincipalBlockProps) {
+  // Guarda em runtime além do tipo: config pode chegar undefined se algum
+  // chamador ainda não passar por normalizeCultosConfig (ex.: dado legado
+  // vindo de `as any`, que o TypeScript não pega em tempo de compilação).
+  const safe = config ?? DEFAULT_CULTOS_CONFIG.culto_principal;
   return (
-    <CultoToggleBlock title={nome} ativo={config.ativo} onToggle={v => onChange('ativo', v)}>
+    <CultoToggleBlock title={nome} ativo={safe.ativo} onToggle={v => onChange('ativo', v)}>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1"><Label className="text-xs">Dia da semana</Label>
-          <Select value={config.dia} onValueChange={v => onChange('dia', v)}>
+          <Select value={safe.dia} onValueChange={v => onChange('dia', v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>{DIAS_SEMANA.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}</SelectContent>
           </Select>
         </div>
         <div className="space-y-1"><Label className="text-xs">Horário</Label>
-          <Input type="time" value={config.horario} onChange={e => onChange('horario', e.target.value)} />
+          <Input type="time" value={safe.horario} onChange={e => onChange('horario', e.target.value)} />
         </div>
       </div>
     </CultoToggleBlock>
@@ -97,17 +120,18 @@ export function CultoPrincipalBlock({ config, nome, onChange }: CultoPrincipalBl
 }
 
 export function EscolaBiblicaBlock({ config, nome, onChange }: CultoPrincipalBlockProps) {
+  const safe = config ?? DEFAULT_CULTOS_CONFIG.escola_biblica;
   return (
-    <CultoToggleBlock title={nome} ativo={config.ativo} onToggle={v => onChange('ativo', v)}>
+    <CultoToggleBlock title={nome} ativo={safe.ativo} onToggle={v => onChange('ativo', v)}>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1"><Label className="text-xs">Dia da semana</Label>
-          <Select value={config.dia} onValueChange={v => onChange('dia', v)}>
+          <Select value={safe.dia} onValueChange={v => onChange('dia', v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>{DIAS_SEMANA.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}</SelectContent>
           </Select>
         </div>
         <div className="space-y-1"><Label className="text-xs">Horário</Label>
-          <Input type="time" value={config.horario} onChange={e => onChange('horario', e.target.value)} />
+          <Input type="time" value={safe.horario} onChange={e => onChange('horario', e.target.value)} />
         </div>
       </div>
     </CultoToggleBlock>
@@ -115,17 +139,18 @@ export function EscolaBiblicaBlock({ config, nome, onChange }: CultoPrincipalBlo
 }
 
 interface PgBlockProps {
-  config: PgBlock;
+  config: PgBlock | undefined;
   /** Nome exibido — vem de nome_modulo_pequenos_grupos (aba Módulos). Só leitura aqui. */
   nome: string;
   onChange: (field: string, value: unknown) => void;
 }
 
 export function PequenosGruposBlock({ config, nome, onChange }: PgBlockProps) {
+  const safe = config ?? DEFAULT_CULTOS_CONFIG.pequenos_grupos;
   return (
-    <CultoToggleBlock title={nome} ativo={config.ativo} onToggle={v => onChange('ativo', v)}>
+    <CultoToggleBlock title={nome} ativo={safe.ativo} onToggle={v => onChange('ativo', v)}>
       <div className="space-y-1"><Label className="text-xs">Descrição</Label>
-        <CultoDescInput value={config.descricao} onChange={v => onChange('descricao', v)} placeholder="Ex: Durante a semana" />
+        <CultoDescInput value={safe.descricao} onChange={v => onChange('descricao', v)} placeholder="Ex: Durante a semana" />
       </div>
     </CultoToggleBlock>
   );
