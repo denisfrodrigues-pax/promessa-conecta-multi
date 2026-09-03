@@ -43,6 +43,7 @@ export default function RelatorioFinanceiro() {
       // Get total count
       const { count } = await supabase.from('transacoes_financeiras')
         .select('*', { count: 'exact', head: true })
+        .eq('church_id', churchId)
         .gte('data_operacao', format(inicioMes, 'yyyy-MM-dd'))
         .lte('data_operacao', format(fimMes, 'yyyy-MM-dd'))
         .eq('status', 'confirmado');
@@ -51,6 +52,7 @@ export default function RelatorioFinanceiro() {
       // Paginated transactions
       const { data } = await supabase.from('transacoes_financeiras')
         .select('*, categorias_financeiras(nome)')
+        .eq('church_id', churchId)
         .gte('data_operacao', format(inicioMes, 'yyyy-MM-dd'))
         .lte('data_operacao', format(fimMes, 'yyyy-MM-dd'))
         .eq('status', 'confirmado')
@@ -62,6 +64,7 @@ export default function RelatorioFinanceiro() {
       // KPIs (from all transactions this month)
       const { data: allData } = await supabase.from('transacoes_financeiras')
         .select('tipo, valor')
+        .eq('church_id', churchId)
         .gte('data_operacao', format(inicioMes, 'yyyy-MM-dd'))
         .lte('data_operacao', format(fimMes, 'yyyy-MM-dd'))
         .eq('status', 'confirmado');
@@ -77,6 +80,7 @@ export default function RelatorioFinanceiro() {
         const mes = subMonths(new Date(), i);
         const { data: mesData } = await supabase.from('transacoes_financeiras')
           .select('tipo, valor')
+          .eq('church_id', churchId)
           .gte('data_operacao', format(startOfMonth(mes), 'yyyy-MM-dd'))
           .lte('data_operacao', format(endOfMonth(mes), 'yyyy-MM-dd'))
           .eq('status', 'confirmado');
@@ -94,6 +98,7 @@ export default function RelatorioFinanceiro() {
       // Get all with categories for pie chart
       const { data: allWithCat } = await supabase.from('transacoes_financeiras')
         .select('valor, categorias_financeiras(nome)')
+        .eq('church_id', churchId)
         .gte('data_operacao', format(inicioMes, 'yyyy-MM-dd'))
         .lte('data_operacao', format(fimMes, 'yyyy-MM-dd'))
         .eq('status', 'confirmado');

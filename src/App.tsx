@@ -40,6 +40,7 @@ const Onboarding = lazy(() => import("@/pages/Onboarding"));
 
 // Admin (igreja)
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
+const Aniversariantes = lazy(() => import("@/pages/Aniversariantes"));
 const AdminUsuarios = lazy(() => import("@/pages/admin/Usuarios"));
 const AdminEventos = lazy(() => import("@/pages/admin/Eventos"));
 const AdminAvisos = lazy(() => import("@/pages/admin/Avisos"));
@@ -307,6 +308,7 @@ const App = () => (
                 <Route path="relatorios/financeiro" element={<RelatorioFinanceiro />} />
                 <Route path="relatorios/comunicacoes" element={<RelatorioComunicacoes />} />
                 <Route path="devocionais" element={<AdminDevocionais />} />
+                <Route path="aniversariantes" element={<Aniversariantes />} />
                 <Route path="auditoria" element={<AdminAuditoria />} />
                 <Route path="configuracoes" element={<Navigate to="configuracoes/igreja" replace />} />
                 <Route path="configuracoes/igreja" element={<AdminConfiguracaoIgreja />} />
@@ -329,6 +331,7 @@ const App = () => (
               <Route path="leader" element={<PrivateRoute allowedRoles={["lider", "admin"]}><LeaderLayout /></PrivateRoute>}>
                 <Route index element={<LeaderEntry />} />
                 <Route path="hub" element={<LeaderHub />} />
+                <Route path="aniversariantes" element={<Aniversariantes />} />
               </Route>
 
               {/* ── LÍDER (ministério específico) ──────────────────────────── */}

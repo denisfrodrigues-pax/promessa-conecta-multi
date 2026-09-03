@@ -1,12 +1,13 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, HandHeart, Calendar, Tag, DollarSign, TrendingUp } from 'lucide-react';
+import { ArrowLeft, HandHeart, Calendar, Tag, DollarSign, TrendingUp, FileDown, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { format, startOfMonth, subMonths, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -16,6 +17,8 @@ import {
 } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
+import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
+import { exportToCSV, exportToPDF } from '@/utils/exportUtils';
 
 interface Contribuicao {
   id: string;
@@ -34,19 +37,28 @@ const chartConfig = {
   },
 };
 
+const currentYear = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
 export default function MinhasContribuicoes() {
-  const { profile } = useAuth();
-  const { p } = useIgrejaSlug();
+  const { profile, churchId: authChurchId } = useAuth();
+  const { churchId: slugChurchId, p } = useIgrejaSlug();
+  const churchId = authChurchId ?? slugChurchId ?? null;
+  const { config } = useIgrejaConfig();
   const [contribuicoes, setContribuicoes] = useState<Contribuicao[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const extratoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (profile?.id) {
+    if (profile?.id && churchId) {
       fetchContribuicoes();
     }
-  }, [profile?.id]);
+  }, [profile?.id, churchId, selectedYear]);
 
   const fetchContribuicoes = async () => {
+    setLoading(true);
     try {
       // Uma contribuição pode ter sido lançada pelo próprio membro (criado_por)
       // ou por um admin em nome dele (membro_id) — ver o registro do membro
@@ -66,7 +78,10 @@ export default function MinhasContribuicoes() {
           status,
           categoria:categorias_financeiras(nome)
         `)
+        .eq('church_id', churchId ?? '')
         .eq('tipo', 'receita')
+        .gte('data_operacao', `${selectedYear}-01-01`)
+        .lte('data_operacao', `${selectedYear}-12-31`)
         .order('data_operacao', { ascending: false });
 
       query = membro?.id
@@ -81,6 +96,29 @@ export default function MinhasContribuicoes() {
       console.error('Error fetching contributions:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportCSV = () => {
+    if (contribuicoes.length === 0) return;
+    const rows = contribuicoes.map((c) => ({
+      Data: format(new Date(c.data_operacao), 'dd/MM/yyyy'),
+      Categoria: c.categoria?.nome || 'Não categorizado',
+      Status: c.status,
+      Valor: formatCurrency(c.valor),
+    }));
+    const nomeArquivo = `contribuicoes_${(profile?.nome || 'membro').replace(/\s+/g, '_')}_${selectedYear}`;
+    exportToCSV(rows, nomeArquivo);
+  };
+
+  const handleExportPDF = async () => {
+    if (!extratoRef.current) return;
+    setExportingPdf(true);
+    try {
+      const nomeArquivo = `contribuicoes_${(profile?.nome || 'membro').replace(/\s+/g, '_')}_${selectedYear}`;
+      await exportToPDF(extratoRef.current, nomeArquivo);
+    } finally {
+      setExportingPdf(false);
     }
   };
 
@@ -156,7 +194,7 @@ export default function MinhasContribuicoes() {
             </p>
           </div>
         </div>
-        <Button 
+        <Button
           asChild
           className="bg-green-600 hover:bg-green-700"
         >
@@ -167,6 +205,51 @@ export default function MinhasContribuicoes() {
         </Button>
       </div>
 
+      {/* Extrato: seletor de ano + exportação — pensado para declaração de IR */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {YEAR_OPTIONS.map((y) => (
+              <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={contribuicoes.length === 0}
+            onClick={handleExportCSV}
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={contribuicoes.length === 0 || exportingPdf}
+            onClick={handleExportPDF}
+          >
+            {exportingPdf ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <FileDown className="w-4 h-4 mr-2" />
+            )}
+            PDF
+          </Button>
+        </div>
+      </div>
+
+      <div ref={extratoRef} className="space-y-6 bg-background">
+      {/* Cabeçalho do extrato — visível na tela e no PDF exportado */}
+      <div className="text-sm text-muted-foreground space-y-0.5">
+        <p><span className="font-medium text-foreground">{profile?.nome || 'Membro'}</span> · {config.nome}</p>
+        <p>Extrato de contribuições — ano de {selectedYear}</p>
+      </div>
+
       {/* Summary Card */}
       <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white dark:from-green-950/20 dark:to-background">
         <CardContent className="p-5">
@@ -175,7 +258,7 @@ export default function MinhasContribuicoes() {
               <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total contribuído</p>
+              <p className="text-sm text-muted-foreground">Total contribuído em {selectedYear}</p>
               <p className="text-2xl font-bold text-green-700 dark:text-green-400">
                 {formatCurrency(totalContribuido)}
               </p>
@@ -184,8 +267,8 @@ export default function MinhasContribuicoes() {
         </CardContent>
       </Card>
 
-      {/* Chart Section */}
-      {!loading && hasChartData && (
+      {/* Chart Section — só faz sentido para o ano corrente (tendência recente) */}
+      {!loading && hasChartData && selectedYear === currentYear && (
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
@@ -256,19 +339,25 @@ export default function MinhasContribuicoes() {
                   <HandHeart className="w-8 h-8 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-medium">Nenhuma contribuição ainda</h3>
+                  <h3 className="font-medium">
+                    {selectedYear === currentYear ? 'Nenhuma contribuição ainda' : `Nenhuma contribuição em ${selectedYear}`}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Sua primeira contribuição ficará registrada aqui
+                    {selectedYear === currentYear
+                      ? 'Sua primeira contribuição ficará registrada aqui'
+                      : 'Escolha outro ano acima para ver o extrato correspondente'}
                   </p>
                 </div>
-                <Button 
-                  asChild
-                  className="mt-2 bg-green-600 hover:bg-green-700"
-                >
-                  <Link to={p('/app/contribuir')}>
-                    Fazer primeira contribuição
-                  </Link>
-                </Button>
+                {selectedYear === currentYear && (
+                  <Button
+                    asChild
+                    className="mt-2 bg-green-600 hover:bg-green-700"
+                  >
+                    <Link to={p('/app/contribuir')}>
+                      Fazer primeira contribuição
+                    </Link>
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -300,6 +389,7 @@ export default function MinhasContribuicoes() {
             </Card>
           ))
         )}
+      </div>
       </div>
 
     </div>
