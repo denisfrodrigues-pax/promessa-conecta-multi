@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronRight } from "lucide-react";
+import { Cake, ChevronRight } from "lucide-react";
 import { getMinisterioIconConfig } from "@/utils/ministerioIcons";
 
 interface LedMinistry {
@@ -12,6 +12,28 @@ interface LedMinistry {
   nome: string;
   slug: string | null;
   tipo: string | null;
+}
+
+function AniversariantesQuickLink() {
+  const navigate = useNavigate();
+  const { p } = useIgrejaSlug();
+  return (
+    <Card
+      className="mb-6 hover:shadow-md transition-shadow cursor-pointer group border-promessa-200 bg-promessa-50/50"
+      onClick={() => navigate(p("/leader/aniversariantes"))}
+    >
+      <CardContent className="p-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-promessa-100 text-promessa-700 flex items-center justify-center shrink-0">
+          <Cake className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-foreground">Aniversariantes da Semana</p>
+          <p className="text-sm text-muted-foreground">Veja quem faz aniversário e envie um WhatsApp</p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function LeaderHub() {
@@ -118,6 +140,7 @@ export default function LeaderHub() {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">Hub do Líder</h1>
+        <AniversariantesQuickLink />
         <p className="text-muted-foreground">
           {isAdmin
             ? "Nenhum ministério cadastrado na igreja."
@@ -130,6 +153,8 @@ export default function LeaderHub() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Hub do Líder</h1>
+
+      <AniversariantesQuickLink />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {ledMinistries.map((m) => {

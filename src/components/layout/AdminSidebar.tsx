@@ -36,6 +36,7 @@ import {
   Baby,
   GraduationCap,
   Building2,
+  Cake,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -92,6 +93,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
         { icon: FileText, label: `Relatório ${nomeModulo.bases}`,   path: p('/admin/bases/relatorio') },
       ]
     },
+    { icon: Cake, label: 'Aniversariantes', path: p('/admin/aniversariantes') },
     // === OPERAÇÕES ===
     {
       icon: Briefcase, label: 'Equipe & Operações', path: p('/admin/ministerios'), section: 'Operações',

@@ -23,7 +23,10 @@ import {
   CalendarDays,
   Building2,
   PlusCircle,
+  DollarSign,
+  Cake,
 } from 'lucide-react';
+import { isBirthdayInCurrentWeek } from '@/lib/birthdayWeek';
 import {
   AreaChart,
   Area,
@@ -41,11 +44,18 @@ interface DashboardStats {
   basesAtivas: number;
   membrosAtivos: number;
   criancasPresentes: number;
+  totalArrecadadoMes: number;
+  aniversariantesSemana: number;
 }
 
 interface ChartData {
   month: string;
   visitantes: number;
+}
+
+interface MembrosChartData {
+  month: string;
+  membros: number;
 }
 
 interface Visitante {
@@ -113,8 +123,11 @@ export default function AdminDashboard() {
     basesAtivas: 0,
     membrosAtivos: 0,
     criancasPresentes: 0,
+    totalArrecadadoMes: 0,
+    aniversariantesSemana: 0,
   });
   const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [membrosChartData, setMembrosChartData] = useState<MembrosChartData[]>([]);
   const [recentVisitantes, setRecentVisitantes] = useState<Visitante[]>([]);
   const [recentAcompanhamentos, setRecentAcompanhamentos] = useState<Acompanhamento[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -132,6 +145,9 @@ export default function AdminDashboard() {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const today = new Date().toISOString().split('T')[0];
+      const inicioMesStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+      const fimMesDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const fimMesStr = `${fimMesDate.getFullYear()}-${String(fimMesDate.getMonth() + 1).padStart(2, '0')}-${String(fimMesDate.getDate()).padStart(2, '0')}`;
 
       // Fetch all data in parallel
       const [
@@ -144,8 +160,17 @@ export default function AdminDashboard() {
         recentVisitantesRes,
         recentAcompRes,
         chartDataRes,
+        membrosChartDataRes,
         alertsData,
         membrosIncompletosRes,
+        // Total arrecadado no mês — mesma lógica de admin/financeiro/FinanceiroDashboard.tsx.
+        // Atenção: transacoes_financeiras não tem church_id (nem contas_financeiras), então
+        // esta soma hoje é global à plataforma, não por igreja — limitação pré-existente,
+        // não introduzida aqui. Ver descrição da PR.
+        totalArrecadadoMesRes,
+        // Aniversariantes da semana — mesmos campos de AniversariantesDoMes.tsx, mas
+        // filtrando por semana em vez de mês (ver src/lib/birthdayWeek.ts).
+        aniversariantesRes,
       ] = await Promise.all([
         // Visitantes no mês
         supabase
@@ -212,7 +237,10 @@ export default function AdminDashboard() {
         
         // Chart data - visitantes últimos 6 meses
         fetchChartData(),
-        
+
+        // Chart data - crescimento de membros últimos 6 meses (mesmo padrão acima)
+        fetchMembrosChartData(),
+
         // Alerts
         fetchAlerts(),
 
@@ -222,7 +250,31 @@ export default function AdminDashboard() {
           .select('id', { count: 'exact', head: true })
           .eq('church_id', churchId)
           .or('telefone.is.null,telefone.eq.,data_nascimento.is.null'),
+
+        // Total arrecadado no mês
+        supabase
+          .from('transacoes_financeiras')
+          .select('valor')
+          .eq('tipo', 'receita')
+          .eq('status', 'confirmado')
+          .gte('data_operacao', inicioMesStr)
+          .lte('data_operacao', fimMesStr),
+
+        // Aniversariantes da semana
+        supabase
+          .from('membros')
+          .select('id, data_nascimento')
+          .eq('church_id', churchId)
+          .in('status', ['ativo', 'frequentador'])
+          .not('data_nascimento', 'is', null),
       ]);
+
+      const totalArrecadadoMes = (totalArrecadadoMesRes.data || []).reduce(
+        (acc: number, t: { valor: number }) => acc + Number(t.valor),
+        0
+      );
+      const aniversariantesSemana = ((aniversariantesRes.data || []) as { id: string; data_nascimento: string }[])
+        .filter((m) => isBirthdayInCurrentWeek(m.data_nascimento)).length;
 
       setStats({
         visitantesNoMes: visitantesNoMesRes.count || 0,
@@ -231,11 +283,14 @@ export default function AdminDashboard() {
         basesAtivas: basesAtivasRes.count || 0,
         membrosAtivos: membrosAtivosRes.count || 0,
         criancasPresentes: criancasPresentesRes.count || 0,
+        totalArrecadadoMes,
+        aniversariantesSemana,
       });
 
       setRecentVisitantes(recentVisitantesRes.data || []);
       setRecentAcompanhamentos(recentAcompRes.data as any || []);
       setChartData(chartDataRes);
+      setMembrosChartData(membrosChartDataRes);
       setAlerts(alertsData);
       setMembrosIncompletos(membrosIncompletosRes.count || 0);
 
@@ -306,6 +361,44 @@ export default function AdminDashboard() {
       return monthRanges.map(range => ({
         month: range.monthName.charAt(0).toUpperCase() + range.monthName.slice(1),
         visitantes: 0,
+      }));
+    }
+  };
+
+  const fetchMembrosChartData = async (): Promise<MembrosChartData[]> => {
+    const now = new Date();
+
+    const monthRanges = Array.from({ length: 6 }, (_, i) => {
+      const monthOffset = 5 - i;
+      const date = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1);
+      const startOfMonthIso = date.toISOString();
+      const endOfMonthIso = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString();
+      const monthName = date.toLocaleDateString('pt-BR', { month: 'short' });
+      return { startOfMonthIso, endOfMonthIso, monthName };
+    });
+
+    try {
+      const results = await Promise.all(
+        monthRanges.map(({ startOfMonthIso, endOfMonthIso }) =>
+          supabase
+            .from('membros')
+            .select('id', { count: 'exact', head: true })
+            .eq('church_id', churchId!)
+            .eq('status', 'ativo')
+            .gte('created_at', startOfMonthIso)
+            .lte('created_at', endOfMonthIso)
+        )
+      );
+
+      return monthRanges.map((range, index) => ({
+        month: range.monthName.charAt(0).toUpperCase() + range.monthName.slice(1),
+        membros: results[index].count || 0,
+      }));
+    } catch (error) {
+      console.error('Error fetching membros chart data:', error);
+      return monthRanges.map((range) => ({
+        month: range.monthName.charAt(0).toUpperCase() + range.monthName.slice(1),
+        membros: 0,
       }));
     }
   };
@@ -420,6 +513,9 @@ export default function AdminDashboard() {
     return `https://wa.me/${formatted}`;
   };
 
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
   const kpiCards = [
     {
       title: 'Visitantes no Mês',
@@ -463,6 +559,20 @@ export default function AdminDashboard() {
       color: 'bg-pink-500',
       link: '/admin/kids',
     },
+    {
+      title: 'Arrecadado no Mês',
+      value: formatCurrency(stats.totalArrecadadoMes),
+      icon: DollarSign,
+      color: 'bg-green-500',
+      link: '/admin/financeiro',
+    },
+    {
+      title: 'Aniversariantes na Semana',
+      value: stats.aniversariantesSemana,
+      icon: Cake,
+      color: 'bg-orange-500',
+      link: '/admin/aniversariantes',
+    },
   ];
 
   return (
@@ -474,7 +584,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* KPI Cards — design moderno com barra de cor primária */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
         {kpiCards.map((kpi) => (
           <Link
             key={kpi.title}
@@ -488,7 +598,7 @@ export default function AdminDashboard() {
             {loading ? (
               <Skeleton className="h-9 w-16 mb-1" />
             ) : (
-              <p className="text-4xl font-bold text-gray-900 leading-none">{kpi.value}</p>
+              <p className="text-3xl font-bold text-gray-900 leading-none truncate">{kpi.value}</p>
             )}
             <p className="text-xs text-gray-500 mt-2 leading-snug">{kpi.title}</p>
           </Link>
@@ -638,6 +748,76 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Crescimento de Membros + Aniversariantes */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2 shadow-card">
+          <CardHeader>
+            <CardTitle className="font-display flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              Crescimento de Membros
+            </CardTitle>
+            <CardDescription>Novos membros ativos por mês (últimos 6 meses)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <Skeleton className="h-[250px] w-full" />
+            ) : (
+              <ResponsiveContainer width="100%" height={250}>
+                <AreaChart data={membrosChartData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="month" className="text-xs" />
+                  <YAxis className="text-xs" allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="membros"
+                    stroke="#396939"
+                    fill="#5A9462"
+                    fillOpacity={0.3}
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Link to={p('/admin/aniversariantes')} className="block">
+          <Card className="shadow-card h-full hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="font-display flex items-center gap-2">
+                <Cake className="w-5 h-5 text-orange-500" />
+                Aniversariantes
+              </CardTitle>
+              <CardDescription>Nesta semana</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center py-6">
+              {loading ? (
+                <Skeleton className="h-12 w-16" />
+              ) : (
+                <>
+                  <p className="text-5xl font-bold text-gray-900 leading-none">{stats.aniversariantesSemana}</p>
+                  <p className="text-sm text-muted-foreground mt-3 text-center">
+                    {stats.aniversariantesSemana === 0
+                      ? 'Ninguém faz aniversário esta semana'
+                      : `${stats.aniversariantesSemana} membro${stats.aniversariantesSemana !== 1 ? 's' : ''} para celebrar`}
+                  </p>
+                  <span className="text-xs text-primary font-medium mt-3 flex items-center gap-1">
+                    Ver lista <ChevronRight className="w-3 h-3" />
+                  </span>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Bottom Grid - Lists */}
