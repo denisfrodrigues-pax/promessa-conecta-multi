@@ -132,4 +132,32 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Sem isso, toda dependência compartilhada entre chunks lazy (praticamente
+        // todas as páginas, via React/Router/Query/Radix) cai no chunk comum
+        // carregado em toda navegação — daí o chunk principal de ~654 KB. Separar
+        // por grupo estável de vendor reduz esse chunk sem tocar em nenhuma
+        // página; libs pesadas usadas só em telas específicas (recharts, jspdf,
+        // html2canvas) já são code-split automaticamente pelos imports lazy
+        // existentes em App.tsx e não precisam de entrada aqui.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (/[\\/]node_modules[\\/](react|react-dom|react-router-dom|scheduler)[\\/]/.test(id)) {
+            return "vendor-react";
+          }
+          if (
+            /[\\/]node_modules[\\/]@radix-ui[\\/]/.test(id) ||
+            /[\\/]node_modules[\\/](lucide-react|class-variance-authority|clsx|tailwind-merge|sonner|cmdk|vaul|embla-carousel-react|react-day-picker|input-otp|react-resizable-panels)[\\/]/.test(id)
+          ) {
+            return "vendor-ui";
+          }
+          if (/[\\/]node_modules[\\/](@supabase|@tanstack|date-fns|zod)[\\/]/.test(id)) {
+            return "vendor-data";
+          }
+        },
+      },
+    },
+  },
 }));

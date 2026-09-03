@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchCountsByIds } from '@/lib/batchFetch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -130,31 +131,26 @@ export default function LeaderBases() {
         return;
       }
 
-      // Fetch member counts for all bases in parallel
-      const basesWithCounts = await Promise.all(
-        basesData.map(async (base) => {
-          const { count } = await supabase
-            .from('bases_membros')
-            .select('*', { count: 'exact', head: true })
-            .eq('base_id', base.id)
-            .eq('status', 'ativo');
+      // Contagem de membros de todas as bases numa única query (em vez de uma por base)
+      const baseIds = basesData.map((b) => b.id);
+      const counts = await fetchCountsByIds('bases_membros', 'base_id', baseIds, (q) => q.eq('status', 'ativo'));
 
-          // Handle lider field which could be an array or object
-          const liderData = Array.isArray(base.lider) ? base.lider[0] : base.lider;
+      const basesWithCounts = basesData.map((base) => {
+        // Handle lider field which could be an array or object
+        const liderData = Array.isArray(base.lider) ? base.lider[0] : base.lider;
 
-          return {
-            id: base.id,
-            nome: base.nome,
-            descricao: base.descricao,
-            dia_semana: base.dia_semana,
-            horario: base.horario,
-            local: base.local,
-            capacidade: base.capacidade,
-            lider_nome: liderData?.nome,
-            membros_count: count || 0,
-          };
-        })
-      );
+        return {
+          id: base.id,
+          nome: base.nome,
+          descricao: base.descricao,
+          dia_semana: base.dia_semana,
+          horario: base.horario,
+          local: base.local,
+          capacidade: base.capacidade,
+          lider_nome: liderData?.nome,
+          membros_count: counts.get(base.id) ?? 0,
+        };
+      });
 
       setBases(basesWithCounts);
     } catch (error: any) {

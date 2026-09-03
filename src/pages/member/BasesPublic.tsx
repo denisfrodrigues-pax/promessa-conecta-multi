@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchCountsByIds } from '@/lib/batchFetch';
 import { Users, MapPin, Clock, ChevronRight, Search, Home } from 'lucide-react';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
@@ -63,23 +64,17 @@ export default function BasesPublic() {
 
       if (error) throw error;
 
-      const basesWithCounts = await Promise.all(
-        (data || []).map(async (base) => {
-          const { count } = await supabase
-            .from('bases_membros')
-            .select('*', { count: 'exact', head: true })
-            .eq('base_id', base.id)
-            .eq('status', 'ativo');
-          
-          // Handle the lider being an array from the join
-          const liderData = Array.isArray(base.lider) ? base.lider[0] : base.lider;
-          return { 
-            ...base, 
-            lider: liderData || null,
-            membros_count: count || 0 
-          };
-        })
-      );
+      const counts = await fetchCountsByIds('bases_membros', 'base_id', (data || []).map((b) => b.id), (q) => q.eq('status', 'ativo'));
+
+      const basesWithCounts = (data || []).map((base) => {
+        // Handle the lider being an array from the join
+        const liderData = Array.isArray(base.lider) ? base.lider[0] : base.lider;
+        return {
+          ...base,
+          lider: liderData || null,
+          membros_count: counts.get(base.id) ?? 0,
+        };
+      });
 
       setBases(basesWithCounts);
     } catch (error) {

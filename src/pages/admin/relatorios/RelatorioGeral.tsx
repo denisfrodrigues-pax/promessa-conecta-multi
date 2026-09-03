@@ -36,6 +36,7 @@ import {
   Legend,
 } from "recharts";
 import { exportToCSV, exportToPDF } from "@/utils/exportUtils";
+import { fetchCountsByIds } from "@/lib/batchFetch";
 
 const COLORS = ["#5A9462", "#396939", "#73A97A", "#D9534F", "#85A89A", "#E6A327"];
 
@@ -171,17 +172,16 @@ export default function RelatorioGeral() {
 
     // Check-ins por sala
     const { data: salasData } = await supabase.from("mca_salas").select("id, nome").eq("church_id", churchId);
-    const checkinsSalas = await Promise.all(
-      (salasData || []).map(async (sala) => {
-        const { count } = await supabase
-          .from("mca_checkins")
-          .select("*", { count: "exact", head: true })
-          .eq("church_id", churchId)
-          .eq("sala_id", sala.id)
-          .gte("checkin_at", format(startOfMonth(new Date()), "yyyy-MM-dd"));
-        return { sala: sala.nome, checkins: count || 0 };
-      }),
+    const salaCheckinCounts = await fetchCountsByIds(
+      "mca_checkins",
+      "sala_id",
+      (salasData || []).map((s) => s.id),
+      (q) => q.eq("church_id", churchId).gte("checkin_at", format(startOfMonth(new Date()), "yyyy-MM-dd")),
     );
+    const checkinsSalas = (salasData || []).map((sala) => ({
+      sala: sala.nome,
+      checkins: salaCheckinCounts.get(sala.id) ?? 0,
+    }));
 
     // Financeiro mensal
     const financeiroMensal = [];

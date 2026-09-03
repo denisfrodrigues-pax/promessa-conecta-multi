@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchCountsByIds } from '@/lib/batchFetch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,16 +80,9 @@ export default function GruposHub() {
 
       if (error) throw error;
 
-      const comContagem = await Promise.all(
-        (data as Grupo[]).map(async (g) => {
-          const { count } = await (supabase as any)
-            .from('bases_membros')
-            .select('*', { count: 'exact', head: true })
-            .eq('base_id', g.id)
-            .eq('status', 'ativo');
-          return { ...g, membros_count: count ?? 0 };
-        })
-      );
+      const grupos = data as Grupo[];
+      const counts = await fetchCountsByIds('bases_membros', 'base_id', grupos.map((g) => g.id), (q) => q.eq('status', 'ativo'));
+      const comContagem = grupos.map((g) => ({ ...g, membros_count: counts.get(g.id) ?? 0 }));
 
       return comContagem as Grupo[];
     },

@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { groupByIds } from '@/lib/batchFetch';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Plus, Trash2, Users, Building2, Search, Pencil, X, Tag } from 'lucide-react';
@@ -97,18 +98,19 @@ export default function LeaderMinhaEquipe() {
 
       if (error) throw error;
 
-      const voluntariosWithFuncoes = await Promise.all((data || []).map(async (vol) => {
-        const { data: funcoesData } = await supabase
-          .from('ministerio_voluntarios_funcoes')
-          .select('funcao_id, ministerio_funcoes(id, nome)')
-          .eq('ministerio_voluntario_id', vol.id);
-
-        const funcoes = (funcoesData || [])
+      const funcoesByVol = await groupByIds<{ ministerio_voluntario_id: string; funcao_id: string; ministerio_funcoes: { id: string; nome: string } | null }>(
+        'ministerio_voluntarios_funcoes',
+        'ministerio_voluntario_id',
+        (data || []).map((vol) => vol.id),
+        'ministerio_voluntario_id, funcao_id, ministerio_funcoes(id, nome)',
+      );
+      const voluntariosWithFuncoes = (data || []).map((vol) => {
+        const funcoes = (funcoesByVol.get(vol.id) || [])
           .filter(f => f.ministerio_funcoes)
           .map(f => ({ id: f.ministerio_funcoes!.id, nome: f.ministerio_funcoes!.nome }));
 
         return { ...vol, funcoes };
-      }));
+      });
 
       const sorted = voluntariosWithFuncoes.sort((a, b) =>
         (a.profile?.nome || '').localeCompare(b.profile?.nome || '')

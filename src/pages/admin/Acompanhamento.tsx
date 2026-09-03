@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, RefreshCw, Users, Clock, MapPin, AlertTriangle, Download, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchByIds, fetchCountsByIds } from '@/lib/batchFetch';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -173,37 +174,21 @@ export default function Acompanhamento() {
       }
     }
 
-    // Fetch leader names and member counts for each base
-    const enriched = await Promise.all(
-      unique.map(async (acomp) => {
-        let lider_nome: string | undefined;
-        let membros_count = 0;
+    // Fetch leader names and member counts for all bases — uma query por tabela em vez de por linha
+    const liderIds = [...new Set(unique.map((a) => a.base?.lider_id).filter((id): id is string => !!id))];
+    const [lideres, membroCounts] = await Promise.all([
+      fetchByIds<{ id: string; nome: string }>('membros', liderIds, 'id, nome'),
+      fetchCountsByIds('bases_membros', 'base_id', unique.map((a) => a.base_id), (q) => q.eq('status', 'ativo')),
+    ]);
 
-        if (acomp.base?.lider_id) {
-          const { data: lider } = await supabase
-            .from('membros')
-            .select('nome')
-            .eq('id', acomp.base.lider_id)
-            .maybeSingle();
-          lider_nome = lider?.nome;
-        }
-
-        const { count } = await supabase
-          .from('bases_membros')
-          .select('*', { count: 'exact', head: true })
-          .eq('base_id', acomp.base_id)
-          .eq('status', 'ativo');
-
-        return {
-          ...acomp,
-          base: {
-            ...acomp.base,
-            lider_nome,
-            membros_count: count || 0,
-          },
-        };
-      })
-    );
+    const enriched = unique.map((acomp) => ({
+      ...acomp,
+      base: {
+        ...acomp.base,
+        lider_nome: acomp.base?.lider_id ? lideres.get(acomp.base.lider_id)?.nome : undefined,
+        membros_count: membroCounts.get(acomp.base_id) ?? 0,
+      },
+    }));
 
     setAcompanhamentos(enriched);
     setLoading(false);
