@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import {
   CultoPrincipalBlock, EscolaBiblicaBlock, PequenosGruposBlock,
-  DEFAULT_CULTOS_CONFIG,
+  DEFAULT_CULTOS_CONFIG, normalizeCultosConfig,
 } from '@/components/CultoBlocks';
 import type { CultosConfig } from '@/components/CultoBlocks';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -258,7 +258,7 @@ export default function ConfiguracaoIgreja() {
         telefone:      (data as any).telefone      ?? '',
         email:         (data as any).email         ?? '',
         google_maps_url: (data as any).google_maps_url ?? '',
-        cultos_config: (data as any).cultos_config ?? DEFAULT_CULTOS_CONFIG,
+        cultos_config: normalizeCultosConfig((data as any).cultos_config),
         instagram_url: data.instagram_url ?? '',
         youtube_url: data.youtube_url ?? '',
         facebook_url: data.facebook_url ?? '',
