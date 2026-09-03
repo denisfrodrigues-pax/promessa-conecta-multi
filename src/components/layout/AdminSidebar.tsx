@@ -52,8 +52,17 @@ interface MenuItem {
   submenu?: { icon: React.ElementType; label: string; path: string; moduleKey?: string }[];
 }
 
-export default function AdminSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+interface AdminSidebarProps {
+  /** 'mobile' renders full-width without the collapse toggle, for use inside a Sheet drawer. */
+  variant?: 'desktop' | 'mobile';
+  /** Called after a nav link is clicked — used to close the mobile Sheet on navigation. */
+  onNavigate?: () => void;
+}
+
+export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminSidebarProps = {}) {
+  const isMobile = variant === 'mobile';
+  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
+  const collapsed = isMobile ? false : desktopCollapsed;
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   const { profile, roles, signOut } = useAuth();
   const { config, nomeModulo } = useIgrejaConfig();
@@ -174,8 +183,10 @@ export default function AdminSidebar() {
   return (
     <aside
       className={cn(
-        'h-screen bg-white border-r border-gray-100 sticky top-0 flex flex-col transition-all duration-300',
-        collapsed ? 'w-16' : 'w-64'
+        'bg-white flex flex-col transition-all duration-300',
+        isMobile
+          ? 'h-full w-full'
+          : cn('h-screen border-r border-gray-100 sticky top-0', collapsed ? 'w-16' : 'w-64')
       )}
     >
       {/* Header */}
@@ -236,6 +247,7 @@ export default function AdminSidebar() {
                       <NavLink
                         key={subItem.path}
                         to={subItem.path}
+                        onClick={() => onNavigate?.()}
                         className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all duration-150 text-sm"
                         activeClassName="bg-[color:var(--color-primary)]/10 text-[color:hsl(var(--promessa-primary-dark))] font-medium"
                       >
@@ -250,6 +262,7 @@ export default function AdminSidebar() {
               <NavLink
                 to={item.path}
                 end
+                onClick={() => onNavigate?.()}
                 className={cn(
                   'relative flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150',
                   collapsed && 'justify-center px-2'
@@ -282,6 +295,7 @@ export default function AdminSidebar() {
         {isSuperAdmin && (
           <NavLink
             to="/admin"
+            onClick={() => onNavigate?.()}
             className={cn(
               'flex items-center gap-3 px-3 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all duration-150 border border-amber-200 text-sm font-medium',
               collapsed && 'justify-center px-2'
@@ -294,6 +308,7 @@ export default function AdminSidebar() {
 
         <NavLink
           to={p('/app')}
+          onClick={() => onNavigate?.()}
           className={cn(
             'flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-150 border border-gray-200',
             collapsed && 'justify-center px-2'
@@ -305,14 +320,16 @@ export default function AdminSidebar() {
 
         <div className={cn('flex items-center gap-2', collapsed ? 'justify-center' : 'justify-between')}>
           <UserAvatarMenu size="sm" showName={!collapsed} />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-gray-400 hover:text-gray-700 hover:bg-gray-100"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </Button>
+          {!isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+              onClick={() => setDesktopCollapsed(!desktopCollapsed)}
+            >
+              {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </Button>
+          )}
         </div>
       </div>
     </aside>

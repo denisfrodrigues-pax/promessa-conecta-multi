@@ -2,6 +2,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import AdminSidebar from './AdminSidebar';
+import AdminMobileHeader from './AdminMobileHeader';
 import { Loader2 } from 'lucide-react';
 
 export default function AdminLayout() {
@@ -29,10 +30,15 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen flex w-full bg-background">
-      <AdminSidebar />
-      <main className="flex-1 overflow-auto">
-        <Outlet />
-      </main>
+      <div className="hidden md:block">
+        <AdminSidebar />
+      </div>
+      <div className="flex-1 flex flex-col min-w-0">
+        <AdminMobileHeader />
+        <main className="flex-1 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
