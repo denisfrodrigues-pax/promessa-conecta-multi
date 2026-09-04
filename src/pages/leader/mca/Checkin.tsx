@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link, useOutletContext } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,38 +15,13 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { LogIn, LogOut, Clock, Users, Baby, Wifi, CalendarDays } from 'lucide-react';
+import { LogIn, LogOut, Clock, Users, Baby, Wifi, CalendarDays, Maximize } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
-interface Sala { id: string; nome: string }
-interface Crianca { id: string; nome: string; sala_id: string | null }
-interface Checkin {
-  id: string;
-  crianca_id: string | null;
-  sala_id: string;
-  checkin_at: string;
-  checkout_at: string | null;
-  observacao: string | null;
-  mca_criancas: { nome: string } | null;
-  mca_salas: { nome: string } | null;
-}
-
-function todayStr() {
-  return format(new Date(), 'yyyy-MM-dd');
-}
-
-// Visitante = check-in sem crianca_id (mca_checkins não tem coluna própria para isso).
-// O nome do visitante fica registrado em observacao ("Visitante: Nome — Responsável: X").
-function isVisitanteCheckin(ci: Checkin): boolean {
-  return !ci.crianca_id;
-}
-
-function checkinNome(ci: Checkin): string {
-  if (!isVisitanteCheckin(ci)) return ci.mca_criancas?.nome ?? '–';
-  const nome = ci.observacao?.match(/^Visitante:\s*(.+?)\s*—/)?.[1];
-  return nome || 'Visitante';
-}
+import {
+  useMcaCheckin, todayStr, isVisitanteCheckin, checkinNome,
+  type McaSala as Sala, type McaCheckinRow as Checkin,
+} from '@/hooks/useMcaCheckin';
 
 // ── Cadastrar visitante como membro ──────────────────────────────────────────
 
@@ -154,15 +127,12 @@ function CadastrarVisitanteForm({ open, nome, responsavel, nasc, salas, churchId
 export default function Checkin({ ministerioId: propMid }: { ministerioId?: string } = {}) {
   const ctx = useOutletContext<{ ministerioId: string } | null>();
   const ministerioId = propMid ?? ctx?.ministerioId ?? '';
-  const { user, churchId: authChurchId } = useAuth();
-  const { churchId: slugChurchId } = useIgrejaSlug();
-  const qc = useQueryClient();
+  const { p } = useIgrejaSlug();
 
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCrianca, setSelectedCrianca] = useState('');
   const [selectedSala, setSelectedSala] = useState('');
-  const [realtime, setRealtime] = useState(true);
 
   // Visitor fields
   const [isVisitante, setIsVisitante] = useState(false);
@@ -174,8 +144,6 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
   const [visitanteInfo, setVisitanteInfo] = useState<{ nome: string; responsavel: string; nasc: string } | null>(null);
   const [showCadastrarForm, setShowCadastrarForm] = useState(false);
 
-  const isToday = selectedDate === todayStr();
-
   function resetModal() {
     setSelectedCrianca('');
     setSelectedSala('');
@@ -185,135 +153,10 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
     setNascVisitante('');
   }
 
-  const churchId = authChurchId ?? slugChurchId ?? null;
-
-  const { data: salas = [] } = useQuery({
-    queryKey: ['mca_salas', ministerioId],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('mca_salas').select('id, nome').eq('ministerio_id', ministerioId).eq('ativo', true).order('nome');
-      if (error) throw error;
-      return data as Sala[];
-    },
-    enabled: !!ministerioId,
-  });
-
-  const { data: criancas = [] } = useQuery({
-    queryKey: ['mca_criancas', churchId],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('mca_criancas').select('id, nome, sala_id').eq('church_id', churchId).eq('ativo', true).order('nome');
-      if (error) throw error;
-      return data as Crianca[];
-    },
-    enabled: !!churchId,
-  });
-
-  const { data: checkins = [], isLoading } = useQuery({
-    queryKey: ['mca_checkins_dia', churchId, selectedDate],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('mca_checkins')
-        .select('*, mca_criancas(nome), mca_salas(nome)')
-        .eq('church_id', churchId)
-        .gte('checkin_at', `${selectedDate}T00:00:00`)
-        .lte('checkin_at', `${selectedDate}T23:59:59`)
-        .order('checkin_at', { ascending: false });
-      if (error) throw error;
-      return data as Checkin[];
-    },
-    enabled: !!churchId,
-  });
-
-  useEffect(() => {
-    if (!churchId || !isToday) return;
-    const channel = supabase
-      .channel('mca_checkins_realtime')
-      .on('postgres_changes' as any, {
-        event: '*', schema: 'public', table: 'mca_checkins',
-        filter: `church_id=eq.${churchId}`,
-      }, () => {
-        qc.invalidateQueries({ queryKey: ['mca_checkins_dia', churchId, selectedDate] });
-      })
-      .subscribe((status: string) => {
-        setRealtime(status === 'SUBSCRIBED');
-      });
-    return () => { supabase.removeChannel(channel); };
-  }, [churchId, isToday, selectedDate, qc]);
-
-  const checkinMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedSala) throw new Error('Selecione a sala');
-      if (isVisitante) {
-        if (!nomeVisitante.trim()) throw new Error('Nome da criança é obrigatório');
-        if (!responsavelVisitante.trim()) throw new Error('Nome do responsável é obrigatório');
-      } else {
-        if (!selectedCrianca) throw new Error('Selecione a criança');
-      }
-      const checkinAt = isToday
-        ? new Date().toISOString()
-        : `${selectedDate}T12:00:00.000Z`;
-
-      const payload: Record<string, any> = {
-        sala_id: selectedSala,
-        church_id: churchId,
-        registrado_por: user?.id,
-        checkin_at: checkinAt,
-        crianca_id: isVisitante ? null : selectedCrianca,
-      };
-      if (isVisitante) {
-        payload.observacao = `Visitante: ${nomeVisitante.trim()} — Responsável: ${responsavelVisitante.trim()}`;
-      }
-
-      const { error } = await (supabase as any).from('mca_checkins').insert(payload);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['mca_checkins_dia', churchId, selectedDate] });
-      toast.success('Check-in realizado!');
-      setModalOpen(false);
-      if (isVisitante) {
-        setVisitanteInfo({ nome: nomeVisitante.trim(), responsavel: responsavelVisitante.trim(), nasc: nascVisitante });
-      }
-      resetModal();
-    },
-    onError: (e: Error) => toast.error(e.message || 'Erro ao registrar check-in'),
-  });
-
-  const checkoutMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const checkoutAt = isToday
-        ? new Date().toISOString()
-        : `${selectedDate}T13:00:00.000Z`;
-      const { error } = await (supabase as any)
-        .from('mca_checkins').update({ checkout_at: checkoutAt }).eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['mca_checkins_dia', churchId, selectedDate] });
-      toast.success('Checkout registrado');
-    },
-    onError: () => toast.error('Erro ao registrar checkout'),
-  });
-
-  const presentes = checkins.filter(c => !c.checkout_at);
-  const saidas = checkins.filter(c => c.checkout_at);
-
-  const porSala: Record<string, Checkin[]> = {};
-  presentes.forEach(c => {
-    if (!porSala[c.sala_id]) porSala[c.sala_id] = [];
-    porSala[c.sala_id].push(c);
-  });
-
-  function openCheckin(c: Crianca) {
-    resetModal();
-    setSelectedCrianca(c.id);
-    setSelectedSala(c.sala_id ?? '');
-    setModalOpen(true);
-  }
-
-  const criancasPresentes = new Set(presentes.filter(c => c.crianca_id).map(c => c.crianca_id!));
-  const criancasDisponiveis = criancas.filter(c => !criancasPresentes.has(c.id));
+  const {
+    churchId, isToday, realtime, salas, criancasDisponiveis, checkins, isLoading,
+    presentes, saidas, porSala, checkinMutation, checkoutMutation, invalidateCriancas,
+  } = useMcaCheckin(ministerioId, selectedDate);
 
   const canConfirm = isVisitante
     ? (!!selectedSala && !!nomeVisitante.trim() && !!responsavelVisitante.trim())
@@ -346,6 +189,11 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
               className="h-8 w-40 text-sm"
             />
           </div>
+          <Button variant="outline" asChild>
+            <Link to="quiosque">
+              <Maximize className="w-4 h-4 mr-2" />Modo Quiosque
+            </Link>
+          </Button>
           <Button onClick={() => { resetModal(); setModalOpen(true); }}>
             <LogIn className="w-4 h-4 mr-2" />Check-in
           </Button>
@@ -519,7 +367,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
                 <label className="text-sm font-medium">Criança *</label>
                 <Select value={selectedCrianca} onValueChange={v => {
                   setSelectedCrianca(v);
-                  const c = criancas.find(x => x.id === v);
+                  const c = criancasDisponiveis.find(x => x.id === v);
                   if (c?.sala_id) setSelectedSala(c.sala_id);
                 }}>
                   <SelectTrigger className="mt-1">
@@ -556,7 +404,19 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
               Cancelar
             </Button>
             <Button
-              onClick={() => checkinMutation.mutate()}
+              onClick={() => checkinMutation.mutate({
+                salaId: selectedSala,
+                criancaId: isVisitante ? undefined : selectedCrianca,
+                visitante: isVisitante ? { nome: nomeVisitante, responsavel: responsavelVisitante } : undefined,
+              }, {
+                onSuccess: () => {
+                  setModalOpen(false);
+                  if (isVisitante) {
+                    setVisitanteInfo({ nome: nomeVisitante.trim(), responsavel: responsavelVisitante.trim(), nasc: nascVisitante });
+                  }
+                  resetModal();
+                },
+              })}
               disabled={checkinMutation.isPending || !canConfirm}
             >
               {checkinMutation.isPending ? 'Registrando...' : 'Confirmar Check-in'}
@@ -601,7 +461,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
           onSaved={() => {
             setShowCadastrarForm(false);
             setVisitanteInfo(null);
-            qc.invalidateQueries({ queryKey: ['mca_criancas', churchId] });
+            invalidateCriancas();
           }}
         />
       )}
