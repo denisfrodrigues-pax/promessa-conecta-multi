@@ -87,7 +87,6 @@ const RelatorioFinanceiro = lazy(() => import("@/pages/admin/relatorios/Relatori
 const RelatorioComunicacoes = lazy(() => import("@/pages/admin/relatorios/RelatorioComunicacoes"));
 
 // Member / App
-const MemberHome = lazy(() => import("@/pages/member/Home"));
 const BasesPublic = lazy(() => import("@/pages/member/BasesPublic"));
 const BaseDetalhesPublic = lazy(() => import("@/pages/member/BaseDetalhesPublic"));
 const MinhaBase = lazy(() => import("@/pages/member/MinhaBase"));
@@ -247,7 +246,6 @@ const App = () => (
               {/* ── APP MEMBRO ─────────────────────────────────────────────── */}
               <Route path="app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                 <Route index element={<AppHome />} />
-                <Route path="home" element={<MemberHome />} />
                 <Route path="minha-base" element={<MinhaBase />} />
                 <Route path="bases" element={<BasesPublic />} />
                 <Route path="bases/:id" element={<BaseDetalhesPublic />} />
