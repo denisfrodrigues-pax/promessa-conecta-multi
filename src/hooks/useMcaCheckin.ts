@@ -23,6 +23,25 @@ export function todayStr() {
   return format(new Date(), 'yyyy-MM-dd');
 }
 
+/**
+ * Início/fim do dia LOCAL (fuso do navegador), convertidos pra UTC — pra filtrar
+ * mca_checkins.checkin_at (timestamptz, gravado em UTC) sem comparar direto uma
+ * string de data local contra timestamp UTC. Sem isso, check-ins feitos à noite
+ * em fusos atrás de UTC (ex: Brasília, entre ~21h e 23h59) caem no dia seguinte em
+ * UTC e somem da visão "hoje" — bug real, reproduzido via SQL: um checkin_at
+ * registrado como 2026-09-04T01:18 UTC (= 2026-09-03T22:18 em Brasília) ficava fora
+ * do range gte/lte '2026-09-03T00:00:00'..'2026-09-03T23:59:59' interpretado em UTC.
+ * `new Date(y, m, d, h, mi, s, ms)` resolve o horário de parede pro instante UTC
+ * correto usando o fuso do runtime (navegador), então isso já cobre qualquer fuso,
+ * incluindo troca de horário de verão.
+ */
+function localDayBoundsISO(dateStr: string): { startISO: string; endISO: string } {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const start = new Date(year, month - 1, day, 0, 0, 0, 0);
+  const end = new Date(year, month - 1, day, 23, 59, 59, 999);
+  return { startISO: start.toISOString(), endISO: end.toISOString() };
+}
+
 // Visitante = check-in sem crianca_id (mca_checkins não tem coluna própria para isso).
 // O nome do visitante fica registrado em observacao ("Visitante: Nome — Responsável: X").
 export function isVisitanteCheckin(ci: McaCheckinRow): boolean {
@@ -80,12 +99,13 @@ export function useMcaCheckin(ministerioId: string, selectedDate: string) {
   const { data: checkins = [], isLoading } = useQuery({
     queryKey: ['mca_checkins_dia', churchId, selectedDate],
     queryFn: async () => {
+      const { startISO, endISO } = localDayBoundsISO(selectedDate);
       const { data, error } = await (supabase as any)
         .from('mca_checkins')
         .select('*, mca_criancas(nome), mca_salas(nome)')
         .eq('church_id', churchId)
-        .gte('checkin_at', `${selectedDate}T00:00:00`)
-        .lte('checkin_at', `${selectedDate}T23:59:59`)
+        .gte('checkin_at', startISO)
+        .lte('checkin_at', endISO)
         .order('checkin_at', { ascending: false });
       if (error) throw error;
       return data as McaCheckinRow[];
