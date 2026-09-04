@@ -446,6 +446,7 @@ export default function EscalaCultoDetalhe() {
                       className="h-7 w-7"
                       disabled={idx === 0}
                       onClick={() => moverMusica(idx, 'up')}
+                      aria-label="Mover música para cima"
                     >
                       <ChevronUp className="w-4 h-4" />
                     </Button>
@@ -455,6 +456,7 @@ export default function EscalaCultoDetalhe() {
                       className="h-7 w-7"
                       disabled={idx === musicasCulto.length - 1}
                       onClick={() => moverMusica(idx, 'down')}
+                      aria-label="Mover música para baixo"
                     >
                       <ChevronDown className="w-4 h-4" />
                     </Button>
@@ -463,6 +465,7 @@ export default function EscalaCultoDetalhe() {
                       size="icon"
                       className="h-7 w-7 text-destructive hover:text-destructive"
                       onClick={() => setDeleteTarget(m.id)}
+                      aria-label="Excluir música"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

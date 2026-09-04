@@ -279,10 +279,10 @@ export default function MinhaIgreja() {
           <code className="flex-1 text-sm text-promessa-700 bg-white border border-promessa-200 px-3 py-2 rounded-lg font-mono truncate">
             {shareLink}
           </code>
-          <Button variant="outline" size="icon" className="border-promessa-300 text-promessa-700 flex-shrink-0" onClick={copyLink} title="Copiar link">
+          <Button variant="outline" size="icon" className="border-promessa-300 text-promessa-700 flex-shrink-0" onClick={copyLink} title="Copiar link" aria-label="Copiar link">
             <Copy className="w-4 h-4" />
           </Button>
-          <Button variant="outline" size="icon" className="border-promessa-300 text-promessa-700 flex-shrink-0" onClick={handleShare} title="Compartilhar">
+          <Button variant="outline" size="icon" className="border-promessa-300 text-promessa-700 flex-shrink-0" onClick={handleShare} title="Compartilhar" aria-label="Compartilhar">
             <Share2 className="w-4 h-4" />
           </Button>
         </div>

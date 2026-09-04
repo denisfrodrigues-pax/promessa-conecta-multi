@@ -344,7 +344,7 @@ export default function VisitanteDetalhes() {
       {/* ===== HEADER ===== */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/visitantes'))}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/visitantes'))} aria-label="Voltar">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-3">
@@ -358,6 +358,7 @@ export default function VisitanteDetalhes() {
                   : 'text-muted-foreground/40 cursor-not-allowed'
               }`}
               title={hasValidPhone(formData.telefone) ? 'Enviar WhatsApp' : 'Telefone inválido'}
+              aria-label={hasValidPhone(formData.telefone) ? 'Enviar WhatsApp' : 'Telefone inválido'}
             >
               <MessageCircle className="w-5 h-5" />
             </button>

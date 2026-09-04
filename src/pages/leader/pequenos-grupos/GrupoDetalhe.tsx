@@ -483,10 +483,10 @@ export default function GrupoDetalhe() {
                           <div className="flex items-center justify-end gap-1">
                             {hasPhone(m.telefone) && (
                               <>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => window.open(whatsUrl(m.telefone, churchNome || undefined), '_blank')}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => window.open(whatsUrl(m.telefone, churchNome || undefined), '_blank')} aria-label="Enviar WhatsApp">
                                   <MessageCircle className="w-4 h-4" />
                                 </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => window.open(`tel:${cleanPhone(m.telefone)}`)}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => window.open(`tel:${cleanPhone(m.telefone)}`)} aria-label="Ligar">
                                   <Phone className="w-4 h-4" />
                                 </Button>
                               </>
@@ -495,6 +495,7 @@ export default function GrupoDetalhe() {
                               variant="ghost" size="icon" className="h-8 w-8 text-destructive"
                               disabled={removendoId === m.bases_membros_id}
                               onClick={() => removerMembro(m.bases_membros_id)}
+                              aria-label="Remover membro do grupo"
                             >
                               {removendoId === m.bases_membros_id
                                 ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -599,7 +600,7 @@ export default function GrupoDetalhe() {
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
                               {hasPhone(v.visitante?.telefone) && (
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => window.open(whatsUrl(v.visitante?.telefone, churchNome || undefined), '_blank')}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => window.open(whatsUrl(v.visitante?.telefone, churchNome || undefined), '_blank')} aria-label="Enviar WhatsApp">
                                   <MessageCircle className="w-4 h-4" />
                                 </Button>
                               )}

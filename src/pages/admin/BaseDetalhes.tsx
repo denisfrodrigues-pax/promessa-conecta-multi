@@ -466,7 +466,7 @@ export default function BaseDetalhes() {
       {/* ===== HEADER ===== */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))} aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">
@@ -476,6 +476,7 @@ export default function BaseDetalhes() {
                 onClick={() => window.open(getWhatsAppUrl(liderInfo.telefone, churchNome), '_blank')}
                 className="text-green-600 hover:text-green-700 p-1"
                 title="WhatsApp do líder"
+                aria-label="WhatsApp do líder"
               >
                 <MessageCircle className="w-5 h-5" />
               </button>
@@ -707,6 +708,8 @@ export default function BaseDetalhes() {
                     <button
                       onClick={() => window.open(getWhatsAppUrl(liderInfo.telefone, churchNome), '_blank')}
                       className="text-green-600 hover:text-green-700 p-1"
+                      title="WhatsApp do líder"
+                      aria-label="WhatsApp do líder"
                     >
                       <MessageCircle className="w-5 h-5" />
                     </button>
@@ -812,6 +815,7 @@ export default function BaseDetalhes() {
                       <button
                         onClick={() => window.open(getWhatsAppUrl(bm.telefone, churchNome), '_blank')}
                         className="text-green-600 hover:text-green-700 p-1.5"
+                        aria-label="Enviar WhatsApp"
                       >
                         <MessageCircle className="h-4 w-4" />
                       </button>
@@ -821,6 +825,7 @@ export default function BaseDetalhes() {
                       size="icon"
                       className="text-destructive hover:text-destructive"
                       onClick={() => removeMembro(bm.id)}
+                      aria-label="Remover membro da base"
                     >
                       <UserMinus className="h-4 w-4" />
                     </Button>
@@ -878,6 +883,7 @@ export default function BaseDetalhes() {
                       <button
                         onClick={() => window.open(getWhatsAppUrl(bv.visitante?.telefone, churchNome), '_blank')}
                         className="text-green-600 hover:text-green-700 p-1.5"
+                        aria-label="Enviar WhatsApp"
                       >
                         <MessageCircle className="h-4 w-4" />
                       </button>
@@ -887,6 +893,7 @@ export default function BaseDetalhes() {
                       size="icon"
                       className="text-destructive hover:text-destructive"
                       onClick={() => removeVisitante(bv.id)}
+                      aria-label="Remover visitante da base"
                     >
                       <UserMinus className="h-4 w-4" />
                     </Button>

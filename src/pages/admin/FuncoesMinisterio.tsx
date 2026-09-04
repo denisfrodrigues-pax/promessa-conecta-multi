@@ -314,7 +314,7 @@ export default function AdminFuncoesMinisterio() {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" onClick={() => handleEdit(funcao)}>
+                                <Button variant="ghost" size="icon" onClick={() => handleEdit(funcao)} aria-label="Editar função">
                                   <Pencil className="w-4 h-4" />
                                 </Button>
                                 <Button
@@ -325,6 +325,7 @@ export default function AdminFuncoesMinisterio() {
                                     setDeletingFuncao(funcao);
                                     setIsDeleteDialogOpen(true);
                                   }}
+                                  aria-label="Excluir função"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>

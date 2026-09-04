@@ -472,6 +472,7 @@ export default function LeaderMinhaEquipe() {
                   <button
                     className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-destructive/20 hover:text-destructive transition-colors ml-1"
                     onClick={() => setFuncaoDeleteConfirm(f)}
+                    aria-label="Remover função"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -555,6 +556,7 @@ export default function LeaderMinhaEquipe() {
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => handleOpenEditFuncoesDialog(voluntario)}
+                          aria-label="Editar funções do voluntário"
                         >
                           <Pencil className="h-3 w-3" />
                         </Button>
@@ -579,6 +581,7 @@ export default function LeaderMinhaEquipe() {
                           setDeletingVoluntario(voluntario);
                           setIsDeleteDialogOpen(true);
                         }}
+                        aria-label="Remover voluntário"
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>

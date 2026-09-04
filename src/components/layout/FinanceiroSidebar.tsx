@@ -119,6 +119,7 @@ export default function FinanceiroSidebar() {
             size="icon"
             className="text-neutral-500 hover:text-emerald-700 hover:bg-emerald-50"
             onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </Button>

@@ -145,7 +145,7 @@ export default function BaseRelatorio() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))} aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>

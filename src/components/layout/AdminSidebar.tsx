@@ -328,6 +328,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
               size="icon"
               className="text-gray-400 hover:text-gray-700 hover:bg-gray-100"
               onClick={() => setDesktopCollapsed(!desktopCollapsed)}
+              aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
             >
               {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </Button>

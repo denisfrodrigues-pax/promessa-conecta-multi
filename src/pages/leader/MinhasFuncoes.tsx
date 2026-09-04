@@ -272,7 +272,7 @@ export default function MinhasFuncoes() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(funcao)}>
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(funcao)} aria-label="Editar função">
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
@@ -283,6 +283,7 @@ export default function MinhasFuncoes() {
                             setDeletingFuncao(funcao);
                             setIsDeleteDialogOpen(true);
                           }}
+                          aria-label="Excluir função"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

@@ -459,6 +459,7 @@ export default function MinhaBase() {
                     size="icon"
                     className="text-muted-foreground hover:text-destructive"
                     onClick={() => setConfirmExcluir(notaHoje.id)}
+                    aria-label="Excluir nota"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -522,6 +523,7 @@ export default function MinhaBase() {
                               size="icon"
                               className="h-7 w-7 text-muted-foreground hover:text-foreground"
                               onClick={() => handleEditarAnterior(nota)}
+                              aria-label="Editar nota"
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </Button>
@@ -531,6 +533,7 @@ export default function MinhaBase() {
                             size="icon"
                             className="h-7 w-7 text-muted-foreground hover:text-destructive"
                             onClick={() => setConfirmExcluir(nota.id)}
+                            aria-label="Excluir nota"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>

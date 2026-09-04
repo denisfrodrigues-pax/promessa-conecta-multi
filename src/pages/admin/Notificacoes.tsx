@@ -16,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Bell, Calendar, AlertCircle, Clock, Search, Plus, Send, Users, Megaphone, Trash2, CheckCheck, Loader2 } from 'lucide-react';
+import { EmptyState } from '@/components/EmptyState';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -642,8 +643,8 @@ export default function AdminNotificacoes() {
             <TableBody>
               {filteredNotifications.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    Nenhuma notificação encontrada
+                  <TableCell colSpan={8}>
+                    <EmptyState icon={Bell} title="Nenhuma notificação encontrada" className="py-8" />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -690,6 +691,7 @@ export default function AdminNotificacoes() {
                             size="icon"
                             onClick={() => handleMarkAsRead(notification.id)}
                             title="Marcar como lida"
+                            aria-label="Marcar como lida"
                           >
                             <CheckCheck className="w-4 h-4" />
                           </Button>
@@ -701,6 +703,7 @@ export default function AdminNotificacoes() {
                               size="icon"
                               className="text-destructive hover:text-destructive"
                               disabled={deleting === notification.id}
+                              aria-label="Excluir notificação"
                             >
                               {deleting === notification.id ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />

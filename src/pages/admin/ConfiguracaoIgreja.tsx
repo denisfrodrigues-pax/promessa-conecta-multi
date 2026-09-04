@@ -705,7 +705,7 @@ export default function ConfiguracaoIgreja() {
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-muted-foreground truncate">{form.logo_url}</p>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => setForm(p => ({ ...p, logo_url: '' }))}>
+                      <Button variant="ghost" size="icon" onClick={() => setForm(p => ({ ...p, logo_url: '' }))} aria-label="Remover logo">
                         <X className="w-4 h-4 text-red-500" />
                       </Button>
                     </div>
@@ -764,6 +764,7 @@ export default function ConfiguracaoIgreja() {
                           <button
                             onClick={() => removeHeroUrl(idx)}
                             className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Remover imagem do carrossel"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -792,7 +793,7 @@ export default function ConfiguracaoIgreja() {
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-muted-foreground truncate">{form.foto_login_url}</p>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => setForm(p => ({ ...p, foto_login_url: '' }))}>
+                      <Button variant="ghost" size="icon" onClick={() => setForm(p => ({ ...p, foto_login_url: '' }))} aria-label="Remover foto de login">
                         <X className="w-4 h-4 text-red-500" />
                       </Button>
                     </div>
@@ -1180,10 +1181,10 @@ export default function ConfiguracaoIgreja() {
                           onCheckedChange={() => handleToggleEvento(ev)}
                           className="scale-90"
                         />
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditEvento(ev)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditEvento(ev)} aria-label="Editar evento">
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700" onClick={() => handleDeleteEvento(ev.id)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700" onClick={() => handleDeleteEvento(ev.id)} aria-label="Excluir evento">
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>

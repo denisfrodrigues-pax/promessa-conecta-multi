@@ -354,6 +354,7 @@ export default function Visitantes() {
                           disabled={!hasValidPhone(visitante.telefone)}
                           onClick={() => handleWhatsAppClick(visitante.telefone)}
                           title={hasValidPhone(visitante.telefone) ? 'Enviar WhatsApp' : 'Telefone não disponível'}
+                          aria-label={hasValidPhone(visitante.telefone) ? 'Enviar WhatsApp' : 'Telefone não disponível'}
                         >
                           <MessageCircle className="h-4 w-4" />
                         </Button>

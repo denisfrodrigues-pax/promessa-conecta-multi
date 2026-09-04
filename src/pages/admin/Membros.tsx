@@ -596,6 +596,7 @@ export default function Membros() {
                             onClick={(e) => handleWhatsAppClick(e, membro.telefone)}
                             className="text-green-600 hover:text-green-700 flex-shrink-0"
                             title="Abrir WhatsApp"
+                            aria-label="Abrir WhatsApp"
                           >
                             <MessageCircle className="w-4 h-4" />
                           </button>

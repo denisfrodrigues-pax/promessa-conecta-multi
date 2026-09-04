@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/EmptyState';
 
 interface Evento {
   id: string;
@@ -506,16 +507,15 @@ export default function Eventos() {
         {/* Empty State */}
         {filteredEventos.length === 0 && !loading && (
           <Card className="col-span-full shadow-card border-0">
-            <CardContent className="py-16 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-muted mx-auto mb-4 flex items-center justify-center">
-                <Calendar className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="font-display font-semibold text-lg text-foreground mb-2">Nenhum evento encontrado</h3>
-              <p className="text-muted-foreground mb-6">Crie seu primeiro evento para começar</p>
-              <Button onClick={() => handleOpenDialog()} variant="outline" className="rounded-xl">
-                <Plus className="w-4 h-4 mr-2" />
-                Criar Evento
-              </Button>
+            <CardContent>
+              <EmptyState
+                icon={Calendar}
+                title="Nenhum evento encontrado"
+                description="Crie seu primeiro evento para começar"
+                actionLabel="Criar Evento"
+                actionIcon={Plus}
+                onAction={() => handleOpenDialog()}
+              />
             </CardContent>
           </Card>
         )}
@@ -613,6 +613,7 @@ export default function Eventos() {
                     size="icon"
                     className="absolute top-2 right-2 h-8 w-8 rounded-lg"
                     onClick={handleRemoveImage}
+                    aria-label="Remover imagem"
                   >
                     <X className="w-4 h-4" />
                   </Button>

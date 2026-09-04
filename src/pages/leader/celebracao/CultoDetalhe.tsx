@@ -206,18 +206,19 @@ function SortableLiturgiaItem({ item, idx, total, onEdit, onMoveUp, onMoveDown, 
         </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === 0} onClick={onMoveUp}>
+        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === 0} onClick={onMoveUp} aria-label="Mover item para cima">
           <ChevronUp className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === total - 1} onClick={onMoveDown}>
+        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === total - 1} onClick={onMoveDown} aria-label="Mover item para baixo">
           <ChevronDown className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(item)}>
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(item)} aria-label="Editar item">
           <Pencil className="w-4 h-4" />
         </Button>
         <Button
           variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive"
           onClick={onDelete}
+          aria-label="Excluir item"
         >
           <Trash2 className="w-4 h-4" />
         </Button>
@@ -1254,10 +1255,10 @@ export default function CultoDetalhe() {
                 <div key={ac.id} className="flex items-center gap-2 p-2 rounded-lg bg-promessa-50 border border-promessa-200">
                   <span className="text-xs font-mono text-muted-foreground w-4">{idx + 1}</span>
                   <p className="flex-1 text-sm font-medium">{ac.avisos?.titulo ?? '—'}</p>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" disabled={idx === 0} onClick={() => moverAviso(idx, 'up')}>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" disabled={idx === 0} onClick={() => moverAviso(idx, 'up')} aria-label="Mover aviso para cima">
                     <ChevronUp className="w-3 h-3" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" disabled={idx === avisosCulto.length - 1} onClick={() => moverAviso(idx, 'down')}>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" disabled={idx === avisosCulto.length - 1} onClick={() => moverAviso(idx, 'down')} aria-label="Mover aviso para baixo">
                     <ChevronDown className="w-3 h-3" />
                   </Button>
                 </div>

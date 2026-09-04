@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { Plus, Search, Network, Users, Eye, Clock, MapPin, MessageCircle, Download } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -249,9 +250,15 @@ export default function Bases() {
         </div>
       ) : filtered.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <Network className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p>Nenhuma base encontrada</p>
+          <CardContent>
+            <EmptyState
+              icon={Network}
+              title="Nenhuma base encontrada"
+              description="Crie sua primeira base para começar"
+              actionLabel="Novo Grupo"
+              actionIcon={Plus}
+              onAction={() => navigate(p("/admin/bases/nova"))}
+            />
           </CardContent>
         </Card>
       ) : (
@@ -291,6 +298,7 @@ export default function Bases() {
                               }}
                               className="text-green-600 hover:text-green-700 p-0.5"
                               title="WhatsApp do líder"
+                              aria-label="WhatsApp do líder"
                             >
                               <MessageCircle className="h-3.5 w-3.5" />
                             </button>

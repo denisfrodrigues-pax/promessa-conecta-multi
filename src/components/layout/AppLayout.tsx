@@ -145,6 +145,7 @@ export default function AppLayout() {
                 size="icon"
                 className="lg:hidden"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
               >
                 {mobileMenuOpen ? (
                   <X className="h-5 w-5" />

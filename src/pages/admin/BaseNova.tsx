@@ -135,7 +135,7 @@ export default function BaseNova() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))} aria-label="Voltar">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>

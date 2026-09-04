@@ -487,6 +487,7 @@ export default function AdminVoluntariosMinisterios() {
                             size="icon"
                             className="h-6 w-6"
                             onClick={() => handleOpenEditFuncoesDialog(voluntario)}
+                            aria-label="Editar funções do voluntário"
                           >
                             <Pencil className="h-3 w-3" />
                           </Button>
@@ -511,6 +512,7 @@ export default function AdminVoluntariosMinisterios() {
                             setDeletingVoluntario(voluntario);
                             setIsDeleteDialogOpen(true);
                           }}
+                          aria-label="Remover voluntário"
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>

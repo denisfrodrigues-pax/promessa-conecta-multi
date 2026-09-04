@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { KpiTile } from '@/components/KpiTile';
+import { EmptyState } from '@/components/EmptyState';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -520,56 +522,64 @@ export default function AdminDashboard() {
       title: 'Visitantes no Mês',
       value: stats.visitantesNoMes,
       icon: UserPlus,
-      color: 'bg-blue-500',
+      iconBgClassName: 'bg-blue-500/10',
+      iconClassName: 'text-blue-600',
       link: '/admin/visitantes',
     },
     {
       title: 'Acompanhamentos Ativos',
       value: stats.acompanhamentosAtivos,
       icon: Clock,
-      color: 'bg-yellow-500',
+      iconBgClassName: 'bg-yellow-500/10',
+      iconClassName: 'text-yellow-600',
       link: '/admin/acompanhamento',
     },
     {
       title: 'Concluídos no Mês',
       value: stats.visitantesConcluidos,
       icon: CheckCircle,
-      color: 'bg-emerald-500',
+      iconBgClassName: 'bg-emerald-500/10',
+      iconClassName: 'text-emerald-600',
       link: '/admin/acompanhamento',
     },
     {
       title: 'Bases Ativas',
       value: stats.basesAtivas,
       icon: Network,
-      color: 'bg-indigo-500',
+      iconBgClassName: 'bg-indigo-500/10',
+      iconClassName: 'text-indigo-600',
       link: '/admin/bases',
     },
     {
       title: 'Membros Ativos',
       value: stats.membrosAtivos,
       icon: Users,
-      color: 'bg-purple-500',
+      iconBgClassName: 'bg-purple-500/10',
+      iconClassName: 'text-purple-600',
       link: '/admin/membros',
     },
     {
       title: 'Kids Presentes Hoje',
       value: stats.criancasPresentes,
       icon: Baby,
-      color: 'bg-pink-500',
+      iconBgClassName: 'bg-pink-500/10',
+      iconClassName: 'text-pink-600',
       link: '/admin/kids',
     },
     {
       title: 'Arrecadado no Mês',
       value: formatCurrency(stats.totalArrecadadoMes),
       icon: DollarSign,
-      color: 'bg-green-500',
+      iconBgClassName: 'bg-green-500/10',
+      iconClassName: 'text-green-600',
       link: '/admin/financeiro',
     },
     {
       title: 'Aniversariantes na Semana',
       value: stats.aniversariantesSemana,
       icon: Cake,
-      color: 'bg-orange-500',
+      iconBgClassName: 'bg-orange-500/10',
+      iconClassName: 'text-orange-600',
       link: '/admin/aniversariantes',
     },
   ];
@@ -582,25 +592,19 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground mt-1">Visão geral do ministério</p>
       </div>
 
-      {/* KPI Cards — design moderno com barra de cor primária */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
         {kpiCards.map((kpi) => (
-          <Link
+          <KpiTile
             key={kpi.title}
-            to={kpi.link}
-            className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-all duration-200 relative overflow-hidden group block"
-          >
-            <div
-              className="absolute top-0 left-0 right-0 h-1 rounded-t-xl"
-              style={{ background: 'var(--color-primary, #2D6A4F)' }}
-            />
-            {loading ? (
-              <Skeleton className="h-9 w-16 mb-1" />
-            ) : (
-              <p className="text-3xl font-bold text-gray-900 leading-none truncate">{kpi.value}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-2 leading-snug">{kpi.title}</p>
-          </Link>
+            icon={kpi.icon}
+            value={kpi.value}
+            label={kpi.title}
+            href={kpi.link}
+            loading={loading}
+            iconBgClassName={kpi.iconBgClassName}
+            iconClassName={kpi.iconClassName}
+          />
         ))}
       </div>
 
@@ -636,7 +640,7 @@ export default function AdminDashboard() {
           {loading ? (
             <div className="space-y-2">{[1,2,3].map(i=><Skeleton key={i} className="h-12 w-full"/>)}</div>
           ) : proximosEventos.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento programado.</p>
+            <EmptyState icon={CalendarDays} title="Nenhum evento programado" className="py-4" />
           ) : (
             <div className="space-y-2">
               {proximosEventos.map(ev => (
@@ -840,7 +844,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : recentVisitantes.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">Nenhum visitante cadastrado</p>
+              <EmptyState icon={UserPlus} title="Nenhum visitante cadastrado" />
             ) : (
               <div className="space-y-3">
                 {recentVisitantes.map((visitante) => (
@@ -874,7 +878,7 @@ export default function AdminDashboard() {
                       {statusLabels[visitante.status || 'novo']}
                     </Badge>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                      <Link to={p(`/admin/visitantes/${visitante.id}`)}>
+                      <Link to={p(`/admin/visitantes/${visitante.id}`)} aria-label="Ver detalhes do visitante">
                         <ExternalLink className="w-4 h-4" />
                       </Link>
                     </Button>
@@ -904,7 +908,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : recentAcompanhamentos.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">Nenhum acompanhamento registrado</p>
+              <EmptyState icon={Clock} title="Nenhum acompanhamento registrado" />
             ) : (
               <div className="space-y-3">
                 {recentAcompanhamentos.map((acomp) => (
@@ -924,7 +928,7 @@ export default function AdminDashboard() {
                       {statusLabels[acomp.status] || acomp.status}
                     </Badge>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                      <Link to={p('/admin/acompanhamento')}>
+                      <Link to={p('/admin/acompanhamento')} aria-label="Ver acompanhamento">
                         <ExternalLink className="w-4 h-4" />
                       </Link>
                     </Button>
