@@ -300,7 +300,7 @@ export default function RelatorioMembros() {
                       <div className="flex items-center gap-2">
                         {m.telefone ? formatPhoneBR(m.telefone) : '–'}
                         {hasValidPhone(m.telefone) && (
-                          <button onClick={() => window.open(getWhatsAppUrl(m.telefone, `Olá! Sou da ${churchNome || 'nossa Igreja'}.`), '_blank')} className="text-green-600">
+                          <button onClick={() => window.open(getWhatsAppUrl(m.telefone, `Olá! Sou da ${churchNome || 'nossa Igreja'}.`), '_blank')} className="text-green-600" aria-label="Enviar WhatsApp">
                             <MessageCircle className="w-4 h-4" />
                           </button>
                         )}

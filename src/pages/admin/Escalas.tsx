@@ -821,11 +821,11 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
-                              <Button variant="ghost" size="icon" onClick={() => handleView(group)}>
+                              <Button variant="ghost" size="icon" aria-label="Ver escala" onClick={() => handleView(group)}>
                                 <Eye className="w-4 h-4" />
                               </Button>
                               {canManage && (
-                                <Button variant="ghost" size="icon" onClick={() => handleEdit(group)}>
+                                <Button variant="ghost" size="icon" aria-label="Editar escala" onClick={() => handleEdit(group)}>
                                   <Pencil className="w-4 h-4" />
                                 </Button>
                               )}
@@ -833,6 +833,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                                 <Button
                                   variant="ghost"
                                   size="icon"
+                                  aria-label="Excluir escala"
                                   className="text-destructive hover:text-destructive"
                                   onClick={() => {
                                     setDeletingGroup(group);

@@ -439,6 +439,7 @@ export default function LeaderNotificacoes() {
                             size="icon"
                             className="h-8 w-8 text-neutral-400 hover:text-red-600 hover:bg-red-50"
                             disabled={deletingId === notification.id}
+                            aria-label="Excluir notificação"
                           >
                             {deletingId === notification.id ? (
                               <Loader2 className="w-4 h-4 animate-spin" />

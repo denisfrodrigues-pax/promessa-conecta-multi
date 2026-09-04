@@ -344,6 +344,7 @@ export default function Auditoria() {
                       size="icon"
                       className="shrink-0 w-8 h-8"
                       onClick={() => { setSelectedLog(log); setDetailOpen(true); }}
+                      aria-label="Ver detalhes do log"
                     >
                       <Eye className="w-4 h-4" />
                     </Button>

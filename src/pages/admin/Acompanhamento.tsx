@@ -323,6 +323,7 @@ export default function Acompanhamento() {
                           disabled={!hasValidPhone(acomp.visitante?.telefone)}
                           onClick={() => handleWhatsAppClick(acomp.visitante?.telefone)}
                           title={hasValidPhone(acomp.visitante?.telefone) ? 'Enviar WhatsApp' : 'Telefone não disponível'}
+                          aria-label={hasValidPhone(acomp.visitante?.telefone) ? 'Enviar WhatsApp' : 'Telefone não disponível'}
                         >
                           <MessageCircle className="h-4 w-4" />
                         </Button>

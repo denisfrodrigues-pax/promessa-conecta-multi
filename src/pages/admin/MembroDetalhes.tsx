@@ -732,7 +732,7 @@ export default function MembroDetalhes() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/membros'))}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/membros'))} aria-label="Voltar">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-3">
@@ -747,6 +747,7 @@ export default function MembroDetalhes() {
                 onClick={() => window.open(getWhatsAppUrl(displayPhone, churchNome), '_blank')}
                 className="text-green-600 hover:text-green-700"
                 title="Abrir WhatsApp"
+                aria-label="Abrir WhatsApp"
               >
                 <MessageCircle className="w-5 h-5" />
               </button>
@@ -920,7 +921,7 @@ export default function MembroDetalhes() {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span>Líder: {baseAtual.base.lider.nome}</span>
                     {hasValidPhone(baseAtual.base.lider.telefone) && (
-                      <button onClick={() => window.open(getWhatsAppUrl(baseAtual.base.lider!.telefone, churchNome), '_blank')} className="text-green-600 hover:text-green-700">
+                      <button onClick={() => window.open(getWhatsAppUrl(baseAtual.base.lider!.telefone, churchNome), '_blank')} className="text-green-600 hover:text-green-700" aria-label="Enviar WhatsApp ao líder">
                         <MessageCircle className="w-4 h-4" />
                       </button>
                     )}
@@ -1040,6 +1041,7 @@ export default function MembroDetalhes() {
                             <button
                               onClick={() => window.open(getWhatsAppUrl(profileData.telefone, churchNome), '_blank')}
                               className="text-green-600 hover:text-green-700"
+                              aria-label="Enviar WhatsApp"
                             >
                               <MessageCircle className="w-4 h-4" />
                             </button>

@@ -359,6 +359,7 @@ export default function Repertorio() {
                       <button
                         className="p-1.5 rounded text-destructive hover:bg-red-50 transition-colors ml-1"
                         onClick={() => setDeleteTarget(m.id)}
+                        aria-label="Excluir música do repertório"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -381,6 +382,7 @@ export default function Repertorio() {
                   type="button"
                   className="p-1 rounded hover:bg-muted transition-colors"
                   onClick={() => setStep('busca')}
+                  aria-label="Voltar à busca"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>

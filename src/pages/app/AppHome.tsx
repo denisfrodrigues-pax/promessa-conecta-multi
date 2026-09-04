@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import DevocionaldaSemana from "@/components/app/DevocionaldaSemana";
 import AniversariantesDoMes from "@/components/app/AniversariantesDoMes";
+import { KpiTile } from "@/components/KpiTile";
 
 export default function AppHome() {
   const { profile, roles } = useAuth();
@@ -74,19 +75,7 @@ export default function AppHome() {
         <div className="container mx-auto max-w-4xl">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {quickActions.map(({ label, icon: Icon, href }) => (
-              <Link
-                key={label}
-                to={href}
-                className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200 group"
-              >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ background: 'color-mix(in srgb, var(--color-primary) 12%, transparent)' }}
-                >
-                  <Icon className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                </div>
-                <span className="text-xs font-medium text-gray-700 text-center">{label}</span>
-              </Link>
+              <KpiTile key={label} icon={Icon} label={label} href={href} />
             ))}
           </div>
         </div>

@@ -633,7 +633,7 @@ export default function LeaderBaseDetalhes() {
       {/* ===== HEADER ===== */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(p('/leader/bases'))}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(p('/leader/bases'))} aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -904,6 +904,7 @@ export default function LeaderBaseDetalhes() {
                                     className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
                                     onClick={() => window.open(getWhatsAppUrl(bm.telefone, undefined, churchNome), '_blank')}
                                     title="WhatsApp"
+                                    aria-label="Enviar WhatsApp"
                                   >
                                     <MessageCircle className="h-4 w-4" />
                                   </Button>
@@ -913,6 +914,7 @@ export default function LeaderBaseDetalhes() {
                                     className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                     onClick={() => window.open(`tel:${cleanPhone(bm.telefone)}`, '_blank')}
                                     title="Ligar"
+                                    aria-label="Ligar"
                                   >
                                     <Phone className="h-4 w-4" />
                                   </Button>
@@ -925,6 +927,7 @@ export default function LeaderBaseDetalhes() {
                                 onClick={() => handleRemoveMember(bm.bases_membros_id)}
                                 disabled={removingMemberId === bm.bases_membros_id}
                                 title="Remover da base"
+                                aria-label="Remover da base"
                               >
                                 {removingMemberId === bm.bases_membros_id ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -1085,6 +1088,7 @@ export default function LeaderBaseDetalhes() {
                                     className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
                                     onClick={() => window.open(getWhatsAppUrl(bv.visitante?.telefone, undefined, churchNome), '_blank')}
                                     title="WhatsApp"
+                                    aria-label="Enviar WhatsApp"
                                   >
                                     <MessageCircle className="h-4 w-4" />
                                   </Button>
@@ -1094,6 +1098,7 @@ export default function LeaderBaseDetalhes() {
                                     className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                     onClick={() => window.open(`tel:${cleanPhone(bv.visitante?.telefone)}`, '_blank')}
                                     title="Ligar"
+                                    aria-label="Ligar"
                                   >
                                     <Phone className="h-4 w-4" />
                                   </Button>
@@ -1260,6 +1265,7 @@ export default function LeaderBaseDetalhes() {
                           size="icon"
                           className="h-6 w-6 text-green-600"
                           onClick={() => window.open(getWhatsAppUrl(base.lider?.telefone, undefined, churchNome), '_blank')}
+                          aria-label="Enviar WhatsApp ao líder"
                         >
                           <MessageCircle className="h-3 w-3" />
                         </Button>

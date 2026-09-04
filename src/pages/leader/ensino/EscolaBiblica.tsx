@@ -190,6 +190,7 @@ function AulaItem({ aula, disciplinaId, userId }: {
                         type="button"
                         className="p-0.5 text-blue-500 hover:text-blue-700"
                         title="Baixar"
+                        aria-label="Baixar arquivo"
                         onClick={() => window.open(arq.url, '_blank')}
                       >
                         <Download className="w-3.5 h-3.5" />
@@ -198,6 +199,7 @@ function AulaItem({ aula, disciplinaId, userId }: {
                         type="button"
                         className="p-0.5 text-red-400 hover:text-red-600"
                         title="Excluir"
+                        aria-label="Excluir arquivo"
                         onClick={() => handleDelete(arq)}
                       >
                         <Trash2 className="w-3.5 h-3.5" />

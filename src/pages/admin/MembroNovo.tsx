@@ -380,7 +380,7 @@ export default function MembroNovo() {
     <div className="space-y-6 max-w-3xl">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/membros'))}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/membros'))} aria-label="Voltar">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>

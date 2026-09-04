@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { KpiTile } from '@/components/KpiTile';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { useIgrejaConfig } from '@/hooks/useIgrejaConfig';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, ClipboardList, Calendar, ChevronRight, CheckCircle, Clock, CalendarDays } from 'lucide-react';
+import { Users, ClipboardList, Calendar, ChevronRight, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { parseLocalDate } from '@/lib/dateUtils';
@@ -112,48 +114,23 @@ export default function LeaderDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="shadow-card border-0 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center shadow-sm">
-                <Users className="w-7 h-7 text-primary" />
-              </div>
-              <div>
-                <p className="text-3xl font-bold font-display text-primary">{bases.length}</p>
-                <p className="text-sm text-muted-foreground font-medium">Bases Lideradas</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-card border-0 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/20 dark:to-amber-900/10">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-amber-500/15 flex items-center justify-center shadow-sm">
-                <ClipboardList className="w-7 h-7 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-3xl font-bold font-display text-amber-700 dark:text-amber-500">{escalas.length}</p>
-                <p className="text-sm text-muted-foreground font-medium">Próximas Escalas</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-card border-0 bg-gradient-to-br from-promessa/5 to-promessa/10">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-promessa/15 flex items-center justify-center shadow-sm">
-                <CheckCircle className="w-7 h-7 text-promessa" />
-              </div>
-              <div>
-        <p className="text-3xl font-bold font-display text-promessa">
-                  {escalas.length}
-                </p>
-                <p className="text-sm text-muted-foreground font-medium">Próximas Escalas</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <KpiTile
+          icon={Users}
+          value={bases.length}
+          label="Bases Lideradas"
+          loading={loading}
+          iconClassName="text-primary"
+          iconBgClassName="bg-primary/10"
+        />
+        <KpiTile
+          icon={ClipboardList}
+          value={escalas.length}
+          label="Próximas Escalas"
+          loading={loading}
+          iconClassName="text-amber-600"
+          iconBgClassName="bg-amber-500/10"
+        />
       </div>
 
       {/* Minha Agenda */}
@@ -213,7 +190,11 @@ export default function LeaderDashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            {bases.length === 0 ? (
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full" />)}
+              </div>
+            ) : bases.length === 0 ? (
               <div className="text-center py-10">
                 <Users className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
                 <p className="text-muted-foreground">Você ainda não lidera nenhuma base</p>
@@ -256,7 +237,11 @@ export default function LeaderDashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            {escalas.length === 0 ? (
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full" />)}
+              </div>
+            ) : escalas.length === 0 ? (
               <div className="text-center py-10">
                 <Calendar className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
                 <p className="text-muted-foreground">Nenhuma escala programada</p>

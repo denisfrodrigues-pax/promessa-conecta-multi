@@ -446,7 +446,7 @@ export default function Onboarding() {
                       <code className="flex-1 text-sm text-promessa-700 bg-promessa-50 px-3 py-2 rounded font-mono break-all">
                         https://{subdominioGerado}.vercel.app
                       </code>
-                      <Button variant="outline" size="icon" onClick={copySubdomain} title="Copiar link">
+                      <Button variant="outline" size="icon" onClick={copySubdomain} title="Copiar link" aria-label="Copiar link">
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>

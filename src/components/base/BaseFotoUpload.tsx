@@ -99,6 +99,7 @@ export function BaseFotoUpload({ currentUrl, baseId, onUploadComplete, disabled 
               size="icon"
               className="absolute top-2 right-2 h-8 w-8"
               onClick={handleRemove}
+              aria-label="Remover foto"
             >
               <X className="h-4 w-4" />
             </Button>

@@ -375,10 +375,12 @@ export default function Chamada() {
                     <button
                       onClick={() => togglePresente(p.key)}
                       className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${p.presente ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-400 text-white hover:bg-red-500'}`}
-                      title={p.presente ? 'Marcar ausente' : 'Marcar presente'}>
+                      title={p.presente ? 'Marcar ausente' : 'Marcar presente'}
+                      aria-label={p.presente ? 'Marcar ausente' : 'Marcar presente'}>
                       {p.presente ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
                     </button>
                     <button onClick={() => removerPessoa(p.key)}
+                      aria-label="Remover pessoa da chamada"
                       className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-colors">
                       <X className="w-3.5 h-3.5" />
                     </button>

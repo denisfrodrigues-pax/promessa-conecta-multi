@@ -383,7 +383,7 @@ export default function NovaIgreja() {
       <div className="max-w-2xl mx-auto">
 
         <div className="flex items-center gap-3 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}><ArrowLeft className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/admin')} aria-label="Voltar"><ArrowLeft className="h-4 w-4" /></Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Nova Igreja</h1>
             <p className="text-sm text-gray-500">Preencha todas as informações antes de criar</p>
@@ -484,7 +484,7 @@ export default function NovaIgreja() {
                 {form.logoPreview ? (
                   <div className="relative w-28 h-28 border rounded-xl bg-gray-50 overflow-hidden">
                     <img src={form.logoPreview} alt="Logo" className="w-full h-full object-contain p-2" />
-                    <button onClick={() => clearSingle('logoFile', 'logoPreview')} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5"><X className="h-3 w-3" /></button>
+                    <button onClick={() => clearSingle('logoFile', 'logoPreview')} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5" aria-label="Remover logo"><X className="h-3 w-3" /></button>
                   </div>
                 ) : (
                   <button type="button" onClick={() => logoRef.current?.click()}
@@ -512,7 +512,7 @@ export default function NovaIgreja() {
                 {form.loginPreview ? (
                   <div className="relative w-full h-28 border rounded-xl overflow-hidden">
                     <img src={form.loginPreview} alt="Login" className="w-full h-full object-cover" />
-                    <button onClick={() => clearSingle('loginFile', 'loginPreview')} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
+                    <button onClick={() => clearSingle('loginFile', 'loginPreview')} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1" aria-label="Remover foto de login"><X className="h-3 w-3" /></button>
                   </div>
                 ) : (
                   <button type="button" onClick={() => loginRef.current?.click()}
@@ -540,7 +540,7 @@ export default function NovaIgreja() {
                 {form.heroItems.map((item, i) => (
                   <div key={i} className="relative aspect-video rounded-lg overflow-hidden border bg-gray-100">
                     <img src={item.preview} alt={`Hero ${i + 1}`} className="w-full h-full object-cover" />
-                    <button onClick={() => removeHero(i)} className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1 shadow"><X className="h-3 w-3" /></button>
+                    <button onClick={() => removeHero(i)} className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1 shadow" aria-label="Remover foto do carrossel"><X className="h-3 w-3" /></button>
                     <span className="absolute bottom-1.5 left-1.5 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">{i + 1}</span>
                   </div>
                 ))}

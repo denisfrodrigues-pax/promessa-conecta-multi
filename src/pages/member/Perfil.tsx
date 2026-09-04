@@ -998,7 +998,7 @@ export default function MemberPerfil() {
                         inputMode="numeric"
                         className="h-10 flex-1"
                       />
-                      <Button type="button" variant="outline" size="icon" className="h-10 w-10 flex-shrink-0" onClick={() => fetchCep(av('cep'))} disabled={loadingCep}>
+                      <Button type="button" variant="outline" size="icon" className="h-10 w-10 flex-shrink-0" onClick={() => fetchCep(av('cep'))} disabled={loadingCep} aria-label="Buscar CEP">
                         {loadingCep ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                       </Button>
                     </div>

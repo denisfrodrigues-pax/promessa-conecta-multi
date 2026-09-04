@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { supabase } from '@/integrations/supabase/client';
 import heroHome from '@/assets/hero-home.webp';
@@ -173,7 +174,8 @@ export default function MemberHome() {
             </Button>
           </div>
           <div className="space-y-3">
-            {avisos.map((aviso) => (
+            {loading && [1, 2].map((i) => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
+            {!loading && avisos.map((aviso) => (
               <Card key={aviso.id} className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
@@ -212,7 +214,8 @@ export default function MemberHome() {
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {eventos.map((evento) => (
+            {loading && [1, 2, 3].map((i) => <Skeleton key={i} className="h-64 w-full rounded-2xl" />)}
+            {!loading && eventos.map((evento) => (
               <Link key={evento.id} to={p(`/app/eventos/${evento.id}`)}>
                 <Card className="rounded-2xl shadow-sm border border-neutral-200 hover:shadow-md transition-all duration-150 h-full overflow-hidden group">
                   <div className="aspect-video bg-gradient-to-br from-promessa-500 to-promessa-700 relative">
