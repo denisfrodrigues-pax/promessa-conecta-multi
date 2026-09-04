@@ -23,6 +23,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useKidsVolunteer } from '@/hooks/useKidsVolunteer';
 
 export default function AppLayout() {
   const { roles } = useAuth();
@@ -30,6 +31,7 @@ export default function AppLayout() {
   const { nomeModulo } = useIgrejaConfig();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
+  const { isKidsVolunteer } = useKidsVolunteer();
 
   const isSuperAdmin = roles.includes('superadmin');
   const isAdmin = roles.includes('admin');
@@ -39,12 +41,17 @@ export default function AppLayout() {
   // a essas rotas (admin e superadmin — ver hierarquia de roles em AuthContext.tsx e os
   // allowedRoles de /leader e /voluntario em App.tsx). "Super Admin" fica exclusivo do
   // superadmin, único com acesso à rota /admin (painel entre múltiplas igrejas).
+  // Check-in Kids aparece à parte, independente de admin/líder — para qualquer usuário
+  // que seja voluntário ativo do ministério Kids (ver useKidsVolunteer).
   const panelItems = [
     ...(isSuperAdmin ? [{ href: '/admin', label: '⚡ Super Admin' }] : []),
     ...(isSuperAdmin || isAdmin ? [
       { href: `/i/${slug}/admin/dashboard`, label: 'Admin da Igreja' },
       { href: `/i/${slug}/leader/hub`,      label: 'Painel Líder' },
       { href: `/i/${slug}/voluntario`,      label: 'Painel Voluntário' },
+    ] : []),
+    ...(isKidsVolunteer ? [
+      { href: `/i/${slug}/leader/mca/checkin`, label: '👶 Check-in Kids' },
     ] : []),
   ];
 

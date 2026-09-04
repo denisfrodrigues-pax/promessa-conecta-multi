@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { auditActions } from '@/lib/auditService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -259,6 +261,7 @@ export default function MembroDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { p, churchNome } = useIgrejaSlug();
+  const { churchId } = useAuth();
 
   const [membro, setMembro] = useState<Membro | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -635,6 +638,10 @@ export default function MembroDetalhes() {
       const { error } = await supabase.from('membros').update(updateData).eq('id', id);
       if (error) throw error;
 
+      if (churchId && membro) {
+        auditActions.update('membros', id!, membro as unknown as Record<string, unknown>, updateData, churchId);
+      }
+
       toast.success('Membro atualizado com sucesso!');
       setIsEditing(false);
       setFotoFile(null);
@@ -800,6 +807,9 @@ export default function MembroDetalhes() {
                         try {
                           const { error } = await supabase.from('membros').delete().eq('id', id!);
                           if (error) throw error;
+                          if (churchId && membro) {
+                            auditActions.delete('membros', id!, membro as unknown as Record<string, unknown>, churchId);
+                          }
                           toast.success('Membro excluído com sucesso');
                           navigate(p('/admin/membros'));
                         } catch (err: any) {

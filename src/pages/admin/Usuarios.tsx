@@ -17,6 +17,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
+import { auditActions } from '@/lib/auditService';
 
 interface User {
   id: string;
@@ -182,6 +183,11 @@ export default function Usuarios() {
         ...prev.filter((r) => !(r.user_id === userId && toRemove.includes(r.role))),
         ...toAdd.map((role) => ({ user_id: userId, role })),
       ]);
+
+      if (churchId) {
+        auditActions.update('user_roles', userId, { roles: currentRoles }, { roles: pendingRoles }, churchId);
+      }
+
       const labels = pendingRoles.map(getRoleLabel).join(', ');
       toast.success(`Funções de ${userName} atualizadas: ${labels}`);
       setOpenRolePopover(null);
@@ -238,6 +244,8 @@ export default function Usuarios() {
   const handleSaveEdit = async () => {
     if (!editingUser) return;
 
+    const oldRole = getUserRole(editingUser.user_id);
+
     try {
       const { error: profileError } = await supabase
         .from('profiles')
@@ -259,6 +267,10 @@ export default function Usuarios() {
       const { error: insertRoleError } = await supabase
         .from('user_roles')
         .insert([{ user_id: editingUser.user_id, role: editData.role as 'admin' | 'lider' | 'financeiro' | 'voluntario' | 'membro' | 'visitante' }]);
+
+      if (churchId && oldRole !== editData.role) {
+        auditActions.update('user_roles', editingUser.user_id, { role: oldRole }, { role: editData.role }, churchId);
+      }
 
       toast.success('Usuário atualizado com sucesso');
       setEditingUser(null);

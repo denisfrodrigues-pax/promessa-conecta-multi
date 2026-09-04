@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { auditActions } from "@/lib/auditService";
 
 interface Conta {
   id: string;
@@ -81,6 +82,7 @@ export default function TransacaoForm() {
   const [eventoId, setEventoId] = useState<string>("");
   const [status, setStatus] = useState<string>("confirmado");
   const [nota, setNota] = useState<string>("");
+  const [transacaoOriginal, setTransacaoOriginal] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     if (!churchId) return;
@@ -131,6 +133,7 @@ export default function TransacaoForm() {
         setEventoId(data.evento_id || "");
         setStatus(data.status || "confirmado");
         setNota(data.nota || "");
+        setTransacaoOriginal(data);
       }
     } catch (error) {
       console.error("Erro ao carregar transação:", error);
@@ -174,7 +177,7 @@ export default function TransacaoForm() {
 
         if (error) throw error;
 
-        // Log de auditoria
+        // Log de auditoria (financeira, específico do módulo)
         await supabase.from("auditoria_financeira").insert({
           entidade: "transacoes_financeiras",
           entidade_id: id,
@@ -182,6 +185,11 @@ export default function TransacaoForm() {
           payload,
           usuario_id: profile?.id,
         });
+
+        // Log de auditoria administrativa (geral, lido em admin/Auditoria.tsx)
+        if (churchId && transacaoOriginal) {
+          auditActions.update("transacoes_financeiras", id!, transacaoOriginal, payload, churchId);
+        }
 
         toast.success("Transação atualizada!");
       } else {
@@ -193,7 +201,7 @@ export default function TransacaoForm() {
 
         if (error) throw error;
 
-        // Log de auditoria
+        // Log de auditoria (financeira, específico do módulo)
         await supabase.from("auditoria_financeira").insert({
           entidade: "transacoes_financeiras",
           entidade_id: data.id,
@@ -201,6 +209,11 @@ export default function TransacaoForm() {
           payload,
           usuario_id: profile?.id,
         });
+
+        // Log de auditoria administrativa (geral, lido em admin/Auditoria.tsx)
+        if (churchId) {
+          auditActions.create("transacoes_financeiras", data.id, payload, churchId);
+        }
 
         toast.success("Transação criada!");
       }
@@ -229,7 +242,7 @@ export default function TransacaoForm() {
 
       if (error) throw error;
 
-      // Log de auditoria
+      // Log de auditoria (financeira, específico do módulo)
       await supabase.from("auditoria_financeira").insert({
         entidade: "transacoes_financeiras",
         entidade_id: id,
@@ -237,6 +250,12 @@ export default function TransacaoForm() {
         payload: { status: "cancelado" },
         usuario_id: profile?.id,
       });
+
+      // Log de auditoria administrativa — cancelamento é o equivalente a "excluir"
+      // uma transação nesse módulo (não há hard delete na UI).
+      if (churchId && transacaoOriginal) {
+        auditActions.delete("transacoes_financeiras", id!, transacaoOriginal, churchId);
+      }
 
       // Recalcular saldo da conta
       if (contaId) {
