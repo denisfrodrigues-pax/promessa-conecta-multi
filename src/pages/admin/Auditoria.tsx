@@ -47,10 +47,13 @@ const ACTION_MAP: Record<string, { label: string; verb: string; color: string; i
 const TABLE_MAP: Record<string, string> = {
   escalas:                     'Escala',
   profiles:                    'Membro',
+  membros:                     'Membro',
+  user_roles:                  'Função de Usuário',
   ministerio_usuarios:         'Voluntário no Ministério',
   ministerios:                 'Ministério',
   musicas_repertorio:          'Música',
   transacoes_financeiras:      'Transação Financeira',
+  contas_financeiras:          'Conta Financeira',
   eb_matriculas:               'Matrícula EB',
   eb_presencas:                'Presença EB',
   eb_ciclos:                   'Ciclo EB',
@@ -254,7 +257,7 @@ export default function Auditoria() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas as ações</SelectItem>
-            <SelectItem value="INSERT">Criou</SelectItem>
+            <SelectItem value="CREATE">Criou</SelectItem>
             <SelectItem value="UPDATE">Editou</SelectItem>
             <SelectItem value="DELETE">Excluiu</SelectItem>
           </SelectContent>
@@ -267,11 +270,13 @@ export default function Auditoria() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os módulos</SelectItem>
-            <SelectItem value="profiles">Membro</SelectItem>
+            <SelectItem value="membros">Membro</SelectItem>
+            <SelectItem value="user_roles">Função de Usuário</SelectItem>
             <SelectItem value="escalas">Escala</SelectItem>
             <SelectItem value="ministerio_usuarios">Voluntário no Ministério</SelectItem>
             <SelectItem value="musicas_repertorio">Música</SelectItem>
             <SelectItem value="transacoes_financeiras">Transação Financeira</SelectItem>
+            <SelectItem value="contas_financeiras">Conta Financeira</SelectItem>
             <SelectItem value="eb_matriculas">Matrícula EB</SelectItem>
           </SelectContent>
         </Select>

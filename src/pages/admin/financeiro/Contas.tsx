@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/table";
 import { Plus, Pencil, Wallet, Building, CreditCard } from "lucide-react";
 import { toast } from "sonner";
+import { auditActions } from "@/lib/auditService";
 
 interface Conta {
   id: string;
@@ -52,6 +53,7 @@ export default function Contas() {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingConta, setEditingConta] = useState<Conta | null>(null);
 
   // Form
   const [nome, setNome] = useState("");
@@ -89,10 +91,12 @@ export default function Contas() {
     setDescricao("");
     setStatus("ativa");
     setEditingId(null);
+    setEditingConta(null);
   };
 
   const openEditModal = (conta: Conta) => {
     setEditingId(conta.id);
+    setEditingConta(conta);
     setNome(conta.nome);
     setTipo(conta.tipo);
     setDescricao(conta.descricao || "");
@@ -124,11 +128,21 @@ export default function Contas() {
           .eq("id", editingId);
 
         if (error) throw error;
+
+        if (churchId && editingConta) {
+          auditActions.update("contas_financeiras", editingId, editingConta as unknown as Record<string, unknown>, payload, churchId);
+        }
+
         toast.success("Conta atualizada!");
       } else {
-        const { error } = await supabase.from("contas_financeiras").insert({ ...payload, church_id: churchId });
+        const { data, error } = await supabase.from("contas_financeiras").insert({ ...payload, church_id: churchId }).select().single();
 
         if (error) throw error;
+
+        if (churchId && data) {
+          auditActions.create("contas_financeiras", data.id, payload, churchId);
+        }
+
         toast.success("Conta criada!");
       }
 
