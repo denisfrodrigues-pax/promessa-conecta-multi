@@ -62,6 +62,7 @@ export type Database = {
       audit_logs: {
         Row: {
           action: string
+          church_id: string
           created_at: string | null
           id: string
           new_data: Json | null
@@ -72,6 +73,7 @@ export type Database = {
         }
         Insert: {
           action: string
+          church_id: string
           created_at?: string | null
           id?: string
           new_data?: Json | null
@@ -82,6 +84,7 @@ export type Database = {
         }
         Update: {
           action?: string
+          church_id?: string
           created_at?: string | null
           id?: string
           new_data?: Json | null
@@ -91,6 +94,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "audit_logs_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "audit_logs_user_id_fkey"
             columns: ["user_id"]
@@ -462,77 +472,6 @@ export type Database = {
           },
         ]
       }
-      checkins_kids: {
-        Row: {
-          checkin_at: string
-          checkout_at: string | null
-          checkout_responsavel_id: string | null
-          created_at: string
-          crianca_id: string
-          id: string
-          observacao: string | null
-          responsavel_id: string | null
-          sala_id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          checkin_at?: string
-          checkout_at?: string | null
-          checkout_responsavel_id?: string | null
-          created_at?: string
-          crianca_id: string
-          id?: string
-          observacao?: string | null
-          responsavel_id?: string | null
-          sala_id: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          checkin_at?: string
-          checkout_at?: string | null
-          checkout_responsavel_id?: string | null
-          created_at?: string
-          crianca_id?: string
-          id?: string
-          observacao?: string | null
-          responsavel_id?: string | null
-          sala_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "checkins_kids_checkout_responsavel_id_fkey"
-            columns: ["checkout_responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "responsaveis"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checkins_kids_crianca_id_fkey"
-            columns: ["crianca_id"]
-            isOneToOne: false
-            referencedRelation: "criancas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checkins_kids_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "responsaveis"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checkins_kids_sala_id_fkey"
-            columns: ["sala_id"]
-            isOneToOne: false
-            referencedRelation: "salas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       configuracoes_instituicao: {
         Row: {
           banner_home_url: string | null
@@ -680,109 +619,6 @@ export type Database = {
             columns: ["church_id"]
             isOneToOne: false
             referencedRelation: "igrejas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      criancas: {
-        Row: {
-          alergias: string | null
-          autorizacao_foto: boolean | null
-          created_at: string | null
-          data_nascimento: string | null
-          id: string
-          nome: string
-          observacoes: string | null
-          responsavel_id: string
-          sala_id: string | null
-          turma_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          alergias?: string | null
-          autorizacao_foto?: boolean | null
-          created_at?: string | null
-          data_nascimento?: string | null
-          id?: string
-          nome: string
-          observacoes?: string | null
-          responsavel_id: string
-          sala_id?: string | null
-          turma_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          alergias?: string | null
-          autorizacao_foto?: boolean | null
-          created_at?: string | null
-          data_nascimento?: string | null
-          id?: string
-          nome?: string
-          observacoes?: string | null
-          responsavel_id?: string
-          sala_id?: string | null
-          turma_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "criancas_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "criancas_sala_id_fkey"
-            columns: ["sala_id"]
-            isOneToOne: false
-            referencedRelation: "salas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "criancas_turma_id_fkey"
-            columns: ["turma_id"]
-            isOneToOne: false
-            referencedRelation: "turmas_infantil"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      criancas_responsaveis: {
-        Row: {
-          created_at: string
-          crianca_id: string
-          id: string
-          responsavel_id: string
-          tipo_relacao: string | null
-        }
-        Insert: {
-          created_at?: string
-          crianca_id: string
-          id?: string
-          responsavel_id: string
-          tipo_relacao?: string | null
-        }
-        Update: {
-          created_at?: string
-          crianca_id?: string
-          id?: string
-          responsavel_id?: string
-          tipo_relacao?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "criancas_responsaveis_crianca_id_fkey"
-            columns: ["crianca_id"]
-            isOneToOne: false
-            referencedRelation: "criancas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "criancas_responsaveis_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "responsaveis"
             referencedColumns: ["id"]
           },
         ]
@@ -3607,63 +3443,6 @@ export type Database = {
         }
         Relationships: []
       }
-      responsaveis: {
-        Row: {
-          created_at: string
-          id: string
-          nome: string
-          observacoes: string | null
-          telefone: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          nome: string
-          observacoes?: string | null
-          telefone?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          nome?: string
-          observacoes?: string | null
-          telefone?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      salas: {
-        Row: {
-          capacidade: number | null
-          created_at: string
-          id: string
-          nome: string
-          observacao: string | null
-          status: string | null
-          updated_at: string
-        }
-        Insert: {
-          capacidade?: number | null
-          created_at?: string
-          id?: string
-          nome: string
-          observacao?: string | null
-          status?: string | null
-          updated_at?: string
-        }
-        Update: {
-          capacidade?: number | null
-          created_at?: string
-          id?: string
-          nome?: string
-          observacao?: string | null
-          status?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       transacoes_financeiras: {
         Row: {
           categoria_id: string | null
@@ -3770,41 +3549,6 @@ export type Database = {
             columns: ["visitante_id"]
             isOneToOne: false
             referencedRelation: "visitantes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      turmas_infantil: {
-        Row: {
-          created_at: string | null
-          faixa_etaria: string | null
-          id: string
-          nome: string
-          responsavel_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          faixa_etaria?: string | null
-          id?: string
-          nome: string
-          responsavel_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          faixa_etaria?: string | null
-          id?: string
-          nome?: string
-          responsavel_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "turmas_infantil_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -4012,27 +3756,6 @@ export type Database = {
       leader_remove_member_from_base: {
         Args: { p_bases_membros_id: string }
         Returns: undefined
-      }
-      public_checkin_by_token: { Args: { p_token: string }; Returns: Json }
-      public_checkin_manual: { Args: { p_crianca_id: string }; Returns: Json }
-      public_get_default_igreja: { Args: never; Returns: string }
-      public_presentes_hoje: {
-        Args: { p_igreja_id: string }
-        Returns: {
-          checkin_at: string
-          crianca_nome: string
-          id: string
-          sala_nome: string
-        }[]
-      }
-      public_search_criancas: {
-        Args: { p_igreja_id: string; p_search: string }
-        Returns: {
-          data_nascimento: string
-          id: string
-          nome: string
-          sala_id: string
-        }[]
       }
       recalcula_saldo_conta: { Args: { p_conta_id: string }; Returns: number }
     }

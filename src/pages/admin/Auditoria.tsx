@@ -67,7 +67,6 @@ const TABLE_MAP: Record<string, string> = {
   grupos:                      'Grupo',
   grupos_participantes:        'Participante de Grupo',
   notificacoes:                'Notificação',
-  turmas_infantil:             'Turma Kids',
 };
 
 function tableName(t: string) {

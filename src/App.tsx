@@ -144,6 +144,7 @@ const LeaderPgGrupoDetalhe = lazy(() => import("@/pages/leader/pequenos-grupos/G
 const LeaderMcaSalas = lazy(() => import("@/pages/leader/mca/Salas"));
 const LeaderMcaCriancas = lazy(() => import("@/pages/leader/mca/Criancas"));
 const LeaderMcaCheckin = lazy(() => import("@/pages/leader/mca/Checkin"));
+const LeaderMcaCheckinKiosk = lazy(() => import("@/pages/leader/mca/CheckinKiosk"));
 const LeaderMcaPlanos = lazy(() => import("@/pages/leader/mca/Planos"));
 const LeaderMcaPlanoDetalhe = lazy(() => import("@/pages/leader/mca/PlanoDetalhe"));
 const LeaderMcaComunicacao = lazy(() => import("@/pages/leader/mca/Comunicacao"));
@@ -356,6 +357,7 @@ const App = () => (
                 <Route path="salas" element={<LeaderMcaSalas />} />
                 <Route path="criancas" element={<LeaderMcaCriancas />} />
                 <Route path="checkin" element={<LeaderMcaCheckin />} />
+                <Route path="checkin/quiosque" element={<LeaderMcaCheckinKiosk />} />
                 <Route path="planos" element={<PlanosDispatch />} />
                 <Route path="planos/:planoId" element={<PlanoDetalheDispatch />} />
                 <Route path="comunicacao" element={<LeaderMcaComunicacao />} />
