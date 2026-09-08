@@ -23,6 +23,7 @@ import {
   ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown,
   FileDown, Loader2, Clock, Megaphone, ListOrdered,
   Users, Music2, Image, ExternalLink, Pencil, GripVertical,
+  ClipboardCheck, Save,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -79,6 +80,10 @@ interface EventoInfo {
   titulo: string;
   data_evento: string;
   horario_inicio: string | null;
+  presencas_total: number | null;
+  presencas_registrado_por: string | null;
+  presencas_registrado_em: string | null;
+  registrado_por_profile: { nome: string } | null;
 }
 
 interface LiturgiaCulto {
@@ -246,6 +251,7 @@ export default function CultoDetalhe() {
   const [novoAvisoForm, setNovoAvisoForm] = useState({ ...emptyAvisoForm });
   const [exportingImg, setExportingImg] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [presencasTotal, setPresencasTotal] = useState('');
 
   // ─── Queries ──────────────────────────────────────────────────────────────
   const { data: evento } = useQuery({
@@ -253,11 +259,15 @@ export default function CultoDetalhe() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('eventos_escala')
-        .select('id, titulo, data_evento, horario_inicio')
+        .select(`
+          id, titulo, data_evento, horario_inicio,
+          presencas_total, presencas_registrado_por, presencas_registrado_em,
+          registrado_por_profile:profiles!eventos_escala_presencas_registrado_por_fkey(nome)
+        `)
         .eq('id', eventoId!)
         .single();
       if (error) throw error;
-      return data as EventoInfo;
+      return data as unknown as EventoInfo;
     },
     enabled: !!eventoId,
   });
@@ -292,6 +302,10 @@ export default function CultoDetalhe() {
   useEffect(() => {
     if (liturgia) setObsGerais(liturgia.observacoes_gerais ?? '');
   }, [liturgia]);
+
+  useEffect(() => {
+    if (evento) setPresencasTotal(evento.presencas_total != null ? String(evento.presencas_total) : '');
+  }, [evento]);
 
   const { data: itens, isLoading: loadingItens } = useQuery({
     queryKey: ['liturgia_itens', liturgia?.id],
@@ -493,6 +507,27 @@ export default function CultoDetalhe() {
       setEditingObs(false);
     },
     onError: () => toast.error('Erro ao salvar observações'),
+  });
+
+  const salvarPresencaMutation = useMutation({
+    mutationFn: async () => {
+      const total = parseInt(presencasTotal, 10);
+      if (!Number.isFinite(total) || total < 0) throw new Error('Informe um número válido de presentes');
+      const { error } = await supabase
+        .from('eventos_escala')
+        .update({
+          presencas_total: total,
+          presencas_registrado_por: profile?.id ?? null,
+          presencas_registrado_em: new Date().toISOString(),
+        })
+        .eq('id', eventoId!);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['evento_detalhe_cel', eventoId] });
+      toast.success('Presença registrada');
+    },
+    onError: (e: Error) => toast.error(e.message || 'Erro ao registrar presença'),
   });
 
   const prepopularMutation = useMutation({
@@ -1044,6 +1079,49 @@ export default function CultoDetalhe() {
           </Button>
         </div>
       </div>
+
+      {/* ── Presença ───────────────────────────────────────────────────────── */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ClipboardCheck className="w-4 h-4" />
+            Presença
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-end gap-3 flex-wrap">
+            <div className="space-y-1">
+              <Label htmlFor="presencas_total">Total de presentes</Label>
+              <Input
+                id="presencas_total"
+                type="number"
+                min={0}
+                inputMode="numeric"
+                className="w-32"
+                value={presencasTotal}
+                onChange={(e) => setPresencasTotal(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <Button
+              size="sm"
+              onClick={() => salvarPresencaMutation.mutate()}
+              disabled={salvarPresencaMutation.isPending || presencasTotal === ''}
+            >
+              {salvarPresencaMutation.isPending
+                ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                : <Save className="w-4 h-4 mr-1" />}
+              Salvar
+            </Button>
+          </div>
+          {evento?.presencas_registrado_em && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Última contagem registrada por {evento.registrado_por_profile?.nome ?? 'alguém'} em{' '}
+              {format(parseISO(evento.presencas_registrado_em), "d 'de' MMMM 'às' HH:mm", { locale: ptBR })}
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* ── Equipe do Dia ─────────────────────────────────────────────────── */}
       <Card>

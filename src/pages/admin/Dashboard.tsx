@@ -27,6 +27,7 @@ import {
   PlusCircle,
   DollarSign,
   Cake,
+  ClipboardCheck,
 } from 'lucide-react';
 import { isBirthdayInCurrentWeek } from '@/lib/birthdayWeek';
 import {
@@ -84,6 +85,11 @@ interface ProximoEvento {
   total_ministerios: number;
 }
 
+interface FrequenciaCultoPonto {
+  data: string;
+  presentes: number;
+}
+
 interface Alert {
   id: string;
   type: 'sem_acompanhamento' | 'contato_parado' | 'base_lotada';
@@ -102,6 +108,9 @@ const statusColors: Record<string, string> = {
   desistente: 'bg-red-100 text-red-800',
   concluido: 'bg-emerald-100 text-emerald-800',
 };
+
+/** Janela considerada pra média de frequência de culto — ver rótulo no card. */
+const FREQUENCIA_CULTO_DIAS = 60;
 
 const statusLabels: Record<string, string> = {
   novo: 'Novo',
@@ -130,6 +139,9 @@ export default function AdminDashboard() {
   });
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [membrosChartData, setMembrosChartData] = useState<MembrosChartData[]>([]);
+  const [frequenciaCultoChart, setFrequenciaCultoChart] = useState<FrequenciaCultoPonto[]>([]);
+  const [frequenciaCultoMedia, setFrequenciaCultoMedia] = useState<number | null>(null);
+  const [frequenciaCultoQtd, setFrequenciaCultoQtd] = useState(0);
   const [recentVisitantes, setRecentVisitantes] = useState<Visitante[]>([]);
   const [recentAcompanhamentos, setRecentAcompanhamentos] = useState<Acompanhamento[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -150,6 +162,9 @@ export default function AdminDashboard() {
       const inicioMesStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
       const fimMesDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
       const fimMesStr = `${fimMesDate.getFullYear()}-${String(fimMesDate.getMonth() + 1).padStart(2, '0')}-${String(fimMesDate.getDate()).padStart(2, '0')}`;
+      const frequenciaDesde = new Date(now);
+      frequenciaDesde.setDate(frequenciaDesde.getDate() - FREQUENCIA_CULTO_DIAS);
+      const frequenciaDesdeStr = frequenciaDesde.toISOString().split('T')[0];
 
       // Fetch all data in parallel
       const [
@@ -171,6 +186,9 @@ export default function AdminDashboard() {
         // Aniversariantes da semana — mesmos campos de AniversariantesDoMes.tsx, mas
         // filtrando por semana em vez de mês (ver src/lib/birthdayWeek.ts).
         aniversariantesRes,
+        // Frequência de culto — cultos (tipo='culto') com presença já registrada
+        // nos últimos 60 dias, pra tendência + média (ver constante FREQUENCIA_DIAS abaixo).
+        frequenciaCultoRes,
       ] = await Promise.all([
         // Visitantes no mês
         supabase
@@ -268,6 +286,16 @@ export default function AdminDashboard() {
           .eq('church_id', churchId)
           .in('status', ['ativo', 'frequentador'])
           .not('data_nascimento', 'is', null),
+
+        // Frequência de culto — só cultos com presença já registrada
+        supabase
+          .from('eventos_escala')
+          .select('id, data_evento, presencas_total')
+          .eq('church_id', churchId)
+          .eq('tipo', 'culto')
+          .not('presencas_total', 'is', null)
+          .gte('data_evento', frequenciaDesdeStr)
+          .order('data_evento', { ascending: true }),
       ]);
 
       const totalArrecadadoMes = (totalArrecadadoMesRes.data || []).reduce(
@@ -276,6 +304,21 @@ export default function AdminDashboard() {
       );
       const aniversariantesSemana = ((aniversariantesRes.data || []) as { id: string; data_nascimento: string }[])
         .filter((m) => isBirthdayInCurrentWeek(m.data_nascimento)).length;
+
+      const cultosComPresenca = (frequenciaCultoRes.data || []) as { id: string; data_evento: string; presencas_total: number }[];
+      if (cultosComPresenca.length > 0) {
+        const soma = cultosComPresenca.reduce((acc, c) => acc + c.presencas_total, 0);
+        setFrequenciaCultoMedia(Math.round(soma / cultosComPresenca.length));
+      } else {
+        setFrequenciaCultoMedia(null);
+      }
+      setFrequenciaCultoQtd(cultosComPresenca.length);
+      setFrequenciaCultoChart(
+        cultosComPresenca.map((c) => ({
+          data: new Date(c.data_evento + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+          presentes: c.presencas_total,
+        })),
+      );
 
       setStats({
         visitantesNoMes: visitantesNoMesRes.count || 0,
@@ -821,6 +864,80 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </Link>
+      </div>
+
+      {/* Frequência de Culto */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2 shadow-card">
+          <CardHeader>
+            <CardTitle className="font-display flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              Presença nos Cultos
+            </CardTitle>
+            <CardDescription>Total registrado por culto (últimos {FREQUENCIA_CULTO_DIAS} dias)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <Skeleton className="h-[250px] w-full" />
+            ) : frequenciaCultoChart.length === 0 ? (
+              <EmptyState
+                icon={ClipboardCheck}
+                title="Nenhuma presença registrada ainda"
+                description="Registre a presença de um culto em Cultos para começar a ver esta métrica."
+                className="py-10"
+              />
+            ) : (
+              <ResponsiveContainer width="100%" height={250}>
+                <AreaChart data={frequenciaCultoChart}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="data" className="text-xs" />
+                  <YAxis className="text-xs" allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="presentes"
+                    stroke="#396939"
+                    fill="#5A9462"
+                    fillOpacity={0.3}
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card h-full">
+          <CardHeader>
+            <CardTitle className="font-display flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-primary" />
+              Frequência Média
+            </CardTitle>
+            <CardDescription>Últimos {FREQUENCIA_CULTO_DIAS} dias, cultos com presença registrada</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center py-6">
+            {loading ? (
+              <Skeleton className="h-12 w-16" />
+            ) : frequenciaCultoMedia === null ? (
+              <p className="text-sm text-muted-foreground text-center">
+                Registre a presença de um culto em Cultos para começar a ver esta métrica.
+              </p>
+            ) : (
+              <>
+                <p className="text-5xl font-bold text-gray-900 leading-none">{frequenciaCultoMedia}</p>
+                <p className="text-sm text-muted-foreground mt-3 text-center">
+                  pessoas em média, em {frequenciaCultoQtd} culto{frequenciaCultoQtd !== 1 ? 's' : ''} registrado{frequenciaCultoQtd !== 1 ? 's' : ''}
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Bottom Grid - Lists */}

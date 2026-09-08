@@ -1516,6 +1516,9 @@ export type Database = {
           horario_inicio: string | null
           id: string
           periodo_id: string
+          presencas_registrado_em: string | null
+          presencas_registrado_por: string | null
+          presencas_total: number | null
           status: string
           tipo: string
           titulo: string
@@ -1530,6 +1533,9 @@ export type Database = {
           horario_inicio?: string | null
           id?: string
           periodo_id: string
+          presencas_registrado_em?: string | null
+          presencas_registrado_por?: string | null
+          presencas_total?: number | null
           status?: string
           tipo?: string
           titulo: string
@@ -1544,6 +1550,9 @@ export type Database = {
           horario_inicio?: string | null
           id?: string
           periodo_id?: string
+          presencas_registrado_em?: string | null
+          presencas_registrado_por?: string | null
+          presencas_total?: number | null
           status?: string
           tipo?: string
           titulo?: string
@@ -1562,6 +1571,13 @@ export type Database = {
             columns: ["periodo_id"]
             isOneToOne: false
             referencedRelation: "periodos_escala"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_escala_presencas_registrado_por_fkey"
+            columns: ["presencas_registrado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
