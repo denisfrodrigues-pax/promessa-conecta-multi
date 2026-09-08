@@ -2431,12 +2431,14 @@ export type Database = {
           church_id: string | null
           cidade: string | null
           complemento: string | null
+          conjuge_id: string | null
           cpf: string | null
           created_at: string | null
           curso: string | null
           data_batismo: string | null
           data_batismo_agua: string | null
           data_batismo_espirito: string | null
+          data_casamento: string | null
           data_nascimento: string | null
           data_ordenacao_fim: string | null
           data_ordenacao_inicio: string | null
@@ -2457,6 +2459,7 @@ export type Database = {
           nacionalidade: string | null
           naturalidade: string | null
           nome: string
+          nome_conjuge: string | null
           nome_mae: string | null
           nome_pai: string | null
           numero: string | null
@@ -2485,12 +2488,14 @@ export type Database = {
           church_id?: string | null
           cidade?: string | null
           complemento?: string | null
+          conjuge_id?: string | null
           cpf?: string | null
           created_at?: string | null
           curso?: string | null
           data_batismo?: string | null
           data_batismo_agua?: string | null
           data_batismo_espirito?: string | null
+          data_casamento?: string | null
           data_nascimento?: string | null
           data_ordenacao_fim?: string | null
           data_ordenacao_inicio?: string | null
@@ -2511,6 +2516,7 @@ export type Database = {
           nacionalidade?: string | null
           naturalidade?: string | null
           nome: string
+          nome_conjuge?: string | null
           nome_mae?: string | null
           nome_pai?: string | null
           numero?: string | null
@@ -2539,12 +2545,14 @@ export type Database = {
           church_id?: string | null
           cidade?: string | null
           complemento?: string | null
+          conjuge_id?: string | null
           cpf?: string | null
           created_at?: string | null
           curso?: string | null
           data_batismo?: string | null
           data_batismo_agua?: string | null
           data_batismo_espirito?: string | null
+          data_casamento?: string | null
           data_nascimento?: string | null
           data_ordenacao_fim?: string | null
           data_ordenacao_inicio?: string | null
@@ -2565,6 +2573,7 @@ export type Database = {
           nacionalidade?: string | null
           naturalidade?: string | null
           nome?: string
+          nome_conjuge?: string | null
           nome_mae?: string | null
           nome_pai?: string | null
           numero?: string | null
@@ -2592,6 +2601,13 @@ export type Database = {
             columns: ["church_id"]
             isOneToOne: false
             referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "membros_conjuge_id_fkey"
+            columns: ["conjuge_id"]
+            isOneToOne: false
+            referencedRelation: "membros"
             referencedColumns: ["id"]
           },
           {

@@ -323,7 +323,12 @@ export default function MembroDetalhes() {
     pai_mae_promessista: false,
     pais: 'Brasil',
     curso: '',
+    data_casamento: '',
+    conjuge_id: '',
+    nome_conjuge: '',
   });
+
+  const [membrosIgreja, setMembrosIgreja] = useState<{ id: string; nome: string }[]>([]);
 
   const setMin = (field: string, value: unknown) =>
     setMinisterialData((prev) => ({ ...prev, [field]: value }));
@@ -334,7 +339,28 @@ export default function MembroDetalhes() {
       fetchBaseAtual();
       fetchHistorico();
     }
-  }, [id]);
+    if (churchId) {
+      fetchMembrosIgreja();
+    }
+  }, [id, churchId]);
+
+  const fetchMembrosIgreja = async () => {
+    try {
+      let query = supabase
+        .from('membros')
+        .select('id, nome')
+        .eq('church_id', churchId as string)
+        .order('nome');
+
+      if (id) query = query.neq('id', id);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      setMembrosIgreja(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar membros da igreja:', error);
+    }
+  };
 
   const fetchMembro = async () => {
     try {
@@ -425,6 +451,9 @@ export default function MembroDetalhes() {
         pai_mae_promessista: (data as any).pai_mae_promessista || false,
         pais: (data as any).pais || 'Brasil',
         curso: (data as any).curso || '',
+        data_casamento: data.data_casamento || '',
+        conjuge_id: data.conjuge_id || '',
+        nome_conjuge: data.nome_conjuge || '',
       });
       setFotoPreview(combinedFoto);
     } catch (error) {
@@ -616,6 +645,11 @@ export default function MembroDetalhes() {
         pai_mae_promessista: ministerialData.pai_mae_promessista,
         pais: ministerialData.pais || null,
         curso: ministerialData.curso.trim() || null,
+        data_casamento: ministerialData.data_casamento || null,
+        // Mutuamente exclusivos: conjuge_id (membro cadastrado) tem prioridade
+        // sobre nome_conjuge (texto livre) se os dois vierem preenchidos.
+        conjuge_id: ministerialData.conjuge_id || null,
+        nome_conjuge: ministerialData.conjuge_id ? null : (ministerialData.nome_conjuge.trim() || null),
       };
 
       if (!isLinkedToProfile) {
@@ -1346,6 +1380,60 @@ export default function MembroDetalhes() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Heart className="w-4 h-4 text-pink-600" />
+                Casamento
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Data de Casamento</Label>
+                  <Input
+                    type="date"
+                    value={ministerialData.data_casamento}
+                    onChange={(e) => setMin('data_casamento', e.target.value)}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div />
+                <div className="space-y-2">
+                  <Label>Cônjuge (membro cadastrado)</Label>
+                  <Select
+                    value={ministerialData.conjuge_id || 'none'}
+                    onValueChange={(v) => {
+                      setMin('conjuge_id', v === 'none' ? '' : v);
+                      if (v !== 'none') setMin('nome_conjuge', '');
+                    }}
+                    disabled={!isEditing || !!ministerialData.nome_conjuge}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Selecione se for membro" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum</SelectItem>
+                      {membrosIgreja.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Nome do Cônjuge (se não for membro cadastrado)</Label>
+                  <Input
+                    value={ministerialData.nome_conjuge}
+                    onChange={(e) => setMin('nome_conjuge', e.target.value)}
+                    disabled={!isEditing || !!ministerialData.conjuge_id}
+                    placeholder="Nome completo do cônjuge"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground md:col-span-2">
+                  Preencha só um dos dois: selecione o cônjuge se ele for membro cadastrado, ou digite o nome se não for.
+                </p>
               </div>
             </CardContent>
           </Card>
