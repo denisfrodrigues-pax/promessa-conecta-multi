@@ -28,7 +28,7 @@ import {
   Building2, Save, Loader2, Upload, X, Image as ImageIcon, Palette,
   User, Mail, Phone, Crown, MapPin, Globe, Instagram, Youtube,
   Facebook, MessageCircle, Puzzle, Clock, Plus, Trash2, Pencil, Copy, ExternalLink,
-  Sparkles, Search, BookOpen,
+  Sparkles, Search, BookOpen, Bell,
 } from 'lucide-react';
 
 type Plano = 'teste' | 'basico' | 'completo';
@@ -182,6 +182,8 @@ export default function ConfiguracaoIgreja() {
   const [uploadingLogin, setUploadingLogin] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
+  const [notificacoesPush, setNotificacoesPush] = useState(false);
+  const [savingNotifPush, setSavingNotifPush] = useState(false);
   const fileLogoRef = useRef<HTMLInputElement>(null);
   const fileHeroRef = useRef<HTMLInputElement>(null);
   const fileLoginRef = useRef<HTMLInputElement>(null);
@@ -198,8 +200,40 @@ export default function ConfiguracaoIgreja() {
     if (churchId) {
       fetchIgreja();
       fetchEventos();
+      fetchNotificacoesPush();
     }
   }, [churchId]);
+
+  const fetchNotificacoesPush = async () => {
+    const { data, error } = await supabase
+      .from('configuracoes_instituicao')
+      .select('notificacoes_push')
+      .eq('church_id', churchId)
+      .maybeSingle();
+    if (error) {
+      console.error('[ConfiguracaoIgreja] Erro ao carregar notificacoes_push:', error);
+      return;
+    }
+    setNotificacoesPush((data as any)?.notificacoes_push ?? false);
+  };
+
+  const handleToggleNotificacoesPush = async (checked: boolean) => {
+    if (!churchId) return;
+    setSavingNotifPush(true);
+    const previous = notificacoesPush;
+    setNotificacoesPush(checked);
+    const { error } = await supabase
+      .from('configuracoes_instituicao')
+      .upsert({ church_id: churchId, notificacoes_push: checked } as any, { onConflict: 'church_id' });
+    if (error) {
+      console.error('[ConfiguracaoIgreja] Erro ao salvar notificacoes_push:', error);
+      setNotificacoesPush(previous);
+      toast.error('Erro ao salvar preferência de notificações push');
+    } else {
+      toast.success(checked ? 'Notificações push habilitadas para a igreja' : 'Notificações push desabilitadas para a igreja');
+    }
+    setSavingNotifPush(false);
+  };
 
   // ─── Fetch ────────────────────────────────────────────────────────────────
   const fetchIgreja = async () => {
@@ -1008,6 +1042,29 @@ export default function ConfiguracaoIgreja() {
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2"><Bell className="w-4 h-4" />Notificações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <Label htmlFor="notificacoes_push" className="font-medium">Notificações push para membros</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Habilita o botão de ativar notificações push (Perfil → Conta) para os membros desta igreja.
+                    Sem isso ligado, ninguém vê a opção de ativar notificações no navegador.
+                  </p>
+                </div>
+                <Switch
+                  id="notificacoes_push"
+                  checked={notificacoesPush}
+                  onCheckedChange={handleToggleNotificacoesPush}
+                  disabled={savingNotifPush}
+                />
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* ─── Aba Módulos (exclusiva de superadmin) ─────────────────────────── */}

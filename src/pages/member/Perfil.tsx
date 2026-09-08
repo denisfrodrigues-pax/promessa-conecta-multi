@@ -312,7 +312,7 @@ interface MinisterialData {
 }
 
 export default function MemberPerfil() {
-  const { profile, signOut, user } = useAuth();
+  const { profile, signOut, user, churchId } = useAuth();
   const { p } = useIgrejaSlug();
   const { config: igrejaConfig } = useIgrejaConfig();
   const cor1 = igrejaConfig?.cor_primaria ?? '#1a5c38';
@@ -364,16 +364,23 @@ export default function MemberPerfil() {
   useEffect(() => {
     if (!user?.id || !profile?.id) return;
 
-    supabase
-      .from('configuracoes_instituicao')
-      .select('membros_editam_perfil, notificacoes_push')
-      .single()
-      .then(({ data: cfg }) => {
-        if (!cfg) return;
-        const c = cfg as any;
-        setMembrosEditamPerfil(c.membros_editam_perfil ?? true);
-        setNotificacoesPushAtivas(c.notificacoes_push ?? false);
-      });
+    if (churchId) {
+      supabase
+        .from('configuracoes_instituicao')
+        .select('membros_editam_perfil, notificacoes_push')
+        .eq('church_id', churchId)
+        .maybeSingle()
+        .then(({ data: cfg, error }) => {
+          if (error) {
+            console.error('[Perfil] Erro ao carregar configuracoes_instituicao:', error);
+            return;
+          }
+          if (!cfg) return;
+          const c = cfg as any;
+          setMembrosEditamPerfil(c.membros_editam_perfil ?? true);
+          setNotificacoesPushAtivas(c.notificacoes_push ?? false);
+        });
+    }
 
     supabase
       .from('profiles')
@@ -450,7 +457,7 @@ export default function MemberPerfil() {
           data_batismo_espirito: mb.data_batismo_espirito || null,
         });
       });
-  }, [user?.id, profile?.id]);
+  }, [user?.id, profile?.id, churchId]);
 
   // ── Avatar ───────────────────────────────────────────────────────────────
 

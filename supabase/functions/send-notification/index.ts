@@ -162,11 +162,24 @@ Deno.serve(async (req) => {
     let pushSent = 0;
     let pushFailed = 0;
 
-    for (const userId of targetUserIds) {
+    // push_subscriptions.user_id guarda o id de auth.users, enquanto targetUserIds
+    // acima são todos profiles.id (voluntario_id/profile.id) — sem este mapeamento,
+    // a query abaixo nunca encontra nenhuma subscription (bug real encontrado ao
+    // testar o envio de ponta a ponta: nenhum push saía, apesar de tudo mais certo).
+    const { data: profilesForPush } = await supabase
+      .from('profiles')
+      .select('id, user_id')
+      .in('id', targetUserIds);
+
+    const authUserIds = (profilesForPush || [])
+      .map((p: { user_id: string | null }) => p.user_id)
+      .filter((id): id is string => !!id);
+
+    for (const authUserId of authUserIds) {
       const { data: subscriptions } = await supabase
         .from('push_subscriptions')
         .select('id, endpoint, p256dh, auth')
-        .eq('user_id', userId);
+        .eq('user_id', authUserId);
 
       for (const sub of subscriptions || []) {
         try {
