@@ -1,3 +1,6 @@
+// Aula avulsa por ministério (ensino_*): sem matrícula prévia, presença
+// registrada na hora. Não é o mesmo sistema que eb_* (Escola Bíblica formal,
+// com matrícula de longo prazo) — ver README.md desta pasta.
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

@@ -1,3 +1,6 @@
+// Escola Bíblica formal (eb_*): ciclos → disciplinas → aulas, com matrícula
+// de longo prazo. Não é o mesmo sistema que ensino_* (aula avulsa por
+// ministério) usado em leader/ensino/ — ver README.md dessa pasta.
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
