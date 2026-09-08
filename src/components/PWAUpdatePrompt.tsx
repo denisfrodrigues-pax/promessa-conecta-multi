@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { RefreshCw, X } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -15,21 +17,32 @@ import { Button } from '@/components/ui/button';
  * Só atualiza quando o usuário clica — nunca recarrega sozinho (a versão
  * anterior forçava reload automático do SW e isso incomodava, ver histórico
  * de main.tsx).
+ *
+ * "Depois" só adia a exibição (até a próxima navegação ou sessão) — não
+ * cancela a atualização, o SW novo continua esperando. Existe pra não perder
+ * o que estava sendo preenchido se o banner aparecer no meio de um formulário
+ * longo (ex: cadastro de membro).
  */
 export default function PWAUpdatePrompt() {
   const {
-    needRefresh: [needRefresh, setNeedRefresh],
+    needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW();
+  const location = useLocation();
+  const [snoozed, setSnoozed] = useState(false);
 
-  if (!needRefresh) return null;
+  useEffect(() => {
+    setSnoozed(false);
+  }, [location.pathname]);
+
+  if (!needRefresh || snoozed) return null;
 
   const handleUpdate = () => {
     updateServiceWorker(true);
   };
 
-  const handleDismiss = () => {
-    setNeedRefresh(false);
+  const handleSnooze = () => {
+    setSnoozed(true);
   };
 
   return (
@@ -47,16 +60,12 @@ export default function PWAUpdatePrompt() {
           </p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
+          <Button size="sm" variant="ghost" onClick={handleSnooze} className="h-8 text-xs px-3">
+            Depois
+          </Button>
           <Button size="sm" onClick={handleUpdate} className="h-8 text-xs px-3">
             Atualizar
           </Button>
-          <button
-            onClick={handleDismiss}
-            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400"
-            aria-label="Fechar"
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
       </div>
     </div>
