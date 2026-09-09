@@ -31,14 +31,19 @@ export function IgrejaSlugLayout() {
   // churchId efetivo que o AuthContext está expondo no momento
   const { churchId: currentAuthChurchId } = useAuth();
 
+  // Override só faz sentido pra superadmin (sem church_id fixo, precisa navegar
+  // entre igrejas pela URL). Pra todo mundo com igreja própria, AuthContext já
+  // ignora este override e usa sempre o church_id do perfil — mas gatear aqui
+  // também evita o estado inútil de ficar reescrevendo o override a cada
+  // navegação de quem não é superadmin.
   useEffect(() => {
-    if (church?.id) {
+    if (isSuperAdmin && church?.id) {
       setChurchIdOverride(church.id);
     }
     return () => {
-      setChurchIdOverride(null);
+      if (isSuperAdmin) setChurchIdOverride(null);
     };
-  }, [church?.id, setChurchIdOverride]);
+  }, [isSuperAdmin, church?.id, setChurchIdOverride]);
 
   // Aplica cores da igreja nas CSS variables; restaura cores do sistema ao sair.
   // Cobre também usuários não autenticados (site institucional, tela de login),

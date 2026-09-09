@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
@@ -128,6 +128,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
   const ctx = useOutletContext<{ ministerioId: string } | null>();
   const ministerioId = propMid ?? ctx?.ministerioId ?? '';
   const { p } = useIgrejaSlug();
+  const { slug } = useParams<{ slug: string }>();
 
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [modalOpen, setModalOpen] = useState(false);
@@ -190,7 +191,11 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
             />
           </div>
           <Button variant="outline" asChild>
-            <Link to="quiosque">
+            {/* "checkin" e "checkin/quiosque" são rotas irmãs (não aninhadas) em
+                App.tsx — um Link relativo "quiosque" resolve contra o nível do
+                pai (leader/:slug), não contra "checkin", e cai fora da rota
+                registrada. Precisa do caminho absoluto. */}
+            <Link to={p(`/leader/${slug}/checkin/quiosque`)}>
               <Maximize className="w-4 h-4 mr-2" />Modo Quiosque
             </Link>
           </Button>

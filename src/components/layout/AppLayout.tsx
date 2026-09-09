@@ -58,12 +58,13 @@ export default function AppLayout() {
   const nomeBase = nomeModulo.bases ?? 'PG';
 
   const navItems = [
-    { icon: Home,          label: 'Início',       path: p('/app') },
-    { icon: Church,        label: 'Minha Igreja', path: p('/app/minha-igreja') },
-    { icon: Users,         label: nomeBase,        path: p('/app/minha-base') },
-    { icon: BookOpenCheck, label: 'Ensino',        path: p('/app/meu-ensino') },
-    { icon: Bell,          label: 'Notificações', path: p('/app/notificacoes'), badge: unreadCount > 0 ? unreadCount : undefined },
-    { icon: User,          label: 'Perfil',        path: p('/app/perfil') },
+    { icon: Home,          label: 'Início',            path: p('/app') },
+    { icon: Church,        label: 'Minha Igreja',      path: p('/app/minha-igreja') },
+    { icon: Users,         label: nomeBase,             path: p('/app/minha-base') },
+    { icon: BookOpenCheck, label: 'Ensino',             path: p('/app/meu-ensino') },
+    { icon: Heart,         label: 'Contribuições',     path: p('/app/contribuicoes') },
+    { icon: Bell,          label: 'Notificações',      path: p('/app/notificacoes'), badge: unreadCount > 0 ? unreadCount : undefined },
+    { icon: User,          label: 'Perfil',             path: p('/app/perfil') },
   ];
 
   const mobileBottomNavItems = [
