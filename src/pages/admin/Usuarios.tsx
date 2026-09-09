@@ -18,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { auditActions } from '@/lib/auditService';
+import { InviteUserDialog } from '@/components/admin/InviteUserDialog';
 
 interface User {
   id: string;
@@ -56,6 +57,7 @@ export default function Usuarios() {
   const [deleting, setDeleting] = useState(false);
   const [convertingUser, setConvertingUser] = useState<User | null>(null);
   const [converting, setConverting] = useState(false);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [editData, setEditData] = useState({ nome: '', telefone: '', status: '', role: '' });
   const [sortConfig, setSortConfig] = useState<{ coluna: 'nome' | 'created_at'; direcao: 'asc' | 'desc' }>({ coluna: 'nome', direcao: 'asc' });
   const [filterFuncoes, setFilterFuncoes] = useState<string[]>([]);
@@ -403,11 +405,26 @@ export default function Usuarios() {
           <h1 className="text-3xl font-display font-bold text-foreground">Usuários</h1>
           <p className="text-muted-foreground mt-1">Gerenciamento de membros e visitantes</p>
         </div>
-        <Button variant="outline" onClick={exportCSV} className="group">
-          <Download className="w-4 h-4 mr-2 transition-transform group-hover:-translate-y-0.5" />
-          Exportar CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={exportCSV} className="group">
+            <Download className="w-4 h-4 mr-2 transition-transform group-hover:-translate-y-0.5" />
+            Exportar CSV
+          </Button>
+          <Button onClick={() => setShowInviteDialog(true)}>
+            <UserPlus className="w-4 h-4 mr-2" />
+            Convidar Usuário
+          </Button>
+        </div>
       </div>
+
+      {churchId && (
+        <InviteUserDialog
+          open={showInviteDialog}
+          onOpenChange={setShowInviteDialog}
+          churchId={churchId}
+          onInvited={fetchUsers}
+        />
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
