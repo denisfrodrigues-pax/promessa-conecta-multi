@@ -381,9 +381,15 @@ const App = () => (
                 <Route path="escalas" element={<MinisterioEscalas />} />
                 <Route path=":modulo" element={<MinisterioModulo />} />
               </Route>
+
+              {/* 404 dentro do contexto da igreja — precisa estar aninhada aqui
+                  (não só no catch-all de fora) pra NotFound ter useIgrejaSlug()
+                  disponível e poder voltar pra dentro da própria igreja em vez
+                  do domínio raiz do super-admin. */}
+              <Route path="*" element={<NotFound />} />
             </Route>
 
-            {/* ── 404 ──────────────────────────────────────────────────────── */}
+            {/* ── 404 fora do contexto de qualquer igreja ─────────────────────── */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

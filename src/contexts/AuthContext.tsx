@@ -30,6 +30,8 @@ interface AuthContextType {
   roles: UserRole[];
   loading: boolean;
   churchId: string | null;
+  /** Slug da igreja do usuário logado (null pra superadmin, que não tem igreja fixa). */
+  churchSlug: string | null;
   /** Sobrescreve o churchId do perfil — usado por IgrejaSlugLayout para superadmin */
   setChurchIdOverride: (id: string | null) => void;
   myMinistries: MyMinistry[];
@@ -55,13 +57,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [profileChurchId, setProfileChurchId] = useState<string | null>(null);
+  const [profileChurchSlug, setProfileChurchSlug] = useState<string | null>(null);
   const [churchIdOverride, setChurchIdOverride] = useState<string | null>(null);
   const [myMinistries, setMyMinistries] = useState<MyMinistry[]>([]);
   const [myMinistriesLoading, setMyMinistriesLoading] = useState(false);
   const loadedUserIdRef = useRef<string | null>(null);
 
-  // churchId efetivo: override (posto por IgrejaSlugLayout) tem precedência sobre o do perfil
-  const churchId = churchIdOverride ?? profileChurchId;
+  const isSuperAdmin = roles.includes('superadmin');
+
+  // churchId efetivo: pra quem tem igreja própria (todo mundo, exceto superadmin),
+  // é SEMPRE a do perfil — nunca a da URL. O override (posto por IgrejaSlugLayout a
+  // partir do slug) só vale pra superadmin, que não tem church_id fixo e precisa
+  // navegar entre igrejas pela URL. Sem essa trava, trocar o slug manualmente na URL
+  // fazia qualquer admin/líder "virar" admin de outra igreja (dado carregado E
+  // formulário editável com a igreja errada) — ver PrivateRoute para o redirect
+  // complementar quando o slug da URL não bate com a igreja do usuário.
+  const churchId = (isSuperAdmin ? churchIdOverride : null) ?? profileChurchId;
+  const churchSlug = isSuperAdmin ? null : profileChurchSlug;
 
   const refreshMyMinistries = useCallback(async () => {
     setMyMinistriesLoading(true);
@@ -116,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const [profileResult, rolesResult] = await Promise.all([
         supabase
           .from('profiles')
-          .select('id, user_id, nome, email, telefone, foto_url, status, church_id')
+          .select('id, user_id, nome, email, telefone, foto_url, status, church_id, igrejas(slug)')
           .eq('user_id', userId)
           .maybeSingle(),
         supabase
@@ -126,8 +138,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ]);
 
       if (!profileResult.error && profileResult.data) {
-        setProfile(profileResult.data as Profile);
-        setProfileChurchId(profileResult.data.church_id ?? null);
+        const { igrejas, ...profileData } = profileResult.data as Profile & { igrejas: { slug: string } | null };
+        setProfile(profileData as Profile);
+        setProfileChurchId(profileData.church_id ?? null);
+        setProfileChurchSlug(igrejas?.slug ?? null);
       } else if (profileResult.error) {
         console.error('Profile fetch error:', profileResult.error);
       }
@@ -173,6 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
     setRoles([]);
     setProfileChurchId(null);
+    setProfileChurchSlug(null);
     setChurchIdOverride(null);
     setMyMinistries([]);
   };
@@ -200,6 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       roles,
       loading,
       churchId,
+      churchSlug,
       setChurchIdOverride,
       myMinistries,
       myMinistriesLoading,

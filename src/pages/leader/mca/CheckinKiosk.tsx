@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -116,6 +117,8 @@ export default function CheckinKiosk() {
   const ctx = useOutletContext<{ ministerioId: string } | null>();
   const ministerioId = ctx?.ministerioId ?? '';
   const navigate = useNavigate();
+  const { p } = useIgrejaSlug();
+  const { slug } = useParams<{ slug: string }>();
 
   const [busca, setBusca] = useState('');
   const [exitDialogOpen, setExitDialogOpen] = useState(false);
@@ -283,7 +286,10 @@ export default function CheckinKiosk() {
       <ExitKioskDialog
         open={exitDialogOpen}
         onClose={() => setExitDialogOpen(false)}
-        onExited={() => navigate('..')}
+        // "checkin/quiosque" e "checkin" são rotas irmãs (não aninhadas) em
+        // App.tsx — navigate('..') sobe pro nível do pai (leader/:slug), não
+        // pra "checkin". Precisa do caminho absoluto.
+        onExited={() => navigate(p(`/leader/${slug}/checkin`))}
       />
     </div>
   );
