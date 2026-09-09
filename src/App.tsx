@@ -309,7 +309,7 @@ const App = () => (
                 <Route path="devocionais" element={<AdminDevocionais />} />
                 <Route path="aniversariantes" element={<Aniversariantes />} />
                 <Route path="auditoria" element={<AdminAuditoria />} />
-                <Route path="configuracoes" element={<Navigate to="configuracoes/igreja" replace />} />
+                <Route path="configuracoes" element={<Navigate to="igreja" replace />} />
                 <Route path="configuracoes/igreja" element={<AdminConfiguracaoIgreja />} />
                 <Route path="whatsapp-test" element={<WhatsAppTest />} />
               </Route>
