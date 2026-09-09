@@ -43,7 +43,10 @@ function ExitKioskDialog({ open, onClose, onExited }: { open: boolean; onClose: 
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { setPassword(''); onClose(); } }}>
-      <DialogContent className="max-w-sm">
+      {/* z-[110]: o quiosque cobre o app inteiro com z-[100] (pra esconder header/
+          banners que também usam z-50, mesmo z-index padrão do Dialog) — sem isso
+          o modal fica atrás do quiosque, presente no DOM mas invisível. */}
+      <DialogContent className="max-w-sm z-[110]" overlayClassName="z-[110]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lock className="w-5 h-5" />
@@ -86,7 +89,8 @@ function SalaPickerDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="max-w-md">
+      {/* Mesmo z-[110] do ExitKioskDialog — mesma causa (quiosque cobre com z-[100]). */}
+      <DialogContent className="max-w-md z-[110]" overlayClassName="z-[110]">
         <DialogHeader>
           <DialogTitle>Qual sala para {crianca?.nome}?</DialogTitle>
         </DialogHeader>
