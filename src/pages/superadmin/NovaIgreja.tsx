@@ -16,13 +16,14 @@ import {
   ArrowLeft, ArrowRight, Check, Building2, Palette, MapPin,
   User, Upload, X, Loader2, Globe, Phone, Instagram,
   Youtube, Facebook, BookOpen, Image as ImageIcon, Share2, Camera,
-  Sparkles, Search, BookMarked,
+  Sparkles, Search, BookMarked, Mail, PartyPopper,
 } from 'lucide-react';
 import {
   CultoPrincipalBlock, EscolaBiblicaBlock, PequenosGruposBlock,
   DEFAULT_CULTOS_CONFIG,
 } from '@/components/CultoBlocks';
 import type { CultosConfig } from '@/components/CultoBlocks';
+import { InviteUserDialog } from '@/components/admin/InviteUserDialog';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -107,6 +108,8 @@ export default function NovaIgreja() {
   const [slugManual, setSlugManual] = useState(false);
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'ok' | 'taken'>('idle');
   const [form, setForm] = useState<FormData>(INIT);
+  const [createdChurch, setCreatedChurch] = useState<{ id: string; nome: string } | null>(null);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
 
   // Bible search
   const [bibleQuery, setBibleQuery] = useState('');
@@ -370,12 +373,53 @@ export default function NovaIgreja() {
       if (cErr) console.error('Seed categorias:', cErr);
 
       toast.success(`Igreja "${form.nome}" criada com sucesso!`);
-      navigate('/admin');
+      setCreatedChurch({ id, nome: form.nome });
     } catch (e) {
       console.error('handleCreate:', e);
       toast.error('Erro ao criar igreja. Verifique o console.');
     } finally { setLoading(false); }
   };
+
+  // ─── Tela de sucesso (pós-criação): convidar o primeiro admin ──────────────
+  // Sem isso, a igreja é criada mas ninguém consegue acessá-la — o wizard só
+  // salvava responsavel_nome/responsavel_email como contato, sem criar usuário
+  // nenhum. Ver InviteUserDialog (Edge Function invite-admin).
+  if (createdChurch) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
+        <div className="max-w-md w-full">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-2">
+                <PartyPopper className="h-8 w-8 text-emerald-700" />
+              </div>
+              <CardTitle className="text-xl">Igreja "{createdChurch.nome}" criada!</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600 text-center">
+                Agora convide o primeiro administrador — sem isso, ninguém consegue acessar essa igreja.
+              </p>
+              <Button className="w-full bg-emerald-700 hover:bg-emerald-800" onClick={() => setShowInviteDialog(true)}>
+                <Mail className="h-4 w-4 mr-2" />
+                Convidar Administrador
+              </Button>
+              <Button variant="outline" className="w-full" onClick={() => navigate('/admin')}>
+                Ir para o Painel
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+        <InviteUserDialog
+          open={showInviteDialog}
+          onOpenChange={setShowInviteDialog}
+          churchId={createdChurch.id}
+          defaultEmail={form.responsavel_email}
+          defaultNome={form.responsavel_nome}
+          defaultRole="admin"
+        />
+      </div>
+    );
+  }
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
