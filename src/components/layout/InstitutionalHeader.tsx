@@ -25,7 +25,7 @@ function HeaderLogo({
   size: number;
 }) {
   if (loading) {
-    return <div className="animate-pulse bg-muted rounded-lg" style={{ height: size, width: size }} />;
+    return <div className="animate-pulse bg-muted rounded-xl" style={{ height: size, width: size }} />;
   }
   if (logoUrl) {
     return (
@@ -39,7 +39,7 @@ function HeaderLogo({
   }
   return (
     <div
-      className="flex items-center justify-center rounded-lg bg-muted text-muted-foreground"
+      className="flex items-center justify-center rounded-xl bg-muted text-muted-foreground"
       style={{ height: size, width: size }}
     >
       <Church style={{ width: size * 0.55, height: size * 0.55 }} />
@@ -57,9 +57,9 @@ export function InstitutionalHeader() {
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
-    <header className="w-full border-b bg-white relative z-50">
+    <header className="w-full border-b border-stone-200 bg-white relative z-50">
       {/* ================= MOBILE HEADER ================= */}
-      <div className="flex items-center justify-between px-4 py-3 lg:hidden">
+      <div className="flex items-center justify-between px-4 py-4 lg:hidden">
         {/* Logo */}
         <Link to={p('/publico')}>
           <HeaderLogo logoUrl={church?.logo_url} nome={church?.nome} loading={churchLoading} size={40} />
@@ -69,7 +69,7 @@ export function InstitutionalHeader() {
         <button
           onClick={() => setMobileMenuOpen(true)}
           aria-label="Abrir menu"
-          className="p-2"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl"
         >
           <Menu className="h-7 w-7" />
         </button>
@@ -79,20 +79,20 @@ export function InstitutionalHeader() {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
           {/* Topo */}
-          <div className="flex items-center justify-between px-4 py-4 border-b">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-stone-200">
             <Link to={p('/publico')} onClick={closeMenu}>
               <HeaderLogo logoUrl={church?.logo_url} nome={church?.nome} loading={churchLoading} size={32} />
             </Link>
-            <button onClick={closeMenu} aria-label="Fechar menu">
+            <button onClick={closeMenu} aria-label="Fechar menu" className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl">
               <X className="h-7 w-7" />
             </button>
           </div>
 
           {/* Navegação */}
-          <nav className="flex flex-col px-4 py-6">
+          <nav className="flex flex-col px-6 py-8">
             {/* Login - Item independente com destaque no topo */}
-            <div className="pb-4 mb-2">
-              <Button asChild className="w-full" size="lg">
+            <div className="pb-6 mb-2">
+              <Button asChild className="w-full rounded-xl" size="lg">
                 <Link onClick={closeMenu} to={p('/login')} className="flex items-center justify-center gap-2">
                   <LogIn className="w-5 h-5" />
                   Login
@@ -102,58 +102,58 @@ export function InstitutionalHeader() {
 
             <Accordion type="multiple" className="w-full">
               {/* 1. Quem Somos - COM accordion */}
-              <AccordionItem value="quem-somos" className="border-b">
-                <AccordionTrigger className="text-lg font-medium py-4 hover:no-underline">
+              <AccordionItem value="quem-somos" className="border-b border-stone-200">
+                <AccordionTrigger className="text-lg font-semibold py-4 hover:no-underline">
                   Quem Somos
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
-                  <div className="flex flex-col gap-3 pl-4">
-                    <Link onClick={closeMenu} to={p('/quem-somos/historia')} className="text-muted-foreground hover:text-foreground">Nossa História</Link>
-                    <Link onClick={closeMenu} to={p('/quem-somos/missao-visao')} className="text-muted-foreground hover:text-foreground">Missão e Visão</Link>
-                    <Link onClick={closeMenu} to={p('/quem-somos/teologia')} className="text-muted-foreground hover:text-foreground">Nossa Teologia</Link>
-                    <Link onClick={closeMenu} to={p('/quem-somos/pastores')} className="text-muted-foreground hover:text-foreground">Pastores</Link>
-                    <Link onClick={closeMenu} to={p('/quem-somos/lideres-ministerios')} className="text-muted-foreground hover:text-foreground">Líderes e Ministérios</Link>
+                  <div className="flex flex-col gap-1 pl-4">
+                    <Link onClick={closeMenu} to={p('/quem-somos/historia')} className="text-stone-600 hover:text-stone-900 py-2.5">Nossa História</Link>
+                    <Link onClick={closeMenu} to={p('/quem-somos/missao-visao')} className="text-stone-600 hover:text-stone-900 py-2.5">Missão e Visão</Link>
+                    <Link onClick={closeMenu} to={p('/quem-somos/teologia')} className="text-stone-600 hover:text-stone-900 py-2.5">Nossa Teologia</Link>
+                    <Link onClick={closeMenu} to={p('/quem-somos/pastores')} className="text-stone-600 hover:text-stone-900 py-2.5">Pastores</Link>
+                    <Link onClick={closeMenu} to={p('/quem-somos/lideres-ministerios')} className="text-stone-600 hover:text-stone-900 py-2.5">Líderes e Ministérios</Link>
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
               {/* 2. Bases - SIMPLES */}
-              <div className="border-b py-4">
-                <Link onClick={closeMenu} to={p('/bases-publicas')} className="text-lg font-medium">
+              <div className="border-b border-stone-200 py-2">
+                <Link onClick={closeMenu} to={p('/bases-publicas')} className="text-lg font-semibold block py-2">
                   Bases
                 </Link>
               </div>
 
               {/* 3. Trilha Amar e Servir - SIMPLES (sem destaque) */}
-              <div className="border-b py-4">
-                <Link onClick={closeMenu} to={p('/trilha-amar-servir')} className="text-lg font-medium">
+              <div className="border-b border-stone-200 py-2">
+                <Link onClick={closeMenu} to={p('/trilha-amar-servir')} className="text-lg font-semibold block py-2">
                   Trilha Amar e Servir
                 </Link>
               </div>
 
               {/* 4. Contribua - SIMPLES */}
-              <div className="border-b py-4">
-                <Link onClick={closeMenu} to={p('/contribuicoes')} className="text-lg font-medium">
+              <div className="border-b border-stone-200 py-2">
+                <Link onClick={closeMenu} to={p('/contribuicoes')} className="text-lg font-semibold block py-2">
                   Contribua
                 </Link>
               </div>
 
               {/* 5. Contato - SIMPLES */}
-              <div className="border-b py-4">
-                <Link onClick={closeMenu} to={p('/contato')} className="text-lg font-medium">
+              <div className="border-b border-stone-200 py-2">
+                <Link onClick={closeMenu} to={p('/contato')} className="text-lg font-semibold block py-2">
                   Contato
                 </Link>
               </div>
 
               {/* 6. Cadastro - COM accordion (Sou Novo + Seja Voluntário) */}
-              <AccordionItem value="cadastro" className="border-b">
-                <AccordionTrigger className="text-lg font-medium py-4 hover:no-underline">
+              <AccordionItem value="cadastro" className="border-b border-stone-200">
+                <AccordionTrigger className="text-lg font-semibold py-4 hover:no-underline">
                   Cadastro
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
-                  <div className="flex flex-col gap-3 pl-4">
-                    <Link onClick={closeMenu} to={p('/sou-novo')} className="text-muted-foreground hover:text-foreground">Sou Novo</Link>
-                    <Link onClick={closeMenu} to={p('/seja-voluntario')} className="text-muted-foreground hover:text-foreground">Seja Voluntário</Link>
+                  <div className="flex flex-col gap-1 pl-4">
+                    <Link onClick={closeMenu} to={p('/sou-novo')} className="text-stone-600 hover:text-stone-900 py-2.5">Sou Novo</Link>
+                    <Link onClick={closeMenu} to={p('/seja-voluntario')} className="text-stone-600 hover:text-stone-900 py-2.5">Seja Voluntário</Link>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -165,7 +165,7 @@ export function InstitutionalHeader() {
       )}
 
       {/* ================= DESKTOP HEADER ================= */}
-      <div className="hidden lg:flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
+      <div className="hidden lg:flex items-center justify-between px-8 py-5 max-w-7xl mx-auto">
         {/* Logo */}
         <Link to={p('/publico')}>
           <HeaderLogo logoUrl={church?.logo_url} nome={church?.nome} loading={churchLoading} size={48} />
@@ -183,12 +183,12 @@ export function InstitutionalHeader() {
             <div className="absolute top-full left-0 h-2 w-full" />
             {/* Dropdown com delay e transição suave */}
             <div className="absolute top-[calc(100%+0.5rem)] left-0 opacity-0 invisible translate-y-1 group-hover/dropdown:opacity-100 group-hover/dropdown:visible group-hover/dropdown:translate-y-0 transition-all duration-200 delay-150 ease-out z-50">
-              <div className="w-64 rounded-lg border bg-white shadow-lg py-2">
-                <Link to={p('/quem-somos/historia')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa História</Link>
-                <Link to={p('/quem-somos/missao-visao')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Missão e Visão</Link>
-                <Link to={p('/quem-somos/teologia')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Nossa Teologia</Link>
-                <Link to={p('/quem-somos/pastores')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Pastores</Link>
-                <Link to={p('/quem-somos/lideres-ministerios')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Líderes e Ministérios</Link>
+              <div className="w-64 rounded-2xl border border-stone-200 bg-white shadow-elevated py-3">
+                <Link to={p('/quem-somos/historia')} className="block px-4 py-2 text-sm hover:bg-stone-100 transition-colors">Nossa História</Link>
+                <Link to={p('/quem-somos/missao-visao')} className="block px-4 py-2 text-sm hover:bg-stone-100 transition-colors">Missão e Visão</Link>
+                <Link to={p('/quem-somos/teologia')} className="block px-4 py-2 text-sm hover:bg-stone-100 transition-colors">Nossa Teologia</Link>
+                <Link to={p('/quem-somos/pastores')} className="block px-4 py-2 text-sm hover:bg-stone-100 transition-colors">Pastores</Link>
+                <Link to={p('/quem-somos/lideres-ministerios')} className="block px-4 py-2 text-sm hover:bg-stone-100 transition-colors">Líderes e Ministérios</Link>
               </div>
             </div>
           </div>
@@ -215,9 +215,9 @@ export function InstitutionalHeader() {
             <div className="absolute top-full left-0 h-2 w-full" />
             {/* Dropdown com delay e transição suave */}
             <div className="absolute top-[calc(100%+0.5rem)] left-0 opacity-0 invisible translate-y-1 group-hover/cadastro:opacity-100 group-hover/cadastro:visible group-hover/cadastro:translate-y-0 transition-all duration-200 delay-150 ease-out z-50">
-              <div className="w-48 rounded-lg border bg-white shadow-lg py-2">
-                <Link to={p('/sou-novo')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Sou Novo</Link>
-                <Link to={p('/seja-voluntario')} className="block px-4 py-2 text-sm hover:bg-muted transition-colors">Seja Voluntário</Link>
+              <div className="w-48 rounded-2xl border border-stone-200 bg-white shadow-elevated py-3">
+                <Link to={p('/sou-novo')} className="block px-4 py-2 text-sm hover:bg-stone-100 transition-colors">Sou Novo</Link>
+                <Link to={p('/seja-voluntario')} className="block px-4 py-2 text-sm hover:bg-stone-100 transition-colors">Seja Voluntário</Link>
               </div>
             </div>
           </div>
@@ -225,7 +225,7 @@ export function InstitutionalHeader() {
           {/* Check-in Kids removido do menu público - disponível apenas no app para voluntários do ministério Kids */}
 
           {/* 8. Login - Botão independente */}
-          <Button asChild variant="outline" size="sm" className="ml-2">
+          <Button asChild variant="outline" size="sm" className="ml-2 rounded-xl">
             <Link to={p('/login')} className="flex items-center gap-2">
               <LogIn className="w-4 h-4" />
               Login

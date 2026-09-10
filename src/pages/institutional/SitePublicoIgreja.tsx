@@ -146,9 +146,9 @@ export default function SitePublicoIgreja() {
 
   /* ── Loading skeleton ── */
   if (loading) return (
-    <div className="min-h-screen bg-background">
-      <div className="h-16 border-b bg-white" />
-      <div className="h-screen bg-gray-200 animate-pulse" />
+    <div className="min-h-screen bg-stone-50">
+      <div className="h-16 border-b border-stone-200 bg-white" />
+      <div className="h-screen bg-stone-200 animate-pulse" />
       <div className="container mx-auto px-4 py-20 space-y-8">
         {[1,2,3].map(i => <Skeleton key={i} className="h-32 w-full" />)}
       </div>
@@ -157,12 +157,12 @@ export default function SitePublicoIgreja() {
 
   /* ── Not found ── */
   if (notFound) return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-stone-50">
       <div className="text-center px-4">
-        <Building2 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-gray-700 mb-2">Igreja não encontrada</h1>
-        <p className="text-gray-500 mb-6">Não existe uma igreja com o slug "<strong>{slug}</strong>".</p>
-        <Button asChild variant="outline"><Link to="/">Voltar ao início</Link></Button>
+        <Building2 className="h-16 w-16 text-stone-300 mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-stone-800 mb-2">Igreja não encontrada</h1>
+        <p className="text-stone-500 leading-relaxed mb-6">Não existe uma igreja com o slug "<strong>{slug}</strong>".</p>
+        <Button asChild variant="outline" className="rounded-xl"><Link to="/">Voltar ao início</Link></Button>
       </div>
     </div>
   );
@@ -170,23 +170,23 @@ export default function SitePublicoIgreja() {
   if (!igreja) return null;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-stone-50 flex flex-col">
 
       {/* ── HEADER ── */}
-      <header className="w-full border-b bg-white sticky top-0 z-50 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <header className="w-full border-b border-stone-200 bg-white sticky top-0 z-50 shadow-soft">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {igreja.logo_url ? (
-              <img src={igreja.logo_url} alt={`Logo ${igreja.nome}`} className="h-10 w-10 object-contain rounded" />
+              <img src={igreja.logo_url} alt={`Logo ${igreja.nome}`} className="h-10 w-10 object-contain rounded-xl" />
             ) : (
-              <div className="h-10 w-10 rounded flex items-center justify-center"
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center"
                 style={{ background: `linear-gradient(135deg, ${cor1}, ${cor2})` }}>
                 <Building2 className="h-5 w-5 text-white" />
               </div>
             )}
-            <span className="font-semibold text-gray-900 leading-tight">{igreja.nome}</span>
+            <span className="font-semibold text-stone-900 leading-tight">{igreja.nome}</span>
           </div>
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="rounded-xl min-h-[44px]">
             <Link to={`/i/${slug}/login`} className="flex items-center gap-2">
               <LogIn className="w-4 h-4" /> Login
             </Link>
@@ -222,7 +222,7 @@ export default function SitePublicoIgreja() {
             </p>
           )}
           {igreja.versiculo && (
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-6 py-4 max-w-lg mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-5 max-w-lg mx-auto">
               <p className="text-sm italic text-white/90">"{igreja.versiculo}"</p>
               {igreja.versiculo_referencia && (
                 <p className="text-xs text-white/60 mt-1">— {igreja.versiculo_referencia}</p>
@@ -244,31 +244,31 @@ export default function SitePublicoIgreja() {
 
       {/* ── MISSÃO E VISÃO ── */}
       {(igreja.missao || igreja.visao) && (
-        <section className="py-20 bg-background">
+        <section className="py-20 bg-stone-50">
           <div className="container mx-auto px-4 max-w-4xl">
-            <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-12">Quem Somos</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-stone-900 mb-12">Quem Somos</h2>
             <div className="grid md:grid-cols-2 gap-8">
               {[
                 { title: 'Nossa Missão', text: igreja.missao ?? 'Em breve', icon: Heart },
                 { title: 'Nossa Visão',  text: igreja.visao  ?? 'Em breve', icon: Sparkles },
               ].map(({ title, text, icon: Icon }) => (
-                <Card key={title} className="hover:shadow-lg transition-shadow">
+                <Card key={title} className="hover:shadow-elevated transition-shadow">
                   <CardContent className="p-8 text-center">
                     <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6"
                       style={{ backgroundColor: `${cor1}20` }}>
                       <Icon className="w-7 h-7" style={{ color: cor1 }} />
                     </div>
                     <h3 className="text-xl font-semibold mb-4">{title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{text}</p>
+                    <p className="text-stone-600 leading-relaxed">{text}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
             {igreja.historia && (
-              <div className="mt-12 bg-muted/30 rounded-2xl p-8 text-center">
+              <div className="mt-12 bg-white border border-stone-200 rounded-2xl p-8 text-center shadow-card">
                 <h3 className="text-xl font-semibold mb-4">Nossa História</h3>
-                <p className="text-muted-foreground leading-relaxed max-w-2xl mx-auto whitespace-pre-line">
+                <p className="text-stone-600 leading-relaxed max-w-2xl mx-auto whitespace-pre-line">
                   {igreja.historia}
                 </p>
               </div>
@@ -279,12 +279,12 @@ export default function SitePublicoIgreja() {
 
       {/* ── HORÁRIOS ── */}
       {cultosBlocos.length > 0 && (
-        <section className="py-20 bg-muted/30">
+        <section className="py-20 bg-stone-100">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-12">Nossos Encontros</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-stone-900 mb-12">Nossos Encontros</h2>
             <div className={`grid gap-6 max-w-4xl mx-auto ${cultosBlocos.length === 1 ? 'max-w-sm' : cultosBlocos.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
               {cultosBlocos.map((h, i) => (
-                <div key={i} className="bg-card rounded-2xl p-8 text-center border hover:shadow-lg transition-shadow">
+                <div key={i} className="bg-white rounded-2xl p-8 text-center border border-stone-200 shadow-card hover:shadow-elevated transition-shadow">
                   <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
                     style={{ backgroundColor: `${cor1}20` }}>
                     <h.icon className="w-7 h-7" style={{ color: cor1 }} />
@@ -299,35 +299,35 @@ export default function SitePublicoIgreja() {
       )}
 
       {/* ── FAÇA PARTE ── */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-stone-50">
         <div className="container mx-auto px-4 max-w-3xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Faça Parte</h2>
-            <p className="text-muted-foreground">Diversas formas de você fazer parte da nossa comunidade</p>
+            <p className="text-stone-600 leading-relaxed">Diversas formas de você fazer parte da nossa comunidade</p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
-            <Card className="hover:shadow-lg transition-all hover:-translate-y-1">
+            <Card className="hover:shadow-elevated transition-all hover:-translate-y-1">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
                   style={{ backgroundColor: `${cor1}20` }}>
                   <HandHeart className="w-8 h-8" style={{ color: cor1 }} />
                 </div>
                 <h3 className="font-semibold text-xl mb-3">Seja um Voluntário</h3>
-                <p className="text-muted-foreground text-sm mb-6">Use seus dons para servir a Deus e às pessoas.</p>
-                <Button className="w-full" style={{ backgroundColor: cor1 }} asChild>
+                <p className="text-stone-600 text-sm leading-relaxed mb-6">Use seus dons para servir a Deus e às pessoas.</p>
+                <Button className="w-full rounded-xl" size="lg" style={{ backgroundColor: cor1 }} asChild>
                   <Link to={`/i/${slug}/seja-voluntario`}>Quero servir</Link>
                 </Button>
               </CardContent>
             </Card>
-            <Card className="hover:shadow-lg transition-all hover:-translate-y-1">
+            <Card className="hover:shadow-elevated transition-all hover:-translate-y-1">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
                   style={{ backgroundColor: `${cor1}20` }}>
                   <Users className="w-8 h-8" style={{ color: cor1 }} />
                 </div>
                 <h3 className="font-semibold text-xl mb-3">Sou Novo</h3>
-                <p className="text-muted-foreground text-sm mb-6">Cadastre-se e faça parte da nossa família.</p>
-                <Button className="w-full" style={{ backgroundColor: cor1 }} asChild>
+                <p className="text-stone-600 text-sm leading-relaxed mb-6">Cadastre-se e faça parte da nossa família.</p>
+                <Button className="w-full rounded-xl" size="lg" style={{ backgroundColor: cor1 }} asChild>
                   <Link to={`/i/${slug}/sou-novo`}>Cadastrar</Link>
                 </Button>
               </CardContent>
@@ -346,7 +346,7 @@ export default function SitePublicoIgreja() {
           <p className="text-white/80 text-lg leading-relaxed mb-8 max-w-2xl mx-auto">
             As contribuições são voluntárias e fazem parte da missão de servir a Deus e às pessoas.
           </p>
-          <Button size="lg" className="bg-white hover:bg-white/90 shadow-lg" style={{ color: cor1 }} asChild>
+          <Button size="lg" className="bg-white hover:bg-white/90 shadow-elevated rounded-xl" style={{ color: cor1 }} asChild>
             <Link to={`/i/${slug}/contribuicoes`} className="flex items-center gap-2">
               <Heart className="w-5 h-5" /> Contribuir
             </Link>
@@ -360,7 +360,7 @@ export default function SitePublicoIgreja() {
           <div className="grid md:grid-cols-2 gap-12 items-start">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold mb-8">Venha nos visitar</h2>
-              <div className="space-y-4 text-muted-foreground">
+              <div className="space-y-4 text-stone-600 leading-relaxed">
                 {(igreja.endereco || 'A confirmar') && (
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 mt-0.5 shrink-0" style={{ color: cor1 }} />
@@ -386,35 +386,35 @@ export default function SitePublicoIgreja() {
                 {igreja.whatsapp && (
                   <a href={`https://wa.me/${igreja.whatsapp.replace(/\D/g, '')}`}
                     target="_blank" rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                    className="w-11 h-11 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
                     style={{ backgroundColor: `${cor1}20` }} aria-label="WhatsApp">
                     <MessageCircle className="w-5 h-5" style={{ color: cor1 }} />
                   </a>
                 )}
                 {igreja.instagram_url && (
                   <a href={igreja.instagram_url} target="_blank" rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                    className="w-11 h-11 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
                     style={{ backgroundColor: `${cor1}20` }} aria-label="Instagram">
                     <Instagram className="w-5 h-5" style={{ color: cor1 }} />
                   </a>
                 )}
                 {igreja.youtube_url && (
                   <a href={igreja.youtube_url} target="_blank" rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                    className="w-11 h-11 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
                     style={{ backgroundColor: `${cor1}20` }} aria-label="YouTube">
                     <Youtube className="w-5 h-5" style={{ color: cor1 }} />
                   </a>
                 )}
                 {igreja.facebook_url && (
                   <a href={igreja.facebook_url} target="_blank" rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                    className="w-11 h-11 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
                     style={{ backgroundColor: `${cor1}20` }} aria-label="Facebook">
                     <Facebook className="w-5 h-5" style={{ color: cor1 }} />
                   </a>
                 )}
                 {igreja.site_url && (
                   <a href={igreja.site_url} target="_blank" rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                    className="w-11 h-11 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
                     style={{ backgroundColor: `${cor1}20` }} aria-label="Site">
                     <Globe className="w-5 h-5" style={{ color: cor1 }} />
                   </a>
@@ -423,14 +423,14 @@ export default function SitePublicoIgreja() {
             </div>
 
             {/* Mapa */}
-            <div className="rounded-2xl overflow-hidden border aspect-video bg-muted">
+            <div className="rounded-2xl overflow-hidden border border-stone-200 aspect-video bg-stone-100 shadow-card">
               {getMapEmbedUrl(igreja.google_maps_url) ? (
                 <iframe src={getMapEmbedUrl(igreja.google_maps_url)!} width="100%" height="100%"
                   style={{ border: 0 }} allowFullScreen loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   title={`Localização ${igreja.nome}`} className="w-full h-full" />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+                <div className="w-full h-full flex flex-col items-center justify-center text-stone-400 gap-2">
                   <MapPin className="h-10 w-10" />
                   <p className="text-sm">{localidade || 'Localização a confirmar'}</p>
                 </div>
@@ -478,7 +478,7 @@ export default function SitePublicoIgreja() {
           <div className="pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
             <p>© {new Date().getFullYear()} {igreja.nome}. Todos os direitos reservados.</p>
             <div className="flex gap-4">
-              <Link to={`/i/${slug}/login`} className="hover:text-white transition-colors">Login</Link>
+              <Link to={`/i/${slug}/login`} className="inline-block py-2 hover:text-white transition-colors">Login</Link>
             </div>
           </div>
         </div>

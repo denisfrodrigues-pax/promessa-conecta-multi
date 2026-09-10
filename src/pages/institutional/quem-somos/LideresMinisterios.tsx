@@ -65,7 +65,7 @@ const ministerios = [
 export default function LideresMinisterios() {
   const { p } = useIgrejaSlug();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
       
       {/* Hero */}
@@ -97,11 +97,11 @@ export default function LideresMinisterios() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {ministerios.map((ministerio, index) => (
-                <Card 
+                <Card
                   key={index}
-                  className="border border-border/50 hover:shadow-lg hover:border-promessa-200 transition-all duration-300 group"
+                  className="border border-stone-200 hover:shadow-elevated hover:border-promessa-200 transition-all duration-300 group"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -109,13 +109,13 @@ export default function LideresMinisterios() {
                         <ministerio.icon className="w-7 h-7 text-promessa-600 group-hover:text-white transition-colors duration-300" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-bold text-foreground mb-1">
+                        <h3 className="text-lg font-bold text-stone-900 mb-1">
                           {ministerio.nome}
                         </h3>
                         <p className="text-promessa-600 font-medium text-sm mb-2">
                           Líder: {ministerio.lider}
                         </p>
-                        <p className="text-muted-foreground text-sm leading-relaxed">
+                        <p className="text-stone-600 text-sm leading-relaxed">
                           {ministerio.descricao}
                         </p>
                       </div>
@@ -126,14 +126,14 @@ export default function LideresMinisterios() {
             </div>
 
             <div className="mt-16 text-center">
-              <div className="bg-muted/30 rounded-2xl p-8 lg:p-10 border border-border/50 max-w-2xl mx-auto">
-                <h2 className="text-2xl font-bold text-foreground mb-4">
+              <div className="bg-stone-50 rounded-2xl p-8 lg:p-10 border border-stone-200 max-w-2xl mx-auto">
+                <h2 className="text-2xl font-bold text-stone-900 mb-4">
                   Quer fazer parte de um ministério?
                 </h2>
-                <p className="text-muted-foreground mb-6">
+                <p className="text-stone-600 mb-6 leading-relaxed">
                   Use seus dons e talentos para servir a Deus e às pessoas. O primeiro passo é participar da nossa Trilha Amar e Servir.
                 </p>
-                <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700">
+                <Button asChild size="lg" className="rounded-xl bg-promessa-600 hover:bg-promessa-700">
                   <Link to={p('/trilha-amar-servir')}>Começar a Trilha</Link>
                 </Button>
               </div>

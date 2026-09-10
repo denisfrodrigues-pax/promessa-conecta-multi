@@ -162,7 +162,7 @@ export default function BasesPublicas() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
 
       {/* Hero */}
@@ -189,17 +189,17 @@ export default function BasesPublicas() {
       </section>
 
       {/* Lista de Bases */}
-      <section className="py-12 lg:py-16 bg-muted/30">
+      <section className="py-12 lg:py-16 bg-stone-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-8 text-center">Encontre sua Base</h2>
+          <h2 className="text-2xl font-bold mb-8 text-center text-stone-900">Encontre sua Base</h2>
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
-                <Card key={i}>
+                <Card key={i} className="rounded-2xl">
                   <CardContent className="p-0">
-                    <Skeleton className="w-full h-40 rounded-t-lg" />
-                    <div className="p-5 space-y-3">
+                    <Skeleton className="w-full h-40 rounded-t-2xl" />
+                    <div className="p-6 space-y-3">
                       <Skeleton className="h-5 w-3/4" />
                       <Skeleton className="h-4 w-1/2" />
                       <Skeleton className="h-4 w-2/3" />
@@ -209,32 +209,37 @@ export default function BasesPublicas() {
               ))}
             </div>
           ) : bases.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-40" />
-              <p className="text-lg">Nenhuma base pública disponível no momento.</p>
+            <div className="text-center py-16 px-6 max-w-md mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-promessa-100 flex items-center justify-center mx-auto mb-5">
+                <Home className="w-8 h-8 text-promessa-600" />
+              </div>
+              <p className="text-lg font-semibold text-stone-900 mb-2">Nenhuma Base por aqui ainda</p>
+              <p className="text-stone-600 leading-relaxed">
+                Estamos preparando novos grupos para você. Volte em breve para encontrar uma Base pertinho de você!
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {bases.map((base) => (
                 <Card
                   key={base.id}
-                  className="overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
+                  className="rounded-2xl overflow-hidden shadow-card hover:shadow-elevated transition-shadow duration-300"
                 >
                   <FotoCapa
                     src={base.foto_url}
                     alt={base.nome}
                     aspectRatio="16/9"
                     className="rounded-none"
-                    fallbackIcon={<Users className="w-10 h-10 text-muted-foreground/40" />}
+                    fallbackIcon={<Users className="w-10 h-10 text-stone-400" />}
                   />
-                  <CardContent className="p-5">
-                    <h3 className="font-semibold text-lg mb-3">{base.nome}</h3>
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-lg mb-3 text-stone-900">{base.nome}</h3>
 
                     {base.descricao && (
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{base.descricao}</p>
+                      <p className="text-sm text-stone-600 mb-4 leading-relaxed line-clamp-2">{base.descricao}</p>
                     )}
 
-                    <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="space-y-2 text-sm text-stone-600">
                       {(base.dia_semana || base.horario) && (
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 flex-shrink-0" />
@@ -270,7 +275,7 @@ export default function BasesPublicas() {
                         href={`https://wa.me/55${(base.whatsapp_lider || base.lider?.telefone || "").replace(/\D/g, "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-4 flex items-center gap-2 text-sm text-green-600 hover:text-green-700 font-medium"
+                        className="mt-4 flex items-center gap-2 text-sm text-green-600 hover:text-green-700 font-medium py-2 min-h-[44px]"
                       >
                         <Phone className="w-4 h-4" />
                         Falar com o líder
@@ -290,22 +295,22 @@ export default function BasesPublicas() {
           <div className="max-w-lg mx-auto">
             <div className="text-center mb-10">
               <Badge className="mb-3">Participar</Badge>
-              <h2 className="text-3xl font-bold mb-3">Quero entrar em uma Base</h2>
-              <p className="text-muted-foreground">
+              <h2 className="text-3xl font-bold mb-3 text-stone-900">Quero entrar em uma Base</h2>
+              <p className="text-stone-600 leading-relaxed">
                 Selecione a Base desejada e deixe seus dados. O líder entrará em contato.
               </p>
             </div>
 
-            <Card className="shadow-xl border-0 overflow-hidden">
+            <Card className="rounded-2xl shadow-elevated border-0 overflow-hidden">
               <div className="h-2 bg-gradient-to-r from-promessa-500 to-promessa-700" />
-              <CardContent className="p-8">
+              <CardContent className="p-8 lg:p-10">
                 {submitted ? (
                   <div className="text-center py-8">
                     <div className="w-20 h-20 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-6">
                       <CheckCircle className="w-10 h-10 text-promessa-600" />
                     </div>
                     <h3 className="text-2xl font-bold mb-3">Inscrição realizada!</h3>
-                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                    <p className="text-stone-600 mb-6 leading-relaxed">
                       Sua inscrição foi registrada com sucesso. O líder da Base entrará em contato em breve.
                     </p>
                     <Button variant="outline" onClick={() => setSubmitted(false)}>
@@ -313,7 +318,7 @@ export default function BasesPublicas() {
                     </Button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                  <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                       <Label htmlFor="base">Base de interesse *</Label>
                       <Select value={selectedBase} onValueChange={setSelectedBase}>
@@ -368,7 +373,8 @@ export default function BasesPublicas() {
 
                     <Button
                       type="submit"
-                      className="w-full h-12 text-base bg-promessa-600 hover:bg-promessa-700"
+                      size="lg"
+                      className="w-full text-base bg-promessa-600 hover:bg-promessa-700"
                       disabled={formLoading}
                     >
                       {formLoading ? "Enviando..." : "Quero participar"}

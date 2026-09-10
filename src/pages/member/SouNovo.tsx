@@ -221,7 +221,7 @@ export default function SouNovo() {
     <div className="pb-24 md:pb-6">
       {/* Back link */}
       <div className="container mx-auto px-4 pt-4">
-        <Link to={p('/publico')} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6">
+        <Link to={p('/publico')} className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900 mb-6">
           ← Voltar ao início
         </Link>
       </div>
@@ -243,7 +243,7 @@ export default function SouNovo() {
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${bannerUrl}')` }} />
         <div className="absolute inset-0 bg-gradient-to-r from-promessa-900/90 via-promessa-800/70 to-promessa-700/50" />
         <div className="container mx-auto px-4 py-20 relative z-10 text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-elevated mb-8">
             <Sparkles className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl md:text-5xl font-display font-bold mb-6 text-white tracking-tight">
@@ -259,7 +259,7 @@ export default function SouNovo() {
       <div className="container mx-auto px-4 py-12 space-y-12">
         {/* Registration Form - Premium */}
         <section>
-          <Card className="shadow-xl border-0 max-w-lg mx-auto overflow-hidden">
+          <Card className="rounded-2xl shadow-elevated border-0 max-w-lg mx-auto overflow-hidden">
             <div className="h-2 bg-gradient-to-r from-promessa to-promessa-dark" />
             <CardContent className="p-8">
               {submitted ? (
@@ -267,21 +267,21 @@ export default function SouNovo() {
                   <div className="w-20 h-20 rounded-full bg-promessa/10 flex items-center justify-center mx-auto mb-6">
                     <CheckCircle className="w-10 h-10 text-promessa" />
                   </div>
-                  <h2 className="text-2xl font-display font-bold mb-3">Obrigado pelo cadastro!</h2>
-                  <p className="text-muted-foreground mb-6 leading-relaxed">
+                  <h2 className="text-2xl font-display font-bold mb-3 text-stone-900">Obrigado pelo cadastro!</h2>
+                  <p className="text-stone-600 mb-6 leading-relaxed">
                     Ficamos muito felizes com sua visita. Em breve entraremos em contato!
                   </p>
-                  <Button variant="outline" onClick={() => setSubmitted(false)} className="shadow-sm">
+                  <Button variant="outline" onClick={() => setSubmitted(false)} className="rounded-xl shadow-sm">
                     Cadastrar outra pessoa
                   </Button>
                 </div>
               ) : (
                 <>
                   <div className="text-center mb-8">
-                    <h2 className="text-2xl font-display font-bold mb-2">
+                    <h2 className="text-2xl font-display font-bold mb-2 text-stone-900">
                       Quero me conectar!
                     </h2>
-                    <p className="text-muted-foreground">
+                    <p className="text-stone-600 leading-relaxed">
                       Preencha o formulário abaixo para que possamos entrar em contato com você.
                     </p>
                   </div>
@@ -326,7 +326,7 @@ export default function SouNovo() {
                         value={formData.melhorHorario}
                         onValueChange={(value) => setFormData({ ...formData, melhorHorario: value })}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="rounded-xl">
                           <SelectValue placeholder="Selecione uma opção" />
                         </SelectTrigger>
                         <SelectContent>
@@ -343,14 +343,15 @@ export default function SouNovo() {
                         id="observacao"
                         placeholder="Alguma mensagem ou pedido especial?"
                         maxLength={300}
+                        className="rounded-xl"
                         value={formData.observacao}
                         onChange={(e) => setFormData({ ...formData, observacao: e.target.value })}
                       />
-                      <p className="text-right text-sm text-muted-foreground">
+                      <p className="text-right text-sm text-stone-500">
                         {formData.observacao.length}/300
                       </p>
                     </div>
-                    <Button type="submit" className="w-full h-12 text-base shadow-lg" disabled={loading}>
+                    <Button type="submit" className="w-full h-12 rounded-xl text-base shadow-elevated" disabled={loading}>
                       {loading ? 'Enviando...' : 'Quero me conectar!'}
                     </Button>
                   </form>
@@ -362,20 +363,20 @@ export default function SouNovo() {
 
         {/* Steps - Premium */}
         <section className="space-y-6">
-          <h2 className="text-2xl font-display font-bold text-center">
+          <h2 className="text-2xl font-display font-bold text-center text-stone-900">
             Seus Próximos Passos
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {steps.map((step, index) => (
-              <Card key={index} className="shadow-card border-0 hover:shadow-xl transition-all duration-300 group">
+              <Card key={index} className="rounded-2xl shadow-card border-0 hover:shadow-elevated transition-all duration-300 group">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-5">
                     <div className={`w-14 h-14 rounded-2xl ${step.color} flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-300`}>
                       <step.icon className="w-7 h-7" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-display font-semibold text-lg mb-2">{step.title}</h3>
-                      <p className="text-muted-foreground text-sm mb-4 leading-relaxed">{step.description}</p>
+                      <h3 className="font-display font-semibold text-lg mb-2 text-stone-900">{step.title}</h3>
+                      <p className="text-stone-600 text-sm mb-4 leading-relaxed">{step.description}</p>
                       {step.action && (
                         <Button asChild variant="ghost" size="sm" className="p-0 h-auto text-primary hover:text-primary/80">
                           <Link to={step.action.path}>
@@ -393,13 +394,13 @@ export default function SouNovo() {
 
         {/* Info Section - Premium */}
         <section>
-          <Card className="shadow-card border-0 bg-gradient-to-br from-promessa/5 to-promessa/10 overflow-hidden">
+          <Card className="rounded-2xl shadow-card border-0 bg-gradient-to-br from-promessa/5 to-promessa/10 overflow-hidden">
             <CardContent className="p-8">
-              <h2 className="text-2xl font-display font-bold mb-8 text-center">Nossos Encontros</h2>
+              <h2 className="text-2xl font-display font-bold mb-8 text-center text-stone-900">Nossos Encontros</h2>
               {encontros.length > 0 ? (
                 <div className={`grid grid-cols-1 ${encontros.length > 1 ? 'md:grid-cols-2' : 'max-w-sm mx-auto'} gap-6 max-w-2xl mx-auto`}>
                   {encontros.map((encontro, i) => (
-                    <div key={i} className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-sm backdrop-blur-sm text-center">
+                    <div key={i} className="p-6 rounded-2xl bg-white/80 dark:bg-background/80 shadow-soft backdrop-blur-sm text-center">
                       {encontro.dia && (
                         <div className="inline-flex items-center gap-2 mb-3 text-promessa">
                           <Clock className="w-5 h-5" />
@@ -407,12 +408,12 @@ export default function SouNovo() {
                         </div>
                       )}
                       <p className="text-4xl font-display font-bold text-promessa-dark mb-1">{encontro.horario || '—'}</p>
-                      <p className="text-muted-foreground">{encontro.nome}</p>
+                      <p className="text-stone-600">{encontro.nome}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground">Horários em breve</p>
+                <p className="text-center text-stone-500">Horários em breve</p>
               )}
             </CardContent>
           </Card>
@@ -420,11 +421,11 @@ export default function SouNovo() {
 
         {/* CTA - Premium */}
         <section className="text-center py-12">
-          <h2 className="text-2xl font-display font-bold mb-4">Pronto para dar o próximo passo?</h2>
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+          <h2 className="text-2xl font-display font-bold mb-4 text-stone-900">Pronto para dar o próximo passo?</h2>
+          <p className="text-stone-600 mb-8 max-w-md mx-auto leading-relaxed">
             Complete seu cadastro e faça parte da nossa comunidade
           </p>
-          <Button asChild size="lg" className="h-12 px-8 shadow-lg">
+          <Button asChild size="lg" className="h-12 px-8 rounded-xl shadow-elevated">
             <Link to={p('/app/perfil')}>Completar Meu Cadastro</Link>
           </Button>
         </section>

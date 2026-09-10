@@ -57,7 +57,7 @@ export default function QuemSomos() {
   const { content } = useIgrejaPublicContent();
   const nomeIgreja = churchNome || "nossa igreja";
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
       
       {/* Hero Section */}
@@ -79,7 +79,7 @@ export default function QuemSomos() {
             </p>
             <Link
               to={p('/quem-somos/historia')}
-              className="inline-flex items-center gap-2 bg-white text-promessa-700 font-semibold px-6 py-3 rounded-lg hover:bg-white/90 transition-colors duration-200"
+              className="inline-flex items-center gap-2 bg-white text-promessa-700 font-semibold px-6 py-3 rounded-xl hover:bg-white/90 transition-colors duration-200"
             >
               Conheça nossa história
               <ChevronRight className="w-5 h-5" />
@@ -92,18 +92,18 @@ export default function QuemSomos() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-12 text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold text-stone-900 mb-12 text-center">
               Nossa História
             </h2>
-            
-            <div className="bg-muted/30 rounded-2xl p-8 border border-border/50">
-              <p className="text-muted-foreground leading-relaxed">
+
+            <div className="bg-stone-50 rounded-2xl p-8 border border-stone-200">
+              <p className="text-stone-600 leading-relaxed">
                 {content?.historia || 'Em breve, mais sobre nossa história.'}
               </p>
             </div>
-            
+
             <div className="text-center mt-8">
-              <Button asChild variant="outline" className="border-promessa-600 text-promessa-600 hover:bg-promessa-50">
+              <Button asChild size="lg" variant="outline" className="rounded-xl border-promessa-600 text-promessa-600 hover:bg-promessa-50">
                 <Link to={p('/quem-somos/historia')}>Ver história completa</Link>
               </Button>
             </div>
@@ -112,22 +112,22 @@ export default function QuemSomos() {
       </section>
 
       {/* Pastores */}
-      <section className="py-16 lg:py-24 bg-muted/30">
+      <section className="py-16 lg:py-24 bg-stone-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-8 text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold text-stone-900 mb-8 text-center">
               Pastores
             </h2>
-            
-            <div className="bg-white rounded-2xl p-8 lg:p-10 border border-border/50 text-center">
+
+            <div className="bg-white rounded-2xl p-8 lg:p-10 border border-stone-200">
               <UserCircle className="w-12 h-12 text-promessa-400 mx-auto mb-4" />
-              <p className="text-muted-foreground text-lg leading-relaxed">
+              <p className="text-stone-600 text-lg leading-relaxed">
                 Nossa liderança pastoral está comprometida com o cuidado das pessoas, o discipulado e o crescimento espiritual da igreja.
               </p>
             </div>
-            
+
             <div className="text-center mt-8">
-              <Button asChild variant="outline" className="border-promessa-600 text-promessa-600 hover:bg-promessa-50">
+              <Button asChild size="lg" variant="outline" className="rounded-xl border-promessa-600 text-promessa-600 hover:bg-promessa-50">
                 <Link to={p('/quem-somos/pastores')}>Conhecer os pastores</Link>
               </Button>
             </div>
@@ -139,33 +139,33 @@ export default function QuemSomos() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-stone-900 mb-4">
               Por que Participar da {nomeIgreja}?
             </h2>
-            <p className="text-lg text-muted-foreground mb-10">
+            <p className="text-lg text-stone-600 mb-10">
               Aqui você encontrará:
             </p>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-10">
-              <div className="flex items-start gap-3 bg-muted/30 rounded-xl p-5 border border-border/50 text-left">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto mb-10">
+              <div className="flex items-start gap-3 bg-stone-50 rounded-2xl p-6 border border-stone-200 text-left">
                 <CheckCircle className="w-6 h-6 text-promessa-600 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground">Uma igreja que tem Jesus como centro de tudo</span>
+                <span className="text-stone-800">Uma igreja que tem Jesus como centro de tudo</span>
               </div>
-              <div className="flex items-start gap-3 bg-muted/30 rounded-xl p-5 border border-border/50 text-left">
+              <div className="flex items-start gap-3 bg-stone-50 rounded-2xl p-6 border border-stone-200 text-left">
                 <CheckCircle className="w-6 h-6 text-promessa-600 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground">Ensino fiel e relevante da Palavra de Deus</span>
+                <span className="text-stone-800">Ensino fiel e relevante da Palavra de Deus</span>
               </div>
-              <div className="flex items-start gap-3 bg-muted/30 rounded-xl p-5 border border-border/50 text-left">
+              <div className="flex items-start gap-3 bg-stone-50 rounded-2xl p-6 border border-stone-200 text-left">
                 <CheckCircle className="w-6 h-6 text-promessa-600 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground">Relacionamentos saudáveis e intencionais</span>
+                <span className="text-stone-800">Relacionamentos saudáveis e intencionais</span>
               </div>
-              <div className="flex items-start gap-3 bg-muted/30 rounded-xl p-5 border border-border/50 text-left">
+              <div className="flex items-start gap-3 bg-stone-50 rounded-2xl p-6 border border-stone-200 text-left">
                 <CheckCircle className="w-6 h-6 text-promessa-600 flex-shrink-0 mt-0.5" />
-                <span className="text-foreground">Uma fé prática para a vida real</span>
+                <span className="text-stone-800">Uma fé prática para a vida real</span>
               </div>
             </div>
-            
-            <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700 text-white">
+
+            <Button asChild size="lg" className="rounded-xl bg-promessa-600 hover:bg-promessa-700 text-white">
               <Link to={p('/sou-novo')} className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
                 Quero conhecer a igreja
@@ -176,32 +176,32 @@ export default function QuemSomos() {
       </section>
 
       {/* Cards Hub - Links para páginas filhas */}
-      <section className="py-16 lg:py-24 bg-muted/30">
+      <section className="py-16 lg:py-24 bg-stone-50">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              <h2 className="text-3xl lg:text-4xl font-bold text-stone-900 mb-4">
                 Conheça Mais Sobre Nós
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-lg text-stone-600 max-w-2xl mx-auto">
                 Explore cada aspecto da nossa igreja e descubra como vivemos nossa fé.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {hubCards.map((card, index) => (
                 <Link
                   key={index}
                   to={p(card.link)}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg hover:border-promessa-200 transition-all duration-300 group"
+                  className="bg-white rounded-2xl p-8 shadow-soft border border-stone-200 hover:shadow-elevated hover:border-promessa-200 transition-all duration-300 group"
                 >
                   <div className="w-12 h-12 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
                     <card.icon className="w-6 h-6 text-promessa-600 group-hover:text-white transition-colors duration-300" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-promessa-700 transition-colors">
+                  <h3 className="text-xl font-bold text-stone-900 mb-3 group-hover:text-promessa-700 transition-colors">
                     {card.title}
                   </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                  <p className="text-stone-600 text-sm leading-relaxed mb-4">
                     {card.description}
                   </p>
                   <span className="inline-flex items-center gap-1 text-promessa-600 font-medium text-sm group-hover:gap-2 transition-all">
@@ -214,15 +214,15 @@ export default function QuemSomos() {
               {/* Trilha Amar e Servir - Card normal */}
               <Link
                 to={p('/trilha-amar-servir')}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 hover:shadow-lg hover:border-promessa-200 transition-all duration-300 group"
+                className="bg-white rounded-2xl p-8 shadow-soft border border-stone-200 hover:shadow-elevated hover:border-promessa-200 transition-all duration-300 group"
               >
                 <div className="w-12 h-12 bg-promessa-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-promessa-600 transition-colors duration-300">
                   <Sparkles className="w-6 h-6 text-promessa-600 group-hover:text-white transition-colors duration-300" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-promessa-700 transition-colors">
+                <h3 className="text-xl font-bold text-stone-900 mb-3 group-hover:text-promessa-700 transition-colors">
                   Trilha Amar e Servir
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                <p className="text-stone-600 text-sm leading-relaxed mb-4">
                   O ponto de partida para quem deseja conhecer a igreja e crescer na fé.
                 </p>
                 <span className="inline-flex items-center gap-1 text-promessa-600 font-medium text-sm group-hover:gap-2 transition-all">
@@ -239,17 +239,17 @@ export default function QuemSomos() {
       <section className="py-16 lg:py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-stone-900 mb-4">
               Pronto para dar o próximo passo?
             </h2>
-            <p className="text-lg text-muted-foreground mb-8">
+            <p className="text-lg text-stone-600 mb-8">
               Você não precisa caminhar sozinho.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700 text-white">
+              <Button asChild size="lg" className="rounded-xl bg-promessa-600 hover:bg-promessa-700 text-white">
                 <Link to={p('/trilha-amar-servir')}>Começar a Trilha Amar e Servir</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-promessa-600 text-promessa-600 hover:bg-promessa-50">
+              <Button asChild size="lg" variant="outline" className="rounded-xl border-promessa-600 text-promessa-600 hover:bg-promessa-50">
                 <Link to={p('/contato')}>Fale Conosco</Link>
               </Button>
             </div>

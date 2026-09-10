@@ -185,7 +185,7 @@ const beliefGroups = [
 export default function Teologia() {
   const { p } = useIgrejaSlug();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
       
       {/* Hero */}
@@ -217,26 +217,26 @@ export default function Teologia() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
-            <Accordion type="multiple" className="space-y-4">
+            <Accordion type="multiple" className="space-y-6">
               {beliefGroups.map((group, groupIndex) => (
-                <AccordionItem 
-                  key={groupIndex} 
+                <AccordionItem
+                  key={groupIndex}
                   value={`group-${groupIndex}`}
-                  className="bg-muted/30 rounded-2xl border border-border/50 px-6 overflow-hidden"
+                  className="bg-stone-50 rounded-2xl border border-stone-200 px-6 overflow-hidden"
                 >
-                  <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline py-5">
+                  <AccordionTrigger className="text-lg font-semibold text-stone-900 hover:no-underline py-5">
                     {group.title}
                   </AccordionTrigger>
                   <AccordionContent className="pb-6">
-                    <ul className="space-y-4">
+                    <ul className="space-y-6">
                       {group.beliefs.map((belief, beliefIndex) => (
                         <li key={beliefIndex} className="flex items-start gap-3">
                           <span className="w-6 h-6 bg-promessa-100 rounded-full flex items-center justify-center flex-shrink-0 text-promessa-700 font-bold text-xs mt-0.5">
                             {beliefIndex + 1}
                           </span>
                           <div>
-                            <span className="font-semibold text-foreground block">{belief.title}</span>
-                            <span className="text-muted-foreground text-sm">{belief.description}</span>
+                            <span className="font-semibold text-stone-900 block">{belief.title}</span>
+                            <span className="text-stone-600 text-sm leading-relaxed">{belief.description}</span>
                           </div>
                         </li>
                       ))}
@@ -247,7 +247,7 @@ export default function Teologia() {
             </Accordion>
 
             <div className="mt-12 text-center">
-              <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700">
+              <Button asChild size="lg" className="rounded-xl bg-promessa-600 hover:bg-promessa-700">
                 <Link to={p('/trilha-amar-servir')}>Quero conhecer mais</Link>
               </Button>
             </div>

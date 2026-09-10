@@ -21,11 +21,11 @@ export default function Contribuicoes() {
   const backLabel = user ? 'Voltar' : 'Voltar para a Home';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
-      
+
       {/* Hero Section */}
-      <section className="relative pt-32 pb-8 bg-gradient-to-b from-primary/5 to-background">
+      <section className="relative pt-32 pb-8 bg-gradient-to-b from-primary/5 to-stone-50">
         {/* Content handled by ContribuicaoForm header */}
       </section>
 
@@ -43,9 +43,9 @@ export default function Contribuicoes() {
       </main>
 
       {/* Footer */}
-      <footer className="py-8 border-t border-border bg-muted/30">
+      <footer className="py-8 border-t border-stone-200 bg-stone-50">
         <div className="container max-w-4xl mx-auto px-4 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-stone-500">
             © {new Date().getFullYear()} {churchNome || 'Igreja'}. Todos os direitos reservados.
           </p>
         </div>

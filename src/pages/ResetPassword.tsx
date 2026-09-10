@@ -115,10 +115,10 @@ export default function ResetPassword() {
 
   if (isValidSession === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <div className="animate-pulse text-center">
           <Logo size={60} className="mx-auto mb-4" />
-          <p className="text-muted-foreground">Verificando link de recuperação...</p>
+          <p className="text-stone-600">Verificando link de recuperação...</p>
         </div>
       </div>
     );
@@ -126,21 +126,22 @@ export default function ResetPassword() {
 
   if (isValidSession === false) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
+        <Card className="w-full max-w-md rounded-2xl shadow-elevated">
           <CardHeader className="text-center">
             <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8 text-destructive" />
             </div>
             <CardTitle className="text-xl">Link Inválido ou Expirado</CardTitle>
             <CardDescription>
-              O link de recuperação de senha é inválido ou já expirou. 
+              O link de recuperação de senha é inválido ou já expirou.
               Por favor, solicite um novo link.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full rounded-xl"
+              size="lg"
               onClick={() => navigate(p('/login'))}
             >
               Voltar para Login
@@ -153,21 +154,22 @@ export default function ResetPassword() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
+        <Card className="w-full max-w-md rounded-2xl shadow-elevated">
           <CardHeader className="text-center">
             <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <CardTitle className="text-xl text-green-700">Senha Redefinida!</CardTitle>
             <CardDescription>
-              Sua senha foi alterada com sucesso. 
+              Sua senha foi alterada com sucesso.
               Você será redirecionado para a página de login.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full rounded-xl"
+              size="lg"
               onClick={() => navigate(p('/login'))}
             >
               Ir para Login
@@ -179,33 +181,34 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
+      <Card className="w-full max-w-md rounded-2xl shadow-elevated">
         <CardHeader className="text-center">
           <Logo size={60} className="mx-auto mb-4" />
-          <CardTitle className="text-2xl font-display">Redefinir Senha</CardTitle>
+          <CardTitle className="text-2xl font-display font-bold">Redefinir Senha</CardTitle>
           <CardDescription>
             Digite sua nova senha abaixo
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="password">Nova Senha</Label>
+              <Label htmlFor="password" className="text-stone-800 font-medium">Nova Senha</Label>
               <div className="relative group">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-primary transition-colors" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className="pl-11 pr-11 h-12"
+                  className="pl-11 pr-11 h-12 rounded-xl border-stone-300"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 p-3 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -214,14 +217,14 @@ export default function ResetPassword() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+              <Label htmlFor="confirmPassword" className="text-stone-800 font-medium">Confirmar Nova Senha</Label>
               <div className="relative group">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-primary transition-colors" />
                 <Input
                   id="confirmPassword"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className="pl-11 h-12"
+                  className="pl-11 h-12 rounded-xl border-stone-300"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -229,9 +232,10 @@ export default function ResetPassword() {
               {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full h-12" 
+            <Button
+              type="submit"
+              className="w-full h-12 rounded-xl"
+              size="lg"
               disabled={isLoading}
             >
               {isLoading ? 'Redefinindo...' : 'Redefinir Senha'}

@@ -318,12 +318,12 @@ export default function Auth() {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="flex-1 flex flex-col bg-background">
+      <div className="flex-1 flex flex-col bg-stone-50">
         {/* Mobile Header */}
         <div className="lg:hidden p-6 bg-gradient-hero text-white">
-          <Button 
-            variant="ghost" 
-            className="text-white/80 hover:text-white hover:bg-white/10 -ml-4 mb-4"
+          <Button
+            variant="ghost"
+            className="text-white/80 hover:text-white hover:bg-white/10 -ml-4 mb-4 min-h-[44px]"
             asChild
           >
             <Link to={p('/publico')}>
@@ -358,10 +358,10 @@ export default function Auth() {
         <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
           <div className="w-full max-w-md animate-scale-in">
             <div className="mb-8">
-              <h2 className="text-2xl lg:text-3xl font-display font-bold text-foreground">
+              <h2 className="text-2xl lg:text-3xl font-display font-bold text-stone-900">
                 Bem-vindo de volta
               </h2>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-stone-600 mt-2 leading-relaxed">
                 Entre na sua conta ou crie uma nova
               </p>
             </div>
@@ -370,7 +370,7 @@ export default function Auth() {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-12 text-base font-medium mb-6 gap-3"
+              className="w-full h-12 text-base font-medium mb-6 gap-3 rounded-xl"
               onClick={handleGoogleLogin}
               disabled={isLoading}
             >
@@ -385,46 +385,46 @@ export default function Auth() {
 
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-stone-200" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">ou entre com CPF ou e-mail</span>
+                <span className="bg-stone-50 px-2 text-stone-500">ou entre com CPF ou e-mail</span>
               </div>
             </div>
 
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted/50">
-                <TabsTrigger 
+              <TabsList className="grid w-full grid-cols-2 mb-6 bg-stone-100">
+                <TabsTrigger
                   value="login"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="min-h-[44px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                 >
                   Entrar
                 </TabsTrigger>
-                <TabsTrigger 
+                <TabsTrigger
                   value="signup"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="min-h-[44px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                 >
                   Criar Conta
                 </TabsTrigger>
               </TabsList>
               
               <TabsContent value="login" className="mt-0">
-                <form onSubmit={handleLogin} className="space-y-5">
+                <form onSubmit={handleLogin} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email" className="text-foreground font-medium">
+                    <Label htmlFor="login-email" className="text-stone-800 font-medium">
                       CPF ou E-mail
                     </Label>
                     <div className="relative group">
                       {isCPF(loginData.emailOrCpf) ? (
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-primary transition-colors" />
                       ) : (
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-primary transition-colors" />
                       )}
                       <Input
                         id="login-email"
                         type="text"
                         placeholder="000.000.000-00 ou email@exemplo.com"
-                        className="pl-11 h-12 bg-muted/30 border-border focus:border-primary focus:ring-primary"
+                        className="pl-11 h-12 rounded-xl bg-white border-stone-300 focus:border-primary focus:ring-primary"
                         value={loginData.emailOrCpf}
                         onChange={(e) => setLoginData({ ...loginData, emailOrCpf: e.target.value })}
                       />
@@ -433,16 +433,16 @@ export default function Auth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="login-password" className="text-foreground font-medium">
+                    <Label htmlFor="login-password" className="text-stone-800 font-medium">
                       Senha
                     </Label>
                     <div className="relative group">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-primary transition-colors" />
                       <Input
                         id="login-password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
-                        className="pl-11 pr-11 h-12 bg-muted/30 border-border focus:border-primary focus:ring-primary"
+                        className="pl-11 pr-11 h-12 rounded-xl bg-white border-stone-300 focus:border-primary focus:ring-primary"
                         value={loginData.password}
                         onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                       />
@@ -450,7 +450,7 @@ export default function Auth() {
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 p-3 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
                       >
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
@@ -458,10 +458,10 @@ export default function Auth() {
                     {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full h-12 text-base font-semibold shadow-primary hover:shadow-lg transition-all" 
-                    size="lg" 
+                  <Button
+                    type="submit"
+                    className="w-full h-12 text-base font-semibold shadow-primary hover:shadow-elevated transition-all"
+                    size="lg"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Entrando...' : 'Entrar'}
@@ -480,18 +480,18 @@ export default function Auth() {
               </TabsContent>
 
               <TabsContent value="signup" className="mt-0">
-                <form onSubmit={handleSignup} className="space-y-4">
+                <form onSubmit={handleSignup} className="space-y-5">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-nome" className="text-foreground font-medium">
+                    <Label htmlFor="signup-nome" className="text-stone-800 font-medium">
                       Nome Completo
                     </Label>
                     <div className="relative group">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-primary transition-colors" />
                       <Input
                         id="signup-nome"
                         type="text"
                         placeholder="Seu nome"
-                        className="pl-11 h-12 bg-muted/30 border-border focus:border-primary focus:ring-primary"
+                        className="pl-11 h-12 rounded-xl bg-white border-stone-300 focus:border-primary focus:ring-primary"
                         value={signupData.nome}
                         onChange={(e) => setSignupData({ ...signupData, nome: e.target.value })}
                       />
@@ -500,16 +500,16 @@ export default function Auth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-foreground font-medium">
+                    <Label htmlFor="signup-email" className="text-stone-800 font-medium">
                       Email
                     </Label>
                     <div className="relative group">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-primary transition-colors" />
                       <Input
                         id="signup-email"
                         type="email"
                         placeholder="seu@email.com"
-                        className="pl-11 h-12 bg-muted/30 border-border focus:border-primary focus:ring-primary"
+                        className="pl-11 h-12 rounded-xl bg-white border-stone-300 focus:border-primary focus:ring-primary"
                         value={signupData.email}
                         onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                       />
@@ -518,16 +518,16 @@ export default function Auth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-foreground font-medium">
+                    <Label htmlFor="signup-password" className="text-stone-800 font-medium">
                       Senha
                     </Label>
                     <div className="relative group">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-primary transition-colors" />
                       <Input
                         id="signup-password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
-                        className="pl-11 pr-11 h-12 bg-muted/30 border-border focus:border-primary focus:ring-primary"
+                        className="pl-11 pr-11 h-12 rounded-xl bg-white border-stone-300 focus:border-primary focus:ring-primary"
                         value={signupData.password}
                         onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                       />
@@ -535,7 +535,7 @@ export default function Auth() {
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 p-3 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
                       >
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
@@ -544,16 +544,16 @@ export default function Auth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-confirm" className="text-foreground font-medium">
+                    <Label htmlFor="signup-confirm" className="text-stone-800 font-medium">
                       Confirmar Senha
                     </Label>
                     <div className="relative group">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-primary transition-colors" />
                       <Input
                         id="signup-confirm"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
-                        className="pl-11 h-12 bg-muted/30 border-border focus:border-primary focus:ring-primary"
+                        className="pl-11 h-12 rounded-xl bg-white border-stone-300 focus:border-primary focus:ring-primary"
                         value={signupData.confirmPassword}
                         onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
                       />
@@ -561,10 +561,10 @@ export default function Auth() {
                     {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full h-12 text-base font-semibold shadow-primary hover:shadow-lg transition-all" 
-                    size="lg" 
+                  <Button
+                    type="submit"
+                    className="w-full h-12 text-base font-semibold shadow-primary hover:shadow-elevated transition-all"
+                    size="lg"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Criando conta...' : 'Criar Conta'}
@@ -574,7 +574,7 @@ export default function Auth() {
             </Tabs>
 
             {/* Footer */}
-            <p className="text-center text-muted-foreground text-sm mt-8">
+            <p className="text-center text-stone-500 text-sm mt-8">
               © {new Date().getFullYear()} {churchName}
             </p>
           </div>
@@ -601,24 +601,24 @@ export default function Auth() {
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <p className="text-sm text-muted-foreground text-center mb-4">
+              <p className="text-sm text-stone-600 text-center mb-4 leading-relaxed">
                 Enviamos um email para <strong>{forgotPasswordEmail}</strong>
               </p>
-              <Button onClick={closeForgotPasswordModal} className="w-full">
+              <Button onClick={closeForgotPasswordModal} className="w-full rounded-xl" size="lg">
                 Fechar
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleForgotPassword} className="space-y-4 py-4">
+            <form onSubmit={handleForgotPassword} className="space-y-5 py-4">
               <div className="space-y-2">
                 <Label htmlFor="forgot-email">Email</Label>
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-primary transition-colors" />
                   <Input
                     id="forgot-email"
                     type="email"
                     placeholder="seu@email.com"
-                    className="pl-11 h-12"
+                    className="pl-11 h-12 rounded-xl"
                     value={forgotPasswordEmail}
                     onChange={(e) => setForgotPasswordEmail(e.target.value)}
                   />
@@ -627,17 +627,19 @@ export default function Auth() {
               </div>
 
               <div className="flex gap-3">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="flex-1"
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 rounded-xl"
+                  size="lg"
                   onClick={closeForgotPasswordModal}
                 >
                   Cancelar
                 </Button>
-                <Button 
-                  type="submit" 
-                  className="flex-1"
+                <Button
+                  type="submit"
+                  className="flex-1 rounded-xl"
+                  size="lg"
                   disabled={forgotPasswordLoading}
                 >
                   {forgotPasswordLoading ? 'Enviando...' : 'Enviar Email'}
