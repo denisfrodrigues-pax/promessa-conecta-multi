@@ -62,20 +62,20 @@ export default function InstallPWA() {
 
   if (isInstalled) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="w-full max-w-md text-center">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
+        <Card className="w-full max-w-md text-center rounded-2xl shadow-elevated">
           <CardHeader>
             <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
-            <CardTitle className="text-2xl font-display">App Instalado!</CardTitle>
+            <CardTitle className="text-2xl font-display font-bold">App Instalado!</CardTitle>
             <CardDescription>
-              O app já está instalado no seu dispositivo. 
+              O app já está instalado no seu dispositivo.
               Você pode acessá-lo pela tela inicial.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate(p('/app'))} className="w-full">
+            <Button onClick={() => navigate(p('/app'))} className="w-full rounded-xl" size="lg">
               Ir para o App
             </Button>
           </CardContent>
@@ -85,12 +85,12 @@ export default function InstallPWA() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50">
       {/* Header */}
       <div className="bg-gradient-hero text-white p-6">
-        <Button 
-          variant="ghost" 
-          className="text-white/80 hover:text-white hover:bg-white/10 -ml-2 mb-4"
+        <Button
+          variant="ghost"
+          className="text-white/80 hover:text-white hover:bg-white/10 -ml-2 mb-4 min-h-[44px]"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -107,21 +107,21 @@ export default function InstallPWA() {
 
       <div className="p-6 space-y-6 max-w-md mx-auto">
         {/* Benefits */}
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="text-lg font-display flex items-center gap-2">
               <Download className="w-5 h-5 text-primary" />
               Por que instalar?
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Smartphone className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <p className="font-medium text-sm">Acesso Rápido</p>
-                <p className="text-sm text-muted-foreground">Abra direto da tela inicial, sem precisar do navegador</p>
+                <p className="font-semibold text-sm text-stone-900">Acesso Rápido</p>
+                <p className="text-sm text-stone-600 leading-relaxed">Abra direto da tela inicial, sem precisar do navegador</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -129,8 +129,8 @@ export default function InstallPWA() {
                 <Monitor className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <p className="font-medium text-sm">Tela Cheia</p>
-                <p className="text-sm text-muted-foreground">Experiência imersiva sem barras do navegador</p>
+                <p className="font-semibold text-sm text-stone-900">Tela Cheia</p>
+                <p className="text-sm text-stone-600 leading-relaxed">Experiência imersiva sem barras do navegador</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -138,8 +138,8 @@ export default function InstallPWA() {
                 <CheckCircle className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <p className="font-medium text-sm">Carregamento Rápido</p>
-                <p className="text-sm text-muted-foreground">Recursos salvos para acesso mais rápido</p>
+                <p className="font-semibold text-sm text-stone-900">Carregamento Rápido</p>
+                <p className="text-sm text-stone-600 leading-relaxed">Recursos salvos para acesso mais rápido</p>
               </div>
             </div>
           </CardContent>
@@ -147,7 +147,7 @@ export default function InstallPWA() {
 
         {/* Install Instructions */}
         {deferredPrompt ? (
-          <Card className="border-primary">
+          <Card className="rounded-2xl border-primary">
             <CardHeader>
               <CardTitle className="text-lg font-display">Instalar Agora</CardTitle>
               <CardDescription>
@@ -155,14 +155,14 @@ export default function InstallPWA() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleInstallClick} className="w-full" size="lg">
+              <Button onClick={handleInstallClick} className="w-full rounded-xl" size="lg">
                 <Download className="w-5 h-5 mr-2" />
                 Instalar App
               </Button>
             </CardContent>
           </Card>
         ) : isIOS ? (
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="text-lg font-display flex items-center gap-2">
                 <Share className="w-5 h-5" />
@@ -174,7 +174,7 @@ export default function InstallPWA() {
                 <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
                   1
                 </div>
-                <p className="text-sm">
+                <p className="text-sm text-stone-700 leading-relaxed">
                   Toque no ícone <Share className="w-4 h-4 inline mx-1" /> <strong>Compartilhar</strong> na barra inferior do Safari
                 </p>
               </div>
@@ -182,7 +182,7 @@ export default function InstallPWA() {
                 <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
                   2
                 </div>
-                <p className="text-sm">
+                <p className="text-sm text-stone-700 leading-relaxed">
                   Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong>
                 </p>
               </div>
@@ -190,14 +190,14 @@ export default function InstallPWA() {
                 <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
                   3
                 </div>
-                <p className="text-sm">
+                <p className="text-sm text-stone-700 leading-relaxed">
                   Toque em <strong>"Adicionar"</strong> no canto superior direito
                 </p>
               </div>
             </CardContent>
           </Card>
         ) : isAndroid ? (
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="text-lg font-display flex items-center gap-2">
                 <MoreVertical className="w-5 h-5" />
@@ -209,7 +209,7 @@ export default function InstallPWA() {
                 <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
                   1
                 </div>
-                <p className="text-sm">
+                <p className="text-sm text-stone-700 leading-relaxed">
                   Toque no menu <MoreVertical className="w-4 h-4 inline mx-1" /> no canto superior direito do Chrome
                 </p>
               </div>
@@ -217,7 +217,7 @@ export default function InstallPWA() {
                 <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
                   2
                 </div>
-                <p className="text-sm">
+                <p className="text-sm text-stone-700 leading-relaxed">
                   Toque em <strong>"Instalar app"</strong> ou <strong>"Adicionar à tela inicial"</strong>
                 </p>
               </div>
@@ -225,14 +225,14 @@ export default function InstallPWA() {
                 <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
                   3
                 </div>
-                <p className="text-sm">
+                <p className="text-sm text-stone-700 leading-relaxed">
                   Confirme tocando em <strong>"Instalar"</strong>
                 </p>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="text-lg font-display">Como instalar no Desktop</CardTitle>
             </CardHeader>
@@ -241,7 +241,7 @@ export default function InstallPWA() {
                 <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
                   1
                 </div>
-                <p className="text-sm">
+                <p className="text-sm text-stone-700 leading-relaxed">
                   Procure o ícone de instalação <Download className="w-4 h-4 inline mx-1" /> na barra de endereços
                 </p>
               </div>
@@ -249,7 +249,7 @@ export default function InstallPWA() {
                 <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
                   2
                 </div>
-                <p className="text-sm">
+                <p className="text-sm text-stone-700 leading-relaxed">
                   Clique em <strong>"Instalar"</strong> quando solicitado
                 </p>
               </div>
@@ -259,7 +259,7 @@ export default function InstallPWA() {
 
         {/* Continue without installing */}
         <div className="text-center">
-          <Button variant="ghost" onClick={() => navigate(p('/login'))}>
+          <Button variant="ghost" className="h-11 rounded-xl" onClick={() => navigate(p('/login'))}>
             Continuar no navegador
           </Button>
         </div>

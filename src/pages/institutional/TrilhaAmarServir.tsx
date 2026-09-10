@@ -117,7 +117,7 @@ export default function TrilhaAmarServir() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
       
       {/* Hero */}
@@ -143,19 +143,19 @@ export default function TrilhaAmarServir() {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              <h2 className="text-3xl lg:text-4xl font-bold text-stone-900 mb-4">
                 Os Passos da Trilha
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
                 Um caminho pensado para você conhecer Jesus e crescer na fé de forma prática e relacional.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
               {blocos.map((bloco, index) => (
-                <Card 
+                <Card
                   key={index}
-                  className="border-2 border-promessa-100 hover:border-promessa-300 transition-all duration-300"
+                  className="rounded-2xl border-2 border-promessa-100 hover:border-promessa-300 transition-all duration-300"
                 >
                   <CardContent className="p-8">
                     <div className="flex items-start gap-4">
@@ -167,10 +167,10 @@ export default function TrilhaAmarServir() {
                           <span className="text-sm font-bold text-promessa-600 bg-promessa-50 px-2 py-1 rounded">
                             {bloco.number}
                           </span>
-                          <h3 className="text-2xl font-bold text-foreground">{bloco.title}</h3>
+                          <h3 className="text-2xl font-bold text-stone-900">{bloco.title}</h3>
                         </div>
-                        <p className="text-promessa-600 font-medium mb-3">{bloco.subtitle}</p>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <p className="text-promessa-600 font-semibold mb-3">{bloco.subtitle}</p>
+                        <p className="text-stone-600 leading-relaxed">
                           {bloco.description}
                         </p>
                       </div>
@@ -181,29 +181,29 @@ export default function TrilhaAmarServir() {
             </div>
 
             {/* Módulos do Curso Primeiros Passos */}
-            <div className="bg-muted/30 rounded-2xl p-8 lg:p-10 border border-border/50 mb-16">
+            <div className="bg-stone-100 rounded-2xl p-8 lg:p-10 border border-stone-200 mb-16">
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-foreground mb-2">
+                <h3 className="text-2xl font-bold text-stone-900 mb-2">
                   Curso Primeiros Passos
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-stone-600">
                   4 encontros que vão transformar sua caminhada de fé
                 </p>
               </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {modulos.map((modulo) => (
-                  <div 
+                  <div
                     key={modulo.numero}
-                    className="bg-white rounded-xl p-5 border border-border/50 hover:shadow-md transition-shadow"
+                    className="bg-white rounded-2xl p-6 border border-stone-200 hover:shadow-soft transition-shadow"
                   >
                     <div className="flex items-start gap-3">
                       <span className="w-8 h-8 bg-promessa-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         {modulo.numero}
                       </span>
                       <div>
-                        <h4 className="font-bold text-foreground mb-1">{modulo.titulo}</h4>
-                        <p className="text-sm text-muted-foreground">{modulo.descricao}</p>
+                        <h4 className="font-bold text-stone-900 mb-1">{modulo.titulo}</h4>
+                        <p className="text-sm text-stone-600 leading-relaxed">{modulo.descricao}</p>
                       </div>
                     </div>
                   </div>
@@ -212,16 +212,16 @@ export default function TrilhaAmarServir() {
             </div>
 
             {/* Formulário de Inscrição */}
-            <div id="inscricao" className="bg-white rounded-2xl shadow-xl border border-border/50 overflow-hidden max-w-lg mx-auto">
+            <div id="inscricao" className="bg-white rounded-2xl shadow-elevated border border-stone-200 overflow-hidden max-w-lg mx-auto">
               <div className="h-2 bg-gradient-to-r from-promessa-500 to-promessa-700" />
-              <div className="p-8">
+              <div className="p-8 lg:p-10">
                 {submitted ? (
                   <div className="text-center py-8">
                     <div className="w-20 h-20 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-6">
                       <CheckCircle className="w-10 h-10 text-promessa-600" />
                     </div>
                     <h2 className="text-2xl font-bold mb-3">Inscrição realizada!</h2>
-                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                    <p className="text-stone-600 mb-6 leading-relaxed">
                       Ficamos muito felizes com seu interesse. Em breve entraremos em contato para confirmar sua participação no próximo curso.
                     </p>
                     <Button variant="outline" onClick={() => setSubmitted(false)}>
@@ -234,11 +234,11 @@ export default function TrilhaAmarServir() {
                       <h2 className="text-2xl font-bold mb-2">
                         Quero dar meus primeiros passos
                       </h2>
-                      <p className="text-muted-foreground">
+                      <p className="text-stone-600">
                         Preencha o formulário para se inscrever no próximo curso
                       </p>
                     </div>
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="space-y-2">
                         <Label htmlFor="nome">Nome completo *</Label>
                         <Input
@@ -296,7 +296,7 @@ export default function TrilhaAmarServir() {
                           onChange={(e) => setFormData({ ...formData, observacao: e.target.value })}
                         />
                       </div>
-                      <Button type="submit" className="w-full h-12 text-base bg-promessa-600 hover:bg-promessa-700" disabled={loading}>
+                      <Button type="submit" size="lg" className="w-full text-base bg-promessa-600 hover:bg-promessa-700" disabled={loading}>
                         {loading ? 'Enviando...' : 'Quero me inscrever'}
                       </Button>
                     </form>
@@ -305,7 +305,7 @@ export default function TrilhaAmarServir() {
               </div>
             </div>
 
-            <p className="text-center text-muted-foreground mt-6 text-sm">
+            <p className="text-center text-stone-600 mt-6 text-sm">
               Sem pressão. No seu ritmo. Com propósito.
             </p>
           </div>
@@ -313,34 +313,34 @@ export default function TrilhaAmarServir() {
       </section>
 
       {/* Por que participar */}
-      <section className="py-16 lg:py-20 bg-muted/30">
+      <section className="py-16 lg:py-20 bg-stone-100">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-8">
+            <h2 className="text-3xl lg:text-4xl font-bold text-stone-900 mb-8">
               Por que Participar?
             </h2>
-            <div className="bg-white rounded-2xl p-8 border border-border/50 text-left">
-              <p className="text-muted-foreground mb-6">Na Trilha Amar e Servir você vai:</p>
+            <div className="bg-white rounded-2xl p-8 lg:p-10 border border-stone-200 shadow-soft text-left">
+              <p className="text-stone-600 mb-6 leading-relaxed">Na Trilha Amar e Servir você vai:</p>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <span className="w-2 h-2 bg-promessa-600 rounded-full mt-2 flex-shrink-0" />
-                  <span className="text-foreground">Conhecer Jesus de forma pessoal e transformadora</span>
+                  <span className="text-stone-900">Conhecer Jesus de forma pessoal e transformadora</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="w-2 h-2 bg-promessa-600 rounded-full mt-2 flex-shrink-0" />
-                  <span className="text-foreground">Aprender os fundamentos da fé cristã</span>
+                  <span className="text-stone-900">Aprender os fundamentos da fé cristã</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="w-2 h-2 bg-promessa-600 rounded-full mt-2 flex-shrink-0" />
-                  <span className="text-foreground">Desenvolver hábitos espirituais saudáveis</span>
+                  <span className="text-stone-900">Desenvolver hábitos espirituais saudáveis</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="w-2 h-2 bg-promessa-600 rounded-full mt-2 flex-shrink-0" />
-                  <span className="text-foreground">Fazer parte de uma comunidade de fé</span>
+                  <span className="text-stone-900">Fazer parte de uma comunidade de fé</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="w-2 h-2 bg-promessa-600 rounded-full mt-2 flex-shrink-0" />
-                  <span className="text-foreground">Descobrir seus dons e como servir a Deus</span>
+                  <span className="text-stone-900">Descobrir seus dons e como servir a Deus</span>
                 </li>
               </ul>
             </div>

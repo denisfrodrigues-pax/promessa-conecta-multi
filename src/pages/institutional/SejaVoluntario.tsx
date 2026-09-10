@@ -82,7 +82,7 @@ export default function SejaVoluntario() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
       
       {/* Hero */}
@@ -114,16 +114,16 @@ export default function SejaVoluntario() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-lg mx-auto">
-            <Card className="shadow-xl border-0 overflow-hidden">
+            <Card className="rounded-2xl shadow-elevated border-0 overflow-hidden">
               <div className="h-2 bg-gradient-to-r from-promessa-500 to-promessa-700" />
-              <CardContent className="p-8">
+              <CardContent className="p-8 lg:p-10">
                 {submitted ? (
                   <div className="text-center py-8">
                     <div className="w-20 h-20 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-6">
                       <CheckCircle className="w-10 h-10 text-promessa-600" />
                     </div>
                     <h2 className="text-2xl font-bold mb-3">Obrigado pelo seu interesse!</h2>
-                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                    <p className="text-stone-600 mb-6 leading-relaxed">
                       Entraremos em contato em breve para conversar sobre as oportunidades de servir.
                     </p>
                     <Button variant="outline" onClick={() => setSubmitted(false)}>
@@ -136,11 +136,11 @@ export default function SejaVoluntario() {
                       <h2 className="text-2xl font-bold mb-2">
                         Quero servir
                       </h2>
-                      <p className="text-muted-foreground">
+                      <p className="text-stone-600">
                         Preencha o formulário para manifestar seu interesse
                       </p>
                     </div>
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="space-y-2">
                         <Label htmlFor="nome">Nome completo *</Label>
                         <Input
@@ -205,7 +205,7 @@ export default function SejaVoluntario() {
                           onChange={(e) => setFormData({ ...formData, observacao: e.target.value })}
                         />
                       </div>
-                      <Button type="submit" className="w-full h-12 text-base bg-promessa-600 hover:bg-promessa-700" disabled={loading}>
+                      <Button type="submit" size="lg" className="w-full text-base bg-promessa-600 hover:bg-promessa-700" disabled={loading}>
                         {loading ? 'Enviando...' : 'Quero servir'}
                       </Button>
                     </form>
@@ -214,7 +214,7 @@ export default function SejaVoluntario() {
               </CardContent>
             </Card>
 
-            <p className="text-center text-muted-foreground mt-6 text-sm">
+            <p className="text-center text-stone-600 mt-6 text-sm leading-relaxed">
               Recomendamos que você participe da <Link to={p('/trilha-amar-servir')} className="text-promessa-600 hover:underline">Trilha Amar e Servir</Link> para conhecer melhor a igreja antes de começar a servir.
             </p>
           </div>

@@ -9,7 +9,7 @@ export default function MissaoVisao() {
   const { p } = useIgrejaSlug();
   const { content } = useIgrejaPublicContent();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
       
       {/* Hero */}
@@ -40,34 +40,34 @@ export default function MissaoVisao() {
           <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Missão */}
-              <div className="bg-muted/30 rounded-2xl p-8 border border-border/50">
+              <div className="bg-stone-50 rounded-2xl p-8 border border-stone-200">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-14 h-14 bg-promessa-600 rounded-xl flex items-center justify-center">
                     <Target className="w-7 h-7 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Nossa Missão</h2>
+                  <h2 className="text-2xl font-bold text-stone-900">Nossa Missão</h2>
                 </div>
-                <p className="text-muted-foreground text-lg leading-relaxed">
+                <p className="text-stone-600 text-lg leading-relaxed">
                   {content?.missao || 'Em breve, mais sobre nossa missão.'}
                 </p>
               </div>
 
               {/* Visão */}
-              <div className="bg-muted/30 rounded-2xl p-8 border border-border/50">
+              <div className="bg-stone-50 rounded-2xl p-8 border border-stone-200">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-14 h-14 bg-promessa-600 rounded-xl flex items-center justify-center">
                     <Eye className="w-7 h-7 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Nossa Visão</h2>
+                  <h2 className="text-2xl font-bold text-stone-900">Nossa Visão</h2>
                 </div>
-                <p className="text-muted-foreground text-lg leading-relaxed">
+                <p className="text-stone-600 text-lg leading-relaxed">
                   {content?.visao || 'Em breve, mais sobre nossa visão.'}
                 </p>
               </div>
             </div>
 
             <div className="mt-12 text-center">
-              <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700">
+              <Button asChild size="lg" className="rounded-xl bg-promessa-600 hover:bg-promessa-700">
                 <Link to={p('/quem-somos/historia')}>Conhecer nossa história</Link>
               </Button>
             </div>

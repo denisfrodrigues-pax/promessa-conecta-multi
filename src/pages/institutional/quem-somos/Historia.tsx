@@ -9,7 +9,7 @@ export default function HistoriaPage() {
   const { p } = useIgrejaSlug();
   const { content } = useIgrejaPublicContent();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
       
       {/* Hero */}
@@ -41,14 +41,14 @@ export default function HistoriaPage() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto space-y-8">
-            <div className="bg-muted/30 rounded-2xl p-6 lg:p-8 border border-border/50">
-              <p className="text-muted-foreground leading-relaxed">
+            <div className="bg-stone-50 rounded-2xl p-8 lg:p-10 border border-stone-200">
+              <p className="text-stone-600 leading-relaxed">
                 {content?.historia || 'Em breve, mais sobre nossa história.'}
               </p>
             </div>
 
             <div className="pt-8 text-center">
-              <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700">
+              <Button asChild size="lg" className="rounded-xl bg-promessa-600 hover:bg-promessa-700">
                 <Link to={p('/quem-somos/pastores')}>Conhecer os pastores</Link>
               </Button>
             </div>

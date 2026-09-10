@@ -121,7 +121,7 @@ export default function Contato() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
 
       {/* Hero */}
@@ -149,10 +149,10 @@ export default function Contato() {
                   <div className="w-10 h-10 bg-promessa-100 rounded-xl flex items-center justify-center">
                     <MessageCircle className="w-5 h-5 text-promessa-600" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Fale conosco</h2>
+                  <h2 className="text-2xl font-bold text-stone-900">Fale conosco</h2>
                 </div>
 
-                <p className="text-muted-foreground mb-8">
+                <p className="text-stone-600 mb-8 leading-relaxed">
                   Preencha o formulário abaixo e nossa equipe entrará em contato o mais breve possível.
                 </p>
 
@@ -162,7 +162,7 @@ export default function Contato() {
                       <CheckCircle className="w-10 h-10 text-promessa-600" />
                     </div>
                     <h3 className="text-2xl font-bold mb-3">Mensagem enviada!</h3>
-                    <p className="text-muted-foreground mb-6">
+                    <p className="text-stone-600 mb-6 leading-relaxed">
                       Recebemos sua mensagem e entraremos em contato em breve.
                     </p>
                     <Button variant="outline" onClick={() => setSubmitted(false)}>
@@ -170,8 +170,8 @@ export default function Contato() {
                     </Button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="nome">Nome completo *</Label>
                         <Input
@@ -199,7 +199,7 @@ export default function Contato() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="telefone">Telefone</Label>
                         <Input
@@ -244,7 +244,7 @@ export default function Contato() {
                       type="submit"
                       size="lg"
                       disabled={isSubmitting}
-                      className="w-full sm:w-auto bg-promessa-600 hover:bg-promessa-700 text-white h-12 px-8"
+                      className="w-full sm:w-auto bg-promessa-600 hover:bg-promessa-700 text-white h-12 px-8 rounded-xl"
                     >
                       {isSubmitting ? (
                         "Enviando..."
@@ -265,30 +265,30 @@ export default function Contato() {
                   <div className="w-10 h-10 bg-promessa-100 rounded-xl flex items-center justify-center">
                     <MapPin className="w-5 h-5 text-promessa-600" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Onde estamos</h2>
+                  <h2 className="text-2xl font-bold text-stone-900">Onde estamos</h2>
                 </div>
 
                 <div className="space-y-4 mb-8">
                   {church.endereco && (
-                    <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
+                    <div className="flex items-start gap-4 p-5 bg-white shadow-soft rounded-2xl">
                       <MapPin className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">Endereço</h3>
-                        <p className="text-muted-foreground text-sm">{church.endereco}</p>
+                        <h3 className="font-semibold text-stone-900 mb-1">Endereço</h3>
+                        <p className="text-stone-600 text-sm leading-relaxed">{church.endereco}</p>
                       </div>
                     </div>
                   )}
 
                   {church.telefone && (
-                    <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
+                    <div className="flex items-start gap-4 p-5 bg-white shadow-soft rounded-2xl">
                       <Phone className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">Telefone (WhatsApp)</h3>
+                        <h3 className="font-semibold text-stone-900 mb-1">Telefone (WhatsApp)</h3>
                         <a
                           href={`https://wa.me/55${church.telefone.replace(/\D/g, "")}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-muted-foreground text-sm hover:text-promessa-600 transition-colors"
+                          className="text-stone-600 text-sm hover:text-promessa-600 transition-colors"
                         >
                           {church.telefone}
                         </a>
@@ -297,13 +297,13 @@ export default function Contato() {
                   )}
 
                   {church.email && (
-                    <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
+                    <div className="flex items-start gap-4 p-5 bg-white shadow-soft rounded-2xl">
                       <Mail className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">E-mail</h3>
+                        <h3 className="font-semibold text-stone-900 mb-1">E-mail</h3>
                         <a
                           href={`mailto:${church.email}`}
-                          className="text-muted-foreground text-sm hover:text-promessa-600 transition-colors"
+                          className="text-stone-600 text-sm hover:text-promessa-600 transition-colors"
                         >
                           {church.email}
                         </a>
@@ -312,11 +312,11 @@ export default function Contato() {
                   )}
 
                   {(church.horario_ebd || church.horario_culto) && (
-                    <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl">
+                    <div className="flex items-start gap-4 p-5 bg-white shadow-soft rounded-2xl">
                       <Clock className="w-5 h-5 text-promessa-600 mt-0.5 flex-shrink-0" />
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">Horários</h3>
-                        <p className="text-muted-foreground text-sm">
+                        <h3 className="font-semibold text-stone-900 mb-1">Horários</h3>
+                        <p className="text-stone-600 text-sm leading-relaxed">
                           {church.horario_ebd && <>Escola Bíblica — {church.horario_ebd}<br /></>}
                           {church.horario_culto && <>Celebração — {church.horario_culto}</>}
                         </p>
@@ -326,7 +326,7 @@ export default function Contato() {
                 </div>
 
                 {church.google_maps_url && (
-                  <div className="relative aspect-video bg-muted rounded-2xl overflow-hidden border border-border/50">
+                  <div className="relative aspect-video bg-stone-100 rounded-2xl overflow-hidden border border-stone-200">
                     <iframe
                       src={church.google_maps_url}
                       width="100%"

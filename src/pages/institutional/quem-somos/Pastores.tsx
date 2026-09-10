@@ -7,7 +7,7 @@ import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 export default function Pastores() {
   const { p } = useIgrejaSlug();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       <InstitutionalHeader />
       
       {/* Hero */}
@@ -39,18 +39,18 @@ export default function Pastores() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-muted/30 rounded-2xl p-6 lg:p-10 border border-border/50 text-center">
+            <div className="bg-stone-50 rounded-2xl p-8 lg:p-10 border border-stone-200 text-center">
               <div className="w-24 h-24 lg:w-28 lg:h-28 mx-auto mb-8 rounded-full bg-promessa-100 flex items-center justify-center">
                 <UserCircle className="w-14 h-14 text-promessa-500" />
               </div>
 
-              <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl mx-auto">
+              <p className="text-stone-600 text-lg leading-relaxed max-w-2xl mx-auto">
                 Nossa equipe pastoral está comprometida com o cuidado das pessoas, o discipulado e o crescimento espiritual da igreja. Em breve, mais informações sobre nossa liderança.
               </p>
             </div>
 
             <div className="mt-12 text-center">
-              <Button asChild size="lg" className="bg-promessa-600 hover:bg-promessa-700">
+              <Button asChild size="lg" className="rounded-xl bg-promessa-600 hover:bg-promessa-700">
                 <Link to={p('/contato')}>Fale com a gente</Link>
               </Button>
             </div>
