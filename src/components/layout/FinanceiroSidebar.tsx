@@ -77,7 +77,7 @@ export default function FinanceiroSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 min-h-0 p-2 space-y-1 overflow-y-auto">
         {menuItems.map((item) => (
           <NavLink
             key={item.path}
@@ -96,7 +96,7 @@ export default function FinanceiroSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-neutral-200 space-y-2">
+      <div className="flex-shrink-0 p-3 border-t border-neutral-200 space-y-2">
         {/* Back to Member Area Button */}
         <NavLink
           to={p('/app')}
