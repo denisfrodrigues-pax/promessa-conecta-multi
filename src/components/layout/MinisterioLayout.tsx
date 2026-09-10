@@ -21,7 +21,7 @@ type PapelMinisterial = "admin" | "lider" | "voluntario" | null;
 const MinisterioLayout = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user, roles, loading, signOut } = useAuth();
-  const { p } = useIgrejaSlug();
+  const { p, churchId } = useIgrejaSlug();
   const { config } = useIgrejaConfig();
   const navigate = useNavigate();
 
@@ -35,17 +35,22 @@ const MinisterioLayout = () => {
   const isAdmin = roles.includes("admin");
 
   useEffect(() => {
-    if (loading || !user || !slug) return;
+    if (loading || !user || !slug || !churchId) return;
 
     const loadMinisterio = async () => {
       setLoadingPage(true);
       setNotFound(false);
 
-      // Buscar ministério apenas pelo slug
+      // Buscar ministério pelo slug DENTRO da igreja do usuário — slug não é
+      // globalmente único (constraint real é composta church_id+slug; toda
+      // igreja nova recebe os mesmos slugs fixos via fn_seed_nova_igreja), só
+      // filtrar por slug faz .maybeSingle() falhar assim que duas igrejas
+      // tiverem o mesmo slug, derrubando o ministério certo pra "não encontrado".
       const { data: ministerio } = await supabase
         .from("ministerios")
         .select("id, nome")
         .eq("slug", slug)
+        .eq("church_id", churchId)
         .eq("ativo", true)
         .maybeSingle();
 
@@ -93,7 +98,7 @@ const MinisterioLayout = () => {
     };
 
     loadMinisterio();
-  }, [slug, user, loading, isAdmin]);
+  }, [slug, user, loading, isAdmin, churchId]);
 
   const handleSignOut = async () => {
     await signOut();

@@ -26,14 +26,14 @@ export default function LeaderMinisterioLayout() {
   const { slug } = useParams<{ slug: string }>();
   const { user, loading: authLoading, profile, isLider } = useAuth();
   const { nomeModulo } = useIgrejaConfig();
-  const { p } = useIgrejaSlug();
+  const { p, churchId } = useIgrejaSlug();
   const { unreadCount } = useLeaderNotifications();
   const [ministerio, setMinisterio] = useState<MinisterioInfo | null>(null);
   const [loadingMin, setLoadingMin] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (authLoading || !user || !slug) return;
+    if (authLoading || !user || !slug || !churchId) return;
 
     const fetch = async () => {
       setLoadingMin(true);
@@ -61,11 +61,16 @@ export default function LeaderMinisterioLayout() {
       const match = (vinculo as unknown as VinculoItem[]).find((v) => v.ministerios?.slug === slug);
 
       if (!match) {
-        // Admin fallback: try direct lookup
+        // Admin fallback: busca direta pelo ministério, escopada pela igreja
+        // do usuário — slug não é globalmente único (constraint real é
+        // composta church_id+slug; toda igreja nova recebe os mesmos slugs
+        // fixos via fn_seed_nova_igreja), só filtrar por slug faz
+        // .maybeSingle() falhar assim que duas igrejas tiverem o mesmo slug.
         const { data: adm } = await (supabase as any)
           .from("ministerios")
           .select("id, nome, tipo")
           .eq("slug", slug)
+          .eq("church_id", churchId)
           .eq("ativo", true)
           .maybeSingle();
 
@@ -84,7 +89,7 @@ export default function LeaderMinisterioLayout() {
     };
 
     fetch();
-  }, [user, authLoading, slug]);
+  }, [user, authLoading, slug, churchId]);
 
   if (authLoading || loadingMin) {
     return (
