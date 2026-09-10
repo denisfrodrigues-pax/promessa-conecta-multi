@@ -214,7 +214,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-3 overflow-y-auto">
+      <nav className="flex-1 min-h-0 px-2 py-3 overflow-y-auto">
         {visibleMenuItems.map((item) => (
           <div key={item.path}>
             {/* Section label */}
@@ -291,7 +291,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-3 border-t border-gray-100 space-y-1.5">
+      <div className="flex-shrink-0 px-3 py-3 border-t border-gray-100 space-y-1.5">
         {!collapsed && <PlanoInfo compact />}
 
         {isSuperAdmin && (
