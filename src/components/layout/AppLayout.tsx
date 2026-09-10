@@ -78,7 +78,13 @@ export default function AppLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-16 md:pb-0">
+    // Mobile: altura travada na viewport, com <main> como única área que rola —
+    // a barra inferior fica fora da área de rolagem (não é mais `fixed` por
+    // cima do conteúdo), então nenhum conteúdo pode ficar escondido atrás dela
+    // na posição inicial de rolagem (ver bug de /app/calendario). Desktop
+    // mantém o comportamento anterior (scroll do documento), já que a barra
+    // inferior não existe a partir de md.
+    <div className="h-screen md:h-auto md:min-h-screen bg-background flex flex-col">
       {/* Topbar */}
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container mx-auto px-4">
@@ -223,12 +229,13 @@ export default function AppLayout() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 overflow-y-auto md:overflow-visible">
         <Outlet />
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-50">
+      {/* Mobile Bottom Navigation — item de flex normal, não mais `fixed`
+          sobrepondo o conteúdo (ver comentário no wrapper acima). */}
+      <nav className="md:hidden shrink-0 bg-card border-t border-border shadow-lg z-50">
         <div className="flex justify-around py-2">
           {mobileBottomNavItems.map((item) => (
             <NavLink

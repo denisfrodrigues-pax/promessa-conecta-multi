@@ -68,7 +68,7 @@ export default function Calendario() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-24 md:pb-6 space-y-8 max-w-3xl">
+    <div className="container mx-auto px-4 py-6 pb-6 space-y-8 max-w-3xl">
 
       {/* Seção 1 — Agenda da Igreja */}
       <section>
