@@ -26,7 +26,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useKidsVolunteer } from '@/hooks/useKidsVolunteer';
 
 export default function AppLayout() {
-  const { roles } = useAuth();
+  const { roles, isLider, isVoluntario } = useAuth();
   const { slug, p } = useIgrejaSlug();
   const { nomeModulo } = useIgrejaConfig();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -37,19 +37,22 @@ export default function AppLayout() {
   const isAdmin = roles.includes('admin');
 
   // Painéis: URLs absolutas com slug direto (sem p() que adicionaria /app/ desnecessário).
-  // Admin da Igreja/Painel Líder/Painel Voluntário aparecem para quem realmente tem acesso
-  // a essas rotas (admin e superadmin — ver hierarquia de roles em AuthContext.tsx e os
-  // allowedRoles de /leader e /voluntario em App.tsx). "Super Admin" fica exclusivo do
-  // superadmin, único com acesso à rota /admin (painel entre múltiplas igrejas).
-  // Check-in Kids aparece à parte, independente de admin/líder — para qualquer usuário
-  // que seja voluntário ativo do ministério Kids (ver useKidsVolunteer).
+  // Cada item só aparece pra quem realmente tem acesso à rota — mesmos allowedRoles
+  // de /admin, /leader e /voluntario em App.tsx. "Admin da Igreja" fica exclusivo de
+  // admin/superadmin (allowedRoles=["admin"]); "Painel Líder" usa isLider, que já
+  // cascateia lider/admin/superadmin (allowedRoles=["lider","admin"]); "Painel
+  // Voluntário" usa isVoluntario, que cascateia voluntario/lider/admin/superadmin
+  // (allowedRoles=["voluntario","admin","lider"]) — um líder puro (sem admin), como
+  // uma líder de ministério comum, precisa ver os dois últimos mesmo sem ser admin.
+  // "Super Admin" fica exclusivo do superadmin, único com acesso à rota /admin
+  // (painel entre múltiplas igrejas). Check-in Kids aparece à parte, independente
+  // de admin/líder — para qualquer usuário que seja voluntário ativo do ministério
+  // Kids (ver useKidsVolunteer).
   const panelItems = [
     ...(isSuperAdmin ? [{ href: '/admin', label: '⚡ Super Admin' }] : []),
-    ...(isSuperAdmin || isAdmin ? [
-      { href: `/i/${slug}/admin/dashboard`, label: 'Admin da Igreja' },
-      { href: `/i/${slug}/leader/hub`,      label: 'Painel Líder' },
-      { href: `/i/${slug}/voluntario`,      label: 'Painel Voluntário' },
-    ] : []),
+    ...(isSuperAdmin || isAdmin ? [{ href: `/i/${slug}/admin/dashboard`, label: 'Admin da Igreja' }] : []),
+    ...(isLider ? [{ href: `/i/${slug}/leader/hub`, label: 'Painel Líder' }] : []),
+    ...(isVoluntario ? [{ href: `/i/${slug}/voluntario`, label: 'Painel Voluntário' }] : []),
     ...(isKidsVolunteer ? [
       { href: `/i/${slug}/leader/mca/checkin`, label: '👶 Check-in Kids' },
     ] : []),
