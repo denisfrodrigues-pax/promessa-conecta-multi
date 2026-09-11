@@ -148,7 +148,7 @@ export default function RelatorioFinanceiro() {
 
   const PaginationControls = () => (
     <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-      <span className="text-sm text-muted-foreground">
+      <span className="text-sm text-stone-500">
         Mostrando {startItem} – {endItem} de {total}
       </span>
       <div className="space-x-2">
@@ -170,8 +170,8 @@ export default function RelatorioFinanceiro() {
     <div className="space-y-6" ref={reportRef}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Relatório Financeiro</h1>
-          <p className="text-muted-foreground">Visão executiva das finanças</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Relatório Financeiro</h1>
+          <p className="text-stone-600 leading-relaxed">Visão executiva das finanças</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCSV}><Download className="w-4 h-4 mr-2" />CSV</Button>
@@ -184,7 +184,7 @@ export default function RelatorioFinanceiro() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="rounded-2xl border-l-4 border-l-green-500">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-green-600" />
@@ -192,12 +192,12 @@ export default function RelatorioFinanceiro() {
                 <p className="text-2xl font-bold text-green-600">
                   {kpis.entradas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </p>
-                <p className="text-muted-foreground">Entradas do Mês</p>
+                <p className="text-stone-600">Entradas do Mês</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl border-l-4 border-l-red-500">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <TrendingDown className="w-8 h-8 text-red-600" />
@@ -205,12 +205,12 @@ export default function RelatorioFinanceiro() {
                 <p className="text-2xl font-bold text-red-600">
                   {kpis.saidas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </p>
-                <p className="text-muted-foreground">Saídas do Mês</p>
+                <p className="text-stone-600">Saídas do Mês</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={`rounded-2xl border-l-4 ${kpis.saldo >= 0 ? 'border-l-blue-500' : 'border-l-red-500'}`}>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <BarChart3 className={`w-8 h-8 ${kpis.saldo >= 0 ? 'text-green-600' : 'text-red-600'}`} />
@@ -218,7 +218,7 @@ export default function RelatorioFinanceiro() {
                 <p className={`text-2xl font-bold ${kpis.saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {kpis.saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </p>
-                <p className="text-muted-foreground">Saldo do Mês</p>
+                <p className="text-stone-600">Saldo do Mês</p>
               </div>
             </div>
           </CardContent>
@@ -227,8 +227,8 @@ export default function RelatorioFinanceiro() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader><CardTitle className="text-base font-bold">Entradas vs Saídas - Últimos 6 meses</CardTitle></CardHeader>
+        <Card className="rounded-2xl">
+          <CardHeader><CardTitle className="text-base font-bold text-stone-900">Entradas vs Saídas - Últimos 6 meses</CardTitle></CardHeader>
           <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={chartData.mensal}>
@@ -243,8 +243,8 @@ export default function RelatorioFinanceiro() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-base font-bold">Distribuição por Categoria</CardTitle></CardHeader>
+        <Card className="rounded-2xl">
+          <CardHeader><CardTitle className="text-base font-bold text-stone-900">Distribuição por Categoria</CardTitle></CardHeader>
           <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
@@ -260,32 +260,32 @@ export default function RelatorioFinanceiro() {
       </div>
 
       {/* Table */}
-      <Card>
-        <CardHeader><CardTitle className="text-base font-bold">Transações do Mês</CardTitle></CardHeader>
+      <Card className="rounded-2xl">
+        <CardHeader><CardTitle className="text-base font-bold text-stone-900">Transações do Mês</CardTitle></CardHeader>
         <CardContent>
           {total > limit && <div className="mb-4"><PaginationControls /></div>}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Data</th>
-                  <th className="text-left p-2">Tipo</th>
-                  <th className="text-left p-2">Categoria</th>
-                  <th className="text-left p-2">Descrição</th>
-                  <th className="text-right p-2">Valor</th>
+                <tr className="border-b border-stone-200">
+                  <th className="text-left p-2 text-stone-900">Data</th>
+                  <th className="text-left p-2 text-stone-900">Tipo</th>
+                  <th className="text-left p-2 text-stone-900">Categoria</th>
+                  <th className="text-left p-2 text-stone-900">Descrição</th>
+                  <th className="text-right p-2 text-stone-900">Valor</th>
                 </tr>
               </thead>
               <tbody>
                 {transacoes.map(t => (
-                  <tr key={t.id} className="border-b hover:bg-muted/50">
-                    <td className="p-2">{format(new Date(t.data_operacao), 'dd/MM/yyyy')}</td>
+                  <tr key={t.id} className="border-b border-stone-100 hover:bg-stone-50">
+                    <td className="p-2 text-stone-600">{format(new Date(t.data_operacao), 'dd/MM/yyyy')}</td>
                     <td className="p-2">
                       <span className={t.tipo === 'receita' ? 'text-green-600' : 'text-red-600'}>
                         {t.tipo === 'receita' ? '↑ Entrada' : '↓ Saída'}
                       </span>
                     </td>
-                    <td className="p-2">{t.categorias_financeiras?.nome || '–'}</td>
-                    <td className="p-2">{t.descricao || '–'}</td>
+                    <td className="p-2 text-stone-600">{t.categorias_financeiras?.nome || '–'}</td>
+                    <td className="p-2 text-stone-600">{t.descricao || '–'}</td>
                     <td className={`p-2 text-right font-medium ${t.tipo === 'receita' ? 'text-green-600' : 'text-red-600'}`}>
                       {t.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>

@@ -76,7 +76,7 @@ export default function PainelSuperAdmin() {
             <button
               onClick={fetchIgrejas}
               disabled={loading}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 min-h-[44px] sm:min-h-0 text-sm rounded-xl transition-colors disabled:opacity-50"
               style={{ color: 'var(--rc-text-secondary)', border: '1px solid var(--rc-border)' }}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -84,7 +84,7 @@ export default function PainelSuperAdmin() {
             </button>
             <button
               onClick={() => navigate('/admin/igrejas/nova')}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg text-white transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 min-h-[44px] sm:min-h-0 text-sm font-medium rounded-xl text-white transition-colors"
               style={{ background: 'var(--rc-primary)' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--rc-primary-hover)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'var(--rc-primary)')}
@@ -94,7 +94,7 @@ export default function PainelSuperAdmin() {
             </button>
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 min-h-[44px] sm:min-h-0 text-sm rounded-xl transition-colors"
               style={{ color: 'var(--rc-text-muted)' }}
             >
               <LogOut className="w-4 h-4" />
@@ -105,22 +105,22 @@ export default function PainelSuperAdmin() {
       </header>
 
       {/* Main */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         {/* Title */}
-        <div className="mb-6">
+        <div className="mb-8">
           <h2 className="text-2xl font-bold text-white">Igrejas Cadastradas</h2>
-          <p className="text-sm mt-1" style={{ color: 'var(--rc-text-secondary)' }}>
+          <p className="text-sm mt-1 leading-relaxed" style={{ color: 'var(--rc-text-secondary)' }}>
             {!loading && `${igrejas.length} ${igrejas.length === 1 ? 'igreja' : 'igrejas'} no sistema`}
           </p>
         </div>
 
         {/* Loading */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => (
               <div
                 key={i}
-                className="h-52 rounded-xl animate-pulse"
+                className="h-52 rounded-2xl animate-pulse"
                 style={{ background: 'var(--rc-bg-card)', border: '1px solid var(--rc-border)' }}
               />
             ))}
@@ -134,13 +134,13 @@ export default function PainelSuperAdmin() {
             >
               <Globe className="w-10 h-10" style={{ color: 'var(--rc-border)' }} />
             </div>
-            <p className="text-lg font-medium text-white mb-1">Nenhuma igreja cadastrada</p>
-            <p className="text-sm mb-6" style={{ color: 'var(--rc-text-secondary)' }}>
+            <p className="text-lg font-semibold text-white mb-1">Nenhuma igreja cadastrada</p>
+            <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--rc-text-secondary)' }}>
               Crie a primeira igreja para começar
             </p>
             <button
               onClick={() => navigate('/admin/igrejas/nova')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-xl text-sm font-medium text-white transition-colors"
               style={{ background: 'var(--rc-primary)' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--rc-primary-hover)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'var(--rc-primary)')}
@@ -151,13 +151,13 @@ export default function PainelSuperAdmin() {
           </div>
         ) : (
           /* Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {igrejas.map(igreja => {
               const plano = PLANO_BADGE[igreja.plano ?? 'teste'] ?? PLANO_BADGE.teste;
               return (
                 <div
                   key={igreja.id}
-                  className="rounded-xl p-5 flex flex-col gap-3 transition-all duration-200 group"
+                  className="rounded-2xl p-5 flex flex-col gap-3 transition-all duration-200 group"
                   style={{
                     background: 'var(--rc-bg-card)',
                     border: '1px solid var(--rc-border)',
@@ -226,7 +226,7 @@ export default function PainelSuperAdmin() {
                   {/* Botão acessar */}
                   {igreja.slug ? (
                     <button
-                      className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-white transition-colors mt-auto"
+                      className="w-full flex items-center justify-center gap-2 py-2 min-h-[44px] rounded-xl text-sm font-medium text-white transition-colors mt-auto"
                       style={{ background: 'var(--rc-primary)' }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'var(--rc-primary-hover)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'var(--rc-primary)')}
@@ -236,7 +236,7 @@ export default function PainelSuperAdmin() {
                       Acessar Painel
                     </button>
                   ) : (
-                    <p className="text-xs text-center py-2 rounded-lg" style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                    <p className="text-xs text-center py-2 rounded-xl" style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
                       Slug não configurado
                     </p>
                   )}

@@ -149,7 +149,7 @@ export default function RelatorioBases() {
 
   const PaginationControls = () => (
     <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-      <span className="text-sm text-muted-foreground">
+      <span className="text-sm text-stone-500">
         Mostrando {startItem} – {endItem} de {total}
       </span>
       <div className="space-x-2">
@@ -172,8 +172,8 @@ export default function RelatorioBases() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Relatório de Bases</h1>
-          <p className="text-muted-foreground">Ocupação e crescimento das bases</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Relatório de Bases</h1>
+          <p className="text-stone-600 leading-relaxed">Ocupação e crescimento das bases</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCSV}><Download className="w-4 h-4 mr-2" />CSV</Button>
@@ -186,58 +186,58 @@ export default function RelatorioBases() {
 
       {/* Indicadores Gerais Section */}
       <section>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+        <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-4">
           Indicadores Gerais
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-card/50">
+          <Card className="bg-stone-50 rounded-2xl">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
                   <Network className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{kpis.total}</p>
-                  <p className="text-xs text-muted-foreground">Bases Ativas</p>
+                  <p className="text-2xl font-bold text-stone-900">{kpis.total}</p>
+                  <p className="text-xs text-stone-500">Bases Ativas</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-card/50">
+          <Card className="bg-stone-50 rounded-2xl">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-blue-500/10">
                   <Users className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{kpis.ocupacaoMedia}%</p>
-                  <p className="text-xs text-muted-foreground">Ocupação Média</p>
+                  <p className="text-2xl font-bold text-stone-900">{kpis.ocupacaoMedia}%</p>
+                  <p className="text-xs text-stone-500">Ocupação Média</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-card/50">
+          <Card className="bg-stone-50 rounded-2xl">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-amber-500/10">
                   <Users className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{bases.reduce((acc, b) => acc + b.ocupacao, 0)}</p>
-                  <p className="text-xs text-muted-foreground">Membros em Bases</p>
+                  <p className="text-2xl font-bold text-stone-900">{bases.reduce((acc, b) => acc + b.ocupacao, 0)}</p>
+                  <p className="text-xs text-stone-500">Membros em Bases</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-card/50">
+          <Card className="bg-stone-50 rounded-2xl">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-destructive/10">
                   <AlertCircle className="w-5 h-5 text-destructive" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{kpis.lotadas}</p>
-                  <p className="text-xs text-muted-foreground">Bases Lotadas</p>
+                  <p className="text-2xl font-bold text-stone-900">{kpis.lotadas}</p>
+                  <p className="text-xs text-stone-500">Bases Lotadas</p>
                 </div>
               </div>
             </CardContent>
@@ -247,13 +247,13 @@ export default function RelatorioBases() {
 
       {/* Análise Visual Section */}
       <section>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+        <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-4">
           Análise Visual
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold">Ocupação por Base</CardTitle>
+              <CardTitle className="text-base font-semibold text-stone-900">Ocupação por Base</CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
               <ResponsiveContainer width="100%" height={280}>
@@ -267,9 +267,9 @@ export default function RelatorioBases() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold">Crescimento Mensal</CardTitle>
+              <CardTitle className="text-base font-semibold text-stone-900">Crescimento Mensal</CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
               <ResponsiveContainer width="100%" height={280}>
@@ -288,34 +288,34 @@ export default function RelatorioBases() {
 
       {/* Resumo por Base - Main Content Section */}
       <section>
-        <Card className="border-2">
-          <CardHeader className="border-b bg-muted/30">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
+        <Card className="border-2 rounded-2xl">
+          <CardHeader className="border-b border-stone-200 bg-stone-50">
+            <CardTitle className="text-lg font-bold flex items-center gap-2 text-stone-900">
               <Network className="w-5 h-5 text-primary" />
               Resumo por Base
             </CardTitle>
-            <p className="text-sm text-muted-foreground">Detalhamento completo de todas as bases ativas</p>
+            <p className="text-sm text-stone-600 leading-relaxed">Detalhamento completo de todas as bases ativas</p>
           </CardHeader>
           <CardContent className="p-6">
             {total > limit && <div className="mb-6"><PaginationControls /></div>}
-            <div className="overflow-x-auto rounded-lg border">
+            <div className="overflow-x-auto rounded-xl border border-stone-200">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-muted/50">
-                    <th className="text-left p-3 font-semibold">Nome</th>
-                    <th className="text-left p-3 font-semibold">Líder</th>
-                    <th className="text-left p-3 font-semibold">Dia/Horário</th>
-                    <th className="text-left p-3 font-semibold">Ocupação</th>
-                    <th className="text-left p-3 font-semibold">Presenças (mês)</th>
-                    <th className="text-left p-3 font-semibold">Status</th>
+                  <tr className="bg-stone-50">
+                    <th className="text-left p-3 font-semibold text-stone-900">Nome</th>
+                    <th className="text-left p-3 font-semibold text-stone-900">Líder</th>
+                    <th className="text-left p-3 font-semibold text-stone-900">Dia/Horário</th>
+                    <th className="text-left p-3 font-semibold text-stone-900">Ocupação</th>
+                    <th className="text-left p-3 font-semibold text-stone-900">Presenças (mês)</th>
+                    <th className="text-left p-3 font-semibold text-stone-900">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bases.map((b, idx) => (
-                    <tr key={b.id} className={`border-t hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? 'bg-background' : 'bg-muted/10'}`}>
-                      <td className="p-3 font-medium">{b.nome}</td>
-                      <td className="p-3 text-muted-foreground">{b.liderNome}</td>
-                      <td className="p-3 text-muted-foreground">{b.dia_semana} {b.horario}</td>
+                    <tr key={b.id} className={`border-t border-stone-100 hover:bg-stone-100 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-stone-50'}`}>
+                      <td className="p-3 font-medium text-stone-900">{b.nome}</td>
+                      <td className="p-3 text-stone-500">{b.liderNome}</td>
+                      <td className="p-3 text-stone-500">{b.dia_semana} {b.horario}</td>
                       <td className="p-3">
                         <div className="flex items-center gap-3">
                           <Progress value={b.percentual} className="w-24 h-2" />
