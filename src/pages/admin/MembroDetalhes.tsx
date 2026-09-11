@@ -779,7 +779,7 @@ export default function MembroDetalhes() {
             {hasValidPhone(displayPhone) && (
               <button
                 onClick={() => window.open(getWhatsAppUrl(displayPhone, churchNome), '_blank')}
-                className="text-green-600 hover:text-green-700"
+                className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50"
                 title="Abrir WhatsApp"
                 aria-label="Abrir WhatsApp"
               >
@@ -955,7 +955,7 @@ export default function MembroDetalhes() {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span>Líder: {baseAtual.base.lider.nome}</span>
                     {hasValidPhone(baseAtual.base.lider.telefone) && (
-                      <button onClick={() => window.open(getWhatsAppUrl(baseAtual.base.lider!.telefone, churchNome), '_blank')} className="text-green-600 hover:text-green-700" aria-label="Enviar WhatsApp ao líder">
+                      <button onClick={() => window.open(getWhatsAppUrl(baseAtual.base.lider!.telefone, churchNome), '_blank')} className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50" aria-label="Enviar WhatsApp ao líder">
                         <MessageCircle className="w-4 h-4" />
                       </button>
                     )}
@@ -1074,7 +1074,7 @@ export default function MembroDetalhes() {
                           {hasValidPhone(profileData.telefone) && (
                             <button
                               onClick={() => window.open(getWhatsAppUrl(profileData.telefone, churchNome), '_blank')}
-                              className="text-green-600 hover:text-green-700"
+                              className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50"
                               aria-label="Enviar WhatsApp"
                             >
                               <MessageCircle className="w-4 h-4" />

@@ -352,7 +352,7 @@ export default function VisitanteDetalhes() {
             <button
               onClick={handleWhatsAppClick}
               disabled={!hasValidPhone(formData.telefone)}
-              className={`p-1.5 rounded-full transition-colors ${
+              className={`w-11 h-11 flex items-center justify-center rounded-full transition-colors ${
                 hasValidPhone(formData.telefone)
                   ? 'text-green-600 hover:bg-green-100 cursor-pointer'
                   : 'text-muted-foreground/40 cursor-not-allowed'

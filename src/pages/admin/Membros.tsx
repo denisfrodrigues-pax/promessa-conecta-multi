@@ -594,7 +594,7 @@ export default function Membros() {
                         {hasValidPhone(membro.telefone) && (
                           <button
                             onClick={(e) => handleWhatsAppClick(e, membro.telefone)}
-                            className="text-green-600 hover:text-green-700 flex-shrink-0"
+                            className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50 flex-shrink-0"
                             title="Abrir WhatsApp"
                             aria-label="Abrir WhatsApp"
                           >

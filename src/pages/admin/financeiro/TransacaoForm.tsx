@@ -463,7 +463,7 @@ export default function TransacaoForm() {
               </div>
             </div>
 
-            <div className="flex justify-between pt-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-3 pt-4">
               <div>
                 {isEditing && status !== "cancelado" && (
                   <AlertDialog>

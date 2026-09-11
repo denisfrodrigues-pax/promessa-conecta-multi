@@ -319,7 +319,7 @@ export default function Acompanhamento() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
+                          className="h-11 w-11 text-green-600 hover:text-green-700 hover:bg-green-50"
                           disabled={!hasValidPhone(acomp.visitante?.telefone)}
                           onClick={() => handleWhatsAppClick(acomp.visitante?.telefone)}
                           title={hasValidPhone(acomp.visitante?.telefone) ? 'Enviar WhatsApp' : 'Telefone não disponível'}

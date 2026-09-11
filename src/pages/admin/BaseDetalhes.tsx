@@ -814,7 +814,7 @@ export default function BaseDetalhes() {
                     {hasValidPhone(bm.telefone) && (
                       <button
                         onClick={() => window.open(getWhatsAppUrl(bm.telefone, churchNome), '_blank')}
-                        className="text-green-600 hover:text-green-700 p-1.5"
+                        className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50"
                         aria-label="Enviar WhatsApp"
                       >
                         <MessageCircle className="h-4 w-4" />
@@ -882,7 +882,7 @@ export default function BaseDetalhes() {
                     {hasValidPhone(bv.visitante?.telefone) && (
                       <button
                         onClick={() => window.open(getWhatsAppUrl(bv.visitante?.telefone, churchNome), '_blank')}
-                        className="text-green-600 hover:text-green-700 p-1.5"
+                        className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50"
                         aria-label="Enviar WhatsApp"
                       >
                         <MessageCircle className="h-4 w-4" />
