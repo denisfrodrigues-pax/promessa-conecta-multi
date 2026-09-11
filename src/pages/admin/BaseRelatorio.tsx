@@ -145,15 +145,15 @@ export default function BaseRelatorio() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))} aria-label="Voltar">
+          <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => navigate(p('/admin/bases'))} aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-xl font-display font-bold">Relatório de Bases</h1>
-            <p className="text-sm text-muted-foreground">Visão geral das bases e participantes</p>
+            <h1 className="text-xl font-display font-bold text-stone-900">Relatório de Bases</h1>
+            <p className="text-sm text-stone-600">Visão geral das bases e participantes</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={handleExportCSV}>
+        <Button variant="outline" size="sm" className="min-h-[44px]" onClick={handleExportCSV}>
           <Download className="h-4 w-4 mr-1" />
           Exportar CSV
         </Button>
@@ -161,85 +161,85 @@ export default function BaseRelatorio() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-blue-100">
                 <Network className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.totalBases}</p>
-                <p className="text-xs text-muted-foreground">Total Bases</p>
+                <p className="text-2xl font-bold text-stone-900">{stats.totalBases}</p>
+                <p className="text-xs text-stone-500">Total Bases</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-green-100">
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.basesAtivas}</p>
-                <p className="text-xs text-muted-foreground">Bases Ativas</p>
+                <p className="text-2xl font-bold text-stone-900">{stats.basesAtivas}</p>
+                <p className="text-xs text-stone-500">Bases Ativas</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-purple-100">
                 <Users className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.membrosEmBases}</p>
-                <p className="text-xs text-muted-foreground">Membros em Bases</p>
+                <p className="text-2xl font-bold text-stone-900">{stats.membrosEmBases}</p>
+                <p className="text-xs text-stone-500">Membros em Bases</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-orange-100">
                 <UserX className="h-5 w-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.membrosSemBase}</p>
-                <p className="text-xs text-muted-foreground">Membros s/ Base</p>
+                <p className="text-2xl font-bold text-stone-900">{stats.membrosSemBase}</p>
+                <p className="text-xs text-stone-500">Membros s/ Base</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-teal-100">
                 <UserCheck className="h-5 w-5 text-teal-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.visitantesEmBases}</p>
-                <p className="text-xs text-muted-foreground">Visitantes em Acomp.</p>
+                <p className="text-2xl font-bold text-stone-900">{stats.visitantesEmBases}</p>
+                <p className="text-xs text-stone-500">Visitantes em Acomp.</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-rose-100">
                 <UserMinus className="h-5 w-5 text-rose-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.visitantesSemBase}</p>
-                <p className="text-xs text-muted-foreground">Visitantes s/ Base</p>
+                <p className="text-2xl font-bold text-stone-900">{stats.visitantesSemBase}</p>
+                <p className="text-xs text-stone-500">Visitantes s/ Base</p>
               </div>
             </div>
           </CardContent>
@@ -247,13 +247,13 @@ export default function BaseRelatorio() {
       </div>
 
       {/* Bases List */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Resumo por Base</CardTitle>
         </CardHeader>
         <CardContent>
           {bases.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">Nenhuma base cadastrada</p>
+            <p className="text-center text-stone-500 py-8">Nenhuma base cadastrada</p>
           ) : (
             <div className="space-y-3">
               {bases.map((base) => {
@@ -262,24 +262,24 @@ export default function BaseRelatorio() {
                 const isLotada = totalPessoas >= base.capacidade;
 
                 return (
-                  <div key={base.base_id} className="p-4 rounded-lg border space-y-3">
+                  <div key={base.base_id} className="p-4 rounded-xl border border-stone-200 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{base.nome}</span>
+                        <span className="font-medium text-stone-900">{base.nome}</span>
                         <Badge
                           variant="outline"
-                          className={base.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
+                          className={base.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-700'}
                         >
                           {base.status === 'ativo' ? 'Ativo' : 'Inativo'}
                         </Badge>
                         {isLotada && <Badge variant="destructive">Lotada</Badge>}
                       </div>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-stone-500">
                         {base.lider_nome || 'Sem líder'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4 text-sm text-stone-500">
                       <span>{base.total_membros} membros</span>
                       <span>{base.total_visitantes} visitantes</span>
                       <span>{totalPessoas}/{base.capacidade} total</span>

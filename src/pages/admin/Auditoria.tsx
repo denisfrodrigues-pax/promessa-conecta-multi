@@ -74,7 +74,7 @@ function tableName(t: string) {
 }
 
 function actionInfo(a: string) {
-  return ACTION_MAP[a] ?? { label: a, verb: a.toLowerCase(), color: 'bg-gray-100 text-gray-700 border-gray-200', icon: null };
+  return ACTION_MAP[a] ?? { label: a, verb: a.toLowerCase(), color: 'bg-stone-100 text-stone-700 border-stone-200', icon: null };
 }
 
 function getPeriodStart(periodo: string): Date {
@@ -211,20 +211,20 @@ export default function Auditoria() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold flex items-center gap-2">
+          <h1 className="text-2xl font-display font-bold text-stone-900 flex items-center gap-2">
             <Shield className="w-6 h-6" />
             Log de Auditoria
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-stone-600 text-sm leading-relaxed">
             Rastreamento de todas as ações críticas do sistema
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={fetchLogs} disabled={loading}>
+          <Button variant="outline" size="sm" className="min-h-[44px]" onClick={fetchLogs} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <Button variant="outline" size="sm" onClick={exportarCSV}>
+          <Button variant="outline" size="sm" className="min-h-[44px]" onClick={exportarCSV}>
             <Download className="w-4 h-4 mr-2" />
             CSV
           </Button>
@@ -235,7 +235,7 @@ export default function Auditoria() {
       <div className="flex flex-wrap gap-3">
         {/* Período */}
         <Select value={filterPeriodo} onValueChange={setFilterPeriodo}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[150px] rounded-xl">
             <Clock className="w-4 h-4 mr-2 shrink-0" />
             <SelectValue placeholder="Período" />
           </SelectTrigger>
@@ -251,7 +251,7 @@ export default function Auditoria() {
 
         {/* Tipo de ação */}
         <Select value={filterAction} onValueChange={setFilterAction}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[150px] rounded-xl">
             <SelectValue placeholder="Ação" />
           </SelectTrigger>
           <SelectContent>
@@ -264,7 +264,7 @@ export default function Auditoria() {
 
         {/* Módulo */}
         <Select value={filterTable} onValueChange={setFilterTable}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-[200px] rounded-xl">
             <SelectValue placeholder="Módulo" />
           </SelectTrigger>
           <SelectContent>
@@ -282,11 +282,11 @@ export default function Auditoria() {
       </div>
 
       {/* Tabela */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center justify-between">
             <span>{totalCount} registro{totalCount !== 1 ? 's' : ''} encontrado{totalCount !== 1 ? 's' : ''}</span>
-            <span className="text-sm font-normal text-muted-foreground">
+            <span className="text-sm font-normal text-stone-500">
               Página {page} de {totalPages}
             </span>
           </CardTitle>
@@ -297,9 +297,9 @@ export default function Auditoria() {
               {[1,2,3,4,5].map(i => <Skeleton key={i} className="h-14 w-full" />)}
             </div>
           ) : logs.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
+            <div className="text-center py-16 text-stone-500">
               <Shield className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p className="font-medium">Nenhum registro encontrado</p>
+              <p className="font-medium text-stone-700">Nenhum registro encontrado</p>
               <p className="text-sm mt-1">Tente ampliar o período ou mudar os filtros</p>
             </div>
           ) : (
@@ -312,7 +312,7 @@ export default function Auditoria() {
                 return (
                   <div
                     key={log.id}
-                    className="flex items-center justify-between px-5 py-3.5 hover:bg-muted/40 transition-colors"
+                    className="flex items-center justify-between px-5 py-3.5 hover:bg-stone-50 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {/* Ação badge */}
@@ -326,12 +326,12 @@ export default function Auditoria() {
 
                       {/* Descrição legível */}
                       <p className="text-sm min-w-0">
-                        <span className="font-medium">{log.userName || 'Sistema'}</span>
+                        <span className="font-medium text-stone-900">{log.userName || 'Sistema'}</span>
                         {' '}
-                        <span className="text-muted-foreground">{ai.verb}</span>
+                        <span className="text-stone-500">{ai.verb}</span>
                         {' '}
-                        <span className="font-medium">{tableName(log.table_name)}</span>
-                        <span className="text-muted-foreground text-xs ml-2">
+                        <span className="font-medium text-stone-900">{tableName(log.table_name)}</span>
+                        <span className="text-stone-500 text-xs ml-2">
                           <Clock className="w-3 h-3 inline mr-0.5" />
                           {data}
                         </span>
@@ -341,7 +341,7 @@ export default function Auditoria() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="shrink-0 w-8 h-8"
+                      className="shrink-0 h-11 w-11"
                       onClick={() => { setSelectedLog(log); setDetailOpen(true); }}
                       aria-label="Ver detalhes do log"
                     >
@@ -355,19 +355,19 @@ export default function Auditoria() {
 
           {/* Paginação */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3 border-t">
+            <div className="flex items-center justify-between px-5 py-3 border-t border-stone-200">
               <Button
-                variant="outline" size="sm"
+                variant="outline" size="sm" className="min-h-[44px]"
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1 || loading}
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />Anterior
               </Button>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-stone-500">
                 {Math.min((page - 1) * PAGE_SIZE + 1, totalCount)}–{Math.min(page * PAGE_SIZE, totalCount)} de {totalCount}
               </span>
               <Button
-                variant="outline" size="sm"
+                variant="outline" size="sm" className="min-h-[44px]"
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages || loading}
               >
@@ -380,7 +380,7 @@ export default function Auditoria() {
 
       {/* Dialog de detalhe */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5" />
@@ -394,36 +394,36 @@ export default function Auditoria() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">Data/Hora</p>
-                    <p className="font-medium">
+                    <p className="text-stone-500 text-xs mb-0.5">Data/Hora</p>
+                    <p className="font-medium text-stone-900">
                       {selectedLog.created_at
                         ? format(new Date(selectedLog.created_at), "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR })
                         : '—'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">Usuário</p>
-                    <p className="font-medium">{selectedLog.userName || 'Sistema'}</p>
+                    <p className="text-stone-500 text-xs mb-0.5">Usuário</p>
+                    <p className="font-medium text-stone-900">{selectedLog.userName || 'Sistema'}</p>
                     {selectedLog.userEmail && (
-                      <p className="text-xs text-muted-foreground">{selectedLog.userEmail}</p>
+                      <p className="text-xs text-stone-500">{selectedLog.userEmail}</p>
                     )}
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">Ação</p>
+                    <p className="text-stone-500 text-xs mb-0.5">Ação</p>
                     <Badge variant="outline" className={`flex items-center gap-1 w-fit text-xs ${ai.color}`}>
                       {ai.icon}{ai.label}
                     </Badge>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">Módulo</p>
-                    <p className="font-medium">{tableName(selectedLog.table_name)}</p>
+                    <p className="text-stone-500 text-xs mb-0.5">Módulo</p>
+                    <p className="font-medium text-stone-900">{tableName(selectedLog.table_name)}</p>
                   </div>
                 </div>
 
                 {selectedLog.record_id && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">ID do Registro</p>
-                    <p className="font-mono text-xs bg-muted px-2 py-1.5 rounded">{selectedLog.record_id}</p>
+                    <p className="text-xs text-stone-500 mb-1">ID do Registro</p>
+                    <p className="font-mono text-xs bg-stone-100 px-2 py-1.5 rounded-lg">{selectedLog.record_id}</p>
                   </div>
                 )}
 
@@ -431,9 +431,9 @@ export default function Auditoria() {
 
                 {selectedLog.old_data && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Dados Anteriores</p>
+                    <p className="text-xs text-stone-500 mb-1">Dados Anteriores</p>
                     <ScrollArea className="h-32">
-                      <pre className="text-xs bg-red-50 p-3 rounded border border-red-200 overflow-auto">
+                      <pre className="text-xs bg-red-50 p-3 rounded-lg border border-red-200 overflow-auto">
                         {JSON.stringify(selectedLog.old_data, null, 2)}
                       </pre>
                     </ScrollArea>
@@ -442,9 +442,9 @@ export default function Auditoria() {
 
                 {selectedLog.new_data && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Dados Novos</p>
+                    <p className="text-xs text-stone-500 mb-1">Dados Novos</p>
                     <ScrollArea className="h-32">
-                      <pre className="text-xs bg-green-50 p-3 rounded border border-green-200 overflow-auto">
+                      <pre className="text-xs bg-green-50 p-3 rounded-lg border border-green-200 overflow-auto">
                         {JSON.stringify(selectedLog.new_data, null, 2)}
                       </pre>
                     </ScrollArea>

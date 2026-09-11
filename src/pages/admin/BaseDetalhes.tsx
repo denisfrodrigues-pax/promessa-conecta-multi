@@ -454,8 +454,8 @@ export default function BaseDetalhes() {
 
   if (!base) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Base não encontrada</p>
+      <div className="text-center py-16">
+        <p className="text-stone-500">Base não encontrada</p>
         <Button variant="link" onClick={() => navigate(p('/admin/bases'))}>Voltar para lista</Button>
       </div>
     );
@@ -466,15 +466,15 @@ export default function BaseDetalhes() {
       {/* ===== HEADER ===== */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))} aria-label="Voltar">
+          <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => navigate(p('/admin/bases'))} aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-display font-bold">{base.nome}</h1>
+            <h1 className="text-xl font-display font-bold text-stone-900">{base.nome}</h1>
             {liderInfo && hasValidPhone(liderInfo.telefone) && (
               <button
                 onClick={() => window.open(getWhatsAppUrl(liderInfo.telefone, churchNome), '_blank')}
-                className="text-green-600 hover:text-green-700 p-1"
+                className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50"
                 title="WhatsApp do líder"
                 aria-label="WhatsApp do líder"
               >
@@ -484,7 +484,7 @@ export default function BaseDetalhes() {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className={base.status === 'ativo' ? statusColors.ativo : 'bg-gray-100 text-gray-800'}>
+          <Badge variant="outline" className={base.status === 'ativo' ? statusColors.ativo : 'bg-stone-100 text-stone-700 border-stone-300'}>
             {base.status === 'ativo' ? 'Ativo' : 'Inativo'}
           </Badge>
           <Badge variant={base.visibilidade === 'publico' ? 'default' : 'secondary'}>
@@ -494,35 +494,35 @@ export default function BaseDetalhes() {
             <Badge variant="destructive">Lotada</Badge>
           )}
           {!editing && (
-            <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+            <Button variant="outline" size="sm" className="min-h-[44px]" onClick={() => setEditing(true)}>
               <Edit className="h-4 w-4 mr-1" />
               Editar
             </Button>
           )}
           <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="destructive" size="sm">
+              <Button variant="destructive" size="sm" className="min-h-[44px]">
                 <Trash2 className="h-4 w-4 mr-1" />
                 Excluir
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="rounded-2xl">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-destructive" />
                   Confirmar Exclusão
                 </DialogTitle>
                 <DialogDescription>
-                  Tem certeza que deseja excluir a base "{base.nome}"? 
+                  Tem certeza que deseja excluir a base "{base.nome}"?
                   Esta ação removerá permanentemente a base e todos os vínculos de membros e visitantes.
                   Esta ação não pode ser desfeita.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+                <Button variant="outline" className="min-h-[44px]" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
                   Cancelar
                 </Button>
-                <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+                <Button variant="destructive" className="min-h-[44px]" onClick={handleDelete} disabled={deleting}>
                   {deleting ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -542,11 +542,11 @@ export default function BaseDetalhes() {
       </div>
 
       {/* ===== DADOS DA BASE ===== */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base">Dados da Base</CardTitle>
           {editing && (
-            <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
+            <Button variant="ghost" size="sm" className="min-h-[44px]" onClick={() => setEditing(false)}>
               <X className="h-4 w-4 mr-1" />
               Cancelar
             </Button>
@@ -554,14 +554,14 @@ export default function BaseDetalhes() {
         </CardHeader>
         <CardContent>
           {editing ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Nome *</Label>
+                  <Label className="text-xs text-stone-500">Nome *</Label>
                   <Input value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Líder</Label>
+                  <Label className="text-xs text-stone-500">Líder</Label>
                   <Select value={formData.lider_id || 'none'} onValueChange={(v) => setFormData({ ...formData, lider_id: v === 'none' ? '' : v })}>
                     <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
@@ -573,7 +573,7 @@ export default function BaseDetalhes() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Descrição</Label>
+                <Label className="text-xs text-stone-500">Descrição</Label>
                 <Textarea value={formData.descricao} onChange={(e) => setFormData({ ...formData, descricao: e.target.value })} rows={2} />
               </div>
 
@@ -585,7 +585,7 @@ export default function BaseDetalhes() {
               />
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Anfitriões</Label>
+                <Label className="text-xs text-stone-500">Anfitriões</Label>
                 <Input 
                   value={formData.anfitrioes} 
                   onChange={(e) => setFormData({ ...formData, anfitrioes: e.target.value })} 
@@ -595,7 +595,7 @@ export default function BaseDetalhes() {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Dia</Label>
+                  <Label className="text-xs text-stone-500">Dia</Label>
                   <Select value={formData.dia_semana || 'none'} onValueChange={(v) => setFormData({ ...formData, dia_semana: v === 'none' ? '' : v })}>
                     <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
@@ -605,15 +605,15 @@ export default function BaseDetalhes() {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Horário</Label>
+                  <Label className="text-xs text-stone-500">Horário</Label>
                   <Input type="time" value={formData.horario} onChange={(e) => setFormData({ ...formData, horario: e.target.value })} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Capacidade</Label>
+                  <Label className="text-xs text-stone-500">Capacidade</Label>
                   <Input type="number" min={1} value={formData.capacidade} onChange={(e) => setFormData({ ...formData, capacidade: parseInt(e.target.value) || 20 })} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Visibilidade</Label>
+                  <Label className="text-xs text-stone-500">Visibilidade</Label>
                   <Select value={formData.visibilidade} onValueChange={(v) => setFormData({ ...formData, visibilidade: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -626,11 +626,11 @@ export default function BaseDetalhes() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Local</Label>
+                  <Label className="text-xs text-stone-500">Local</Label>
                   <Input value={formData.local} onChange={(e) => setFormData({ ...formData, local: e.target.value })} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <Label className="text-xs text-stone-500">Status</Label>
                   <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -642,7 +642,7 @@ export default function BaseDetalhes() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Observações</Label>
+                <Label className="text-xs text-stone-500">Observações</Label>
                 <Textarea 
                   value={formData.observacoes} 
                   onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })} 
@@ -651,8 +651,8 @@ export default function BaseDetalhes() {
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setEditing(false)}>Cancelar</Button>
-                <Button onClick={handleSave} disabled={saving}>
+                <Button variant="outline" className="min-h-[44px]" onClick={() => setEditing(false)}>Cancelar</Button>
+                <Button className="min-h-[44px]" onClick={handleSave} disabled={saving}>
                   <Save className="h-4 w-4 mr-1" />
                   {saving ? 'Salvando...' : 'Salvar'}
                 </Button>
@@ -663,22 +663,22 @@ export default function BaseDetalhes() {
               {/* Info Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <p className="text-xs text-muted-foreground">Nome</p>
+                  <p className="text-xs text-stone-500">Nome</p>
                   <p className="font-medium">{base.nome}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Criação</p>
+                  <p className="text-xs text-stone-500">Criação</p>
                   <p className="font-medium">{formatDateTime(base.data_criacao)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Dia e Horário</p>
+                  <p className="text-xs text-stone-500">Dia e Horário</p>
                   <p className="font-medium flex items-center gap-1">
                     <CalendarDays className="h-3.5 w-3.5" />
                     {base.dia_semana && base.horario ? `${base.dia_semana} • ${base.horario}` : '–'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Local</p>
+                  <p className="text-xs text-stone-500">Local</p>
                   <p className="font-medium flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5" />
                     {base.local || '–'}
@@ -688,26 +688,26 @@ export default function BaseDetalhes() {
 
               {base.descricao && (
                 <div>
-                  <p className="text-xs text-muted-foreground">Descrição</p>
+                  <p className="text-xs text-stone-500">Descrição</p>
                   <p className="text-sm">{base.descricao}</p>
                 </div>
               )}
 
               {/* Líder */}
               {liderInfo && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-stone-50">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={liderInfo.foto_perfil || undefined} />
                     <AvatarFallback>{getInitials(liderInfo.nome)}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <p className="text-xs text-muted-foreground">Líder</p>
+                    <p className="text-xs text-stone-500">Líder</p>
                     <p className="font-medium">{liderInfo.nome}</p>
                   </div>
                   {hasValidPhone(liderInfo.telefone) && (
                     <button
                       onClick={() => window.open(getWhatsAppUrl(liderInfo.telefone, churchNome), '_blank')}
-                      className="text-green-600 hover:text-green-700 p-1"
+                      className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50"
                       title="WhatsApp do líder"
                       aria-label="WhatsApp do líder"
                     >
@@ -718,15 +718,15 @@ export default function BaseDetalhes() {
               )}
 
               {/* Ocupação */}
-              <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+              <div className="p-3 rounded-xl bg-stone-50 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Ocupação</span>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm text-stone-500">
                     {totalMembros}/{base.capacidade || 20}
                   </span>
                 </div>
                 <Progress value={getOcupacaoPercent(totalMembros, base.capacidade)} className="h-2" />
-                <p className="text-xs text-muted-foreground text-right">
+                <p className="text-xs text-stone-500 text-right">
                   {Math.round(getOcupacaoPercent(totalMembros, base.capacidade))}% ocupada
                 </p>
               </div>
@@ -736,7 +736,7 @@ export default function BaseDetalhes() {
       </Card>
 
       {/* ===== MEMBROS DA BASE ===== */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -744,33 +744,33 @@ export default function BaseDetalhes() {
           </CardTitle>
           <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
             <DialogTrigger asChild>
-              <Button size="sm">
+              <Button size="sm" className="min-h-[44px]">
                 <UserPlus className="h-4 w-4 mr-1" />
                 Adicionar
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="rounded-2xl">
               <DialogHeader>
                 <DialogTitle>Adicionar Membro</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
                   <Input
                     placeholder="Buscar membro..."
                     value={searchMembro}
                     onChange={(e) => setSearchMembro(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 rounded-xl"
                   />
                 </div>
                 <div className="max-h-64 overflow-y-auto space-y-2">
                   {filteredDisponiveis.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-4">Nenhum membro disponível</p>
+                    <p className="text-center text-stone-500 py-4">Nenhum membro disponível</p>
                   ) : (
                     filteredDisponiveis.map((m) => (
                       <div
                         key={m.id}
-                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 cursor-pointer"
+                        className="flex items-center justify-between p-3 rounded-xl border border-stone-200 hover:bg-stone-50 cursor-pointer"
                         onClick={() => addMembro(m.id)}
                       >
                         <div className="flex items-center gap-3">
@@ -780,7 +780,7 @@ export default function BaseDetalhes() {
                           </Avatar>
                           <span className="font-medium">{m.nome}</span>
                         </div>
-                        <UserPlus className="h-4 w-4 text-muted-foreground" />
+                        <UserPlus className="h-4 w-4 text-stone-400" />
                       </div>
                     ))
                   )}
@@ -791,11 +791,11 @@ export default function BaseDetalhes() {
         </CardHeader>
         <CardContent>
           {membrosBase.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">Nenhum membro nesta base</p>
+            <p className="text-center text-stone-500 py-8">Nenhum membro nesta base</p>
           ) : (
             <div className="space-y-2">
               {membrosBase.map((bm) => (
-                <div key={bm.id} className="flex items-center justify-between p-3 rounded-lg border">
+                <div key={bm.id} className="flex items-center justify-between p-3 rounded-xl border border-stone-200">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={bm.foto_url || undefined} />
@@ -803,7 +803,7 @@ export default function BaseDetalhes() {
                     </Avatar>
                     <div>
                       <p className="font-medium">{bm.nome}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-stone-500">
                         Entrada: {formatDateTime(bm.data_entrada)}
                         {bm.origem === 'profile' && ' • via perfil'}
                         {bm.origem === 'ambos' && ' • vinculado'}
@@ -823,7 +823,7 @@ export default function BaseDetalhes() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-destructive hover:text-destructive"
+                      className="h-11 w-11 text-destructive hover:text-destructive"
                       onClick={() => removeMembro(bm.id)}
                       aria-label="Remover membro da base"
                     >
@@ -838,14 +838,14 @@ export default function BaseDetalhes() {
       </Card>
 
       {/* ===== VISITANTES EM ACOMPANHAMENTO ===== */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <User className="h-4 w-4" />
             Visitantes em Acompanhamento ({visitantesBase.length})
           </CardTitle>
           <Select value={filtroStatusVisitante} onValueChange={setFiltroStatusVisitante}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-44 rounded-xl">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -859,11 +859,11 @@ export default function BaseDetalhes() {
         </CardHeader>
         <CardContent>
           {visitantesFiltrados.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">Nenhum visitante encontrado</p>
+            <p className="text-center text-stone-500 py-8">Nenhum visitante encontrado</p>
           ) : (
             <div className="space-y-2">
               {visitantesFiltrados.map((bv) => (
-                <div key={bv.id} className="flex items-center justify-between p-3 rounded-lg border">
+                <div key={bv.id} className="flex items-center justify-between p-3 rounded-xl border border-stone-200">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback>{getInitials(bv.visitante?.nome || '')}</AvatarFallback>
@@ -871,7 +871,7 @@ export default function BaseDetalhes() {
                     <div>
                       <p className="font-medium">{bv.visitante?.nome}</p>
                       {bv.visitante?.telefone && (
-                        <p className="text-xs text-muted-foreground">{bv.visitante.telefone}</p>
+                        <p className="text-xs text-stone-500">{bv.visitante.telefone}</p>
                       )}
                     </div>
                   </div>
@@ -891,7 +891,7 @@ export default function BaseDetalhes() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-destructive hover:text-destructive"
+                      className="h-11 w-11 text-destructive hover:text-destructive"
                       onClick={() => removeVisitante(bv.id)}
                       aria-label="Remover visitante da base"
                     >

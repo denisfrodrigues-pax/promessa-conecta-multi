@@ -91,18 +91,18 @@ export default function WhatsAppTest() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <div className="container mx-auto px-4 py-12 max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold tracking-tight flex items-center gap-3">
+        <h1 className="text-3xl font-display font-bold tracking-tight text-stone-900 flex items-center gap-3">
           <MessageCircle className="w-8 h-8 text-green-600" />
           Teste de WhatsApp
         </h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-stone-600 leading-relaxed mt-2">
           Teste o envio de mensagens via WhatsApp Business API
         </p>
       </div>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Send className="w-5 h-5" />
@@ -117,18 +117,18 @@ export default function WhatsAppTest() {
             <div className="space-y-2">
               <Label htmlFor="phone">Número de Telefone</Label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <Input
                   id="phone"
                   type="tel"
                   placeholder="+5511999999999"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 rounded-xl"
                   disabled={loading}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-stone-500">
                 Use formato internacional com código do país (ex: +55 para Brasil)
               </p>
             </div>
@@ -140,17 +140,17 @@ export default function WhatsAppTest() {
                 placeholder="Digite sua mensagem aqui..."
                 value={messageBody}
                 onChange={(e) => setMessageBody(e.target.value)}
-                className="min-h-[120px]"
+                className="min-h-[120px] rounded-xl"
                 disabled={loading}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-stone-500">
                 {messageBody.length}/4096 caracteres
               </p>
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full bg-green-600 hover:bg-green-700"
+            <Button
+              type="submit"
+              className="w-full min-h-[44px] rounded-xl bg-green-600 hover:bg-green-700"
               disabled={loading || !phoneNumber || !messageBody}
             >
               {loading ? (
@@ -171,7 +171,7 @@ export default function WhatsAppTest() {
 
       {/* Result Card */}
       {lastResult && (
-        <Card className={`mt-6 ${lastResult.success ? 'border-green-500' : 'border-destructive'}`}>
+        <Card className={`mt-6 rounded-2xl ${lastResult.success ? 'border-green-500' : 'border-destructive'}`}>
           <CardHeader className="pb-2">
             <CardTitle className={`flex items-center gap-2 text-lg ${lastResult.success ? 'text-green-600' : 'text-destructive'}`}>
               {lastResult.success ? (
@@ -191,15 +191,15 @@ export default function WhatsAppTest() {
             {lastResult.success && lastResult.details ? (
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">ID da Mensagem:</span>
+                  <span className="text-stone-500">ID da Mensagem:</span>
                   <span className="font-mono text-xs">{lastResult.message_id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Destinatário:</span>
+                  <span className="text-stone-500">Destinatário:</span>
                   <span>{lastResult.details.phone_number}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Enviado em:</span>
+                  <span className="text-stone-500">Enviado em:</span>
                   <span>{new Date(lastResult.details.sent_at).toLocaleString('pt-BR')}</span>
                 </div>
               </div>
@@ -211,10 +211,10 @@ export default function WhatsAppTest() {
       )}
 
       {/* Info Card */}
-      <Card className="mt-6 bg-muted/50">
+      <Card className="mt-6 rounded-2xl bg-stone-50">
         <CardContent className="pt-6">
-          <h3 className="font-semibold mb-2">ℹ️ Integração ainda não configurada</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="font-semibold text-stone-900 mb-2">ℹ️ Integração ainda não configurada</h3>
+          <p className="text-sm text-stone-600 leading-relaxed">
             Nenhum provedor de WhatsApp (Twilio, Meta, etc.) está conectado ainda, então todo
             envio retorna erro de propósito — a função nunca finge sucesso sem entregar a mensagem.
           </p>
