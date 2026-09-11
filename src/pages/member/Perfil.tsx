@@ -176,7 +176,7 @@ function InfoRow({ icon: Icon, label, value, last }: InfoRowProps) {
   return (
     <div className={cn('flex items-center gap-4 px-5 py-4', !last && 'border-b border-stone-100')}>
       <div className="w-8 h-8 rounded-full bg-promessa-50 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4 h-4 text-[#1a5c38]" />
+        <Icon className="w-4 h-4 text-primary" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[11px] text-stone-400 uppercase tracking-wide font-medium leading-none mb-0.5">
@@ -210,7 +210,7 @@ function SectionCard({ title, editing, saving, onEdit, onSave, onCancel, childre
         {!editing ? (
           <button
             onClick={onEdit}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-[#1a5c38] active:opacity-70"
+            className="flex items-center gap-1.5 text-[13px] font-medium text-primary active:opacity-70"
           >
             <Pencil className="w-3.5 h-3.5" />
             Editar
@@ -1218,7 +1218,7 @@ export default function MemberPerfil() {
                   <div className="flex items-start gap-3 flex-1 min-w-0 pr-4">
                     <div className="w-8 h-8 rounded-full bg-promessa-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                       {pushEnabled
-                        ? <Bell className="w-4 h-4 text-[#1a5c38]" />
+                        ? <Bell className="w-4 h-4 text-primary" />
                         : <BellOff className="w-4 h-4 text-stone-400" />}
                     </div>
                     <div>
@@ -1260,7 +1260,7 @@ export default function MemberPerfil() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-promessa-50 flex items-center justify-center">
-                    <Lock className="w-4 h-4 text-[#1a5c38]" />
+                    <Lock className="w-4 h-4 text-primary" />
                   </div>
                   <span className="text-[14px] font-medium text-stone-800">Alterar senha</span>
                 </div>
