@@ -178,24 +178,25 @@ export default function MinhasContribuicoes() {
   const hasChartData = chartData.some((d) => d.valor > 0);
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-24 md:pb-6 space-y-6">
+    <div className="container mx-auto px-4 py-8 md:py-12 pb-24 md:pb-12 space-y-8 bg-stone-50">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button asChild variant="ghost" size="icon">
+          <Button asChild variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
             <Link to={p('/app')} aria-label="Voltar">
               <ArrowLeft className="w-5 h-5" />
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-display font-bold">Minhas Contribuições</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-2xl font-display font-bold text-stone-900">Minhas Contribuições</h1>
+            <p className="text-sm text-stone-500 leading-relaxed">
               Histórico de ofertas e dízimos
             </p>
           </div>
         </div>
         <Button
           asChild
+          size="lg"
           className="bg-green-600 hover:bg-green-700"
         >
           <Link to={p('/app/contribuir')}>
@@ -221,6 +222,7 @@ export default function MinhasContribuicoes() {
           <Button
             variant="outline"
             size="sm"
+            className="min-h-[44px] md:min-h-0"
             disabled={contribuicoes.length === 0}
             onClick={handleExportCSV}
           >
@@ -230,6 +232,7 @@ export default function MinhasContribuicoes() {
           <Button
             variant="outline"
             size="sm"
+            className="min-h-[44px] md:min-h-0"
             disabled={contribuicoes.length === 0 || exportingPdf}
             onClick={handleExportPDF}
           >
@@ -243,22 +246,22 @@ export default function MinhasContribuicoes() {
         </div>
       </div>
 
-      <div ref={extratoRef} className="space-y-6 bg-background">
+      <div ref={extratoRef} className="space-y-6 bg-stone-50">
       {/* Cabeçalho do extrato — visível na tela e no PDF exportado */}
-      <div className="text-sm text-muted-foreground space-y-0.5">
-        <p><span className="font-medium text-foreground">{profile?.nome || 'Membro'}</span> · {config.nome}</p>
+      <div className="text-sm text-stone-500 space-y-0.5">
+        <p><span className="font-medium text-stone-900">{profile?.nome || 'Membro'}</span> · {config.nome}</p>
         <p>Extrato de contribuições — ano de {selectedYear}</p>
       </div>
 
       {/* Summary Card */}
       <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white dark:from-green-950/20 dark:to-background">
-        <CardContent className="p-5">
-          <div className="flex items-center gap-3">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
             <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30">
               <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total contribuído em {selectedYear}</p>
+              <p className="text-sm text-stone-500">Total contribuído em {selectedYear}</p>
               <p className="text-2xl font-bold text-green-700 dark:text-green-400">
                 {formatCurrency(totalContribuido)}
               </p>
@@ -311,16 +314,16 @@ export default function MinhasContribuicoes() {
       )}
 
       {/* Contributions List */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-muted-foreground" />
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2 text-stone-900">
+          <Calendar className="w-5 h-5 text-stone-500" />
           Histórico de contribuições
         </h2>
-        
+
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
             <Card key={i}>
-              <CardContent className="p-4">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-24" />
@@ -333,16 +336,16 @@ export default function MinhasContribuicoes() {
           ))
         ) : contribuicoes.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center">
+            <CardContent className="py-16 text-center">
               <div className="flex flex-col items-center gap-3">
-                <div className="p-4 rounded-full bg-muted">
-                  <HandHeart className="w-8 h-8 text-muted-foreground" />
+                <div className="p-4 rounded-full bg-stone-100">
+                  <HandHeart className="w-8 h-8 text-stone-400" />
                 </div>
                 <div>
-                  <h3 className="font-medium">
+                  <h3 className="font-medium text-stone-900">
                     {selectedYear === currentYear ? 'Nenhuma contribuição ainda' : `Nenhuma contribuição em ${selectedYear}`}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-stone-500 leading-relaxed">
                     {selectedYear === currentYear
                       ? 'Sua primeira contribuição ficará registrada aqui'
                       : 'Escolha outro ano acima para ver o extrato correspondente'}
@@ -351,6 +354,7 @@ export default function MinhasContribuicoes() {
                 {selectedYear === currentYear && (
                   <Button
                     asChild
+                    size="lg"
                     className="mt-2 bg-green-600 hover:bg-green-700"
                   >
                     <Link to={p('/app/contribuir')}>
@@ -363,17 +367,17 @@ export default function MinhasContribuicoes() {
           </Card>
         ) : (
           contribuicoes.map((contribuicao) => (
-            <Card key={contribuicao.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
+            <Card key={contribuicao.id} className="hover:shadow-elevated transition-shadow">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">
+                      <Calendar className="w-4 h-4 text-stone-500" />
+                      <span className="font-medium text-stone-900">
                         {format(new Date(contribuicao.data_operacao), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-stone-500">
                       <Tag className="w-3 h-3" />
                       <span>{contribuicao.categoria?.nome || 'Não categorizado'}</span>
                     </div>

@@ -91,7 +91,7 @@ export default function BaseDetalhesPublic() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 bg-stone-50 min-h-screen">
         <div className="space-y-6">
           <Skeleton className="h-8 w-1/4" />
           <Skeleton className="h-64" />
@@ -102,29 +102,29 @@ export default function BaseDetalhesPublic() {
 
   if (!base) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">Base não encontrada</h2>
-            <p className="text-muted-foreground mb-6">
-              Esta base não existe ou não está mais disponível.
-            </p>
-            <Button asChild>
-              <Link to={p('/app/bases')}>Voltar para Bases</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="container mx-auto px-4 py-8 bg-stone-50 min-h-screen">
+        <div className="text-center py-16 px-6 max-w-md mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+            <AlertCircle className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-xl font-semibold text-stone-900 mb-2">Base não encontrada</h2>
+          <p className="text-stone-600 leading-relaxed mb-6">
+            Esta base não existe ou não está mais disponível.
+          </p>
+          <Button asChild size="lg">
+            <Link to={p('/app/bases')}>Voltar para Bases</Link>
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="pb-24 md:pb-6">
+    <div className="pb-24 md:pb-6 bg-stone-50">
       {/* Hero Section */}
       <section className="bg-gradient-hero text-primary-foreground relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/banner_home_placeholder.png')] bg-cover bg-center opacity-20" />
-        <div className="container mx-auto px-4 py-12 relative z-10">
+        <div className="container mx-auto px-4 py-12 md:py-16 relative z-10">
           <Button
             asChild
             variant="ghost"
@@ -138,7 +138,7 @@ export default function BaseDetalhesPublic() {
           </Button>
 
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-xl bg-primary-foreground/10 flex items-center justify-center flex-shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-primary-foreground/10 flex items-center justify-center flex-shrink-0">
               <Users className="w-8 h-8 text-primary-foreground" />
             </div>
             <div>
@@ -151,7 +151,7 @@ export default function BaseDetalhesPublic() {
                 )}
               </div>
               {base.descricao && (
-                <p className="text-lg text-primary-foreground/80 max-w-2xl">
+                <p className="text-lg text-primary-foreground/80 max-w-2xl leading-relaxed">
                   {base.descricao}
                 </p>
               )}
@@ -160,11 +160,11 @@ export default function BaseDetalhesPublic() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Main Info */}
           <div className="lg:col-span-2 space-y-6">
-            <Card className="shadow-card">
+            <Card className="shadow-card rounded-2xl bg-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Info className="w-5 h-5 text-primary" />
@@ -173,37 +173,37 @@ export default function BaseDetalhesPublic() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {formatDiaHorario(base.dia_semana, base.horario) && (
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                    <div className="w-10 h-10 rounded-lg bg-church-gold/10 flex items-center justify-center">
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-stone-50">
+                    <div className="w-10 h-10 rounded-xl bg-church-gold/10 flex items-center justify-center">
                       <Clock className="w-5 h-5 text-church-gold" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Dia e Horário</p>
-                      <p className="font-medium">{formatDiaHorario(base.dia_semana, base.horario)}</p>
+                      <p className="text-sm text-stone-500">Dia e Horário</p>
+                      <p className="font-medium text-stone-900">{formatDiaHorario(base.dia_semana, base.horario)}</p>
                     </div>
                   </div>
                 )}
 
                 {base.local && (
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-stone-50">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                       <MapPin className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Local</p>
-                      <p className="font-medium">{base.local}</p>
+                      <p className="text-sm text-stone-500">Local</p>
+                      <p className="font-medium text-stone-900">{base.local}</p>
                     </div>
                   </div>
                 )}
 
                 {base.lider?.nome && (
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                    <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center">
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-stone-50">
+                    <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
                       <User className="w-5 h-5 text-violet-500" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Líder</p>
-                      <p className="font-medium">{base.lider.nome}</p>
+                      <p className="text-sm text-stone-500">Líder</p>
+                      <p className="font-medium text-stone-900">{base.lider.nome}</p>
                     </div>
                   </div>
                 )}
@@ -214,7 +214,7 @@ export default function BaseDetalhesPublic() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Capacity Card */}
-            <Card className="shadow-card">
+            <Card className="shadow-card rounded-2xl bg-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-primary" />
@@ -225,11 +225,11 @@ export default function BaseDetalhesPublic() {
                 <div className="text-center mb-4">
                   <div className="text-4xl font-bold text-primary">
                     {base.membros_count}
-                    <span className="text-xl text-muted-foreground font-normal">
+                    <span className="text-xl text-stone-500 font-normal">
                       /{base.capacidade || '∞'}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">membros ativos</p>
+                  <p className="text-sm text-stone-500">membros ativos</p>
                 </div>
 
                 {base.capacidade && (
@@ -238,14 +238,14 @@ export default function BaseDetalhesPublic() {
                       value={getOcupacaoPercent()}
                       className={`h-3 mb-2 ${isLotada() ? '[&>div]:bg-destructive' : ''}`}
                     />
-                    <p className="text-xs text-center text-muted-foreground">
+                    <p className="text-xs text-center text-stone-500">
                       {Math.round(getOcupacaoPercent())}% ocupada
                     </p>
                   </>
                 )}
 
                 {isLotada() && (
-                  <div className="mt-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
+                  <div className="mt-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm text-center">
                     Esta base atingiu a capacidade máxima
                   </div>
                 )}
@@ -253,15 +253,15 @@ export default function BaseDetalhesPublic() {
             </Card>
 
             {/* CTA Card */}
-            <Card className="shadow-card bg-gradient-hero text-primary-foreground">
+            <Card className="shadow-card rounded-2xl bg-gradient-hero text-primary-foreground">
               <CardContent className="p-6 text-center">
                 <h3 className="font-display font-semibold text-lg mb-2">
                   Quer participar?
                 </h3>
-                <p className="text-sm text-primary-foreground/80 mb-4">
+                <p className="text-sm text-primary-foreground/80 mb-4 leading-relaxed">
                   Entre em contato conosco para conhecer esta base e começar a participar.
                 </p>
-                <Button asChild className="w-full">
+                <Button asChild size="lg" className="w-full">
                   <Link to={p('/sou-novo')}>Quero Participar</Link>
                 </Button>
               </CardContent>

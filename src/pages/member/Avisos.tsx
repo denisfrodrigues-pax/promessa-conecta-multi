@@ -48,14 +48,14 @@ export default function MemberAvisos() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+    <div className="container mx-auto px-4 py-12 pb-24 md:pb-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold tracking-tight">Avisos</h1>
-        <p className="text-muted-foreground mt-1">Comunicados e informações importantes</p>
+        <h1 className="text-3xl font-display font-bold tracking-tight text-stone-900">Avisos</h1>
+        <p className="text-stone-600 mt-1">Comunicados e informações importantes</p>
       </div>
 
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      <div className="relative mb-8">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
         <Input
           placeholder="Buscar avisos..."
           className="pl-10"
@@ -64,10 +64,10 @@ export default function MemberAvisos() {
         />
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {filteredAvisos.map((aviso, index) => (
-          <Card 
-            key={aviso.id} 
+          <Card
+            key={aviso.id}
             className="shadow-card border-0 animate-slide-up"
             style={{ animationDelay: `${index * 50}ms` }}
           >
@@ -77,9 +77,9 @@ export default function MemberAvisos() {
                   <Bell className="w-7 h-7 text-violet-500" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-display font-semibold text-lg mb-2">{aviso.titulo}</h3>
-                  <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{aviso.conteudo}</p>
-                  <p className="text-sm text-muted-foreground mt-4">
+                  <h3 className="font-display font-semibold text-lg mb-2 text-stone-900">{aviso.titulo}</h3>
+                  <p className="text-stone-600 whitespace-pre-wrap leading-relaxed">{aviso.conteudo}</p>
+                  <p className="text-sm text-stone-500 mt-4">
                     {format(new Date(aviso.data_publicacao), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
                   </p>
                 </div>
@@ -88,9 +88,13 @@ export default function MemberAvisos() {
           </Card>
         ))}
         {filteredAvisos.length === 0 && !loading && (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              Nenhum aviso encontrado
+          <Card className="border-0">
+            <CardContent className="py-16 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
+                <Bell className="w-8 h-8 text-violet-500" />
+              </div>
+              <p className="text-lg font-semibold text-stone-900 mb-1">Nenhum aviso por enquanto</p>
+              <p className="text-stone-600 leading-relaxed">Quando a liderança publicar um novo comunicado, ele aparece aqui.</p>
             </CardContent>
           </Card>
         )}

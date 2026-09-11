@@ -151,7 +151,7 @@ export default function MemberEventoDetalhes() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 bg-stone-50 min-h-screen">
         <Skeleton className="h-8 w-48 mb-6" />
         <Skeleton className="h-64 w-full mb-6" />
         <Skeleton className="h-32 w-full" />
@@ -161,20 +161,20 @@ export default function MemberEventoDetalhes() {
 
   if (!evento) {
     return (
-      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-        <Card>
-          <CardContent className="py-16 text-center">
-            <Calendar className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
-            <h2 className="text-xl font-display font-semibold mb-2">Evento não encontrado</h2>
-            <p className="text-muted-foreground mb-6">Este evento pode ter sido removido ou o link está incorreto.</p>
-            <Button asChild>
-              <Link to={p('/app/eventos')}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar para Eventos
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 bg-stone-50 min-h-screen">
+        <div className="text-center py-16 px-6 max-w-md mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+            <Calendar className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-xl font-display font-semibold text-stone-900 mb-2">Evento não encontrado</h2>
+          <p className="text-stone-600 leading-relaxed mb-6">Este evento pode ter sido removido ou o link está incorreto.</p>
+          <Button asChild size="lg">
+            <Link to={p('/app/eventos')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar para Eventos
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -183,7 +183,7 @@ export default function MemberEventoDetalhes() {
   const esgotado = vagasDisponiveis !== null && vagasDisponiveis <= 0;
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+    <div className="container mx-auto px-4 py-8 md:py-12 pb-24 md:pb-8 bg-stone-50 min-h-screen">
       {/* Back button */}
       <Button asChild variant="ghost" className="mb-6 -ml-2">
         <Link to={p('/app/eventos')}>
@@ -192,14 +192,14 @@ export default function MemberEventoDetalhes() {
         </Link>
       </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Hero image/banner */}
           {evento.imagem_url ? (
             <div className="relative rounded-2xl overflow-hidden aspect-video">
-              <img 
-                src={evento.imagem_url} 
+              <img
+                src={evento.imagem_url}
                 alt={evento.titulo}
                 className="w-full h-full object-cover"
               />
@@ -209,7 +209,7 @@ export default function MemberEventoDetalhes() {
               </div>
             </div>
           ) : (
-            <Card className="bg-gradient-hero text-primary-foreground">
+            <Card className="bg-gradient-hero text-primary-foreground rounded-2xl">
               <CardContent className="py-12 text-center">
                 <Calendar className="w-16 h-16 mx-auto mb-4 opacity-80" />
                 <h1 className="text-3xl font-display font-bold">{evento.titulo}</h1>
@@ -218,15 +218,15 @@ export default function MemberEventoDetalhes() {
           )}
 
           {/* Description */}
-          <Card className="shadow-card">
+          <Card className="shadow-card rounded-2xl bg-white">
             <CardHeader>
               <CardTitle className="font-display">Sobre o Evento</CardTitle>
             </CardHeader>
             <CardContent>
               {evento.descricao ? (
-                <p className="text-muted-foreground whitespace-pre-wrap">{evento.descricao}</p>
+                <p className="text-stone-600 leading-relaxed whitespace-pre-wrap">{evento.descricao}</p>
               ) : (
-                <p className="text-muted-foreground italic">Nenhuma descrição disponível.</p>
+                <p className="text-stone-500 italic">Nenhuma descrição disponível.</p>
               )}
             </CardContent>
           </Card>
@@ -235,7 +235,7 @@ export default function MemberEventoDetalhes() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Event info card */}
-          <Card className="shadow-card sticky top-6">
+          <Card className="shadow-card sticky top-6 rounded-2xl bg-white">
             <CardHeader>
               <CardTitle className="font-display text-lg">Informações</CardTitle>
             </CardHeader>
@@ -246,10 +246,10 @@ export default function MemberEventoDetalhes() {
                   <Calendar className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">
+                  <p className="font-medium text-stone-900">
                     {format(new Date(evento.data_inicio), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-stone-500">
                     {format(new Date(evento.data_inicio), 'EEEE', { locale: ptBR })}
                   </p>
                 </div>
@@ -261,11 +261,11 @@ export default function MemberEventoDetalhes() {
                   <Clock className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">
+                  <p className="font-medium text-stone-900">
                     {format(new Date(evento.data_inicio), 'HH:mm')}
                     {evento.data_fim && ` - ${format(new Date(evento.data_fim), 'HH:mm')}`}
                   </p>
-                  <p className="text-sm text-muted-foreground">Horário</p>
+                  <p className="text-sm text-stone-500">Horário</p>
                 </div>
               </div>
 
@@ -276,8 +276,8 @@ export default function MemberEventoDetalhes() {
                     <MapPin className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">{evento.local}</p>
-                    <p className="text-sm text-muted-foreground">Local</p>
+                    <p className="font-medium text-stone-900">{evento.local}</p>
+                    <p className="text-sm text-stone-500">Local</p>
                   </div>
                 </div>
               )}
@@ -288,20 +288,20 @@ export default function MemberEventoDetalhes() {
                   <Users className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">
+                  <p className="font-medium text-stone-900">
                     {totalInscritos} inscrito{totalInscritos !== 1 ? 's' : ''}
                     {evento.vagas && ` / ${evento.vagas} vagas`}
                   </p>
-                  <p className="text-sm text-muted-foreground">Participantes</p>
+                  <p className="text-sm text-stone-500">Participantes</p>
                 </div>
               </div>
 
               {/* Divider */}
-              <hr className="border-border" />
+              <hr className="border-stone-200" />
 
               {/* Status badge */}
               {inscrito && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-success/10 border border-success/20">
                   <CheckCircle className="w-5 h-5 text-success" />
                   <span className="font-medium text-success">Você está inscrito!</span>
                 </div>
@@ -310,8 +310,9 @@ export default function MemberEventoDetalhes() {
               {/* Actions */}
               <div className="space-y-3">
                 {inscrito ? (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
+                    size="lg"
                     className="w-full"
                     onClick={handleCancelarInscricao}
                     disabled={inscrevendo}
@@ -323,7 +324,8 @@ export default function MemberEventoDetalhes() {
                     Vagas Esgotadas
                   </Badge>
                 ) : (
-                  <Button 
+                  <Button
+                    size="lg"
                     className="w-full"
                     onClick={handleInscrever}
                     disabled={inscrevendo}
@@ -332,8 +334,9 @@ export default function MemberEventoDetalhes() {
                   </Button>
                 )}
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
+                  size="lg"
                   className="w-full"
                   asChild
                 >

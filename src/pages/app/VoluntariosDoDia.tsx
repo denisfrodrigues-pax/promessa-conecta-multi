@@ -195,7 +195,7 @@ export default function VoluntariosDoDia() {
   // Se ainda está carregando auth ou não tem acesso
   if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-12 pb-24 md:pb-8 max-w-4xl">
         <Skeleton className="h-10 w-48 mb-4" />
         <Skeleton className="h-24 w-full mb-4" />
         <Skeleton className="h-48 w-full" />
@@ -205,10 +205,12 @@ export default function VoluntariosDoDia() {
 
   if (!canAccess) {
     return (
-      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl text-center">
-        <ShieldAlert className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Acesso Restrito</h1>
-        <p className="text-muted-foreground">
+      <div className="container mx-auto px-4 py-12 pb-24 md:pb-8 max-w-4xl text-center">
+        <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+          <ShieldAlert className="w-8 h-8 text-stone-400" />
+        </div>
+        <h1 className="text-2xl font-bold mb-2 text-stone-900">Acesso Restrito</h1>
+        <p className="text-stone-600 leading-relaxed">
           Esta página é visível apenas para voluntários, líderes e administradores.
         </p>
       </div>
@@ -216,23 +218,23 @@ export default function VoluntariosDoDia() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-12 pb-24 md:pb-8 max-w-4xl">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-display font-bold tracking-tight flex items-center gap-3">
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold tracking-tight flex items-center gap-3 text-stone-900">
           <CalendarCheck className="w-8 h-8 text-primary" />
           Voluntários do Dia
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-stone-600 mt-1">
           Visualize os voluntários confirmados e faça seu check-in
         </p>
       </div>
 
       {/* Seletor de Data */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
+      <Card className="mb-6 border-stone-200">
+        <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <label className="text-sm font-medium">Selecione o sábado:</label>
+            <label className="text-sm font-medium text-stone-700">Selecione o sábado:</label>
             <Select value={selectedDate} onValueChange={setSelectedDate}>
               <SelectTrigger className="w-full sm:w-[280px]">
                 <SelectValue placeholder="Selecione uma data" />
@@ -268,21 +270,23 @@ export default function VoluntariosDoDia() {
           ))}
         </div>
       ) : escalasAgrupadas.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-muted-foreground">
+        <Card className="border-0">
+          <CardContent className="py-16 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-stone-400" />
+            </div>
+            <p className="text-lg font-semibold text-stone-900 mb-1">
               Nenhum voluntário confirmado para esta data
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-stone-600 leading-relaxed">
               Apenas voluntários que confirmaram sua escala aparecem aqui
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {escalasAgrupadas.map(grupo => (
-            <Card key={grupo.nome} className="shadow-card">
+            <Card key={grupo.nome} className="shadow-card border-stone-200">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-display flex items-center gap-2">
                   <Badge variant="secondary" className="font-normal">
@@ -290,10 +294,10 @@ export default function VoluntariosDoDia() {
                   </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-4">
                 {Object.entries(grupo.funcoes).map(([funcao, voluntarios]) => (
                   <div key={funcao} className="space-y-2">
-                    <span className="text-sm font-medium text-muted-foreground">
+                    <span className="text-sm font-medium text-stone-500">
                       {funcao}:
                     </span>
                     <div className="flex flex-wrap gap-2">
@@ -301,14 +305,14 @@ export default function VoluntariosDoDia() {
                         // Compara com profile.id pois escalas.voluntario_id referencia profiles.id
                         const isMe = profile?.id === vol.voluntario_id;
                         const canCheckin = isMe && !vol.checked_in;
-                        
+
                         return (
                           <div
                             key={vol.id}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${
-                              vol.checked_in 
-                                ? 'bg-green-50 border-green-200 text-green-700' 
-                                : 'bg-muted/50 border-border'
+                              vol.checked_in
+                                ? 'bg-green-50 border-green-200 text-green-700'
+                                : 'bg-stone-100 border-stone-200'
                             }`}
                           >
                             <span className="text-sm">{vol.voluntario_nome}</span>

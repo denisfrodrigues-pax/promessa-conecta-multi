@@ -81,15 +81,15 @@ export default function Oracao() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+    <div className="container mx-auto px-4 py-12 pb-24 md:pb-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">Pedidos de Oração</h1>
-          <p className="text-muted-foreground mt-1">Compartilhe seus pedidos e ore pela comunidade</p>
+          <h1 className="text-3xl font-display font-bold tracking-tight text-stone-900">Pedidos de Oração</h1>
+          <p className="text-stone-600 mt-1">Compartilhe seus pedidos e ore pela comunidade</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="shadow-sm">
+            <Button size="lg" className="shadow-soft">
               <Plus className="w-4 h-4 mr-2" />
               Novo Pedido
             </Button>
@@ -101,7 +101,7 @@ export default function Oracao() {
                 Compartilhe seu pedido com a comunidade. Você pode enviar anonimamente.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-5 py-4">
               <div className="space-y-2">
                 <Label>Título *</Label>
                 <Input
@@ -119,10 +119,10 @@ export default function Oracao() {
                   rows={4}
                 />
               </div>
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted">
+              <div className="flex items-center justify-between p-5 rounded-xl bg-stone-100">
                 <div>
                   <Label>Enviar Anonimamente</Label>
-                  <p className="text-sm text-muted-foreground">Seu nome não será exibido</p>
+                  <p className="text-sm text-stone-500">Seu nome não será exibido</p>
                 </div>
                 <Switch
                   checked={formData.anonimo}
@@ -131,10 +131,10 @@ export default function Oracao() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button variant="outline" size="lg" onClick={() => setIsDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleSubmit}>
+              <Button size="lg" onClick={handleSubmit}>
                 Enviar Pedido
               </Button>
             </DialogFooter>
@@ -142,11 +142,11 @@ export default function Oracao() {
         </Dialog>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {pedidos.map((pedido, index) => (
-          <Card 
-            key={pedido.id} 
-            className="shadow-card animate-slide-up"
+          <Card
+            key={pedido.id}
+            className="shadow-card border-stone-200 animate-slide-up"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <CardContent className="p-6">
@@ -156,9 +156,9 @@ export default function Oracao() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-display font-semibold">{pedido.titulo}</h3>
+                    <h3 className="font-display font-semibold text-stone-900">{pedido.titulo}</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-sm text-stone-500 mb-2">
                     {pedido.anonimo ? (
                       <span className="flex items-center gap-1">
                         <User className="w-3 h-3" /> Anônimo
@@ -168,9 +168,9 @@ export default function Oracao() {
                     )}
                   </p>
                   {pedido.descricao && (
-                    <p className="text-muted-foreground">{pedido.descricao}</p>
+                    <p className="text-stone-600 leading-relaxed">{pedido.descricao}</p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-3">
+                  <p className="text-xs text-stone-500 mt-3">
                     {format(new Date(pedido.created_at), "dd 'de' MMMM", { locale: ptBR })}
                   </p>
                 </div>
@@ -179,13 +179,18 @@ export default function Oracao() {
           </Card>
         ))}
         {pedidos.length === 0 && !loading && (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Heart className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-              <p className="text-muted-foreground">
+          <Card className="border-0">
+            <CardContent className="py-16 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-rose-100 flex items-center justify-center mx-auto mb-4">
+                <Heart className="w-8 h-8 text-rose-500" />
+              </div>
+              <p className="text-lg font-semibold text-stone-900 mb-1">
                 Nenhum pedido de oração no momento
               </p>
-              <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
+              <p className="text-stone-600 leading-relaxed mb-4">
+                Seja o primeiro a compartilhar um pedido com a comunidade.
+              </p>
+              <Button size="lg" onClick={() => setIsDialogOpen(true)}>
                 Enviar Primeiro Pedido
               </Button>
             </CardContent>

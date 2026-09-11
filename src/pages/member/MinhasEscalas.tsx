@@ -70,43 +70,43 @@ function PaletaIdentidadeVisual({ eventoId }: { eventoId: string }) {
   if (isLoading || !paleta) return null;
 
   return (
-    <div className="mt-3 pt-3 border-t border-border/50">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5 mb-2">
+    <div className="mt-4 pt-4 border-t border-stone-200">
+      <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide flex items-center gap-1.5 mb-2">
         <Palette className="w-3.5 h-3.5" />
         Identidade Visual do Culto
       </p>
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-1.5">
           <div
-            className="w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-border"
+            className="w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-stone-200"
             style={{ backgroundColor: paleta.cor_primaria }}
             title="Cor Principal"
           />
-          <span className="text-xs text-muted-foreground">Cor Principal</span>
+          <span className="text-xs text-stone-500">Cor Principal</span>
         </div>
         {paleta.cor_secundaria && (
           <div className="flex items-center gap-1.5">
             <div
-              className="w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-border"
+              className="w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-stone-200"
               style={{ backgroundColor: paleta.cor_secundaria }}
               title="Cor Secundária"
             />
-            <span className="text-xs text-muted-foreground">Cor Secundária</span>
+            <span className="text-xs text-stone-500">Cor Secundária</span>
           </div>
         )}
         {paleta.cor_acento && (
           <div className="flex items-center gap-1.5">
             <div
-              className="w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-border"
+              className="w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-stone-200"
               style={{ backgroundColor: paleta.cor_acento }}
               title="Cor Acento"
             />
-            <span className="text-xs text-muted-foreground">Cor Acento</span>
+            <span className="text-xs text-stone-500">Cor Acento</span>
           </div>
         )}
       </div>
       {paleta.observacao && (
-        <p className="text-xs text-muted-foreground mt-1.5 italic">{paleta.observacao}</p>
+        <p className="text-xs text-stone-500 mt-1.5 italic leading-relaxed">{paleta.observacao}</p>
       )}
     </div>
   );
@@ -146,9 +146,9 @@ function EscalaDateBox({ dateStr, compact }: { dateStr: string; compact?: boolea
 
   if (compact) {
     return (
-      <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center flex-shrink-0">
-        <span className="text-sm font-bold">{day}</span>
-        <span className="text-xs uppercase">{month}</span>
+      <div className="w-12 h-12 rounded-xl bg-stone-100 flex flex-col items-center justify-center flex-shrink-0">
+        <span className="text-sm font-bold text-stone-800">{day}</span>
+        <span className="text-xs uppercase text-stone-500">{month}</span>
       </div>
     );
   }
@@ -281,19 +281,19 @@ export default function MinhasEscalas() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 bg-stone-50">
         <div className="space-y-6">
           <div className="space-y-2">
-            <div className="h-8 w-48 bg-muted rounded-xl animate-pulse" />
-            <div className="h-4 w-64 bg-muted rounded-lg animate-pulse" />
+            <div className="h-8 w-48 bg-stone-100 rounded-xl animate-pulse" />
+            <div className="h-4 w-64 bg-stone-100 rounded-lg animate-pulse" />
           </div>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="p-4 rounded-2xl border border-border/50 bg-card">
+            <div key={i} className="p-6 rounded-2xl border border-stone-200 bg-white">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-muted animate-pulse" />
+                <div className="w-14 h-14 rounded-xl bg-stone-100 animate-pulse" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-5 w-32 bg-muted rounded-lg animate-pulse" />
-                  <div className="h-4 w-48 bg-muted rounded-lg animate-pulse" />
+                  <div className="h-5 w-32 bg-stone-100 rounded-lg animate-pulse" />
+                  <div className="h-4 w-48 bg-stone-100 rounded-lg animate-pulse" />
                 </div>
               </div>
             </div>
@@ -306,13 +306,13 @@ export default function MinhasEscalas() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+    <div className="container mx-auto px-4 py-8 md:py-12 pb-24 md:pb-12 bg-stone-50">
 
       {/* Header */}
       <div className="mb-8 flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">Minhas Escalas</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-3xl font-display font-bold tracking-tight text-stone-900">Minhas Escalas</h1>
+          <p className="text-stone-500 mt-1 leading-relaxed">
             Visualize e confirme sua participação nas escalas
           </p>
         </div>
@@ -321,7 +321,7 @@ export default function MinhasEscalas() {
             <Button
               variant="default"
               size="sm"
-              className="shadow-sm"
+              className="shadow-sm min-h-[44px] md:min-h-0"
               onClick={() => navigate(p('/app/voluntarios-do-dia'))}
             >
               <ClipboardCheck className="w-4 h-4 mr-1" />
@@ -329,7 +329,7 @@ export default function MinhasEscalas() {
             </Button>
           )}
           <Link to={p('/app/historico-escalas')}>
-            <Button variant="outline" size="sm" className="shadow-sm">
+            <Button variant="outline" size="sm" className="shadow-sm min-h-[44px] md:min-h-0">
               <History className="w-4 h-4 mr-1" />
               Histórico
             </Button>
@@ -342,32 +342,34 @@ export default function MinhasEscalas() {
 
         {/* Próximas Escalas */}
         <section>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-stone-900">
             <Calendar className="w-5 h-5 text-primary" />
             Próximas Escalas
           </h2>
 
           {proximas.length === 0 && (
             <Card>
-              <CardContent className="py-12 text-center">
-                <Calendar className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-                <p className="text-muted-foreground">Nenhuma escala programada</p>
+              <CardContent className="py-16 text-center">
+                <Calendar className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+                <p className="text-stone-500 leading-relaxed">
+                  Nenhuma escala programada por aqui — quando seu líder te escalar, ela aparece nesta lista.
+                </p>
               </CardContent>
             </Card>
           )}
 
           {proximas.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {proximas.map((escala) => (
                 <Card key={escala.id} className="shadow-card hover:shadow-elevated transition-shadow">
-                  <CardContent className="p-4">
+                  <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 
                       <div className="flex items-center gap-4">
                         <EscalaDateBox dateStr={escala.data} />
                         <div>
-                          <p className="font-display font-semibold">{escala.funcao}</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="font-display font-semibold text-stone-900">{escala.funcao}</p>
+                          <p className="text-sm text-stone-500">
                             {escala.ministerios?.nome}
                             {escala.horario ? ` • ${escala.horario}` : ''}
                           </p>
@@ -391,6 +393,7 @@ export default function MinhasEscalas() {
                               variant="success"
                               disabled={isSubmitting}
                               onClick={() => handleConfirmar(escala)}
+                              className="min-h-[44px] md:min-h-0"
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Confirmar
@@ -400,7 +403,7 @@ export default function MinhasEscalas() {
                               variant="outline"
                               disabled={isSubmitting}
                               onClick={() => openRecusar(escala)}
-                              className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                              className="border-destructive/30 text-destructive hover:bg-destructive/10 min-h-[44px] md:min-h-0"
                             >
                               <XCircle className="w-4 h-4 mr-1" />
                               Não posso
@@ -420,17 +423,17 @@ export default function MinhasEscalas() {
         {/* Histórico */}
         {passadas.length > 0 && (
           <section>
-            <h2 className="text-lg font-semibold mb-4 text-muted-foreground">Histórico</h2>
-            <div className="space-y-3">
+            <h2 className="text-lg font-semibold mb-4 text-stone-500">Histórico</h2>
+            <div className="space-y-4">
               {passadas.slice(0, 10).map((escala) => (
                 <Card key={escala.id} className="shadow-soft opacity-70">
-                  <CardContent className="p-4">
+                  <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <EscalaDateBox dateStr={escala.data} compact />
                         <div>
-                          <p className="font-medium">{escala.funcao}</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="font-medium text-stone-900">{escala.funcao}</p>
+                          <p className="text-sm text-stone-500">
                             {escala.ministerios?.nome}
                           </p>
                         </div>
@@ -466,9 +469,9 @@ export default function MinhasEscalas() {
 
           {selectedEscala !== null && (
             <div className="py-4">
-              <div className="bg-muted/50 rounded-lg p-4 mb-4">
-                <p className="font-medium">{selectedEscala.funcao}</p>
-                <p className="text-sm text-muted-foreground">
+              <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 mb-4">
+                <p className="font-medium text-stone-900">{selectedEscala.funcao}</p>
+                <p className="text-sm text-stone-500">
                   {selectedEscala.ministerios?.nome}
                   {' • '}
                   {format(parseLocalDate(selectedEscala.data), "dd 'de' MMMM", { locale: ptBR })}

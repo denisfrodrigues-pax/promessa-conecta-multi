@@ -74,7 +74,7 @@ export default function MemberNotificacoes() {
       case 'aviso_admin':
         return <Megaphone className="w-5 h-5 text-red-500" />;
       default:
-        return <Bell className="w-5 h-5 text-neutral-500" />;
+        return <Bell className="w-5 h-5 text-stone-500" />;
     }
   };
 
@@ -119,20 +119,23 @@ export default function MemberNotificacoes() {
   const NotificationList = ({ items }: { items: Notification[] }) => (
     <div className="space-y-3">
       {items.length === 0 ? (
-        <div className="text-center py-8 text-neutral-500">
-          <Bell className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p>Nenhuma notificação nesta categoria</p>
+        <div className="text-center py-12 px-6">
+          <div className="w-16 h-16 rounded-2xl bg-promessa-100 flex items-center justify-center mx-auto mb-4">
+            <Bell className="w-8 h-8 text-promessa-600" />
+          </div>
+          <p className="text-lg font-semibold text-stone-900 mb-1">Nenhuma notificação por aqui</p>
+          <p className="text-stone-600 leading-relaxed">Quando houver novidades sobre escalas, avisos ou atualizações, elas aparecem aqui.</p>
         </div>
       ) : (
         items.map((notification) => (
           <Card
             key={notification.id}
-            className={`cursor-pointer transition-all hover:shadow-md border-neutral-200 ${
+            className={`cursor-pointer transition-all hover:shadow-elevated border-stone-200 ${
               !notification.lido ? 'border-promessa-300 bg-promessa-50/50' : 'bg-white'
             }`}
             onClick={() => handleOpenNotification(notification)}
           >
-            <CardContent className="p-4">
+            <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 mt-1">
                   {getNotificationIcon(notification.tipo)}
@@ -145,12 +148,12 @@ export default function MemberNotificacoes() {
                     )}
                   </div>
                   {notification.titulo && (
-                    <p className="font-medium text-neutral-800 mb-1">{notification.titulo}</p>
+                    <p className="font-medium text-stone-800 mb-1">{notification.titulo}</p>
                   )}
-                  <p className="text-sm text-neutral-600 line-clamp-2">
+                  <p className="text-sm text-stone-600 leading-relaxed line-clamp-2">
                     {notification.mensagem}
                   </p>
-                  <p className="text-xs text-neutral-500 mt-2">
+                  <p className="text-xs text-stone-500 mt-2">
                     {notification.created_at &&
                       format(new Date(notification.created_at), "dd/MM/yyyy 'às' HH:mm", {
                         locale: ptBR,
@@ -159,14 +162,14 @@ export default function MemberNotificacoes() {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {notification.lido && (
-                    <CheckCircle className="w-4 h-4 text-neutral-400" />
+                    <CheckCircle className="w-4 h-4 text-stone-400" />
                   )}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-neutral-400 hover:text-red-600 hover:bg-red-50"
+                        className="h-8 w-8 text-stone-400 hover:text-red-600 hover:bg-red-50"
                         onClick={(e) => e.stopPropagation()}
                         disabled={deletingId === notification.id}
                         aria-label="Excluir notificação"
@@ -206,16 +209,16 @@ export default function MemberNotificacoes() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+    <div className="container mx-auto px-4 py-12 pb-24 md:pb-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight text-neutral-800">Notificações</h1>
-          <p className="text-neutral-500 mt-1">
+          <h1 className="text-3xl font-display font-bold tracking-tight text-stone-900">Notificações</h1>
+          <p className="text-stone-600 mt-1">
             {unreadCount > 0 ? `${unreadCount} não lida(s)` : 'Todas lidas'}
           </p>
         </div>
         {unreadCount > 0 && (
-          <Button variant="outline" onClick={handleMarkAllAsRead} className="border-neutral-200 text-neutral-700 hover:bg-neutral-50">
+          <Button variant="outline" onClick={handleMarkAllAsRead} className="h-11 border-stone-200 text-stone-700 hover:bg-stone-50">
             <Check className="w-4 h-4 mr-2" />
             Marcar tudo como lido
           </Button>
@@ -223,8 +226,8 @@ export default function MemberNotificacoes() {
       </div>
 
       <Tabs defaultValue="todas" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-neutral-100">
-          <TabsTrigger value="todas" className="text-neutral-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
+        <TabsList className="grid w-full grid-cols-5 bg-stone-100">
+          <TabsTrigger value="todas" className="min-h-[44px] text-stone-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
             Todas
             {notifications.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -232,7 +235,7 @@ export default function MemberNotificacoes() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="escalas" className="text-neutral-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
+          <TabsTrigger value="escalas" className="min-h-[44px] text-stone-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
             Escalas
             {escalas.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -240,7 +243,7 @@ export default function MemberNotificacoes() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="atualizacoes" className="text-neutral-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
+          <TabsTrigger value="atualizacoes" className="min-h-[44px] text-stone-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
             Atualizações
             {atualizacoes.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -248,7 +251,7 @@ export default function MemberNotificacoes() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="ministerio" className="text-neutral-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
+          <TabsTrigger value="ministerio" className="min-h-[44px] text-stone-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
             Ministério
             {ministerio.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -256,7 +259,7 @@ export default function MemberNotificacoes() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="sistema" className="text-neutral-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
+          <TabsTrigger value="sistema" className="min-h-[44px] text-stone-700 data-[state=active]:bg-white data-[state=active]:text-promessa-700">
             Sistema
             {sistema.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -284,9 +287,9 @@ export default function MemberNotificacoes() {
       </Tabs>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="border-neutral-200 max-w-lg mx-4 sm:mx-auto">
+        <DialogContent className="border-stone-200 max-w-lg mx-4 sm:mx-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-neutral-800">
+            <DialogTitle className="flex items-center gap-2 text-stone-800">
               {selectedNotification && getNotificationIcon(selectedNotification.tipo)}
               {selectedNotification?.titulo || 'Detalhes da Notificação'}
             </DialogTitle>
@@ -296,8 +299,8 @@ export default function MemberNotificacoes() {
               <div className="flex items-center gap-2">
                 {getNotificationTypeBadge(selectedNotification.tipo)}
               </div>
-              <p className="text-neutral-700">{selectedNotification.mensagem}</p>
-              <p className="text-sm text-neutral-500">
+              <p className="text-stone-700 leading-relaxed">{selectedNotification.mensagem}</p>
+              <p className="text-sm text-stone-500">
                 Recebida em:{' '}
                 {selectedNotification.created_at &&
                   format(new Date(selectedNotification.created_at), "dd/MM/yyyy 'às' HH:mm", {

@@ -81,59 +81,61 @@ export default function HistoricoEscalas() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 bg-stone-50">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-48" />
-          <div className="h-24 bg-muted rounded" />
-          <div className="h-24 bg-muted rounded" />
+          <div className="h-8 bg-stone-100 rounded-lg w-48" />
+          <div className="h-24 bg-stone-100 rounded-2xl" />
+          <div className="h-24 bg-stone-100 rounded-2xl" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-      <div className="mb-6">
+    <div className="container mx-auto px-4 py-8 md:py-12 pb-24 md:pb-12 bg-stone-50">
+      <div className="mb-8">
         <Link to={p('/app/escalas')}>
-          <Button variant="ghost" size="sm" className="mb-2">
+          <Button variant="ghost" size="sm" className="mb-2 min-h-[44px] md:min-h-0">
             <ArrowLeft className="w-4 h-4 mr-1" />
             Voltar
           </Button>
         </Link>
-        <h1 className="text-2xl font-display font-bold flex items-center gap-2">
+        <h1 className="text-2xl font-display font-bold flex items-center gap-2 text-stone-900">
           <History className="w-6 h-6 text-primary" />
           Histórico de Escalas
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-stone-500 mt-1 leading-relaxed">
           Todas as escalas em que você participou
         </p>
       </div>
 
       {escalas.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center">
-            <History className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-            <p className="text-muted-foreground">Nenhuma escala no histórico</p>
+          <CardContent className="py-16 text-center">
+            <History className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+            <p className="text-stone-500 leading-relaxed">
+              Nenhuma escala no histórico ainda — as escalas que você já cumpriu vão aparecer aqui.
+            </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {escalas.map((escala) => (
             <Card key={escala.id} className="shadow-soft">
-              <CardContent className="p-4">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-muted flex flex-col items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-bold">
+                    <div className="w-12 h-12 rounded-xl bg-stone-100 flex flex-col items-center justify-center flex-shrink-0">
+                      <span className="text-sm font-bold text-stone-800">
                         {format(parseLocalDate(escala.data), 'dd')}
                       </span>
-                      <span className="text-xs uppercase">
+                      <span className="text-xs uppercase text-stone-500">
                         {format(parseLocalDate(escala.data), 'MMM', { locale: ptBR })}
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium">{escala.funcao}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-stone-900">{escala.funcao}</p>
+                      <p className="text-sm text-stone-500">
                         {escala.ministerios?.nome}
                       </p>
                     </div>

@@ -122,24 +122,24 @@ export default function MemberEventos() {
   const churchName = config?.nome || 'Igreja';
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+    <div className="container mx-auto px-4 py-8 md:py-12 pb-24 md:pb-8 bg-stone-50 min-h-screen">
       {/* Header with optional logo */}
       <div className="mb-8 flex items-start gap-4">
         {hasCustomLogo && (
-          <img 
-            src={config.logo_url!} 
+          <img
+            src={config.logo_url!}
             alt={churchName}
             className="h-10 w-auto object-contain"
           />
         )}
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">Eventos</h1>
-          <p className="text-muted-foreground mt-1">Próximos eventos e atividades</p>
+          <h1 className="text-3xl font-display font-bold tracking-tight text-stone-900">Eventos</h1>
+          <p className="text-stone-500 mt-1">Próximos eventos e atividades</p>
         </div>
       </div>
 
       <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
         <Input
           placeholder="Buscar eventos..."
           className="pl-10"
@@ -148,7 +148,7 @@ export default function MemberEventos() {
         />
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {filteredEventos.map((evento) => {
           const isInscrito = inscricoes.includes(evento.id);
           const totalInscritos = inscricoesCount[evento.id] || 0;
@@ -156,7 +156,7 @@ export default function MemberEventos() {
           const esgotado = vagasDisponiveis !== null && vagasDisponiveis <= 0;
 
           return (
-            <Card key={evento.id} className="shadow-card hover:shadow-elevated transition-all duration-300 overflow-hidden">
+            <Card key={evento.id} className="shadow-card hover:shadow-elevated transition-all duration-300 overflow-hidden rounded-2xl bg-white">
               <div className="flex flex-col md:flex-row">
                 {/* Image/Date Banner */}
                 <div className="md:w-48 bg-gradient-hero relative flex flex-col items-center justify-center text-primary-foreground overflow-hidden">
@@ -195,10 +195,10 @@ export default function MemberEventos() {
                   )}
                 </div>
 
-                <CardContent className="flex-1 p-4">
+                <CardContent className="flex-1 p-6">
                   <div className="flex flex-col h-full">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-display font-semibold text-lg">{evento.titulo}</h3>
+                      <h3 className="font-display font-semibold text-lg text-stone-900">{evento.titulo}</h3>
                       {isInscrito && (
                         <Badge className="bg-primary text-primary-foreground">
                           <CheckCircle className="w-3 h-3 mr-1" />
@@ -208,10 +208,10 @@ export default function MemberEventos() {
                     </div>
 
                     {evento.descricao && (
-                      <p className="text-muted-foreground text-sm line-clamp-2 mb-3">{evento.descricao}</p>
+                      <p className="text-stone-600 text-sm leading-relaxed line-clamp-2 mb-3">{evento.descricao}</p>
                     )}
 
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
+                    <div className="flex flex-wrap gap-4 text-sm text-stone-500 mb-4">
                       {evento.local && (
                         <div className="flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
@@ -229,7 +229,7 @@ export default function MemberEventos() {
                       {isInscrito ? (
                         <Button
                           variant="outline"
-                          size="sm"
+                          size="lg"
                           onClick={() => handleCancelarInscricao(evento.id)}
                         >
                           Cancelar Inscrição
@@ -238,7 +238,7 @@ export default function MemberEventos() {
                         <Badge variant="secondary">Vagas Esgotadas</Badge>
                       ) : (
                         <Button
-                          size="sm"
+                          size="lg"
                           onClick={() => handleInscrever(evento.id)}
                         >
                           Inscrever-se
@@ -252,11 +252,15 @@ export default function MemberEventos() {
           );
         })}
         {filteredEventos.length === 0 && !loading && (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              Nenhum evento encontrado
-            </CardContent>
-          </Card>
+          <div className="text-center py-16 px-6 max-w-md mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+              <Calendar className="w-8 h-8 text-primary" />
+            </div>
+            <p className="text-lg font-semibold text-stone-900 mb-2">Nenhum evento por aqui ainda</p>
+            <p className="text-stone-600 leading-relaxed">
+              Assim que novos eventos forem programados, você os encontrará aqui.
+            </p>
+          </div>
         )}
       </div>
     </div>

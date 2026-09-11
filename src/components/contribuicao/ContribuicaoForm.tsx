@@ -197,26 +197,27 @@ export function ContribuicaoForm({
 
   if (showSuccess) {
     return (
-      <div className="container max-w-lg mx-auto px-4 py-8">
+      <div className="container max-w-lg mx-auto px-4 py-12">
         <Card className="text-center">
-          <CardContent className="py-12 space-y-6">
+          <CardContent className="py-16 space-y-6">
             <div className="mx-auto w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
               <CheckCircle2 className="w-10 h-10 text-green-600" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-display font-bold text-foreground">
+              <h2 className="text-2xl font-display font-bold text-stone-900">
                 Contribuição registrada! 🙏
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-stone-500 leading-relaxed">
                 Que Deus continue abençoando sua vida e sua família.
               </p>
             </div>
             <div className="pt-4 space-y-3">
-              <Button asChild className="w-full">
+              <Button asChild size="lg" className="w-full">
                 <Link to={backUrl}>{backLabel}</Link>
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
+                size="lg"
                 className="w-full"
                 onClick={() => setShowSuccess(false)}
               >
@@ -231,9 +232,9 @@ export function ContribuicaoForm({
 
   if (showComprovante && comprovanteData) {
     return (
-      <div className="container max-w-lg mx-auto px-4 py-8">
+      <div className="container max-w-lg mx-auto px-4 py-12">
         {/* Comprovante capturável */}
-        <div ref={comprovanteRef} className="bg-white rounded-2xl overflow-hidden shadow-xl border border-border">
+        <div ref={comprovanteRef} className="bg-white rounded-2xl overflow-hidden shadow-elevated border border-stone-200">
           {/* Header verde */}
           <div className="bg-green-500 px-6 py-5 text-white text-center">
             <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
@@ -245,34 +246,34 @@ export function ContribuicaoForm({
           <div className="p-6 space-y-4">
             {/* Valor */}
             <div className="text-center py-2">
-              <p className="text-sm text-muted-foreground">Valor</p>
-              <p className="text-4xl font-bold text-foreground mt-1">R$ {comprovanteData.valor}</p>
+              <p className="text-sm text-stone-500">Valor</p>
+              <p className="text-4xl font-bold text-stone-900 mt-1">R$ {comprovanteData.valor}</p>
             </div>
 
-            <hr className="border-border" />
+            <hr className="border-stone-200" />
 
             {/* Detalhes */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Forma de pagamento</span>
-                <span className="font-medium">{comprovanteData.forma}</span>
+                <span className="text-stone-500">Forma de pagamento</span>
+                <span className="font-medium text-stone-900">{comprovanteData.forma}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Data e hora</span>
-                <span className="font-medium">{comprovanteData.dataHora}</span>
+                <span className="text-stone-500">Data e hora</span>
+                <span className="font-medium text-stone-900">{comprovanteData.dataHora}</span>
               </div>
               {comprovanteData.nome && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Contribuinte</span>
-                  <span className="font-medium">{comprovanteData.nome}</span>
+                  <span className="text-stone-500">Contribuinte</span>
+                  <span className="font-medium text-stone-900">{comprovanteData.nome}</span>
                 </div>
               )}
             </div>
 
-            <hr className="border-border" />
+            <hr className="border-stone-200" />
 
             {/* Aviso */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm">
               <p className="font-semibold text-yellow-800 mb-1">⚠️ Aviso importante</p>
               <p className="text-yellow-700 leading-relaxed">
                 Este documento não possui validade fiscal. Sua contribuição será confirmada pelo departamento financeiro da {nomeIgreja}.
@@ -282,16 +283,16 @@ export function ContribuicaoForm({
         </div>
 
         {/* Botões de ação */}
-        <div className="mt-6 space-y-3">
-          <Button className="w-full" onClick={downloadComprovante}>
+        <div className="mt-8 space-y-3">
+          <Button size="lg" className="w-full" onClick={downloadComprovante}>
             📥 Baixar comprovante
           </Button>
           {whatsapp && (
-            <Button variant="outline" className="w-full border-green-500 text-green-700 hover:bg-green-50" onClick={enviarWhatsApp}>
+            <Button variant="outline" size="lg" className="w-full border-green-500 text-green-700 hover:bg-green-50" onClick={enviarWhatsApp}>
               💬 Enviar via WhatsApp
             </Button>
           )}
-          <Button variant="ghost" className="w-full" onClick={() => { setShowComprovante(false); setComprovanteData(null); }}>
+          <Button variant="ghost" size="lg" className="w-full" onClick={() => { setShowComprovante(false); setComprovanteData(null); }}>
             Fazer nova contribuição
           </Button>
         </div>
@@ -302,10 +303,10 @@ export function ContribuicaoForm({
   return (
     <div className="container max-w-4xl mx-auto px-4 pb-20">
       {showHeader && (
-        <div className="text-center mb-10">
-          <Link 
-            to={backUrl} 
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
+        <div className="text-center mb-12">
+          <Link
+            to={backUrl}
+            className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-primary transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
             {backLabel}
@@ -313,70 +314,70 @@ export function ContribuicaoForm({
           <div className="p-4 rounded-full bg-primary/10 w-fit mx-auto mb-6">
             <HandHeart className="w-10 h-10 text-primary" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-stone-900 mb-4">
             Contribuições
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
             As contribuições são voluntárias e fazem parte da nossa missão de amar e servir a Deus e às pessoas.
           </p>
         </div>
       )}
 
       {/* Contribution Type Selection */}
-      <section className="mb-10">
-        <h2 className="text-xl font-semibold text-foreground mb-6 text-center">
+      <section className="mb-12">
+        <h2 className="text-xl font-semibold text-stone-900 mb-6 text-center">
           Escolha o tipo de contribuição
         </h2>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Card 
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card
             className={`cursor-pointer transition-all duration-200 ${
-              tipoContribuicao === 'recorrente' 
-                ? 'ring-2 ring-primary bg-primary/5' 
-                : 'hover:bg-muted/30'
+              tipoContribuicao === 'recorrente'
+                ? 'ring-2 ring-primary bg-primary/5'
+                : 'hover:bg-stone-50'
             }`}
             onClick={() => setTipoContribuicao('recorrente')}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full ${
-                  tipoContribuicao === 'recorrente' ? 'bg-primary/20' : 'bg-muted'
+                  tipoContribuicao === 'recorrente' ? 'bg-primary/20' : 'bg-stone-100'
                 }`}>
                   <Heart className={`w-5 h-5 ${
-                    tipoContribuicao === 'recorrente' ? 'text-primary' : 'text-muted-foreground'
+                    tipoContribuicao === 'recorrente' ? 'text-primary' : 'text-stone-400'
                   }`} />
                 </div>
                 <CardTitle className="text-lg">Contribuição recorrente</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-sm">
+              <CardDescription className="text-sm leading-relaxed">
                 Para quem deseja contribuir regularmente como disciplina espiritual.
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card 
+          <Card
             className={`cursor-pointer transition-all duration-200 ${
-              tipoContribuicao === 'especial' 
-                ? 'ring-2 ring-primary bg-primary/5' 
-                : 'hover:bg-muted/30'
+              tipoContribuicao === 'especial'
+                ? 'ring-2 ring-primary bg-primary/5'
+                : 'hover:bg-stone-50'
             }`}
             onClick={() => setTipoContribuicao('especial')}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full ${
-                  tipoContribuicao === 'especial' ? 'bg-primary/20' : 'bg-muted'
+                  tipoContribuicao === 'especial' ? 'bg-primary/20' : 'bg-stone-100'
                 }`}>
                   <Sparkles className={`w-5 h-5 ${
-                    tipoContribuicao === 'especial' ? 'text-primary' : 'text-muted-foreground'
+                    tipoContribuicao === 'especial' ? 'text-primary' : 'text-stone-400'
                   }`} />
                 </div>
                 <CardTitle className="text-lg">Contribuição especial</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-sm">
+              <CardDescription className="text-sm leading-relaxed">
                 Para ofertas pontuais, campanhas ou ações específicas.
               </CardDescription>
             </CardContent>
@@ -385,7 +386,7 @@ export function ContribuicaoForm({
       </section>
 
       {/* Contribution Form */}
-      <section className="mb-10">
+      <section className="mb-12">
         <Card>
           <CardHeader>
             <CardTitle>Informações da contribuição</CardTitle>
@@ -394,12 +395,12 @@ export function ContribuicaoForm({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="valor">Valor *</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 font-medium">
                       R$
                     </span>
                     <Input
@@ -426,7 +427,7 @@ export function ContribuicaoForm({
                       onChange={(e) => setDestinoContribuicao(e.target.value)}
                       required
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-stone-500 leading-relaxed">
                       Informe para qual finalidade será destinada esta contribuição especial.
                     </p>
                   </div>
@@ -462,47 +463,47 @@ export function ContribuicaoForm({
               {/* Payment Method */}
               <div className="space-y-4">
                 <Label>Forma de pagamento</Label>
-                <RadioGroup 
-                  value={formaPagamento} 
+                <RadioGroup
+                  value={formaPagamento}
                   onValueChange={(v) => setFormaPagamento(v as 'pix' | 'cartao' | 'boleto')}
                   className="grid md:grid-cols-3 gap-4"
                 >
                   <Label
                     htmlFor="pix"
-                    className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-all ${
-                      formaPagamento === 'pix' 
-                        ? 'border-primary bg-primary/5' 
-                        : 'border-border hover:bg-muted/30'
+                    className={`flex items-center gap-3 min-h-[44px] p-4 border rounded-xl cursor-pointer transition-all ${
+                      formaPagamento === 'pix'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-stone-200 hover:bg-stone-50'
                     }`}
                   >
                     <RadioGroupItem value="pix" id="pix" />
-                    <QrCode className="w-5 h-5 text-muted-foreground" />
+                    <QrCode className="w-5 h-5 text-stone-500" />
                     <span className="font-medium">PIX</span>
                   </Label>
 
                   <Label
                     htmlFor="cartao"
-                    className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-all ${
-                      formaPagamento === 'cartao' 
-                        ? 'border-primary bg-primary/5' 
-                        : 'border-border hover:bg-muted/30'
+                    className={`flex items-center gap-3 min-h-[44px] p-4 border rounded-xl cursor-pointer transition-all ${
+                      formaPagamento === 'cartao'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-stone-200 hover:bg-stone-50'
                     }`}
                   >
                     <RadioGroupItem value="cartao" id="cartao" />
-                    <CreditCard className="w-5 h-5 text-muted-foreground" />
+                    <CreditCard className="w-5 h-5 text-stone-500" />
                     <span className="font-medium">Cartão</span>
                   </Label>
 
                   <Label
                     htmlFor="boleto"
-                    className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-all ${
-                      formaPagamento === 'boleto' 
-                        ? 'border-primary bg-primary/5' 
-                        : 'border-border hover:bg-muted/30'
+                    className={`flex items-center gap-3 min-h-[44px] p-4 border rounded-xl cursor-pointer transition-all ${
+                      formaPagamento === 'boleto'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-stone-200 hover:bg-stone-50'
                     }`}
                   >
                     <RadioGroupItem value="boleto" id="boleto" />
-                    <FileText className="w-5 h-5 text-muted-foreground" />
+                    <FileText className="w-5 h-5 text-stone-500" />
                     <span className="font-medium">Boleto</span>
                   </Label>
                 </RadioGroup>
@@ -510,41 +511,41 @@ export function ContribuicaoForm({
 
               {/* PIX Section */}
               {formaPagamento === 'pix' && (
-                <div className="border border-primary/20 rounded-xl bg-gradient-to-br from-primary/5 to-background p-6 space-y-6">
+                <div className="border border-primary/20 rounded-2xl bg-gradient-to-br from-primary/5 to-stone-50 p-6 space-y-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-full bg-primary/10">
                       <QrCode className="w-5 h-5 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-foreground">Pagar via PIX</h3>
+                    <h3 className="font-semibold text-stone-900">Pagar via PIX</h3>
                   </div>
 
                   {loadingPixInfo ? (
-                    <div className="flex items-center justify-center py-8 text-muted-foreground">
+                    <div className="flex items-center justify-center py-8 text-stone-500">
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                       Carregando dados de PIX...
                     </div>
                   ) : !pixInfo ? (
-                    <div className="flex items-start gap-3 bg-muted/50 border border-border rounded-lg p-4">
-                      <AlertCircle className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
-                      <p className="text-sm text-muted-foreground">
+                    <div className="flex items-start gap-3 bg-stone-50 border border-stone-200 rounded-xl p-4">
+                      <AlertCircle className="w-5 h-5 text-stone-400 shrink-0 mt-0.5" />
+                      <p className="text-sm text-stone-600 leading-relaxed">
                         Chave PIX não configurada para {nomeIgreja}. Fale com a administração da igreja ou escolha outra forma de pagamento.
                       </p>
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-stone-600 leading-relaxed">
                         Abra o app do seu banco e escaneie o QR Code para contribuir via PIX.
                       </p>
 
                       <div className="grid md:grid-cols-2 gap-6">
                         {/* QR Code */}
                         <div className="flex flex-col items-center space-y-4">
-                          <div className="bg-white p-4 rounded-xl shadow-sm border">
+                          <div className="bg-white p-4 rounded-2xl shadow-soft border border-stone-200">
                             <QRCode value={pixPayload!} size={180} level="M" />
                           </div>
                           {valorNumerico > 0 && (
-                            <p className="text-sm text-muted-foreground text-center">
-                              QR Code com valor de <span className="font-semibold text-foreground">R$ {valorNumerico.toFixed(2).replace('.', ',')}</span>
+                            <p className="text-sm text-stone-500 text-center">
+                              QR Code com valor de <span className="font-semibold text-stone-900">R$ {valorNumerico.toFixed(2).replace('.', ',')}</span>
                             </p>
                           )}
                         </div>
@@ -556,8 +557,8 @@ export function ContribuicaoForm({
                               <QrCode className="w-4 h-4 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs text-muted-foreground">Chave PIX</p>
-                              <p className="text-sm font-medium text-foreground break-all">{pixInfo.chave}</p>
+                              <p className="text-xs text-stone-500">Chave PIX</p>
+                              <p className="text-sm font-medium text-stone-900 break-all">{pixInfo.chave}</p>
                             </div>
                             <Button
                               type="button"
@@ -576,8 +577,8 @@ export function ContribuicaoForm({
                                 <HandHeart className="w-4 h-4 text-primary" />
                               </div>
                               <div className="flex-1">
-                                <p className="text-xs text-muted-foreground">Recebedor</p>
-                                <p className="text-sm font-medium text-foreground leading-tight">{pixInfo.nome}</p>
+                                <p className="text-xs text-stone-500">Recebedor</p>
+                                <p className="text-sm font-medium text-stone-900 leading-tight">{pixInfo.nome}</p>
                               </div>
                             </div>
                           )}
@@ -588,8 +589,8 @@ export function ContribuicaoForm({
                                 <Building2 className="w-4 h-4 text-primary" />
                               </div>
                               <div className="flex-1">
-                                <p className="text-xs text-muted-foreground">Banco</p>
-                                <p className="text-sm font-medium text-foreground">{pixInfo.banco}</p>
+                                <p className="text-xs text-stone-500">Banco</p>
+                                <p className="text-sm font-medium text-stone-900">{pixInfo.banco}</p>
                               </div>
                             </div>
                           )}
@@ -602,18 +603,18 @@ export function ContribuicaoForm({
 
               {/* Card/Boleto placeholder */}
               {(formaPagamento === 'cartao' || formaPagamento === 'boleto') && (
-                <div className="border border-border rounded-xl bg-muted/30 p-6 text-center">
-                  <div className="p-3 rounded-full bg-muted w-fit mx-auto mb-4">
+                <div className="border border-stone-200 rounded-2xl bg-stone-50 p-6 text-center">
+                  <div className="p-3 rounded-full bg-stone-100 w-fit mx-auto mb-4">
                     {formaPagamento === 'cartao' ? (
-                      <CreditCard className="w-6 h-6 text-muted-foreground" />
+                      <CreditCard className="w-6 h-6 text-stone-400" />
                     ) : (
-                      <FileText className="w-6 h-6 text-muted-foreground" />
+                      <FileText className="w-6 h-6 text-stone-400" />
                     )}
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">
+                  <h3 className="font-semibold text-stone-900 mb-2">
                     {formaPagamento === 'cartao' ? 'Pagamento com Cartão' : 'Pagamento com Boleto'}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-stone-600 leading-relaxed">
                     Em breve você poderá contribuir via {formaPagamento === 'cartao' ? 'cartão de crédito' : 'boleto bancário'} diretamente pelo site.
                   </p>
                 </div>
@@ -644,7 +645,7 @@ export function ContribuicaoForm({
 
       {/* Pastoral Message */}
       <section className="text-center">
-        <p className="text-muted-foreground italic">
+        <p className="text-stone-500 italic leading-relaxed">
           "Cada contribuição é um ato de gratidão e participa da expansão do Reino de Deus em nossa cidade."
         </p>
       </section>

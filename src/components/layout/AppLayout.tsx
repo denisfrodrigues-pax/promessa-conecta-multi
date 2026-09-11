@@ -78,9 +78,15 @@ export default function AppLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-16 md:pb-0">
+    // Mobile: altura travada na viewport, com <main> como única área que rola —
+    // a barra inferior fica fora da área de rolagem (não é mais `fixed` por
+    // cima do conteúdo), então nenhum conteúdo pode ficar escondido atrás dela
+    // na posição inicial de rolagem (ver bug de /app/calendario). Desktop
+    // mantém o comportamento anterior (scroll do documento), já que a barra
+    // inferior não existe a partir de md.
+    <div className="h-screen md:h-auto md:min-h-screen bg-stone-50 flex flex-col">
       {/* Topbar */}
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+      <header className="sticky top-0 z-50 w-full border-b border-stone-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
@@ -97,10 +103,10 @@ export default function AppLayout() {
                   end={item.path === p('/app')}
                   className={({ isActive }) =>
                     cn(
-                      'relative flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                      'relative flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-colors min-h-[44px]',
                       isActive
                         ? 'bg-promessa-100 text-promessa-700'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
                     )
                   }
                 >
@@ -147,7 +153,7 @@ export default function AppLayout() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden"
+                className="lg:hidden rounded-xl h-11 w-11"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
               >
@@ -163,7 +169,7 @@ export default function AppLayout() {
 
         {/* Mobile Navigation Dropdown */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-border bg-card">
+          <div className="lg:hidden border-t border-stone-200 bg-white">
             <nav className="container mx-auto px-4 py-4 space-y-1">
               {navItems.map((item) => (
                 <NavLink
@@ -173,10 +179,10 @@ export default function AppLayout() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={({ isActive }) =>
                     cn(
-                      'relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors',
+                      'relative flex items-center gap-3 px-4 py-3 min-h-[44px] text-sm font-medium rounded-xl transition-colors',
                       isActive
                         ? 'bg-promessa-100 text-promessa-700'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
                     )
                   }
                 >
@@ -214,7 +220,7 @@ export default function AppLayout() {
               )}
 
               {/* User info on mobile */}
-              <div className="pt-3 mt-3 border-t border-border">
+              <div className="pt-3 mt-3 border-t border-stone-200">
                 <UserAvatarMenu size="md" showName />
               </div>
             </nav>
@@ -223,12 +229,13 @@ export default function AppLayout() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 overflow-y-auto md:overflow-visible">
         <Outlet />
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-50">
+      {/* Mobile Bottom Navigation — item de flex normal, não mais `fixed`
+          sobrepondo o conteúdo (ver comentário no wrapper acima). */}
+      <nav className="md:hidden shrink-0 bg-white border-t border-stone-200 shadow-elevated z-50">
         <div className="flex justify-around py-2">
           {mobileBottomNavItems.map((item) => (
             <NavLink
@@ -237,10 +244,10 @@ export default function AppLayout() {
               end={item.path === '/app'}
               className={({ isActive }) =>
                 cn(
-                  'flex flex-col items-center gap-1 px-3 py-2 text-xs',
+                  'flex flex-col items-center justify-center gap-1 px-3 py-2 min-h-[44px] min-w-[44px] text-xs',
                   isActive
                     ? 'text-promessa-700'
-                    : 'text-muted-foreground'
+                    : 'text-stone-500'
                 )
               }
             >
@@ -253,10 +260,10 @@ export default function AppLayout() {
             to={p('/app/notificacoes')}
             className={({ isActive }) =>
               cn(
-                'relative flex flex-col items-center gap-1 px-3 py-2 text-xs',
+                'relative flex flex-col items-center justify-center gap-1 px-3 py-2 min-h-[44px] min-w-[44px] text-xs',
                 isActive
                   ? 'text-promessa-700'
-                  : 'text-muted-foreground'
+                  : 'text-stone-500'
               )
             }
           >
