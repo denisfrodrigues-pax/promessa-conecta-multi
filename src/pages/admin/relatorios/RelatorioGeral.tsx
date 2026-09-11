@@ -246,8 +246,8 @@ export default function RelatorioGeral() {
     <div className="space-y-6" ref={reportRef}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Relatório Consolidado</h1>
-          <p className="text-muted-foreground">Visão geral de todas as áreas</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Relatório Consolidado</h1>
+          <p className="text-stone-600 leading-relaxed">Visão geral de todas as áreas</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCSV}>
@@ -263,73 +263,73 @@ export default function RelatorioGeral() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-2xl font-bold">{kpis.visitantesMes}</p>
-                <p className="text-xs text-muted-foreground">Visitantes/mês</p>
+                <p className="text-2xl font-bold text-stone-900">{kpis.visitantesMes}</p>
+                <p className="text-xs text-stone-500">Visitantes/mês</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-600" />
               <div>
-                <p className="text-2xl font-bold">{kpis.taxaConversao}%</p>
-                <p className="text-xs text-muted-foreground">Conversão</p>
+                <p className="text-2xl font-bold text-stone-900">{kpis.taxaConversao}%</p>
+                <p className="text-xs text-stone-500">Conversão</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Network className="w-5 h-5 text-purple-600" />
               <div>
-                <p className="text-2xl font-bold">{kpis.basesAtivas}</p>
-                <p className="text-xs text-muted-foreground">Bases ativas</p>
+                <p className="text-2xl font-bold text-stone-900">{kpis.basesAtivas}</p>
+                <p className="text-xs text-stone-500">Bases ativas</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-primary" />
               <div>
-                <p className="text-2xl font-bold">{kpis.membrosAtivos}</p>
-                <p className="text-xs text-muted-foreground">Membros ativos</p>
+                <p className="text-2xl font-bold text-stone-900">{kpis.membrosAtivos}</p>
+                <p className="text-xs text-stone-500">Membros ativos</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Baby className="w-5 h-5 text-pink-600" />
               <div>
-                <p className="text-2xl font-bold">{kpis.kidsPresentes}</p>
-                <p className="text-xs text-muted-foreground">Kids hoje</p>
+                <p className="text-2xl font-bold text-stone-900">{kpis.kidsPresentes}</p>
+                <p className="text-xs text-stone-500">Kids hoje</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Wallet className="w-5 h-5 text-emerald-600" />
               <div>
-                <p className="text-2xl font-bold">{kpis.transacoesMes}</p>
-                <p className="text-xs text-muted-foreground">Transações/mês</p>
+                <p className="text-2xl font-bold text-stone-900">{kpis.transacoesMes}</p>
+                <p className="text-xs text-stone-500">Transações/mês</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <BarChart3 className={`w-5 h-5 ${kpis.saldoMes >= 0 ? "text-green-600" : "text-red-600"}`} />
@@ -337,7 +337,7 @@ export default function RelatorioGeral() {
                 <p className={`text-xl font-bold ${kpis.saldoMes >= 0 ? "text-green-600" : "text-red-600"}`}>
                   {kpis.saldoMes.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                 </p>
-                <p className="text-xs text-muted-foreground">Saldo/mês</p>
+                <p className="text-xs text-stone-500">Saldo/mês</p>
               </div>
             </div>
           </CardContent>
@@ -346,9 +346,9 @@ export default function RelatorioGeral() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle className="text-base font-bold">Visitantes - Últimos 6 meses</CardTitle>
+            <CardTitle className="text-base font-bold text-stone-900">Visitantes - Últimos 6 meses</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
@@ -363,9 +363,9 @@ export default function RelatorioGeral() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle className="text-base font-bold">Membros por Status</CardTitle>
+            <CardTitle className="text-base font-bold text-stone-900">Membros por Status</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
@@ -390,9 +390,9 @@ export default function RelatorioGeral() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle className="text-base font-bold">Financeiro - Entradas vs Saídas</CardTitle>
+            <CardTitle className="text-base font-bold text-stone-900">Financeiro - Entradas vs Saídas</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
@@ -411,9 +411,9 @@ export default function RelatorioGeral() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle className="text-base font-bold">Check-ins Kids por Sala</CardTitle>
+            <CardTitle className="text-base font-bold text-stone-900">Check-ins Kids por Sala</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>

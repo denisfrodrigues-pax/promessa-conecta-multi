@@ -183,11 +183,11 @@ export default function FinanceiroDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard Financeiro</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold text-stone-900">Dashboard Financeiro</h1>
+          <p className="text-stone-600 leading-relaxed">
             Visão geral das finanças - {format(new Date(), "MMMM yyyy", { locale: ptBR })}
           </p>
         </div>
@@ -199,9 +199,9 @@ export default function FinanceiroDashboard() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-green-500">
+        <Card className="border-l-4 border-l-green-500 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-stone-500">
               Receitas do Mês
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
@@ -213,9 +213,9 @@ export default function FinanceiroDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-red-500">
+        <Card className="border-l-4 border-l-red-500 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-stone-500">
               Despesas do Mês
             </CardTitle>
             <TrendingDown className="h-4 w-4 text-red-500" />
@@ -227,9 +227,9 @@ export default function FinanceiroDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-blue-500">
+        <Card className="border-l-4 border-l-blue-500 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-stone-500">
               Saldo Geral
             </CardTitle>
             <DollarSign className="h-4 w-4 text-blue-500" />
@@ -241,9 +241,9 @@ export default function FinanceiroDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-purple-500">
+        <Card className="border-l-4 border-l-purple-500 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-stone-500">
               Contas Ativas
             </CardTitle>
             <Wallet className="h-4 w-4 text-purple-500" />
@@ -256,7 +256,7 @@ export default function FinanceiroDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Gráfico */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 rounded-2xl">
           <CardHeader>
             <CardTitle className="text-lg">Receitas x Despesas (últimos 6 meses)</CardTitle>
           </CardHeader>
@@ -281,7 +281,7 @@ export default function FinanceiroDashboard() {
         </Card>
 
         {/* Transações Recentes */}
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg">Últimos Lançamentos</CardTitle>
             <Button
@@ -295,14 +295,14 @@ export default function FinanceiroDashboard() {
           <CardContent>
             <div className="space-y-4">
               {transacoesRecentes.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
+                <p className="text-stone-500 text-center py-4">
                   Nenhum lançamento encontrado
                 </p>
               ) : (
                 transacoesRecentes.map((t) => (
                   <div
                     key={t.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                    className="flex items-center justify-between p-3 rounded-xl bg-stone-50 hover:bg-stone-100 transition-all duration-200 cursor-pointer min-h-[44px]"
                     onClick={() => navigate(p(`/admin/financeiro/transacoes/${t.id}`))}
                   >
                     <div className="flex items-center gap-3">
@@ -321,7 +321,7 @@ export default function FinanceiroDashboard() {
                         <p className="font-medium text-sm">
                           {t.descricao || t.categoria?.nome || "Sem descrição"}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-stone-500">
                           {format(new Date(t.data_operacao), "dd/MM/yyyy")}
                         </p>
                       </div>
@@ -343,10 +343,10 @@ export default function FinanceiroDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         <Button
           variant="outline"
-          className="h-auto py-4 flex flex-col gap-2"
+          className="h-auto py-6 flex flex-col gap-2 rounded-xl"
           onClick={() => navigate(p('/admin/financeiro/transacoes'))}
         >
           <FileText className="h-5 w-5" />
@@ -354,7 +354,7 @@ export default function FinanceiroDashboard() {
         </Button>
         <Button
           variant="outline"
-          className="h-auto py-4 flex flex-col gap-2"
+          className="h-auto py-6 flex flex-col gap-2 rounded-xl"
           onClick={() => navigate(p('/admin/financeiro/contas'))}
         >
           <Wallet className="h-5 w-5" />
@@ -362,7 +362,7 @@ export default function FinanceiroDashboard() {
         </Button>
         <Button
           variant="outline"
-          className="h-auto py-4 flex flex-col gap-2"
+          className="h-auto py-6 flex flex-col gap-2 rounded-xl"
           onClick={() => navigate(p('/admin/financeiro/categorias'))}
         >
           <DollarSign className="h-5 w-5" />
@@ -370,7 +370,7 @@ export default function FinanceiroDashboard() {
         </Button>
         <Button
           variant="outline"
-          className="h-auto py-4 flex flex-col gap-2"
+          className="h-auto py-6 flex flex-col gap-2 rounded-xl"
           onClick={() => navigate(p('/admin/financeiro/relatorio'))}
         >
           <TrendingUp className="h-5 w-5" />

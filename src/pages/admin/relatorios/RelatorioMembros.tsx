@@ -147,8 +147,8 @@ export default function RelatorioMembros() {
     <div className="space-y-6" ref={reportRef}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Relatório de Membros</h1>
-          <p className="text-muted-foreground">Análise detalhada da membresia</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Relatório de Membros</h1>
+          <p className="text-stone-600 leading-relaxed">Análise detalhada da membresia</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCSV}><Download className="w-4 h-4 mr-2" />CSV</Button>
@@ -161,57 +161,57 @@ export default function RelatorioMembros() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Users className="w-6 h-6 text-green-600" />
               <div>
-                <p className="text-2xl font-bold">{kpis.ativos}</p>
-                <p className="text-xs text-muted-foreground">Ativos</p>
+                <p className="text-2xl font-bold text-stone-900">{kpis.ativos}</p>
+                <p className="text-xs text-stone-500">Ativos</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <UserPlus className="w-6 h-6 text-blue-600" />
               <div>
-                <p className="text-2xl font-bold">{kpis.novosMes}</p>
-                <p className="text-xs text-muted-foreground">Novos/mês</p>
+                <p className="text-2xl font-bold text-stone-900">{kpis.novosMes}</p>
+                <p className="text-xs text-stone-500">Novos/mês</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <UserMinus className="w-6 h-6 text-gray-600" />
+              <UserMinus className="w-6 h-6 text-stone-500" />
               <div>
-                <p className="text-2xl font-bold">{kpis.desligados}</p>
-                <p className="text-xs text-muted-foreground">Inativos</p>
+                <p className="text-2xl font-bold text-stone-900">{kpis.desligados}</p>
+                <p className="text-xs text-stone-500">Inativos</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Calendar className="w-6 h-6 text-purple-600" />
               <div>
-                <p className="text-2xl font-bold">{kpis.idadeMedia}</p>
-                <p className="text-xs text-muted-foreground">Idade média</p>
+                <p className="text-2xl font-bold text-stone-900">{kpis.idadeMedia}</p>
+                <p className="text-xs text-stone-500">Idade média</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Baby className="w-6 h-6 text-pink-500" />
               <div>
-                <p className="text-2xl font-bold">{totalCriancas}</p>
-                <p className="text-xs text-muted-foreground">Crianças</p>
+                <p className="text-2xl font-bold text-stone-900">{totalCriancas}</p>
+                <p className="text-xs text-stone-500">Crianças</p>
               </div>
             </div>
           </CardContent>
@@ -219,10 +219,10 @@ export default function RelatorioMembros() {
       </div>
 
       {/* Filter */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="p-4">
           <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-            <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[150px] rounded-xl"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="ativo">Ativos</SelectItem>
@@ -234,8 +234,8 @@ export default function RelatorioMembros() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader><CardTitle className="text-base">Entradas por Mês</CardTitle></CardHeader>
+        <Card className="rounded-2xl">
+          <CardHeader><CardTitle className="text-base text-stone-900">Entradas por Mês</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={chartData.entradas}>
@@ -248,8 +248,8 @@ export default function RelatorioMembros() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-base">Faixa Etária</CardTitle></CardHeader>
+        <Card className="rounded-2xl">
+          <CardHeader><CardTitle className="text-base text-stone-900">Faixa Etária</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={chartData.faixaEtaria}>
@@ -262,8 +262,8 @@ export default function RelatorioMembros() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-base">Ativos vs Inativos</CardTitle></CardHeader>
+        <Card className="rounded-2xl">
+          <CardHeader><CardTitle className="text-base text-stone-900">Ativos vs Inativos</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
@@ -279,28 +279,28 @@ export default function RelatorioMembros() {
       </div>
 
       {/* Table */}
-      <Card>
-        <CardHeader><CardTitle className="text-base">Lista de Membros</CardTitle></CardHeader>
+      <Card className="rounded-2xl">
+        <CardHeader><CardTitle className="text-base text-stone-900">Lista de Membros</CardTitle></CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Nome</th>
-                  <th className="text-left p-2">Telefone</th>
-                  <th className="text-left p-2">Idade</th>
-                  <th className="text-left p-2">Status</th>
+                <tr className="border-b border-stone-200">
+                  <th className="text-left p-2 text-stone-900">Nome</th>
+                  <th className="text-left p-2 text-stone-900">Telefone</th>
+                  <th className="text-left p-2 text-stone-900">Idade</th>
+                  <th className="text-left p-2 text-stone-900">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {membros.map(m => (
-                  <tr key={m.id} className="border-b hover:bg-muted/50">
-                    <td className="p-2 font-medium">{m.nome}</td>
+                  <tr key={m.id} className="border-b border-stone-100 hover:bg-stone-50">
+                    <td className="p-2 font-medium text-stone-900">{m.nome}</td>
                     <td className="p-2">
                       <div className="flex items-center gap-2">
                         {m.telefone ? formatPhoneBR(m.telefone) : '–'}
                         {hasValidPhone(m.telefone) && (
-                          <button onClick={() => window.open(getWhatsAppUrl(m.telefone, `Olá! Sou da ${churchNome || 'nossa Igreja'}.`), '_blank')} className="text-green-600" aria-label="Enviar WhatsApp">
+                          <button onClick={() => window.open(getWhatsAppUrl(m.telefone, `Olá! Sou da ${churchNome || 'nossa Igreja'}.`), '_blank')} className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:bg-green-50" aria-label="Enviar WhatsApp">
                             <MessageCircle className="w-4 h-4" />
                           </button>
                         )}
@@ -308,7 +308,7 @@ export default function RelatorioMembros() {
                     </td>
                     <td className="p-2">{m.data_nascimento ? differenceInYears(new Date(), new Date(m.data_nascimento)) : '–'}</td>
                     <td className="p-2">
-                      <Badge className={m.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                      <Badge className={m.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-700'}>
                         {statusLabels[m.status] || m.status}
                       </Badge>
                     </td>
@@ -319,7 +319,7 @@ export default function RelatorioMembros() {
           </div>
           {total > limit && (
             <div className="flex justify-between items-center mt-4">
-              <span className="text-sm text-muted-foreground">Página {page} de {Math.ceil(total / limit)}</span>
+              <span className="text-sm text-stone-500">Página {page} de {Math.ceil(total / limit)}</span>
               <div className="space-x-2">
                 <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Anterior</Button>
                 <Button variant="outline" size="sm" disabled={page * limit >= total} onClick={() => setPage(p => p + 1)}>Próxima</Button>

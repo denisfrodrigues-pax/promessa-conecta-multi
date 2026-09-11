@@ -251,13 +251,13 @@ export default function Acompanhamento() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold flex items-center gap-2">
+          <h1 className="text-2xl font-display font-bold text-stone-900 flex items-center gap-2">
             <Users className="h-6 w-6" />
             Acompanhamento
           </h1>
-          <p className="text-muted-foreground">Acompanhe visitantes vinculados às bases</p>
+          <p className="text-stone-600 leading-relaxed">Acompanhe visitantes vinculados às bases</p>
         </div>
-        <Button variant="outline" onClick={handleExportCSV} disabled={loading || filtered.length === 0}>
+        <Button variant="outline" className="min-h-[44px]" onClick={handleExportCSV} disabled={loading || filtered.length === 0}>
           <Download className="h-4 w-4 mr-2" />
           Exportar CSV
         </Button>
@@ -265,16 +265,16 @@ export default function Acompanhamento() {
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
           <Input
             placeholder="Buscar por nome do visitante..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 rounded-xl"
           />
         </div>
         <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-          <SelectTrigger className="w-full md:w-48">
+          <SelectTrigger className="w-full md:w-48 rounded-xl">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -302,7 +302,7 @@ export default function Acompanhamento() {
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="text-center text-stone-500 py-12 leading-relaxed">
               Nenhum acompanhamento encontrado
             </p>
           ) : (
@@ -310,7 +310,7 @@ export default function Acompanhamento() {
               {filtered.map((acomp) => (
                 <div
                   key={acomp.id}
-                  className="p-4 rounded-lg border bg-card hover:shadow-sm transition-shadow"
+                  className="p-4 sm:p-5 rounded-xl border border-stone-200 bg-card hover:shadow-elevated transition-shadow"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-2 flex-1">
@@ -319,7 +319,7 @@ export default function Acompanhamento() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
+                          className="h-11 w-11 text-green-600 hover:text-green-700 hover:bg-green-50"
                           disabled={!hasValidPhone(acomp.visitante?.telefone)}
                           onClick={() => handleWhatsAppClick(acomp.visitante?.telefone)}
                           title={hasValidPhone(acomp.visitante?.telefone) ? 'Enviar WhatsApp' : 'Telefone não disponível'}
@@ -337,7 +337,7 @@ export default function Acompanhamento() {
                           </Badge>
                         )}
                       </div>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-stone-500">
                         <span>Base: {acomp.base?.nome || '-'}</span>
                         {acomp.base?.lider_nome && (
                           <span>Líder: {acomp.base.lider_nome}</span>
@@ -359,11 +359,11 @@ export default function Acompanhamento() {
                           {acomp.base?.membros_count || 0} / {acomp.base?.capacidade || 20}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-stone-500">
                         Última atualização: {format(new Date(acomp.updated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                       </p>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => openModal(acomp)}>
+                    <Button size="sm" variant="outline" className="min-h-[44px]" onClick={() => openModal(acomp)}>
                       <RefreshCw className="h-4 w-4 mr-1" />
                       Atualizar
                     </Button>
@@ -382,35 +382,35 @@ export default function Acompanhamento() {
           </DialogHeader>
           {selectedAcomp && (
             <div className="space-y-4">
-              <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+              <div className="p-3 rounded-xl bg-stone-50 space-y-2">
                 <p className="text-sm">
-                  <span className="text-muted-foreground">Visitante:</span>{' '}
-                  <strong>{selectedAcomp.visitante?.nome}</strong>
+                  <span className="text-stone-500">Visitante:</span>{' '}
+                  <strong className="text-stone-900">{selectedAcomp.visitante?.nome}</strong>
                 </p>
                 <p className="text-sm">
-                  <span className="text-muted-foreground">Base:</span> {selectedAcomp.base?.nome}
+                  <span className="text-stone-500">Base:</span> {selectedAcomp.base?.nome}
                 </p>
                 {selectedAcomp.base?.dia_semana && selectedAcomp.base?.horario && (
                   <p className="text-sm flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
+                    <Clock className="h-3 w-3 text-stone-500" />
                     {selectedAcomp.base.dia_semana} às {selectedAcomp.base.horario}
                   </p>
                 )}
                 {selectedAcomp.base?.lider_nome && (
                   <p className="text-sm">
-                    <span className="text-muted-foreground">Líder:</span> {selectedAcomp.base.lider_nome}
+                    <span className="text-stone-500">Líder:</span> {selectedAcomp.base.lider_nome}
                   </p>
                 )}
                 <p className="text-sm">
-                  <span className="text-muted-foreground">Status atual:</span>{' '}
+                  <span className="text-stone-500">Status atual:</span>{' '}
                   <Badge variant="outline" className={`${statusColors[selectedAcomp.status]} text-xs`}>
                     {statusLabels[selectedAcomp.status]}
                   </Badge>
                 </p>
                 {selectedAcomp.observacao && (
-                  <div className="pt-2 border-t mt-2">
-                    <p className="text-xs text-muted-foreground mb-1">Última observação:</p>
-                    <p className="text-sm bg-background p-2 rounded border">{selectedAcomp.observacao}</p>
+                  <div className="pt-2 border-t border-stone-200 mt-2">
+                    <p className="text-xs text-stone-500 mb-1">Última observação:</p>
+                    <p className="text-sm bg-white p-2 rounded-lg border border-stone-200 leading-relaxed">{selectedAcomp.observacao}</p>
                   </div>
                 )}
               </div>
@@ -438,10 +438,10 @@ export default function Acompanhamento() {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setModalOpen(false)}>
+                <Button variant="outline" className="min-h-[44px]" onClick={() => setModalOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleSave} disabled={saving}>
+                <Button className="min-h-[44px]" onClick={handleSave} disabled={saving}>
                   {saving ? 'Salvando...' : 'Salvar'}
                 </Button>
               </div>

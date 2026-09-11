@@ -259,11 +259,11 @@ export default function FinanceiroRelatorio() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Relatório Financeiro</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold text-stone-900">Relatório Financeiro</h1>
+          <p className="text-stone-600 leading-relaxed">
             Período: {format(new Date(dataInicio), "dd/MM/yyyy")} a{" "}
             {format(new Date(dataFim), "dd/MM/yyyy")}
           </p>
@@ -275,7 +275,7 @@ export default function FinanceiroRelatorio() {
       </div>
 
       {/* Filtros de período */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
@@ -321,9 +321,9 @@ export default function FinanceiroRelatorio() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-green-500">
+        <Card className="border-l-4 border-l-green-500 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-stone-500">
               Total Receitas
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
@@ -335,9 +335,9 @@ export default function FinanceiroRelatorio() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-red-500">
+        <Card className="border-l-4 border-l-red-500 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-stone-500">
               Total Despesas
             </CardTitle>
             <TrendingDown className="h-4 w-4 text-red-500" />
@@ -349,9 +349,9 @@ export default function FinanceiroRelatorio() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-blue-500">
+        <Card className="border-l-4 border-l-blue-500 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-stone-500">
               Saldo do Período
             </CardTitle>
             <DollarSign className="h-4 w-4 text-blue-500" />
@@ -367,9 +367,9 @@ export default function FinanceiroRelatorio() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-purple-500">
+        <Card className="border-l-4 border-l-purple-500 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-stone-500">
               Transações
             </CardTitle>
             <FileText className="h-4 w-4 text-purple-500" />
@@ -383,7 +383,7 @@ export default function FinanceiroRelatorio() {
       {/* Resumo por Categoria */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Receitas por Categoria */}
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <TrendingUp className="h-5 w-5 text-green-500" />
@@ -392,7 +392,7 @@ export default function FinanceiroRelatorio() {
           </CardHeader>
           <CardContent>
             {categoriaReceitas.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">
+              <p className="text-stone-500 text-center py-4 leading-relaxed">
                 Nenhuma receita no período
               </p>
             ) : (
@@ -411,7 +411,7 @@ export default function FinanceiroRelatorio() {
         </Card>
 
         {/* Despesas por Categoria */}
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <TrendingDown className="h-5 w-5 text-red-500" />
@@ -420,7 +420,7 @@ export default function FinanceiroRelatorio() {
           </CardHeader>
           <CardContent>
             {categoriaDespesas.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">
+              <p className="text-stone-500 text-center py-4 leading-relaxed">
                 Nenhuma despesa no período
               </p>
             ) : (
@@ -440,13 +440,13 @@ export default function FinanceiroRelatorio() {
       </div>
 
       {/* Lista de Transações */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="text-lg">Transações do Período</CardTitle>
         </CardHeader>
         <CardContent>
           {transacoes.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
+            <p className="text-stone-500 text-center py-8 leading-relaxed">
               Nenhuma transação encontrada no período selecionado
             </p>
           ) : (
@@ -491,7 +491,7 @@ export default function FinanceiroRelatorio() {
             </Table>
           )}
           {transacoes.length > 20 && (
-            <p className="text-sm text-muted-foreground text-center mt-4">
+            <p className="text-sm text-stone-500 text-center mt-4">
               Mostrando 20 de {transacoes.length} transações. Exporte o CSV para ver todas.
             </p>
           )}

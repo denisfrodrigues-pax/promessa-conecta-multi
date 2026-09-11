@@ -14,7 +14,7 @@ export default function AdminLayout() {
 
   if (loading && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -29,7 +29,7 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
+    <div className="min-h-screen flex w-full bg-stone-50">
       <div className="hidden md:block">
         <AdminSidebar />
       </div>

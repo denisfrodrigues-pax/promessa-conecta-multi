@@ -347,8 +347,8 @@ export default function Eventos() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-display font-bold text-foreground">Eventos</h1>
-          <p className="text-muted-foreground">Gerenciamento de eventos e inscrições</p>
+          <h1 className="text-3xl font-display font-bold text-stone-900">Eventos</h1>
+          <p className="text-stone-600 leading-relaxed">Gerenciamento de eventos e inscrições</p>
         </div>
         <Button 
           onClick={() => handleOpenDialog()} 
@@ -377,8 +377,8 @@ export default function Eventos() {
                     <stat.icon className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-sm text-muted-foreground">{stat.title}</p>
+                    <p className="text-3xl font-bold text-stone-900">{stat.value}</p>
+                    <p className="text-sm text-stone-600">{stat.title}</p>
                   </div>
                 </div>
               </CardContent>
@@ -389,10 +389,10 @@ export default function Eventos() {
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
         <Input
           placeholder="Buscar eventos..."
-          className="pl-12 h-12 rounded-xl border-border/50 bg-card shadow-sm focus:shadow-md transition-shadow"
+          className="pl-12 h-12 rounded-xl border-stone-200 bg-card shadow-soft focus:shadow-card transition-shadow"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -428,7 +428,7 @@ export default function Eventos() {
                   
                   {/* Status Badge */}
                   {isPast ? (
-                    <Badge className="absolute top-3 left-3 bg-muted/90 text-muted-foreground backdrop-blur-sm">
+                    <Badge className="absolute top-3 left-3 bg-stone-200/90 text-stone-600 backdrop-blur-sm">
                       <XCircle className="w-3 h-3 mr-1" />
                       Encerrado
                     </Badge>
@@ -473,24 +473,24 @@ export default function Eventos() {
                 </div>
                 
                 <CardContent className="p-5 space-y-4">
-                  <h3 className="font-display font-semibold text-lg text-foreground line-clamp-1">{evento.titulo}</h3>
+                  <h3 className="font-display font-semibold text-lg text-stone-900 line-clamp-1">{evento.titulo}</h3>
                   {evento.descricao && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">{evento.descricao}</p>
+                    <p className="text-sm text-stone-600 leading-relaxed line-clamp-2">{evento.descricao}</p>
                   )}
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-3 text-muted-foreground">
+                    <div className="flex items-center gap-3 text-stone-600">
                       <Calendar className="w-4 h-4 text-promessa-500" />
                       <span>
                         {format(new Date(evento.data_inicio), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
                       </span>
                     </div>
                     {evento.local && (
-                      <div className="flex items-center gap-3 text-muted-foreground">
+                      <div className="flex items-center gap-3 text-stone-600">
                         <MapPin className="w-4 h-4 text-promessa-500" />
                         <span className="line-clamp-1">{evento.local}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-3 text-muted-foreground">
+                    <div className="flex items-center gap-3 text-stone-600">
                       <Users className="w-4 h-4 text-promessa-500" />
                       <span>
                         {inscricoes[evento.id] || 0} inscritos
@@ -601,8 +601,8 @@ export default function Eventos() {
               />
               
               {imagePreview ? (
-                <div className="relative rounded-xl overflow-hidden border border-border">
-                  <img 
+                <div className="relative rounded-xl overflow-hidden border border-stone-200">
+                  <img
                     src={imagePreview} 
                     alt="Preview" 
                     className="w-full h-32 object-cover"
@@ -625,8 +625,8 @@ export default function Eventos() {
                   className="w-full h-24 rounded-xl border-dashed flex flex-col gap-2"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload className="w-6 h-6 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
+                  <Upload className="w-6 h-6 text-stone-400" />
+                  <span className="text-sm text-stone-500">
                     Clique para enviar (JPG, PNG, WebP - máx 5MB)
                   </span>
                 </Button>

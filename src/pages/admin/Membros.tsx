@@ -67,7 +67,7 @@ const statusLabels: Record<string, string> = {
 
 const statusColors: Record<string, string> = {
   ativo: 'bg-green-100 text-green-800 border-green-300',
-  inativo: 'bg-gray-100 text-gray-800 border-gray-300',
+  inativo: 'bg-stone-100 text-stone-700 border-stone-300',
   desligado: 'bg-red-100 text-red-800 border-red-300',
   transferido: 'bg-orange-100 text-orange-800 border-orange-300',
   em_acompanhamento: 'bg-blue-100 text-blue-800 border-blue-300',
@@ -355,12 +355,12 @@ export default function Membros() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Membros</h1>
-          <p className="text-muted-foreground">Gerencie os membros da igreja</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Membros</h1>
+          <p className="text-stone-600 leading-relaxed">Gerencie os membros da igreja</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(p('/admin/membros/relatorio'))}>

@@ -129,38 +129,40 @@ export default function AdminEscalasPeriodos() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 bg-stone-50">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-display font-bold">Períodos de Escala</h2>
-          <p className="text-sm text-muted-foreground">Organize as escalas por período mensal</p>
+          <h2 className="text-xl font-display font-bold text-stone-900">Períodos de Escala</h2>
+          <p className="text-sm text-stone-500 leading-relaxed">Organize as escalas por período mensal</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
+        <Button onClick={() => setIsModalOpen(true)} className="rounded-xl min-h-[44px]">
           <Plus className="w-4 h-4 mr-2" />
           Novo período
         </Button>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar período..."
-          className="pl-9"
+          className="pl-9 rounded-xl"
         />
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
         </div>
       ) : periodos.length === 0 ? (
-        <Card>
+        <Card className="rounded-2xl shadow-soft border-stone-200">
           <CardContent className="py-14 text-center space-y-3">
-            <Calendar className="w-12 h-12 mx-auto text-muted-foreground/40" />
-            <p className="text-muted-foreground">Nenhum período criado ainda.</p>
-            <Button variant="outline" onClick={() => setIsModalOpen(true)}>
+            <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto">
+              <Calendar className="w-7 h-7 text-stone-400" />
+            </div>
+            <p className="text-stone-600 font-semibold leading-relaxed">Nenhum período criado ainda.</p>
+            <Button variant="outline" onClick={() => setIsModalOpen(true)} className="rounded-xl min-h-[44px]">
               <Plus className="w-4 h-4 mr-2" />
               Criar primeiro período
             </Button>
@@ -171,29 +173,29 @@ export default function AdminEscalasPeriodos() {
           p.nome.toLowerCase().includes(search.toLowerCase())
         );
         return filtered.length === 0 ? (
-          <Card>
+          <Card className="rounded-2xl shadow-soft border-stone-200">
             <CardContent className="py-10 text-center">
-              <p className="text-muted-foreground">Nenhum período encontrado para "{search}".</p>
+              <p className="text-stone-500">Nenhum período encontrado para "{search}".</p>
             </CardContent>
           </Card>
         ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filtered.map((p) => (
-            <Card key={p.id}>
-              <CardContent className="p-4">
+            <Card key={p.id} className="rounded-2xl shadow-soft border-stone-200">
+              <CardContent className="p-6">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                     <Calendar className="w-5 h-5 text-primary" />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium truncate">{p.nome}</p>
+                      <p className="font-medium text-stone-900 truncate">{p.nome}</p>
                       <Badge variant={p.status === 'aberto' ? 'default' : 'secondary'}>
                         {p.status === 'aberto' ? 'Aberto' : 'Fechado'}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-stone-500">
                       {MESES[p.mes - 1]} de {p.ano}
                     </p>
                   </div>
@@ -202,6 +204,7 @@ export default function AdminEscalasPeriodos() {
                     <Button
                       size="sm"
                       variant="outline"
+                      className="rounded-xl min-h-[44px]"
                       onClick={() => toggleMutation.mutate(p)}
                       disabled={toggleMutation.isPending}
                       title={p.status === 'aberto' ? 'Fechar período' : 'Reabrir período'}
@@ -211,7 +214,7 @@ export default function AdminEscalasPeriodos() {
                         : <><LockOpen className="w-4 h-4 mr-1" />Reabrir</>
                       }
                     </Button>
-                    <Button size="sm" variant="default" asChild>
+                    <Button size="sm" variant="default" className="rounded-xl min-h-[44px]" asChild>
                       <Link to={pathFn(`/admin/escalas/periodos/${p.id}`)}>
                         Gerenciar
                         <ChevronRight className="w-4 h-4 ml-1" />
@@ -220,7 +223,7 @@ export default function AdminEscalasPeriodos() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl min-h-[44px]"
                       onClick={() => setToDelete(p)}
                       title="Excluir período"
                     >
@@ -237,7 +240,7 @@ export default function AdminEscalasPeriodos() {
 
       {/* ── Modal Criar ──────────────────────────────────────────────────────── */}
       <Dialog open={isModalOpen} onOpenChange={(open) => { if (!open) setIsModalOpen(false); }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>Novo período de escala</DialogTitle>
           </DialogHeader>
@@ -250,13 +253,14 @@ export default function AdminEscalasPeriodos() {
                 onChange={(e) => setForm({ ...form, nome: e.target.value })}
                 placeholder="Ex: Escalas Maio 2026"
                 disabled={createMutation.isPending}
+                className="rounded-xl"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Mês *</Label>
                 <Select value={form.mes} onValueChange={(v) => setForm({ ...form, mes: v })}>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -269,7 +273,7 @@ export default function AdminEscalasPeriodos() {
               <div className="space-y-2">
                 <Label>Ano *</Label>
                 <Select value={form.ano} onValueChange={(v) => setForm({ ...form, ano: v })}>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -282,10 +286,10 @@ export default function AdminEscalasPeriodos() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)} disabled={createMutation.isPending}>
+            <Button variant="outline" className="rounded-xl min-h-[44px]" onClick={() => setIsModalOpen(false)} disabled={createMutation.isPending}>
               Cancelar
             </Button>
-            <Button onClick={handleSubmit} disabled={createMutation.isPending}>
+            <Button className="rounded-xl min-h-[44px]" onClick={handleSubmit} disabled={createMutation.isPending}>
               {createMutation.isPending
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Criando...</>
                 : 'Criar período'
@@ -297,7 +301,7 @@ export default function AdminEscalasPeriodos() {
 
       {/* ── Confirmar Exclusão ───────────────────────────────────────────────── */}
       <AlertDialog open={!!toDelete} onOpenChange={(open) => { if (!open) setToDelete(null); }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir período?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -305,11 +309,11 @@ export default function AdminEscalasPeriodos() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMutation.isPending} className="rounded-xl min-h-[44px]">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => toDelete && deleteMutation.mutate(toDelete.id)}
               disabled={deleteMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl min-h-[44px]"
             >
               {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>

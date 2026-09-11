@@ -401,7 +401,7 @@ export default function AdminNotificacoes() {
       case 'aviso_admin':
         return <Megaphone className="w-4 h-4 text-red-500" />;
       default:
-        return <Bell className="w-4 h-4 text-muted-foreground" />;
+        return <Bell className="w-4 h-4 text-stone-400" />;
     }
   };
 
@@ -416,7 +416,7 @@ export default function AdminNotificacoes() {
       case 'ministerio':
         return <Badge className="bg-green-100 text-green-700">Ministério</Badge>;
       case 'sistema':
-        return <Badge className="bg-gray-100 text-gray-700">Sistema</Badge>;
+        return <Badge className="bg-stone-100 text-stone-700">Sistema</Badge>;
       case 'aviso_admin':
         return <Badge className="bg-red-100 text-red-700">Aviso</Badge>;
       default:
@@ -467,14 +467,14 @@ export default function AdminNotificacoes() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">Notificações</h1>
-          <p className="text-muted-foreground">Push notifications enviadas diretamente para o dispositivo dos membros. Use para alertas urgentes, escalas e lembretes individuais.</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Notificações</h1>
+          <p className="text-stone-600 leading-relaxed">Push notifications enviadas diretamente para o dispositivo dos membros. Use para alertas urgentes, escalas e lembretes individuais.</p>
         </div>
         <div className="flex gap-2">
           {selectedIds.size > 0 && (
             <AlertDialog open={isDeleteSelectedOpen} onOpenChange={setIsDeleteSelectedOpen}>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" className="text-destructive hover:text-destructive">
+                <Button variant="outline" className="min-h-[44px] text-destructive hover:text-destructive">
                   <Trash2 className="w-4 h-4 mr-2" />
                   Excluir selecionadas ({selectedIds.size})
                 </Button>
@@ -487,10 +487,10 @@ export default function AdminNotificacoes() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogCancel className="min-h-[44px]">Cancelar</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDeleteSelected}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="min-h-[44px] bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     disabled={deletingSelected}
                   >
                     {deletingSelected ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Excluir selecionadas'}
@@ -500,14 +500,14 @@ export default function AdminNotificacoes() {
             </AlertDialog>
           )}
           {stats.naoLidas > 0 && (
-            <Button variant="outline" onClick={handleMarkAllAsRead}>
+            <Button variant="outline" className="min-h-[44px]" onClick={handleMarkAllAsRead}>
               <CheckCheck className="w-4 h-4 mr-2" />
               Marcar todas como lidas
             </Button>
           )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" className="text-destructive hover:text-destructive" disabled={notifications.length === 0}>
+              <Button variant="outline" className="min-h-[44px] text-destructive hover:text-destructive" disabled={notifications.length === 0}>
                 <Trash2 className="w-4 h-4 mr-2" />
                 Limpar tudo
               </Button>
@@ -520,10 +520,10 @@ export default function AdminNotificacoes() {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogCancel className="min-h-[44px]">Cancelar</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleClearAll}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="min-h-[44px] bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   disabled={clearingAll}
                 >
                   {clearingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Limpar tudo'}
@@ -531,7 +531,7 @@ export default function AdminNotificacoes() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Button className="min-h-[44px]" onClick={() => setIsCreateDialogOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Nova Notificação
           </Button>
@@ -539,54 +539,54 @@ export default function AdminNotificacoes() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-sm text-muted-foreground">Total</div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6">
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 sm:p-6">
+            <div className="text-2xl font-bold text-stone-900">{stats.total}</div>
+            <div className="text-sm text-stone-500">Total</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 sm:p-6">
             <div className="text-2xl font-bold text-blue-600">{stats.escalas}</div>
-            <div className="text-sm text-muted-foreground">Escalas</div>
+            <div className="text-sm text-stone-500">Escalas</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 sm:p-6">
             <div className="text-2xl font-bold text-purple-600">{stats.atualizacoes}</div>
-            <div className="text-sm text-muted-foreground">Atualizações</div>
+            <div className="text-sm text-stone-500">Atualizações</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 sm:p-6">
             <div className="text-2xl font-bold text-red-600">{stats.avisos}</div>
-            <div className="text-sm text-muted-foreground">Avisos</div>
+            <div className="text-sm text-stone-500">Avisos</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 sm:p-6">
             <div className="text-2xl font-bold text-orange-600">{stats.naoLidas}</div>
-            <div className="text-sm text-muted-foreground">Não Lidas</div>
+            <div className="text-sm text-stone-500">Não Lidas</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
               <Input
                 placeholder="Buscar por título, mensagem ou voluntário..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 rounded-xl"
               />
             </div>
             <Select value={filterMinisterio} onValueChange={setFilterMinisterio}>
-              <SelectTrigger className="w-full md:w-[200px]">
+              <SelectTrigger className="w-full md:w-[200px] rounded-xl">
                 <SelectValue placeholder="Filtrar por ministério" />
               </SelectTrigger>
               <SelectContent>
@@ -599,7 +599,7 @@ export default function AdminNotificacoes() {
               </SelectContent>
             </Select>
             <Select value={filterTipo} onValueChange={setFilterTipo}>
-              <SelectTrigger className="w-full md:w-[200px]">
+              <SelectTrigger className="w-full md:w-[200px] rounded-xl">
                 <SelectValue placeholder="Filtrar por tipo" />
               </SelectTrigger>
               <SelectContent>
@@ -617,7 +617,7 @@ export default function AdminNotificacoes() {
       </Card>
 
       {/* Table */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
           <Table>
@@ -649,7 +649,7 @@ export default function AdminNotificacoes() {
                 </TableRow>
               ) : (
                 filteredNotifications.map((notification) => (
-                  <TableRow key={notification.id} className={selectedIds.has(notification.id) ? 'bg-muted/50' : ''}>
+                  <TableRow key={notification.id} className={selectedIds.has(notification.id) ? 'bg-stone-100/50' : ''}>
                     <TableCell>
                       <Checkbox 
                         checked={selectedIds.has(notification.id)}
@@ -689,6 +689,7 @@ export default function AdminNotificacoes() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="min-h-[44px] min-w-[44px]"
                             onClick={() => handleMarkAsRead(notification.id)}
                             title="Marcar como lida"
                             aria-label="Marcar como lida"
@@ -701,7 +702,7 @@ export default function AdminNotificacoes() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-destructive hover:text-destructive"
+                              className="min-h-[44px] min-w-[44px] text-destructive hover:text-destructive"
                               disabled={deleting === notification.id}
                               aria-label="Excluir notificação"
                             >
@@ -720,10 +721,10 @@ export default function AdminNotificacoes() {
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogCancel className="min-h-[44px]">Cancelar</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDeleteNotification(notification.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                className="min-h-[44px] bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
                                 Excluir
                               </AlertDialogAction>
@@ -838,10 +839,10 @@ export default function AdminNotificacoes() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+            <Button variant="outline" className="min-h-[44px]" onClick={() => setIsCreateDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleSendNotification} disabled={sending}>
+            <Button className="min-h-[44px]" onClick={handleSendNotification} disabled={sending}>
               {sending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (

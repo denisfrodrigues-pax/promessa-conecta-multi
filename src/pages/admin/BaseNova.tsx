@@ -135,28 +135,28 @@ export default function BaseNova() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/bases'))} aria-label="Voltar">
+        <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => navigate(p('/admin/bases'))} aria-label="Voltar">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-xl font-display font-bold flex items-center gap-2">
+          <h1 className="text-xl font-display font-bold text-stone-900 flex items-center gap-2">
             <Network className="h-5 w-5" />
             Novo Grupo
           </h1>
-          <p className="text-sm text-muted-foreground">Preencha os dados para criar um novo grupo</p>
+          <p className="text-sm text-stone-600">Preencha os dados para criar um novo grupo</p>
         </div>
       </div>
 
       {/* Form Card */}
-      <Card className="max-w-2xl">
+      <Card className="max-w-2xl rounded-2xl">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Dados do Grupo</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Nome */}
             <div className="space-y-1.5">
-              <Label htmlFor="nome" className="text-xs text-muted-foreground">Nome *</Label>
+              <Label htmlFor="nome" className="text-xs text-stone-500">Nome *</Label>
               <Input
                 id="nome"
                 value={formData.nome}
@@ -167,7 +167,7 @@ export default function BaseNova() {
 
             {/* Descrição */}
             <div className="space-y-1.5">
-              <Label htmlFor="descricao" className="text-xs text-muted-foreground">Descrição</Label>
+              <Label htmlFor="descricao" className="text-xs text-stone-500">Descrição</Label>
               <Textarea
                 id="descricao"
                 value={formData.descricao}
@@ -180,7 +180,7 @@ export default function BaseNova() {
             {/* Dia + Horário */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Dia da Semana</Label>
+                <Label className="text-xs text-stone-500">Dia da Semana</Label>
                 <Select
                   value={formData.dia_semana || 'none'}
                   onValueChange={(v) => setFormData({ ...formData, dia_semana: v === 'none' ? '' : v })}
@@ -197,7 +197,7 @@ export default function BaseNova() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Horário</Label>
+                <Label className="text-xs text-stone-500">Horário</Label>
                 <Input
                   type="time"
                   value={formData.horario}
@@ -208,7 +208,7 @@ export default function BaseNova() {
 
             {/* Local (referência) */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Local (referência)</Label>
+              <Label className="text-xs text-stone-500">Local (referência)</Label>
               <Input
                 value={formData.local}
                 onChange={(e) => setFormData({ ...formData, local: e.target.value })}
@@ -222,7 +222,7 @@ export default function BaseNova() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* CEP com busca automática */}
                 <div className="sm:col-span-2 space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">CEP</Label>
+                  <Label className="text-xs text-stone-500">CEP</Label>
                   <div className="relative">
                     <Input
                       value={formData.cep}
@@ -237,7 +237,7 @@ export default function BaseNova() {
                   </div>
                 </div>
                 <div className="sm:col-span-2 space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Rua</Label>
+                  <Label className="text-xs text-stone-500">Rua</Label>
                   <Input
                     value={formData.rua}
                     onChange={(e) => setFormData({ ...formData, rua: e.target.value })}
@@ -245,7 +245,7 @@ export default function BaseNova() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Número</Label>
+                  <Label className="text-xs text-stone-500">Número</Label>
                   <Input
                     value={formData.numero}
                     onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
@@ -253,7 +253,7 @@ export default function BaseNova() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Bairro</Label>
+                  <Label className="text-xs text-stone-500">Bairro</Label>
                   <Input
                     value={formData.bairro}
                     onChange={(e) => setFormData({ ...formData, bairro: e.target.value })}
@@ -261,7 +261,7 @@ export default function BaseNova() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Cidade</Label>
+                  <Label className="text-xs text-stone-500">Cidade</Label>
                   <Input
                     value={formData.cidade}
                     onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
@@ -269,7 +269,7 @@ export default function BaseNova() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">UF</Label>
+                  <Label className="text-xs text-stone-500">UF</Label>
                   <Input
                     value={formData.uf}
                     onChange={(e) => setFormData({ ...formData, uf: e.target.value.toUpperCase().slice(0, 2) })}
@@ -292,7 +292,7 @@ export default function BaseNova() {
                   />
                 </div>
                 <div className="sm:col-span-2 space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Anfitriões</Label>
+                  <Label className="text-xs text-stone-500">Anfitriões</Label>
                   <Input
                     value={formData.anfitrioes}
                     onChange={(e) => setFormData({ ...formData, anfitrioes: e.target.value })}
@@ -300,7 +300,7 @@ export default function BaseNova() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">WhatsApp do Líder</Label>
+                  <Label className="text-xs text-stone-500">WhatsApp do Líder</Label>
                   <Input
                     value={formData.whatsapp_lider}
                     onChange={(e) => setFormData({ ...formData, whatsapp_lider: e.target.value })}
@@ -312,7 +312,7 @@ export default function BaseNova() {
 
             {/* Observações */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Observações</Label>
+              <Label className="text-xs text-stone-500">Observações</Label>
               <Textarea
                 value={formData.observacoes}
                 onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
@@ -324,7 +324,7 @@ export default function BaseNova() {
             {/* Capacidade + Visibilidade */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Capacidade</Label>
+                <Label className="text-xs text-stone-500">Capacidade</Label>
                 <Input
                   type="number"
                   value={formData.capacidade}
@@ -333,7 +333,7 @@ export default function BaseNova() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Visibilidade</Label>
+                <Label className="text-xs text-stone-500">Visibilidade</Label>
                 <Select
                   value={formData.visibilidade}
                   onValueChange={(v) => setFormData({ ...formData, visibilidade: v })}
@@ -351,7 +351,7 @@ export default function BaseNova() {
 
             {/* Líder */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Líder</Label>
+              <Label className="text-xs text-stone-500">Líder</Label>
               <Select
                 value={formData.lider_id || 'none'}
                 onValueChange={(v) => setFormData({ ...formData, lider_id: v === 'none' ? '' : v })}
@@ -370,7 +370,7 @@ export default function BaseNova() {
 
             {/* Status */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Status</Label>
+              <Label className="text-xs text-stone-500">Status</Label>
               <Select
                 value={formData.status}
                 onValueChange={(v) => setFormData({ ...formData, status: v })}

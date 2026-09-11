@@ -380,14 +380,14 @@ export default function MembroNovo() {
     <div className="space-y-6 max-w-3xl">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/membros'))} aria-label="Voltar">
+        <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => navigate(p('/admin/membros'))} aria-label="Voltar">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-display font-bold">
+          <h1 className="text-2xl font-display font-bold text-stone-900">
             {fromVisitante ? 'Converter Visitante em Membro' : 'Novo Membro'}
           </h1>
-          <p className="text-muted-foreground">Preencha os dados do membro</p>
+          <p className="text-stone-600">Preencha os dados do membro</p>
         </div>
       </div>
 
@@ -403,23 +403,23 @@ export default function MembroNovo() {
                   ? 'border-primary bg-primary text-primary-foreground'
                   : i < abaAtual
                   ? 'border-primary bg-primary/20 text-primary'
-                  : 'border-muted-foreground/30 text-muted-foreground'
+                  : 'border-stone-300 text-stone-400'
               }`}
             >
               {i + 1}
             </button>
-            <span className={`text-xs hidden sm:inline truncate ${i === abaAtual ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+            <span className={`text-xs hidden sm:inline truncate ${i === abaAtual ? 'text-stone-900 font-medium' : 'text-stone-500'}`}>
               {aba}
             </span>
             {i < ABAS.length - 1 && (
-              <ChevronRight className="w-3 h-3 text-muted-foreground/40 flex-shrink-0" />
+              <ChevronRight className="w-3 h-3 text-stone-300 flex-shrink-0" />
             )}
           </div>
         ))}
       </div>
 
       {/* Conteúdo da aba */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="pt-6 space-y-6">
 
           {/* ── ABA 1: Identificação ───────────────────────────────────── */}
@@ -479,7 +479,7 @@ export default function MembroNovo() {
               <Section title="Endereço">
                 <div className="flex gap-2 items-end">
                   <div className="flex-1 space-y-1">
-                    <Label className="text-xs text-muted-foreground">CEP</Label>
+                    <Label className="text-xs text-stone-500">CEP</Label>
                     <Input value={form.cep} onChange={(e) => set('cep', formatCep(e.target.value))} placeholder="00000-000" maxLength={9} />
                   </div>
                   <Button type="button" variant="outline" size="sm" onClick={handleBuscarCep} disabled={buscandoCep} className="mb-0.5">
@@ -542,7 +542,7 @@ export default function MembroNovo() {
                       <Upload className="w-4 h-4 mr-2" />
                       {fotoFile ? 'Trocar foto' : 'Selecionar foto'}
                     </Button>
-                    <p className="text-xs text-muted-foreground">JPG, PNG ou WebP. Máx. 5MB</p>
+                    <p className="text-xs text-stone-500">JPG, PNG ou WebP. Máx. 5MB</p>
                   </div>
                 </div>
               </Section>
@@ -692,7 +692,7 @@ export default function MembroNovo() {
         </Button>
 
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">{abaAtual + 1} de {ABAS.length}</span>
+          <span className="text-sm text-stone-500">{abaAtual + 1} de {ABAS.length}</span>
           {abaAtual < ABAS.length - 1 ? (
             <Button type="button" onClick={avancar}>
               Avançar
@@ -717,7 +717,7 @@ export default function MembroNovo() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-1">
+      <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wide border-b border-stone-200 pb-1">
         {title}
       </h3>
       {children}
@@ -743,7 +743,7 @@ function Field({
   return (
     <div className={`space-y-1 ${className ?? ''}`}>
       {label && <Label className="text-sm">{label}</Label>}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-xs text-stone-500">{hint}</p>}
       {children}
     </div>
   );

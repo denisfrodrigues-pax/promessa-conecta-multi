@@ -332,7 +332,7 @@ export default function AdminEscalasPeriodoDetalhe() {
   if (loadingPeriodo) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
       </div>
     );
   }
@@ -340,8 +340,8 @@ export default function AdminEscalasPeriodoDetalhe() {
   if (!periodo) {
     return (
       <div className="text-center py-16 space-y-4">
-        <p className="text-muted-foreground">Período não encontrado.</p>
-        <Button asChild variant="outline">
+        <p className="text-stone-500">Período não encontrado.</p>
+        <Button asChild variant="outline" className="rounded-xl min-h-[44px]">
           <Link to={p('/admin/escalas/periodos')}>
             <ArrowLeft className="w-4 h-4 mr-2" />Voltar
           </Link>
@@ -351,27 +351,27 @@ export default function AdminEscalasPeriodoDetalhe() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 bg-stone-50">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button asChild variant="ghost" size="sm">
+        <Button asChild variant="ghost" size="sm" className="rounded-xl min-h-[44px]">
           <Link to={p('/admin/escalas/periodos')}>
             <ArrowLeft className="w-4 h-4 mr-2" />Períodos
           </Link>
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-display font-bold">{periodo.nome}</h2>
+            <h2 className="text-xl font-display font-bold text-stone-900">{periodo.nome}</h2>
             <Badge variant={periodo.status === 'aberto' ? 'default' : 'secondary'}>
               {periodo.status === 'aberto' ? 'Aberto' : 'Fechado'}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-stone-500">
             {['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][periodo.mes - 1]} de {periodo.ano}
           </p>
         </div>
         {periodo.status === 'aberto' && (
-          <Button onClick={() => setIsEventoModalOpen(true)}>
+          <Button onClick={() => setIsEventoModalOpen(true)} className="rounded-xl min-h-[44px]">
             <Plus className="w-4 h-4 mr-2" />
             Novo evento
           </Button>
@@ -381,15 +381,17 @@ export default function AdminEscalasPeriodoDetalhe() {
       {/* Eventos */}
       {loadingEventos ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
         </div>
       ) : eventos.length === 0 ? (
-        <Card>
+        <Card className="rounded-2xl shadow-soft border-stone-200">
           <CardContent className="py-14 text-center space-y-3">
-            <Calendar className="w-12 h-12 mx-auto text-muted-foreground/40" />
-            <p className="text-muted-foreground">Nenhum evento neste período.</p>
+            <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto">
+              <Calendar className="w-7 h-7 text-stone-400" />
+            </div>
+            <p className="text-stone-600 font-semibold leading-relaxed">Nenhum evento neste período.</p>
             {periodo.status === 'aberto' && (
-              <Button variant="outline" onClick={() => setIsEventoModalOpen(true)}>
+              <Button variant="outline" onClick={() => setIsEventoModalOpen(true)} className="rounded-xl min-h-[44px]">
                 <Plus className="w-4 h-4 mr-2" />
                 Criar primeiro evento
               </Button>
@@ -402,19 +404,19 @@ export default function AdminEscalasPeriodoDetalhe() {
             const expanded = expandedEventos.has(ev.id);
             const isInativo = ev.status === 'inativo';
             return (
-              <Card key={ev.id} className={isInativo ? 'opacity-60' : ''}>
-                <CardContent className="p-4">
+              <Card key={ev.id} className={`rounded-2xl shadow-soft border-stone-200 ${isInativo ? 'opacity-60' : ''}`}>
+                <CardContent className="p-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                       <Calendar className="w-5 h-5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium">{ev.titulo}</p>
+                        <p className="font-medium text-stone-900">{ev.titulo}</p>
                         <Badge variant="outline" className="text-xs capitalize">{ev.tipo.replace('_', ' ')}</Badge>
-                        {isInativo && <Badge variant="secondary" className="text-xs bg-gray-200 text-gray-600">Inativo</Badge>}
+                        {isInativo && <Badge variant="secondary" className="text-xs bg-stone-200 text-stone-600">Inativo</Badge>}
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                      <div className="flex items-center gap-3 text-xs text-stone-500 mt-0.5">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {format(new Date(ev.data_evento + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}
@@ -433,6 +435,7 @@ export default function AdminEscalasPeriodoDetalhe() {
                         <Button
                           size="sm"
                           variant="outline"
+                          className="rounded-xl min-h-[44px]"
                           onClick={() => {
                             setSelectedEvento(ev);
                             setSelectedMinisterios([]);
@@ -446,6 +449,7 @@ export default function AdminEscalasPeriodoDetalhe() {
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="rounded-xl min-h-[44px] min-w-[44px]"
                         title="Editar evento"
                         onClick={() => openEditModal(ev)}
                       >
@@ -455,7 +459,7 @@ export default function AdminEscalasPeriodoDetalhe() {
                         size="sm"
                         variant="ghost"
                         title={isInativo ? 'Ativar evento' : 'Inativar evento'}
-                        className={isInativo ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'}
+                        className={`rounded-xl min-h-[44px] min-w-[44px] ${isInativo ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'}`}
                         onClick={() => toggleStatusMutation.mutate({ id: ev.id, currentStatus: ev.status })}
                         disabled={toggleStatusMutation.isPending}
                       >
@@ -464,6 +468,7 @@ export default function AdminEscalasPeriodoDetalhe() {
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="rounded-xl min-h-[44px] min-w-[44px]"
                         onClick={() => toggleExpandEvento(ev.id)}
                       >
                         {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -471,7 +476,7 @@ export default function AdminEscalasPeriodoDetalhe() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl min-h-[44px] min-w-[44px]"
                         onClick={() => setToDelete(ev)}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -481,13 +486,13 @@ export default function AdminEscalasPeriodoDetalhe() {
 
                   {/* Ministérios convocados */}
                   {expanded && ev.evento_ministerios.length > 0 && (
-                    <div className="mt-4 border-t pt-4 space-y-2">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ministérios convocados</p>
+                    <div className="mt-4 border-t border-stone-200 pt-4 space-y-2">
+                      <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Ministérios convocados</p>
                       {ev.evento_ministerios.map((em) => (
                         <div key={em.id} className="flex items-center justify-between gap-3 text-sm">
                           <div className="flex items-center gap-2">
-                            <CheckSquare className="w-4 h-4 text-muted-foreground" />
-                            <span>{em.ministerios?.nome ?? em.ministerio_id}</span>
+                            <CheckSquare className="w-4 h-4 text-stone-400" />
+                            <span className="text-stone-700">{em.ministerios?.nome ?? em.ministerio_id}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             {statusBadge(em.status)}
@@ -495,7 +500,7 @@ export default function AdminEscalasPeriodoDetalhe() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-7 px-2 text-xs"
+                                className="h-7 px-2 text-xs rounded-lg"
                                 onClick={() => notificarMutation.mutate({ ...em, evento: ev })}
                                 disabled={notificarMutation.isPending}
                               >
@@ -504,7 +509,7 @@ export default function AdminEscalasPeriodoDetalhe() {
                               </Button>
                             )}
                             {em.notificacao_enviada && (
-                              <span className="text-xs text-muted-foreground">Notificado</span>
+                              <span className="text-xs text-stone-500">Notificado</span>
                             )}
                           </div>
                         </div>
@@ -520,7 +525,7 @@ export default function AdminEscalasPeriodoDetalhe() {
 
       {/* ── Modal Criar Evento ──────────────────────────────────────────────── */}
       <Dialog open={isEventoModalOpen} onOpenChange={(open) => { if (!open) { setIsEventoModalOpen(false); resetEventoForm(); } }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg rounded-2xl">
           <DialogHeader>
             <DialogTitle>Novo evento — {periodo.nome}</DialogTitle>
           </DialogHeader>
@@ -532,13 +537,14 @@ export default function AdminEscalasPeriodoDetalhe() {
                 onChange={(e) => setEventoForm({ ...eventoForm, titulo: e.target.value })}
                 placeholder="Ex: Culto de Domingo"
                 disabled={createEventoMutation.isPending}
+                className="rounded-xl"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Tipo *</Label>
                 <Select value={eventoForm.tipo} onValueChange={(v) => setEventoForm({ ...eventoForm, tipo: v })}>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -555,6 +561,7 @@ export default function AdminEscalasPeriodoDetalhe() {
                   value={eventoForm.data_evento}
                   onChange={(e) => setEventoForm({ ...eventoForm, data_evento: e.target.value })}
                   disabled={createEventoMutation.isPending}
+                  className="rounded-xl"
                 />
               </div>
             </div>
@@ -566,6 +573,7 @@ export default function AdminEscalasPeriodoDetalhe() {
                   value={eventoForm.horario_inicio}
                   onChange={(e) => setEventoForm({ ...eventoForm, horario_inicio: e.target.value })}
                   disabled={createEventoMutation.isPending}
+                  className="rounded-xl"
                 />
               </div>
               <div className="space-y-2">
@@ -575,6 +583,7 @@ export default function AdminEscalasPeriodoDetalhe() {
                   value={eventoForm.horario_fim}
                   onChange={(e) => setEventoForm({ ...eventoForm, horario_fim: e.target.value })}
                   disabled={createEventoMutation.isPending}
+                  className="rounded-xl"
                 />
               </div>
             </div>
@@ -586,31 +595,33 @@ export default function AdminEscalasPeriodoDetalhe() {
                 placeholder="Informações adicionais..."
                 rows={2}
                 disabled={createEventoMutation.isPending}
+                className="rounded-xl"
               />
             </div>
             {/* Ministérios */}
             <div className="space-y-2">
               <Label>Convocar ministérios (opcional)</Label>
-              <div className="border rounded-lg p-3 max-h-40 overflow-y-auto space-y-1">
+              <div className="border border-stone-200 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1">
                 {ministerios.map((m) => (
-                  <label key={m.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 px-2 py-1 rounded">
+                  <label key={m.id} className="flex items-center gap-2 cursor-pointer hover:bg-stone-100 px-2 py-1.5 rounded-lg min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={selectedMinisterios.includes(m.id)}
                       onChange={() => toggleMinisterio(m.id)}
                       className="accent-primary"
                     />
-                    <span className="text-sm">{m.nome}</span>
+                    <span className="text-sm text-stone-700">{m.nome}</span>
                   </label>
                 ))}
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsEventoModalOpen(false); resetEventoForm(); }} disabled={createEventoMutation.isPending}>
+            <Button variant="outline" className="rounded-xl min-h-[44px]" onClick={() => { setIsEventoModalOpen(false); resetEventoForm(); }} disabled={createEventoMutation.isPending}>
               Cancelar
             </Button>
             <Button
+              className="rounded-xl min-h-[44px]"
               onClick={() => {
                 if (!eventoForm.titulo.trim()) { toast.error('Informe o título'); return; }
                 if (!eventoForm.data_evento) { toast.error('Informe a data'); return; }
@@ -629,7 +640,7 @@ export default function AdminEscalasPeriodoDetalhe() {
 
       {/* ── Modal Editar Evento ─────────────────────────────────────────────── */}
       <Dialog open={isEditModalOpen} onOpenChange={(open) => { if (!open) { setIsEditModalOpen(false); setEditingEvento(null); resetEventoForm(); } }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg rounded-2xl">
           <DialogHeader>
             <DialogTitle>Editar evento</DialogTitle>
           </DialogHeader>
@@ -640,13 +651,14 @@ export default function AdminEscalasPeriodoDetalhe() {
                 value={eventoForm.titulo}
                 onChange={(e) => setEventoForm({ ...eventoForm, titulo: e.target.value })}
                 disabled={updateEventoMutation.isPending}
+                className="rounded-xl"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Tipo *</Label>
                 <Select value={eventoForm.tipo} onValueChange={(v) => setEventoForm({ ...eventoForm, tipo: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {TIPOS_EVENTO.map((t) => (
                       <SelectItem key={t} value={t} className="capitalize">{t.replace('_', ' ')}</SelectItem>
@@ -661,45 +673,47 @@ export default function AdminEscalasPeriodoDetalhe() {
                   value={eventoForm.data_evento}
                   onChange={(e) => setEventoForm({ ...eventoForm, data_evento: e.target.value })}
                   disabled={updateEventoMutation.isPending}
+                  className="rounded-xl"
                 />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Horário início</Label>
-                <Input type="time" value={eventoForm.horario_inicio} onChange={(e) => setEventoForm({ ...eventoForm, horario_inicio: e.target.value })} disabled={updateEventoMutation.isPending} />
+                <Input type="time" value={eventoForm.horario_inicio} onChange={(e) => setEventoForm({ ...eventoForm, horario_inicio: e.target.value })} disabled={updateEventoMutation.isPending} className="rounded-xl" />
               </div>
               <div className="space-y-2">
                 <Label>Horário fim</Label>
-                <Input type="time" value={eventoForm.horario_fim} onChange={(e) => setEventoForm({ ...eventoForm, horario_fim: e.target.value })} disabled={updateEventoMutation.isPending} />
+                <Input type="time" value={eventoForm.horario_fim} onChange={(e) => setEventoForm({ ...eventoForm, horario_fim: e.target.value })} disabled={updateEventoMutation.isPending} className="rounded-xl" />
               </div>
             </div>
             <div className="space-y-2">
               <Label>Descrição</Label>
-              <Textarea value={eventoForm.descricao} onChange={(e) => setEventoForm({ ...eventoForm, descricao: e.target.value })} rows={2} disabled={updateEventoMutation.isPending} />
+              <Textarea value={eventoForm.descricao} onChange={(e) => setEventoForm({ ...eventoForm, descricao: e.target.value })} rows={2} disabled={updateEventoMutation.isPending} className="rounded-xl" />
             </div>
             <div className="space-y-2">
               <Label>Ministérios convocados</Label>
-              <div className="border rounded-lg p-3 max-h-40 overflow-y-auto space-y-1">
+              <div className="border border-stone-200 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1">
                 {ministerios.map((m) => (
-                  <label key={m.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 px-2 py-1 rounded">
+                  <label key={m.id} className="flex items-center gap-2 cursor-pointer hover:bg-stone-100 px-2 py-1.5 rounded-lg min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={selectedMinisterios.includes(m.id)}
                       onChange={() => toggleMinisterio(m.id)}
                       className="accent-primary"
                     />
-                    <span className="text-sm">{m.nome}</span>
+                    <span className="text-sm text-stone-700">{m.nome}</span>
                   </label>
                 ))}
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsEditModalOpen(false); setEditingEvento(null); resetEventoForm(); }} disabled={updateEventoMutation.isPending}>
+            <Button variant="outline" className="rounded-xl min-h-[44px]" onClick={() => { setIsEditModalOpen(false); setEditingEvento(null); resetEventoForm(); }} disabled={updateEventoMutation.isPending}>
               Cancelar
             </Button>
             <Button
+              className="rounded-xl min-h-[44px]"
               onClick={() => {
                 if (!eventoForm.titulo.trim()) { toast.error('Informe o título'); return; }
                 if (!eventoForm.data_evento) { toast.error('Informe a data'); return; }
@@ -718,19 +732,19 @@ export default function AdminEscalasPeriodoDetalhe() {
 
       {/* ── Modal Convocar ──────────────────────────────────────────────────── */}
       <Dialog open={isConvocacaoModalOpen} onOpenChange={(open) => { if (!open) { setIsConvocacaoModalOpen(false); setSelectedMinisterios([]); } }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>Convocar ministérios — {selectedEvento?.titulo}</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
-            <p className="text-sm text-muted-foreground">Selecione os ministérios a convocar para este evento:</p>
-            <div className="border rounded-lg p-3 max-h-52 overflow-y-auto space-y-1">
+            <p className="text-sm text-stone-500 leading-relaxed">Selecione os ministérios a convocar para este evento:</p>
+            <div className="border border-stone-200 rounded-xl p-3 max-h-52 overflow-y-auto space-y-1">
               {ministerios.map((m) => {
                 const jaConvocado = selectedEvento?.evento_ministerios.some((em) => em.ministerio_id === m.id);
                 return (
                   <label
                     key={m.id}
-                    className={`flex items-center gap-2 px-2 py-1 rounded ${jaConvocado ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-muted/50'}`}
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded-lg min-h-[44px] ${jaConvocado ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-stone-100'}`}
                   >
                     <input
                       type="checkbox"
@@ -739,18 +753,19 @@ export default function AdminEscalasPeriodoDetalhe() {
                       onChange={() => !jaConvocado && toggleMinisterio(m.id)}
                       className="accent-primary"
                     />
-                    <span className="text-sm">{m.nome}</span>
-                    {jaConvocado && <span className="text-xs text-muted-foreground ml-auto">já convocado</span>}
+                    <span className="text-sm text-stone-700">{m.nome}</span>
+                    {jaConvocado && <span className="text-xs text-stone-500 ml-auto">já convocado</span>}
                   </label>
                 );
               })}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsConvocacaoModalOpen(false); setSelectedMinisterios([]); }} disabled={convocarMutation.isPending}>
+            <Button variant="outline" className="rounded-xl min-h-[44px]" onClick={() => { setIsConvocacaoModalOpen(false); setSelectedMinisterios([]); }} disabled={convocarMutation.isPending}>
               Cancelar
             </Button>
             <Button
+              className="rounded-xl min-h-[44px]"
               onClick={() => selectedEvento && convocarMutation.mutate({ evento: selectedEvento, ministerioIds: selectedMinisterios })}
               disabled={convocarMutation.isPending || selectedMinisterios.length === 0}
             >
@@ -765,7 +780,7 @@ export default function AdminEscalasPeriodoDetalhe() {
 
       {/* ── Confirmar Exclusão ───────────────────────────────────────────────── */}
       <AlertDialog open={!!toDelete} onOpenChange={(open) => { if (!open) setToDelete(null); }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir evento?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -773,11 +788,11 @@ export default function AdminEscalasPeriodoDetalhe() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteEventoMutation.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteEventoMutation.isPending} className="rounded-xl min-h-[44px]">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => toDelete && deleteEventoMutation.mutate(toDelete.id)}
               disabled={deleteEventoMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl min-h-[44px]"
             >
               {deleteEventoMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>

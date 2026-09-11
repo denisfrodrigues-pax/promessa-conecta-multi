@@ -178,10 +178,10 @@ export default function AdminDevocionais() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-display font-bold">Devocionais</h2>
-          <p className="text-sm text-muted-foreground">Gerencie os devocionais semanais da igreja</p>
+          <h2 className="text-xl font-display font-bold text-stone-900">Devocionais</h2>
+          <p className="text-sm text-stone-600 leading-relaxed">Gerencie os devocionais semanais da igreja</p>
         </div>
-        <Button onClick={openNew}>
+        <Button className="min-h-[44px]" onClick={openNew}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Devocional
         </Button>
@@ -189,45 +189,45 @@ export default function AdminDevocionais() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
         </div>
       ) : devocionais.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-            <BookOpen className="h-8 w-8 text-gray-400" />
+          <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+            <BookOpen className="h-8 w-8 text-stone-400" />
           </div>
-          <h3 className="text-base font-semibold text-gray-700 mb-1">Nenhum devocional cadastrado</h3>
-          <p className="text-sm text-gray-400 max-w-xs">Publique devocionais para inspirar e edificar os membros diariamente.</p>
-          <Button size="sm" className="mt-4" onClick={openNew}>
+          <h3 className="text-base font-semibold text-stone-700 mb-1">Nenhum devocional cadastrado</h3>
+          <p className="text-sm text-stone-400 max-w-xs leading-relaxed">Publique devocionais para inspirar e edificar os membros diariamente.</p>
+          <Button size="sm" className="mt-4 min-h-[44px]" onClick={openNew}>
             <Plus className="w-4 h-4 mr-1" /> Criar primeiro devocional
           </Button>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {devocionais.map((d) => (
-            <Card key={d.id}>
-              <CardContent className="p-4">
+            <Card key={d.id} className="rounded-2xl">
+              <CardContent className="p-4 sm:p-5">
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-promessa-100 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-promessa-100 flex items-center justify-center shrink-0">
                     <BookOpen className="w-5 h-5 text-promessa-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium truncate">{d.titulo}</p>
+                      <p className="font-medium text-stone-900 truncate">{d.titulo}</p>
                       <Badge variant={d.ativo ? 'default' : 'secondary'} className="shrink-0">
                         {d.ativo ? 'Publicado' : 'Rascunho'}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                      {d.serie && <span className="text-xs text-muted-foreground">{d.serie}{d.semana ? ` · Sem. ${d.semana}` : ''}</span>}
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      {d.serie && <span className="text-xs text-stone-500">{d.serie}{d.semana ? ` · Sem. ${d.semana}` : ''}</span>}
+                      <span className="text-xs text-stone-500 flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {format(new Date(d.data_publicacao + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <Button size="sm" variant="outline"
+                    <Button size="sm" variant="outline" className="min-h-[44px]"
                       onClick={() => toggleMutation.mutate(d)}
                       disabled={toggleMutation.isPending}
                       title={d.ativo ? 'Despublicar' : 'Publicar'}
@@ -237,11 +237,11 @@ export default function AdminDevocionais() {
                         : <><LockOpen className="w-4 h-4 mr-1" />Publicar</>
                       }
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => openEdit(d)}>
+                    <Button size="sm" variant="outline" className="min-h-[44px] min-w-[44px]" onClick={() => openEdit(d)}>
                       <Pencil className="w-4 h-4" />
                     </Button>
                     <Button size="sm" variant="ghost"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="min-h-[44px] min-w-[44px] text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => setToDelete(d)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -304,7 +304,7 @@ export default function AdminDevocionais() {
             </div>
 
             <div>
-              <Label>Reflexão * <span className="text-xs text-muted-foreground font-normal">(use linha em branco para separar parágrafos)</span></Label>
+              <Label>Reflexão * <span className="text-xs text-stone-500 font-normal">(use linha em branco para separar parágrafos)</span></Label>
               <Textarea value={form.reflexao}
                 onChange={e => setForm(p => ({ ...p, reflexao: e.target.value }))}
                 placeholder="Texto da reflexão..." rows={8} />
@@ -330,17 +330,17 @@ export default function AdminDevocionais() {
                 id="ativo"
                 checked={form.ativo}
                 onChange={e => setForm(p => ({ ...p, ativo: e.target.checked }))}
-                className="h-4 w-4 rounded border-gray-300"
+                className="h-4 w-4 rounded border-stone-300"
               />
               <Label htmlFor="ativo" className="cursor-pointer">Publicar imediatamente</Label>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setModalOpen(false); setEditingId(null); setForm(EMPTY_FORM); }}
+            <Button variant="outline" className="min-h-[44px]" onClick={() => { setModalOpen(false); setEditingId(null); setForm(EMPTY_FORM); }}
               disabled={saveMutation.isPending}>
               Cancelar
             </Button>
-            <Button onClick={handleSubmit} disabled={saveMutation.isPending}>
+            <Button className="min-h-[44px]" onClick={handleSubmit} disabled={saveMutation.isPending}>
               {saveMutation.isPending
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{editingId ? 'Salvando...' : 'Criando...'}</>
                 : editingId ? 'Salvar' : 'Criar devocional'
@@ -360,11 +360,11 @@ export default function AdminDevocionais() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="min-h-[44px]" disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => toDelete && deleteMutation.mutate(toDelete.id)}
               disabled={deleteMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              className="min-h-[44px] bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>
           </AlertDialogFooter>

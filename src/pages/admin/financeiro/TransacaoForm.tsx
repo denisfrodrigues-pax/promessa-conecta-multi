@@ -284,23 +284,23 @@ export default function TransacaoForm() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Voltar">
+        <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => navigate(-1)} aria-label="Voltar">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-bold text-stone-900">
             {isEditing ? "Editar Lançamento" : "Novo Lançamento"}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-stone-600 leading-relaxed">
             {isEditing ? "Atualize os dados da transação" : "Registre uma nova transação"}
           </p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle>Dados da Transação</CardTitle>
           </CardHeader>
@@ -463,12 +463,12 @@ export default function TransacaoForm() {
               </div>
             </div>
 
-            <div className="flex justify-between pt-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-3 pt-4">
               <div>
                 {isEditing && status !== "cancelado" && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="destructive" type="button">
+                      <Button variant="destructive" type="button" className="min-h-[44px]">
                         <Trash2 className="h-4 w-4 mr-2" />
                         Cancelar Transação
                       </Button>
@@ -492,10 +492,10 @@ export default function TransacaoForm() {
                 )}
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                <Button type="button" variant="outline" className="min-h-[44px]" onClick={() => navigate(-1)}>
                   Voltar
                 </Button>
-                <Button type="submit" disabled={saving}>
+                <Button type="submit" disabled={saving} className="min-h-[44px]">
                   <Save className="h-4 w-4 mr-2" />
                   {saving ? "Salvando..." : "Salvar"}
                 </Button>

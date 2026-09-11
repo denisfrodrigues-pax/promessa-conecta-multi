@@ -141,40 +141,40 @@ export default function AdminEnsino() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 bg-stone-50">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">Escola Bíblica</h1>
-          <p className="text-muted-foreground">Visão geral das matrículas e frequência</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Escola Bíblica</h1>
+          <p className="text-stone-500 leading-relaxed">Visão geral das matrículas e frequência</p>
         </div>
-        <Button onClick={() => setShowModal(true)}>
+        <Button onClick={() => setShowModal(true)} className="rounded-xl min-h-[44px]">
           <UserPlus className="w-4 h-4 mr-2" />Matricular Membro
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {cicloStats.map(({ ciclo, enrolled, avgFreq }) => (
-          <Card key={ciclo.id}>
-            <CardContent className="p-5">
+          <Card key={ciclo.id} className="rounded-2xl shadow-soft border-stone-200">
+            <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-promessa-100 rounded-lg">
+                <div className="p-2 bg-promessa-100 rounded-xl">
                   <GraduationCap className="w-5 h-5 text-promessa-700" />
                 </div>
                 <div>
-                  <p className="font-semibold">{ciclo.nome}</p>
-                  <p className="text-xs text-muted-foreground">{ciclo.subtitulo}</p>
+                  <p className="font-semibold text-stone-900">{ciclo.nome}</p>
+                  <p className="text-xs text-stone-500">{ciclo.subtitulo}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-muted/40 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold">{enrolled}</p>
-                  <p className="text-xs text-muted-foreground">Matriculados</p>
+                <div className="bg-stone-50 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-stone-900">{enrolled}</p>
+                  <p className="text-xs text-stone-500">Matriculados</p>
                 </div>
-                <div className="bg-muted/40 rounded-lg p-3 text-center">
-                  <p className={`text-2xl font-bold ${avgFreq >= 75 ? 'text-green-600' : avgFreq >= 50 ? 'text-amber-500' : avgFreq > 0 ? 'text-red-500' : 'text-muted-foreground'}`}>
+                <div className="bg-stone-50 rounded-xl p-3 text-center">
+                  <p className={`text-2xl font-bold ${avgFreq >= 75 ? 'text-green-600' : avgFreq >= 50 ? 'text-amber-500' : avgFreq > 0 ? 'text-red-500' : 'text-stone-500'}`}>
                     {avgFreq}%
                   </p>
-                  <p className="text-xs text-muted-foreground">Freq. média</p>
+                  <p className="text-xs text-stone-500">Freq. média</p>
                 </div>
               </div>
             </CardContent>
@@ -182,25 +182,26 @@ export default function AdminEnsino() {
         ))}
       </div>
 
-      <Card>
+      <Card className="rounded-2xl shadow-soft border-stone-200">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="text-base flex items-center gap-2 text-stone-900">
             <Users className="w-4 h-4" />
             Membros sem matrícula ({semMatricula.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {semMatricula.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
+            <p className="text-sm text-stone-500 text-center py-4 leading-relaxed">
               Todos os membros ativos estão matriculados
             </p>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-stone-200">
               {semMatricula.slice(0, 50).map((m: any) => (
-                <div key={m.id} className="flex items-center justify-between py-2">
-                  <span className="text-sm">{m.nome}</span>
+                <div key={m.id} className="flex items-center justify-between py-2 min-h-[44px]">
+                  <span className="text-sm text-stone-700">{m.nome}</span>
                   <Button
                     variant="outline" size="sm"
+                    className="rounded-xl min-h-[44px]"
                     onClick={() => { setMembroId(m.id); setShowModal(true); }}
                   >
                     <UserPlus className="w-3 h-3 mr-1" />Matricular
@@ -208,7 +209,7 @@ export default function AdminEnsino() {
                 </div>
               ))}
               {semMatricula.length > 50 && (
-                <p className="text-xs text-muted-foreground py-2 text-center">
+                <p className="text-xs text-stone-500 py-2 text-center">
                   +{semMatricula.length - 50} membros não exibidos
                 </p>
               )}
@@ -218,24 +219,24 @@ export default function AdminEnsino() {
       </Card>
 
       <Dialog open={showModal} onOpenChange={open => { setShowModal(open); if (!open) { setCicloId(''); setMembroId(''); } }}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl">
           <DialogHeader>
             <DialogTitle>Matricular Membro</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1 block">Ciclo</label>
+              <label className="text-sm font-medium mb-1 block text-stone-700">Ciclo</label>
               <Select value={cicloId} onValueChange={setCicloId}>
-                <SelectTrigger><SelectValue placeholder="Selecionar ciclo..." /></SelectTrigger>
+                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Selecionar ciclo..." /></SelectTrigger>
                 <SelectContent>
                   {ciclos.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Membro</label>
+              <label className="text-sm font-medium mb-1 block text-stone-700">Membro</label>
               <Select value={membroId} onValueChange={setMembroId}>
-                <SelectTrigger><SelectValue placeholder="Selecionar membro..." /></SelectTrigger>
+                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Selecionar membro..." /></SelectTrigger>
                 <SelectContent>
                   {semMatricula.map((m: any) => (
                     <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
@@ -245,10 +246,10 @@ export default function AdminEnsino() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowModal(false); setCicloId(''); setMembroId(''); }}>
+            <Button variant="outline" className="rounded-xl min-h-[44px]" onClick={() => { setShowModal(false); setCicloId(''); setMembroId(''); }}>
               Cancelar
             </Button>
-            <Button onClick={handleMatricular} disabled={saving || !cicloId || !membroId}>
+            <Button className="rounded-xl min-h-[44px]" onClick={handleMatricular} disabled={saving || !cicloId || !membroId}>
               {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Matricular
             </Button>

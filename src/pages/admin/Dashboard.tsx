@@ -628,15 +628,15 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Visão geral do ministério</p>
+        <h1 className="text-3xl font-display font-bold text-stone-900">Dashboard</h1>
+        <p className="text-stone-600 mt-1 leading-relaxed">Visão geral do ministério</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
         {kpiCards.map((kpi) => (
           <KpiTile
             key={kpi.title}
@@ -654,9 +654,9 @@ export default function AdminDashboard() {
       {/* Incomplete profiles warning */}
       {!loading && membrosIncompletos > 0 && (
         <Link to={p('/admin/membros')} className="block">
-          <div className="flex items-center gap-3 rounded-lg border border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-600 px-4 py-3 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors">
+          <div className="flex items-center gap-3 rounded-xl border border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-600 px-5 py-4 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors min-h-[44px]">
             <AlertTriangle className="w-5 h-5 shrink-0 text-yellow-500" />
-            <p className="flex-1 text-sm text-yellow-800 dark:text-yellow-300">
+            <p className="flex-1 text-sm text-yellow-800 dark:text-yellow-300 leading-relaxed">
               <span className="font-semibold">{membrosIncompletos} membro{membrosIncompletos !== 1 ? 's' : ''}</span>{' '}
               com cadastro incompleto (sem telefone ou data de nascimento).
             </p>
@@ -687,9 +687,9 @@ export default function AdminDashboard() {
           ) : (
             <div className="space-y-2">
               {proximosEventos.map(ev => (
-                <div key={ev.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div key={ev.id} className="flex items-center justify-between p-4 rounded-xl bg-stone-50 hover:bg-stone-100 transition-colors">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex flex-col items-center justify-center shrink-0">
+                    <div className="w-11 h-11 rounded-xl bg-primary/10 flex flex-col items-center justify-center shrink-0">
                       <span className="text-sm font-bold text-primary leading-tight">
                         {new Date(ev.data_evento + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit' })}
                       </span>
@@ -698,8 +698,8 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{ev.titulo}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-medium text-sm text-stone-900 truncate">{ev.titulo}</p>
+                      <p className="text-xs text-stone-500">
                         {ev.total_ministerios} ministério{ev.total_ministerios !== 1 ? 's' : ''} convocado{ev.total_ministerios !== 1 ? 's' : ''}
                       </p>
                     </div>
@@ -770,7 +770,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : alerts.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-stone-500">
                 <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-500" />
                 <p className="text-sm">Nenhum alerta no momento</p>
               </div>
@@ -779,10 +779,10 @@ export default function AdminDashboard() {
                 {alerts.map((alert) => (
                   <div
                     key={alert.id}
-                    className="p-3 rounded-lg bg-yellow-50 border border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800"
+                    className="p-4 rounded-xl bg-yellow-50 border border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800"
                   >
-                    <p className="font-medium text-sm text-foreground">{alert.entityName}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{alert.message}</p>
+                    <p className="font-medium text-sm text-stone-900">{alert.entityName}</p>
+                    <p className="text-xs text-stone-500 mt-1">{alert.message}</p>
                     <Button asChild variant="link" size="sm" className="p-0 h-auto mt-2 text-xs">
                       <Link to={alert.link}>
                         Ver detalhes <ChevronRight className="w-3 h-3 ml-1" />
@@ -850,8 +850,8 @@ export default function AdminDashboard() {
                 <Skeleton className="h-12 w-16" />
               ) : (
                 <>
-                  <p className="text-5xl font-bold text-gray-900 leading-none">{stats.aniversariantesSemana}</p>
-                  <p className="text-sm text-muted-foreground mt-3 text-center">
+                  <p className="text-5xl font-bold text-stone-900 leading-none">{stats.aniversariantesSemana}</p>
+                  <p className="text-sm text-stone-600 mt-3 text-center leading-relaxed">
                     {stats.aniversariantesSemana === 0
                       ? 'Ninguém faz aniversário esta semana'
                       : `${stats.aniversariantesSemana} membro${stats.aniversariantesSemana !== 1 ? 's' : ''} para celebrar`}
@@ -925,13 +925,13 @@ export default function AdminDashboard() {
             {loading ? (
               <Skeleton className="h-12 w-16" />
             ) : frequenciaCultoMedia === null ? (
-              <p className="text-sm text-muted-foreground text-center">
+              <p className="text-sm text-stone-600 text-center leading-relaxed">
                 Registre a presença de um culto em Cultos para começar a ver esta métrica.
               </p>
             ) : (
               <>
-                <p className="text-5xl font-bold text-gray-900 leading-none">{frequenciaCultoMedia}</p>
-                <p className="text-sm text-muted-foreground mt-3 text-center">
+                <p className="text-5xl font-bold text-stone-900 leading-none">{frequenciaCultoMedia}</p>
+                <p className="text-sm text-stone-600 mt-3 text-center leading-relaxed">
                   pessoas em média, em {frequenciaCultoQtd} culto{frequenciaCultoQtd !== 1 ? 's' : ''} registrado{frequenciaCultoQtd !== 1 ? 's' : ''}
                 </p>
               </>
@@ -967,7 +967,7 @@ export default function AdminDashboard() {
                 {recentVisitantes.map((visitante) => (
                   <div
                     key={visitante.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    className="flex items-center gap-3 p-4 rounded-xl bg-stone-50 hover:bg-stone-100 transition-colors"
                   >
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <span className="text-primary font-semibold text-sm">
@@ -975,8 +975,8 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{visitante.nome}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <p className="font-medium text-sm text-stone-900 truncate">{visitante.nome}</p>
+                      <div className="flex items-center gap-2 text-xs text-stone-500">
                         <span>{formatDate(visitante.data_visita)}</span>
                         {hasValidPhone(visitante.telefone) && (
                           <a
@@ -1031,13 +1031,13 @@ export default function AdminDashboard() {
                 {recentAcompanhamentos.map((acomp) => (
                   <div
                     key={acomp.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    className="flex items-center gap-3 p-4 rounded-xl bg-stone-50 hover:bg-stone-100 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">
+                      <p className="font-medium text-sm text-stone-900 truncate">
                         {acomp.visitante?.nome || 'Visitante não encontrado'}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-stone-500">
                         {acomp.base?.nome || 'Sem base'} • {formatDate(acomp.updated_at)}
                       </p>
                     </div>

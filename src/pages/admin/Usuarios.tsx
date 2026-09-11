@@ -398,12 +398,12 @@ export default function Usuarios() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Usuários</h1>
-          <p className="text-muted-foreground mt-1">Gerenciamento de membros e visitantes</p>
+          <h1 className="text-3xl font-display font-bold text-stone-900">Usuários</h1>
+          <p className="text-stone-600 mt-1 leading-relaxed">Gerenciamento de membros e visitantes</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={exportCSV} className="group">
@@ -427,42 +427,42 @@ export default function Usuarios() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="shadow-card border-0 animate-fade-in">
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-promessa-500 to-promessa-700 flex items-center justify-center shadow-lg">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-3xl font-bold font-display">{stats.total}</p>
-                <p className="text-sm text-muted-foreground">Total de Usuários</p>
+                <p className="text-3xl font-bold font-display text-stone-900">{stats.total}</p>
+                <p className="text-sm text-stone-600">Total de Usuários</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card className="shadow-card border-0 animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg">
                 <UserCheck className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-3xl font-bold font-display">{stats.ativos}</p>
-                <p className="text-sm text-muted-foreground">Usuários Ativos</p>
+                <p className="text-3xl font-bold font-display text-stone-900">{stats.ativos}</p>
+                <p className="text-sm text-stone-600">Usuários Ativos</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card className="shadow-card border-0 animate-fade-in" style={{ animationDelay: '200ms' }}>
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg">
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-3xl font-bold font-display">{stats.admins}</p>
-                <p className="text-sm text-muted-foreground">Administradores</p>
+                <p className="text-3xl font-bold font-display text-stone-900">{stats.admins}</p>
+                <p className="text-sm text-stone-600">Administradores</p>
               </div>
             </div>
           </CardContent>
@@ -473,12 +473,12 @@ export default function Usuarios() {
       <Card className="shadow-card border-0">
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <CardTitle className="flex items-center gap-2 font-display">
+            <CardTitle className="flex items-center gap-2 font-display text-stone-900">
               <Users className="w-5 h-5 text-primary" />
               Lista de Usuários
             </CardTitle>
             <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
               <Input
                 placeholder="Buscar por nome ou email..."
                 className="pl-10"
@@ -506,10 +506,10 @@ export default function Usuarios() {
             <div className="rounded-xl border border-border/50 overflow-hidden overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                  <TableRow className="bg-stone-50 hover:bg-stone-50">
                     {/* USUÁRIO — ordenação A↕Z */}
                     <TableHead
-                      className="font-semibold cursor-pointer select-none hover:text-foreground"
+                      className="font-semibold cursor-pointer select-none hover:text-stone-900"
                       onClick={() => toggleSort('nome')}
                     >
                       <div className="flex items-center gap-1">
@@ -530,7 +530,7 @@ export default function Usuarios() {
                         onOpenChange={(o) => setOpenFilterPopover(o ? 'funcao' : null)}
                       >
                         <PopoverTrigger asChild>
-                          <div className="flex items-center gap-1 cursor-pointer hover:text-foreground select-none">
+                          <div className="flex items-center gap-1 cursor-pointer hover:text-stone-900 select-none">
                             {filterFuncoes.length > 0
                               ? <Badge variant="secondary" className="text-xs font-normal">Função: {filterFuncoes.length}</Badge>
                               : 'Função'
@@ -539,7 +539,7 @@ export default function Usuarios() {
                           </div>
                         </PopoverTrigger>
                         <PopoverContent className="w-44 p-3" align="start">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Filtrar por função</p>
+                          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Filtrar por função</p>
                           <div className="space-y-2">
                             {ROLE_OPTIONS.map(opt => (
                               <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
@@ -569,7 +569,7 @@ export default function Usuarios() {
                         onOpenChange={(o) => setOpenFilterPopover(o ? 'status' : null)}
                       >
                         <PopoverTrigger asChild>
-                          <div className="flex items-center gap-1 cursor-pointer hover:text-foreground select-none">
+                          <div className="flex items-center gap-1 cursor-pointer hover:text-stone-900 select-none">
                             {filterStatus.length > 0
                               ? <Badge variant="secondary" className="text-xs font-normal">Status: {filterStatus.length}</Badge>
                               : 'Status'
@@ -578,7 +578,7 @@ export default function Usuarios() {
                           </div>
                         </PopoverTrigger>
                         <PopoverContent className="w-40 p-3" align="start">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Filtrar por status</p>
+                          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Filtrar por status</p>
                           <div className="space-y-2">
                             {[
                               { value: 'ativo',    label: 'Ativo' },
@@ -607,7 +607,7 @@ export default function Usuarios() {
 
                     {/* CADASTRO — ordenação por data */}
                     <TableHead
-                      className="font-semibold cursor-pointer select-none hover:text-foreground"
+                      className="font-semibold cursor-pointer select-none hover:text-stone-900"
                       onClick={() => toggleSort('created_at')}
                     >
                       <div className="flex items-center gap-1">
@@ -626,9 +626,9 @@ export default function Usuarios() {
                 </TableHeader>
                 <TableBody>
                   {filteredUsers.map((user, index) => (
-                    <TableRow 
-                      key={user.id} 
-                      className="hover:bg-muted/20 transition-colors animate-fade-in"
+                    <TableRow
+                      key={user.id}
+                      className="hover:bg-stone-50 transition-colors animate-fade-in"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <TableCell>
@@ -650,16 +650,16 @@ export default function Usuarios() {
                             </div>
                           )}
                           <div>
-                            <p className="font-medium text-foreground">{user.nome}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                            <p className="font-medium text-stone-900">{user.nome}</p>
+                            <p className="text-sm text-stone-500">{user.email}</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         {savingRoleFor === user.user_id ? (
                           <div className="flex items-center gap-1.5">
-                            <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
-                            <span className="text-xs text-muted-foreground">Salvando...</span>
+                            <Loader2 className="w-3 h-3 animate-spin text-stone-500" />
+                            <span className="text-xs text-stone-500">Salvando...</span>
                           </div>
                         ) : (
                           <Popover
@@ -680,11 +680,11 @@ export default function Usuarios() {
                                     {getRoleLabel(role)}
                                   </Badge>
                                 ))}
-                                <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover/roles:opacity-100 transition-opacity" />
+                                <Pencil className="w-3 h-3 text-stone-500 opacity-0 group-hover/roles:opacity-100 transition-opacity" />
                               </div>
                             </PopoverTrigger>
                             <PopoverContent className="w-48 p-3" align="start">
-                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
                                 Funções
                               </p>
                               <div className="space-y-2">
@@ -707,7 +707,7 @@ export default function Usuarios() {
                                       <Badge variant={getRoleBadgeVariant(option.value)} className={`text-xs pointer-events-none ${isOwnAdmin ? 'opacity-70' : ''}`}>
                                         {option.label}
                                       </Badge>
-                                      {isOwnAdmin && <span className="text-[10px] text-muted-foreground">fixo</span>}
+                                      {isOwnAdmin && <span className="text-[10px] text-stone-500">fixo</span>}
                                     </label>
                                   );
                                 })}
@@ -726,13 +726,13 @@ export default function Usuarios() {
                         )}
                       </TableCell>
                       <TableCell>{getStatusBadge(user.status)}</TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-stone-500">
                         {new Date(user.created_at).toLocaleDateString('pt-BR')}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="hover:bg-muted">
+                            <Button variant="ghost" size="icon" className="hover:bg-stone-100">
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -751,7 +751,7 @@ export default function Usuarios() {
                               </DropdownMenuItem>
                             )}
                             {isAdmin && isUserLinkedToMembro(user.id) && (
-                              <DropdownMenuItem disabled className="text-muted-foreground">
+                              <DropdownMenuItem disabled className="text-stone-500">
                                 <UserCheck className="w-4 h-4 mr-2" />
                                 Já é membro
                               </DropdownMenuItem>
@@ -784,9 +784,12 @@ export default function Usuarios() {
                   ))}
                   {filteredUsers.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                        <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                        <p>Nenhum usuário encontrado</p>
+                      <TableCell colSpan={5} className="text-center py-16">
+                        <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                          <Users className="w-8 h-8 text-stone-400" />
+                        </div>
+                        <h3 className="text-base font-semibold text-stone-900 mb-1">Nenhum usuário encontrado</h3>
+                        <p className="text-sm text-stone-500 leading-relaxed">Tente ajustar sua busca ou os filtros aplicados.</p>
                       </TableCell>
                     </TableRow>
                   )}

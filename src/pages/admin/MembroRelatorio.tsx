@@ -184,16 +184,16 @@ export default function MembroRelatorio() {
     };
 
     return (
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${colorClasses[color]}`}>
               <Icon className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{value}</p>
-              <p className="text-sm text-muted-foreground">{title}</p>
-              {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+              <p className="text-2xl font-bold text-stone-900">{value}</p>
+              <p className="text-sm text-stone-500">{title}</p>
+              {subtitle && <p className="text-xs text-stone-500">{subtitle}</p>}
             </div>
           </div>
         </CardContent>
@@ -222,12 +222,12 @@ export default function MembroRelatorio() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/membros'))} aria-label="Voltar">
+          <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => navigate(p('/admin/membros'))} aria-label="Voltar">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-display font-bold">Relatório de Membros</h1>
-            <p className="text-muted-foreground">Visão geral da membresia</p>
+            <h1 className="text-2xl font-display font-bold text-stone-900">Relatório de Membros</h1>
+            <p className="text-stone-600">Visão geral da membresia</p>
           </div>
         </div>
         <Button variant="outline" onClick={handleExportCSV}>
@@ -245,102 +245,102 @@ export default function MembroRelatorio() {
       </div>
 
       {/* Age Breakdown */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-stone-900">
             <TrendingUp className="w-5 h-5" />
             Distribuição por Faixa Etária
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="text-center p-4 bg-pink-50 rounded-lg">
+            <div className="text-center p-4 bg-pink-50 rounded-xl">
               <Baby className="w-8 h-8 mx-auto text-pink-600 mb-2" />
               <p className="text-2xl font-bold text-pink-700">{stats.kids}</p>
               <p className="text-sm text-pink-600">Crianças</p>
-              <p className="text-xs text-muted-foreground">0-12 anos</p>
+              <p className="text-xs text-stone-500">0-12 anos</p>
             </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
+            <div className="text-center p-4 bg-purple-50 rounded-xl">
               <UserPlus className="w-8 h-8 mx-auto text-purple-600 mb-2" />
               <p className="text-2xl font-bold text-purple-700">{stats.teens}</p>
               <p className="text-sm text-purple-600">Adolescentes</p>
-              <p className="text-xs text-muted-foreground">13-17 anos</p>
+              <p className="text-xs text-stone-500">13-17 anos</p>
             </div>
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
+            <div className="text-center p-4 bg-blue-50 rounded-xl">
               <User className="w-8 h-8 mx-auto text-blue-600 mb-2" />
               <p className="text-2xl font-bold text-blue-700">{stats.jovens}</p>
               <p className="text-sm text-blue-600">Jovens</p>
-              <p className="text-xs text-muted-foreground">18-35 anos</p>
+              <p className="text-xs text-stone-500">18-35 anos</p>
             </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
+            <div className="text-center p-4 bg-green-50 rounded-xl">
               <Users className="w-8 h-8 mx-auto text-green-600 mb-2" />
               <p className="text-2xl font-bold text-green-700">{stats.adultos}</p>
               <p className="text-sm text-green-600">Adultos</p>
-              <p className="text-xs text-muted-foreground">36-59 anos</p>
+              <p className="text-xs text-stone-500">36-59 anos</p>
             </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
+            <div className="text-center p-4 bg-orange-50 rounded-xl">
               <User className="w-8 h-8 mx-auto text-orange-600 mb-2" />
               <p className="text-2xl font-bold text-orange-700">{stats.idosos}</p>
               <p className="text-sm text-orange-600">Idosos</p>
-              <p className="text-xs text-muted-foreground">60+ anos</p>
+              <p className="text-xs text-stone-500">60+ anos</p>
             </div>
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <User className="w-8 h-8 mx-auto text-gray-600 mb-2" />
-              <p className="text-2xl font-bold text-gray-700">{stats.semIdade}</p>
-              <p className="text-sm text-gray-600">Não informado</p>
-              <p className="text-xs text-muted-foreground">Sem data nasc.</p>
+            <div className="text-center p-4 bg-stone-100 rounded-xl">
+              <User className="w-8 h-8 mx-auto text-stone-600 mb-2" />
+              <p className="text-2xl font-bold text-stone-700">{stats.semIdade}</p>
+              <p className="text-sm text-stone-600">Não informado</p>
+              <p className="text-xs text-stone-500">Sem data nasc.</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Percentage Stats */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle>Proporções</CardTitle>
+          <CardTitle className="text-stone-900">Proporções</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <p className="text-sm font-medium">Taxa de Membros Ativos</p>
+              <p className="text-sm font-medium text-stone-900">Taxa de Membros Ativos</p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
-                  <div 
+                <div className="flex-1 h-3 bg-stone-100 rounded-full overflow-hidden">
+                  <div
                     className="h-full bg-green-500 rounded-full"
                     style={{ width: `${stats.total > 0 ? (stats.ativos / stats.total) * 100 : 0}%` }}
                   />
                 </div>
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium text-stone-900">
                   {stats.total > 0 ? Math.round((stats.ativos / stats.total) * 100) : 0}%
                 </span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-medium">Taxa de Batizados</p>
+              <p className="text-sm font-medium text-stone-900">Taxa de Batizados</p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
-                  <div 
+                <div className="flex-1 h-3 bg-stone-100 rounded-full overflow-hidden">
+                  <div
                     className="h-full bg-blue-500 rounded-full"
                     style={{ width: `${stats.total > 0 ? (stats.batizados / stats.total) * 100 : 0}%` }}
                   />
                 </div>
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium text-stone-900">
                   {stats.total > 0 ? Math.round((stats.batizados / stats.total) * 100) : 0}%
                 </span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-medium">Com data de nascimento</p>
+              <p className="text-sm font-medium text-stone-900">Com data de nascimento</p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
-                  <div 
+                <div className="flex-1 h-3 bg-stone-100 rounded-full overflow-hidden">
+                  <div
                     className="h-full bg-purple-500 rounded-full"
                     style={{ width: `${stats.total > 0 ? ((stats.total - stats.semIdade) / stats.total) * 100 : 0}%` }}
                   />
                 </div>
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium text-stone-900">
                   {stats.total > 0 ? Math.round(((stats.total - stats.semIdade) / stats.total) * 100) : 0}%
                 </span>
               </div>

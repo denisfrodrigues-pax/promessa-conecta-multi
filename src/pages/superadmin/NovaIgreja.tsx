@@ -386,9 +386,9 @@ export default function NovaIgreja() {
   // nenhum. Ver InviteUserDialog (Edge Function invite-admin).
   if (createdChurch) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 py-12 px-4 flex items-center justify-center">
         <div className="max-w-md w-full">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="text-center">
               <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-2">
                 <PartyPopper className="h-8 w-8 text-emerald-700" />
@@ -396,7 +396,7 @@ export default function NovaIgreja() {
               <CardTitle className="text-xl">Igreja "{createdChurch.nome}" criada!</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600 text-center">
+              <p className="text-sm text-stone-600 text-center leading-relaxed">
                 Agora convide o primeiro administrador — sem isso, ninguém consegue acessar essa igreja.
               </p>
               <Button className="w-full bg-emerald-700 hover:bg-emerald-800" onClick={() => setShowInviteDialog(true)}>
@@ -423,14 +423,14 @@ export default function NovaIgreja() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-stone-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
 
         <div className="flex items-center gap-3 mb-8">
           <Button variant="ghost" size="icon" onClick={() => navigate('/admin')} aria-label="Voltar"><ArrowLeft className="h-4 w-4" /></Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Nova Igreja</h1>
-            <p className="text-sm text-gray-500">Preencha todas as informações antes de criar</p>
+            <h1 className="text-2xl font-bold text-stone-900">Nova Igreja</h1>
+            <p className="text-sm text-stone-500 leading-relaxed">Preencha todas as informações antes de criar</p>
           </div>
         </div>
 
@@ -443,26 +443,26 @@ export default function NovaIgreja() {
               return (
                 <div key={s.label} className="flex flex-col items-center flex-1">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all
-                    ${done ? 'bg-green-600 text-white' : cur ? 'bg-emerald-700 text-white ring-4 ring-emerald-200' : 'bg-gray-200 text-gray-500'}`}>
+                    ${done ? 'bg-green-600 text-white' : cur ? 'bg-emerald-700 text-white ring-4 ring-emerald-200' : 'bg-stone-200 text-stone-500'}`}>
                     {done ? <Check className="h-4 w-4" /> : <Icon className="h-3.5 w-3.5" />}
                   </div>
-                  <span className={`text-xs mt-1 hidden sm:block leading-tight text-center ${cur ? 'text-emerald-700 font-semibold' : 'text-gray-400'}`}>
+                  <span className={`text-xs mt-1 hidden sm:block leading-tight text-center ${cur ? 'text-emerald-700 font-semibold' : 'text-stone-400'}`}>
                     {s.label}
                   </span>
                 </div>
               );
             })}
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
+          <div className="w-full bg-stone-200 rounded-full h-1.5">
             <div className="bg-emerald-600 h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }} />
           </div>
-          <p className="text-center text-sm text-gray-500 mt-2">Etapa {step} de {STEPS.length} — {STEPS[step - 1].label}</p>
+          <p className="text-center text-sm text-stone-500 mt-2">Etapa {step} de {STEPS.length} — {STEPS[step - 1].label}</p>
         </div>
 
         {/* ════ ETAPA 1 — IDENTIDADE ════ */}
         {step === 1 && (
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-800"><Building2 className="h-5 w-5" />Identidade Básica</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1">
@@ -471,13 +471,13 @@ export default function NovaIgreja() {
               </div>
               <div className="space-y-1">
                 <Label className="flex items-center gap-2">Slug (URL) <span className="text-red-500">*</span>
-                  {slugStatus === 'checking' && <span className="text-gray-400 text-xs">Verificando…</span>}
+                  {slugStatus === 'checking' && <span className="text-stone-400 text-xs">Verificando…</span>}
                   {slugStatus === 'ok'       && <span className="text-green-600 text-xs">✓ Disponível</span>}
                   {slugStatus === 'taken'    && <span className="text-red-500 text-xs">✗ Já em uso</span>}
                 </Label>
                 <Input value={form.slug} onChange={e => handleSlugChange(e.target.value)}
                   onBlur={() => form.slug && checkSlug(form.slug)} placeholder="promessa-sumare" />
-                <p className="text-xs text-gray-400">Apenas letras minúsculas, números e hífens</p>
+                <p className="text-xs text-stone-400">Apenas letras minúsculas, números e hífens</p>
               </div>
               <div className="space-y-1">
                 <Label>Slogan / Tagline</Label>
@@ -489,18 +489,18 @@ export default function NovaIgreja() {
                 <Label className="flex items-center gap-2 text-blue-800"><BookMarked className="h-4 w-4" />Versículo bíblico</Label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
                     <Input className="pl-9 bg-white"
                       value={bibleQuery}
                       onChange={e => handleBibleQueryChange(e.target.value)}
                       placeholder="Ex: João 3:16 ou Filipenses 4:13" />
                   </div>
-                  {bibleLoading && <Loader2 className="h-4 w-4 animate-spin text-gray-400 self-center" />}
+                  {bibleLoading && <Loader2 className="h-4 w-4 animate-spin text-stone-400 self-center" />}
                 </div>
                 {bibleResult && (
-                  <div className="bg-white border border-blue-300 rounded-lg p-3 space-y-2">
+                  <div className="bg-white border border-blue-300 rounded-xl p-3 space-y-2">
                     <p className="text-xs font-semibold text-blue-700">{bibleResult.reference}</p>
-                    <p className="text-sm text-gray-700 italic line-clamp-3">{bibleResult.text}</p>
+                    <p className="text-sm text-stone-700 italic line-clamp-3">{bibleResult.text}</p>
                     <Button type="button" size="sm" variant="outline"
                       className="border-blue-300 text-blue-700 hover:bg-blue-50 h-7 text-xs"
                       onClick={applyBibleResult}>
@@ -520,19 +520,19 @@ export default function NovaIgreja() {
 
         {/* ════ ETAPA 2 — VISUAL ════ */}
         {step === 2 && (
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-800"><Palette className="h-5 w-5" />Identidade Visual</CardTitle></CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label>Logo da Igreja <span className="text-gray-400 text-xs">(PNG, JPEG, SVG, máx 2MB)</span></Label>
+                <Label>Logo da Igreja <span className="text-stone-400 text-xs">(PNG, JPEG, SVG, máx 2MB)</span></Label>
                 {form.logoPreview ? (
-                  <div className="relative w-28 h-28 border rounded-xl bg-gray-50 overflow-hidden">
+                  <div className="relative w-28 h-28 border rounded-xl bg-stone-50 overflow-hidden">
                     <img src={form.logoPreview} alt="Logo" className="w-full h-full object-contain p-2" />
                     <button onClick={() => clearSingle('logoFile', 'logoPreview')} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5" aria-label="Remover logo"><X className="h-3 w-3" /></button>
                   </div>
                 ) : (
                   <button type="button" onClick={() => logoRef.current?.click()}
-                    className="w-full border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 py-4 text-gray-400 hover:border-emerald-400 hover:text-emerald-600 transition-colors">
+                    className="w-full border-2 border-dashed border-stone-300 rounded-xl flex flex-col items-center justify-center gap-1 py-4 text-stone-400 hover:border-emerald-400 hover:text-emerald-600 transition-colors">
                     <Upload className="h-6 w-6 mb-1" /><span className="text-xs">Clique para enviar logo</span>
                   </button>
                 )}
@@ -552,7 +552,7 @@ export default function NovaIgreja() {
                 ))}
               </div>
               <div className="space-y-2">
-                <Label>Foto da Tela de Login <span className="text-gray-400 text-xs">(opcional)</span></Label>
+                <Label>Foto da Tela de Login <span className="text-stone-400 text-xs">(opcional)</span></Label>
                 {form.loginPreview ? (
                   <div className="relative w-full h-28 border rounded-xl overflow-hidden">
                     <img src={form.loginPreview} alt="Login" className="w-full h-full object-cover" />
@@ -560,13 +560,13 @@ export default function NovaIgreja() {
                   </div>
                 ) : (
                   <button type="button" onClick={() => loginRef.current?.click()}
-                    className="w-full border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 py-4 text-gray-400 hover:border-emerald-400 hover:text-emerald-600 transition-colors">
+                    className="w-full border-2 border-dashed border-stone-300 rounded-xl flex flex-col items-center justify-center gap-1 py-4 text-stone-400 hover:border-emerald-400 hover:text-emerald-600 transition-colors">
                     <ImageIcon className="h-5 w-5 mb-1" /><span className="text-sm">Adicionar foto de login</span>
                   </button>
                 )}
                 <input ref={loginRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden"
                   onChange={e => handleSingleImage(e, 'loginFile', 'loginPreview')} />
-                <p className="text-xs text-gray-400">Recomendado: 1920×1080px (proporção 16:9), mínimo 1280×720px. Formatos: JPG, PNG, WebP.</p>
+                <p className="text-xs text-stone-400">Recomendado: 1920×1080px (proporção 16:9), mínimo 1280×720px. Formatos: JPG, PNG, WebP.</p>
               </div>
             </CardContent>
           </Card>
@@ -574,15 +574,15 @@ export default function NovaIgreja() {
 
         {/* ════ ETAPA 3 — FOTOS HERO ════ */}
         {step === 3 && (
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-emerald-800"><Camera className="h-5 w-5" />Fotos do Site Público (Hero)</CardTitle>
-              <p className="text-sm text-gray-500 mt-1">Até 4 fotos para o slideshow da página inicial. Mínimo 1 obrigatória.</p>
+              <p className="text-sm text-stone-500 mt-1 leading-relaxed">Até 4 fotos para o slideshow da página inicial. Mínimo 1 obrigatória.</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 {form.heroItems.map((item, i) => (
-                  <div key={i} className="relative aspect-video rounded-lg overflow-hidden border bg-gray-100">
+                  <div key={i} className="relative aspect-video rounded-xl overflow-hidden border bg-stone-100">
                     <img src={item.preview} alt={`Hero ${i + 1}`} className="w-full h-full object-cover" />
                     <button onClick={() => removeHero(i)} className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1 shadow" aria-label="Remover foto do carrossel"><X className="h-3 w-3" /></button>
                     <span className="absolute bottom-1.5 left-1.5 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">{i + 1}</span>
@@ -590,14 +590,14 @@ export default function NovaIgreja() {
                 ))}
                 {form.heroItems.length < 4 && (
                   <button type="button" onClick={() => heroRef.current?.click()}
-                    className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-emerald-400 hover:text-emerald-600 transition-colors">
+                    className="aspect-video border-2 border-dashed border-stone-300 rounded-xl flex flex-col items-center justify-center text-stone-400 hover:border-emerald-400 hover:text-emerald-600 transition-colors">
                     <Upload className="h-6 w-6 mb-1" />
                     <span className="text-xs text-center px-2">{form.heroItems.length === 0 ? 'Adicionar fotos' : `+ foto (${form.heroItems.length}/4)`}</span>
                   </button>
                 )}
               </div>
               <input ref={heroRef} type="file" accept="image/png,image/jpeg,image/webp" multiple className="hidden" onChange={handleHeroAdd} />
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
                 <strong>Dicas:</strong> Use fotos em modo paisagem (16:9), alta resolução (min 1280×720px), máx 2MB cada.
               </div>
             </CardContent>
@@ -606,7 +606,7 @@ export default function NovaIgreja() {
 
         {/* ════ ETAPA 4 — SOBRE ════ */}
         {step === 4 && (
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-800"><BookOpen className="h-5 w-5" />Sobre a Igreja</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1"><Label>Missão</Label>
@@ -632,16 +632,16 @@ export default function NovaIgreja() {
 
         {/* ════ ETAPA 5 — LOCALIZAÇÃO ════ */}
         {step === 5 && (
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-800"><MapPin className="h-5 w-5" />Localização e Contato</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1">
                 <Label className="flex items-center gap-1">
                   <Search className="h-3.5 w-3.5" />CEP
-                  {cepLoading && <Loader2 className="h-3 w-3 animate-spin text-gray-400 ml-1" />}
+                  {cepLoading && <Loader2 className="h-3 w-3 animate-spin text-stone-400 ml-1" />}
                 </Label>
                 <Input value={form.cep} onChange={e => handleCepChange(e.target.value)} placeholder="00000-000" maxLength={9} />
-                <p className="text-xs text-gray-400">Preencha o CEP para buscar o endereço automaticamente</p>
+                <p className="text-xs text-stone-400">Preencha o CEP para buscar o endereço automaticamente</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -691,7 +691,7 @@ export default function NovaIgreja() {
               </div>
 
               <Separator />
-              <p className="text-sm font-semibold text-gray-700">Cultos e Encontros</p>
+              <p className="text-sm font-semibold text-stone-700">Cultos e Encontros</p>
 
               <CultoPrincipalBlock
                 config={form.cultos_config.culto_principal}
@@ -714,7 +714,7 @@ export default function NovaIgreja() {
 
         {/* ════ ETAPA 6 — REDES SOCIAIS ════ */}
         {step === 6 && (
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-800"><Share2 className="h-5 w-5" />Redes Sociais</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               {[
@@ -737,7 +737,7 @@ export default function NovaIgreja() {
         {/* ════ ETAPA 7 — RESPONSÁVEL + MÓDULOS + REVISÃO ════ */}
         {step === 7 && (
           <div className="space-y-4">
-            <Card>
+            <Card className="rounded-2xl">
               <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-800"><User className="h-5 w-5" />Responsável pela Igreja</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-1">
@@ -756,7 +756,7 @@ export default function NovaIgreja() {
             </Card>
 
             {/* 1.5 — Módulos do sistema */}
-            <Card>
+            <Card className="rounded-2xl">
               <CardHeader><CardTitle className="text-emerald-800 text-base">Módulos do Sistema</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {([
@@ -767,7 +767,7 @@ export default function NovaIgreja() {
                   { key: 'modulo_auditoria',       label: 'Auditoria' },
                 ] as { key: keyof FormData; label: string }[]).map(m => (
                   <div key={m.key} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">{m.label}</span>
+                    <span className="text-sm text-stone-700">{m.label}</span>
                     <Switch
                       checked={form[m.key] as boolean}
                       onCheckedChange={v => set(m.key, v)}
@@ -778,7 +778,7 @@ export default function NovaIgreja() {
             </Card>
 
             {/* Preview card */}
-            <div className="rounded-xl overflow-hidden shadow-lg"
+            <div className="rounded-2xl overflow-hidden shadow-elevated"
               style={{ background: `linear-gradient(135deg, ${form.cor_primaria}, ${form.cor_secundaria})` }}>
               <div className="p-6 text-white">
                 <div className="flex items-center gap-4">
@@ -793,7 +793,7 @@ export default function NovaIgreja() {
                   </div>
                 </div>
                 {form.versiculo && (
-                  <div className="mt-4 bg-white/10 rounded-lg p-3">
+                  <div className="mt-4 bg-white/10 rounded-xl p-3">
                     <p className="text-sm italic">"{form.versiculo}"</p>
                     {form.versiculo_referencia && <p className="text-xs text-white/60 mt-1">— {form.versiculo_referencia}</p>}
                   </div>
@@ -802,14 +802,14 @@ export default function NovaIgreja() {
             </div>
 
             {/* Resumo */}
-            <Card>
+            <Card className="rounded-2xl">
               <CardContent className="pt-4 space-y-2 text-sm">
                 <SRow label="Slug"        value={`/i/${form.slug}`} />
                 <SRow label="Cidade"      value={form.cidade && form.estado ? `${form.cidade}–${form.estado}` : ''} />
                 {form.responsavel_nome  && <SRow label="Responsável" value={form.responsavel_nome} />}
                 {form.responsavel_email && <SRow label="E-mail"      value={form.responsavel_email} />}
                 <Separator />
-                <div className="bg-emerald-50 rounded-lg p-3">
+                <div className="bg-emerald-50 rounded-xl p-3">
                   <p className="text-xs font-semibold text-emerald-800 mb-1">Seed automático após criação</p>
                   <p className="text-xs text-emerald-700">5 ministérios + 7 categorias financeiras</p>
                 </div>
@@ -840,8 +840,8 @@ function SRow({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
     <div className="flex items-start gap-2">
-      <span className="text-gray-500 min-w-24 shrink-0">{label}</span>
-      <span className="font-medium text-gray-800 break-all">{value}</span>
+      <span className="text-stone-500 min-w-24 shrink-0">{label}</span>
+      <span className="font-medium text-stone-800 break-all">{value}</span>
     </div>
   );
 }

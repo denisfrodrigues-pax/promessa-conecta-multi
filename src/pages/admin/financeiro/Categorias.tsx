@@ -149,11 +149,11 @@ export default function Categorias() {
   const despesasCount = categorias.filter((c) => c.natureza === "despesa").length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Categorias</h1>
-          <p className="text-muted-foreground">Gerencie as categorias de receitas e despesas</p>
+          <h1 className="text-2xl font-bold text-stone-900">Categorias</h1>
+          <p className="text-stone-600 leading-relaxed">Gerencie as categorias de receitas e despesas</p>
         </div>
         <Dialog open={modalOpen} onOpenChange={(open) => { setModalOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
@@ -202,10 +202,10 @@ export default function Categorias() {
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+                <Button type="button" variant="outline" className="min-h-[44px]" onClick={() => setModalOpen(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={saving}>
+                <Button type="submit" disabled={saving} className="min-h-[44px]">
                   {saving ? "Salvando..." : "Salvar"}
                 </Button>
               </div>
@@ -214,10 +214,10 @@ export default function Categorias() {
         </Dialog>
       </div>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="pt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
+            <TabsList className="mb-4 bg-stone-100">
               <TabsTrigger value="todas">
                 Todas ({categorias.length})
               </TabsTrigger>
@@ -238,9 +238,12 @@ export default function Categorias() {
                 ))}
               </div>
             ) : filteredCategorias.length === 0 ? (
-              <div className="text-center py-12">
-                <Tag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Nenhuma categoria encontrada</p>
+              <div className="flex flex-col items-center justify-center text-center py-16 px-4">
+                <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+                  <Tag className="h-8 w-8 text-stone-400" />
+                </div>
+                <h3 className="text-base font-semibold text-stone-800 mb-1">Nenhuma categoria encontrada</h3>
+                <p className="text-sm text-stone-500 leading-relaxed max-w-xs">Cadastre categorias para organizar receitas e despesas.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -270,13 +273,14 @@ export default function Categorias() {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="max-w-[300px] truncate text-muted-foreground">
+                      <TableCell className="max-w-[300px] truncate text-stone-500">
                         {categoria.descricao || "-"}
                       </TableCell>
                       <TableCell>
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="min-h-[44px]"
                           onClick={() => openEditModal(categoria)}
                         >
                           <Pencil className="h-4 w-4" />

@@ -180,7 +180,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
   const churchName = config?.nome || 'Igreja';
 
   const activeBase = 'border-l-2 border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10 text-[color:hsl(var(--promessa-primary-dark))] font-medium';
-  const inactiveBase = 'text-gray-600 hover:bg-gray-100 hover:text-gray-900';
+  const inactiveBase = 'text-stone-600 hover:bg-stone-100 hover:text-stone-900';
 
   return (
     <aside
@@ -188,12 +188,12 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
         'bg-white flex flex-col transition-all duration-300',
         isMobile
           ? 'h-full w-full'
-          : cn('h-screen border-r border-gray-100 sticky top-0', collapsed ? 'w-16' : 'w-64')
+          : cn('h-screen border-r border-stone-100 shadow-soft sticky top-0', collapsed ? 'w-16' : 'w-64')
       )}
     >
       {/* Header */}
       <div className={cn(
-        'px-4 py-5 flex items-center border-b border-gray-100',
+        'px-4 py-5 flex items-center border-b border-stone-100',
         collapsed ? 'justify-center' : 'gap-3'
       )}>
         {hasCustomLogo ? (
@@ -207,8 +207,8 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
         )}
         {!collapsed && (
           <div className="animate-fade-in min-w-0">
-            <p className="text-sm font-semibold text-gray-800 truncate">{churchName}</p>
-            <p className="text-xs text-gray-400">Painel Administrativo</p>
+            <p className="text-sm font-semibold text-stone-900 truncate">{churchName}</p>
+            <p className="text-xs text-stone-400">Painel Administrativo</p>
           </div>
         )}
       </div>
@@ -219,7 +219,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
           <div key={item.path}>
             {/* Section label */}
             {!collapsed && item.section && (
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mt-4 mb-1">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 px-3 mt-4 mb-1">
                 {item.section}
               </p>
             )}
@@ -229,7 +229,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
                 <button
                   onClick={() => toggleSubmenu(item.path)}
                   className={cn(
-                    'w-full relative flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150',
+                    'w-full relative flex items-center gap-3 px-3 py-2 min-h-[44px] rounded-xl transition-all duration-150',
                     collapsed && 'justify-center px-2',
                     isSubmenuActive(item) ? activeBase : inactiveBase
                   )}
@@ -244,13 +244,13 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
                 </button>
 
                 {!collapsed && isExpanded(item.path) && (
-                  <div className="mt-0.5 ml-3 pl-3 border-l border-gray-100 space-y-0.5 mb-0.5">
+                  <div className="mt-0.5 ml-3 pl-3 border-l border-stone-100 space-y-0.5 mb-0.5">
                     {item.submenu.map((subItem) => (
                       <NavLink
                         key={subItem.path}
                         to={subItem.path}
                         onClick={() => onNavigate?.()}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all duration-150 text-sm"
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition-all duration-150 text-sm"
                         activeClassName="bg-[color:var(--color-primary)]/10 text-[color:hsl(var(--promessa-primary-dark))] font-medium"
                       >
                         <subItem.icon className="w-3.5 h-3.5" />
@@ -266,7 +266,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
                 end
                 onClick={() => onNavigate?.()}
                 className={cn(
-                  'relative flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150',
+                  'relative flex items-center gap-3 px-3 py-2 min-h-[44px] rounded-xl transition-all duration-150',
                   collapsed && 'justify-center px-2'
                 )}
                 activeClassName={activeBase}
@@ -291,7 +291,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
       </nav>
 
       {/* Footer */}
-      <div className="flex-shrink-0 px-3 py-3 border-t border-gray-100 space-y-1.5">
+      <div className="flex-shrink-0 px-3 py-4 border-t border-stone-100 space-y-2">
         {!collapsed && <PlanoInfo compact />}
 
         {isSuperAdmin && (
@@ -299,7 +299,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
             to="/admin"
             onClick={() => onNavigate?.()}
             className={cn(
-              'flex items-center gap-3 px-3 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all duration-150 border border-amber-200 text-sm font-medium',
+              'flex items-center gap-3 px-3 py-2 min-h-[44px] rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all duration-150 border border-amber-200 text-sm font-medium',
               collapsed && 'justify-center px-2'
             )}
           >
@@ -312,7 +312,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
           to={p('/app')}
           onClick={() => onNavigate?.()}
           className={cn(
-            'flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-150 border border-gray-200',
+            'flex items-center gap-3 px-3 py-2 min-h-[44px] rounded-xl bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-all duration-150 border border-stone-200',
             collapsed && 'justify-center px-2'
           )}
         >
@@ -326,7 +326,7 @@ export default function AdminSidebar({ variant = 'desktop', onNavigate }: AdminS
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+              className="min-h-[44px] min-w-[44px] text-stone-400 hover:text-stone-700 hover:bg-stone-100"
               onClick={() => setDesktopCollapsed(!desktopCollapsed)}
               aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
             >

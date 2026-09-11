@@ -210,11 +210,11 @@ export default function AdminFuncoesMinisterio() {
   const selectedMinisterioNome = ministerios.find((m) => m.id === selectedMinisterio)?.nome;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 bg-stone-50">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Funções de Ministério</h1>
-          <p className="text-muted-foreground">Gerencie as funções disponíveis em cada ministério</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Funções de Ministério</h1>
+          <p className="text-stone-500">Gerencie as funções disponíveis em cada ministério</p>
         </div>
       </div>
 
@@ -222,7 +222,7 @@ export default function AdminFuncoesMinisterio() {
         {/* Sidebar - Ministérios */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="text-lg">Ministérios</CardTitle>
+            <CardTitle className="text-lg text-stone-900">Ministérios</CardTitle>
           </CardHeader>
           <CardContent className="p-2">
             <div className="space-y-1">
@@ -230,17 +230,17 @@ export default function AdminFuncoesMinisterio() {
                 <button
                   key={ministerio.id}
                   onClick={() => setSelectedMinisterio(ministerio.id)}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                  className={`w-full text-left px-3 py-2 min-h-[44px] rounded-xl transition-colors ${
                     selectedMinisterio === ministerio.id
                       ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-muted'
+                      : 'hover:bg-stone-100'
                   }`}
                 >
                   {ministerio.nome}
                 </button>
               ))}
               {ministerios.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
+                <p className="text-sm text-stone-500 text-center py-4">
                   Nenhum ministério encontrado
                 </p>
               )}
@@ -255,12 +255,12 @@ export default function AdminFuncoesMinisterio() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                   <div>
-                    <CardTitle>Funções - {selectedMinisterioNome}</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <CardTitle className="text-stone-900">Funções - {selectedMinisterioNome}</CardTitle>
+                    <p className="text-sm text-stone-500 mt-1">
                       {funcoes.length} função(ões) cadastrada(s)
                     </p>
                   </div>
-                  <Button onClick={handleCreate}>
+                  <Button className="min-h-[44px]" onClick={handleCreate}>
                     <Plus className="w-4 h-4 mr-2" />
                     Nova Função
                   </Button>
@@ -268,7 +268,7 @@ export default function AdminFuncoesMinisterio() {
                 <CardContent>
                   <div className="mb-4">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                       <Input
                         placeholder="Buscar função..."
                         value={searchTerm}
@@ -291,16 +291,20 @@ export default function AdminFuncoesMinisterio() {
                     <TableBody>
                       {filteredFuncoes.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                            <ListChecks className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                            Nenhuma função cadastrada
+                          <TableCell colSpan={4} className="py-12">
+                            <div className="flex flex-col items-center justify-center text-center">
+                              <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center mb-3">
+                                <ListChecks className="w-7 h-7 text-stone-400" />
+                              </div>
+                              <p className="text-stone-500 leading-relaxed">Nenhuma função cadastrada</p>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ) : (
                         filteredFuncoes.map((funcao) => (
                           <TableRow key={funcao.id}>
-                            <TableCell className="font-medium">{funcao.nome}</TableCell>
-                            <TableCell className="text-muted-foreground">
+                            <TableCell className="font-medium text-stone-900">{funcao.nome}</TableCell>
+                            <TableCell className="text-stone-500">
                               {funcao.descricao || '-'}
                             </TableCell>
                             <TableCell>
@@ -314,13 +318,13 @@ export default function AdminFuncoesMinisterio() {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" onClick={() => handleEdit(funcao)} aria-label="Editar função">
+                                <Button variant="ghost" size="icon" className="h-11 w-11" onClick={() => handleEdit(funcao)} aria-label="Editar função">
                                   <Pencil className="w-4 h-4" />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="text-destructive hover:text-destructive"
+                                  className="h-11 w-11 text-destructive hover:text-destructive"
                                   onClick={() => {
                                     setDeletingFuncao(funcao);
                                     setIsDeleteDialogOpen(true);

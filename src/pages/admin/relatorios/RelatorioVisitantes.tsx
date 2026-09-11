@@ -140,7 +140,7 @@ export default function RelatorioVisitantes() {
 
   const PaginationControls = () => (
     <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-      <span className="text-sm text-muted-foreground">
+      <span className="text-sm text-stone-500">
         Mostrando {startItem} – {endItem} de {total}
       </span>
       <div className="space-x-2">
@@ -162,8 +162,8 @@ export default function RelatorioVisitantes() {
     <div className="space-y-6" ref={reportRef}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Relatório de Visitantes</h1>
-          <p className="text-muted-foreground">Análise detalhada dos visitantes</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Relatório de Visitantes</h1>
+          <p className="text-stone-600 leading-relaxed">Análise detalhada dos visitantes</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCSV}><Download className="w-4 h-4 mr-2" />CSV</Button>
@@ -175,11 +175,11 @@ export default function RelatorioVisitantes() {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="p-4">
           <div className="flex flex-wrap gap-4">
             <Select value={periodo} onValueChange={setPeriodo}>
-              <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[150px] rounded-xl"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="semana">Última Semana</SelectItem>
                 <SelectItem value="mes">Último Mês</SelectItem>
@@ -188,7 +188,7 @@ export default function RelatorioVisitantes() {
               </SelectContent>
             </Select>
             <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-              <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[180px] rounded-xl"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos os Status</SelectItem>
                 <SelectItem value="novo">Novo</SelectItem>
@@ -202,13 +202,13 @@ export default function RelatorioVisitantes() {
       </Card>
 
       {/* KPI */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <UserPlus className="w-8 h-8 text-blue-600" />
             <div>
-              <p className="text-3xl font-bold">{total}</p>
-              <p className="text-muted-foreground">Visitantes no período</p>
+              <p className="text-3xl font-bold text-stone-900">{total}</p>
+              <p className="text-stone-600">Visitantes no período</p>
             </div>
           </div>
         </CardContent>
@@ -216,8 +216,8 @@ export default function RelatorioVisitantes() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader><CardTitle className="text-base font-bold">Visitantes por Mês</CardTitle></CardHeader>
+        <Card className="rounded-2xl">
+          <CardHeader><CardTitle className="text-base font-bold text-stone-900">Visitantes por Mês</CardTitle></CardHeader>
           <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={chartData.mensal}>
@@ -230,8 +230,8 @@ export default function RelatorioVisitantes() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-base font-bold">Status dos Visitantes</CardTitle></CardHeader>
+        <Card className="rounded-2xl">
+          <CardHeader><CardTitle className="text-base font-bold text-stone-900">Status dos Visitantes</CardTitle></CardHeader>
           <CardContent className="p-6">
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
@@ -247,29 +247,29 @@ export default function RelatorioVisitantes() {
       </div>
 
       {/* Table */}
-      <Card>
-        <CardHeader><CardTitle className="text-base font-bold">Lista de Visitantes</CardTitle></CardHeader>
+      <Card className="rounded-2xl">
+        <CardHeader><CardTitle className="text-base font-bold text-stone-900">Lista de Visitantes</CardTitle></CardHeader>
         <CardContent>
           {total > limit && <div className="mb-4"><PaginationControls /></div>}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Nome</th>
-                  <th className="text-left p-2">Telefone</th>
-                  <th className="text-left p-2">Data Visita</th>
-                  <th className="text-left p-2">Status</th>
+                <tr className="border-b border-stone-200">
+                  <th className="text-left p-2 text-stone-900">Nome</th>
+                  <th className="text-left p-2 text-stone-900">Telefone</th>
+                  <th className="text-left p-2 text-stone-900">Data Visita</th>
+                  <th className="text-left p-2 text-stone-900">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {visitantes.map(v => (
-                  <tr key={v.id} className="border-b hover:bg-muted/50">
-                    <td className="p-2 font-medium">{v.nome}</td>
+                  <tr key={v.id} className="border-b border-stone-100 hover:bg-stone-50">
+                    <td className="p-2 font-medium text-stone-900">{v.nome}</td>
                     <td className="p-2">
                       <div className="flex items-center gap-2">
                         {v.telefone ? formatPhoneBR(v.telefone) : '–'}
                         {hasValidPhone(v.telefone) && (
-                          <button onClick={() => window.open(getWhatsAppUrl(v.telefone, `Olá! Sou da ${churchNome || 'nossa Igreja'}.`), '_blank')} className="text-green-600" aria-label="Enviar WhatsApp">
+                          <button onClick={() => window.open(getWhatsAppUrl(v.telefone, `Olá! Sou da ${churchNome || 'nossa Igreja'}.`), '_blank')} className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:bg-green-50" aria-label="Enviar WhatsApp">
                             <MessageCircle className="w-4 h-4" />
                           </button>
                         )}

@@ -47,13 +47,13 @@ export default function FinanceiroSidebar() {
   return (
     <aside
       className={cn(
-        'h-screen bg-neutral-50 border-r border-neutral-200 sticky top-0 flex flex-col transition-all duration-300',
+        'h-screen bg-stone-50 border-r border-stone-200 shadow-soft sticky top-0 flex flex-col transition-all duration-300',
         collapsed ? 'w-16' : 'w-64'
       )}
     >
       {/* Header */}
       <div className={cn(
-        "p-4 flex items-center border-b border-neutral-200",
+        "p-4 flex items-center border-b border-stone-200",
         collapsed ? "justify-center" : "gap-3"
       )}>
         {hasCustomLogo ? (
@@ -71,7 +71,7 @@ export default function FinanceiroSidebar() {
         {!collapsed && (
           <div className="animate-fade-in min-w-0">
             <p className="text-sm font-semibold text-emerald-700">Painel Financeiro</p>
-            <p className="text-xs text-neutral-500 truncate">{churchName}</p>
+            <p className="text-xs text-stone-500 truncate">{churchName}</p>
           </div>
         )}
       </div>
@@ -84,7 +84,7 @@ export default function FinanceiroSidebar() {
             to={item.path}
             end={item.path === p('/financeiro')}
             className={cn(
-              'relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200',
+              'relative flex items-center gap-3 px-3 py-2.5 min-h-[44px] rounded-xl text-stone-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200',
               collapsed && 'justify-center px-2'
             )}
             activeClassName="bg-emerald-100 text-emerald-700 font-medium"
@@ -96,12 +96,12 @@ export default function FinanceiroSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="flex-shrink-0 p-3 border-t border-neutral-200 space-y-2">
+      <div className="flex-shrink-0 p-3 border-t border-stone-200 space-y-2">
         {/* Back to Member Area Button */}
         <NavLink
           to={p('/app')}
           className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900 transition-all duration-200 border border-emerald-200',
+            'flex items-center gap-3 px-3 py-2.5 min-h-[44px] rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900 transition-all duration-200 border border-emerald-200',
             collapsed && 'justify-center px-2'
           )}
         >
@@ -117,7 +117,7 @@ export default function FinanceiroSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            className="text-neutral-500 hover:text-emerald-700 hover:bg-emerald-50"
+            className="min-h-[44px] min-w-[44px] text-stone-500 hover:text-emerald-700 hover:bg-emerald-50"
             onClick={() => setCollapsed(!collapsed)}
             aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
           >

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Cake, Droplets, HeartHandshake, MessageCircle, PartyPopper } from 'lucide-react';
+import { EmptyState } from '@/components/EmptyState';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { getCurrentWeekMonthDayPairs, monthDayFromDateString } from '@/lib/birthdayWeek';
 import { getWhatsAppUrl, hasValidPhone } from '@/lib/formatters';
@@ -108,11 +109,11 @@ export default function Aniversariantes() {
   return (
     <div className="p-6 space-y-6 max-w-3xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-stone-900 flex items-center gap-2">
           <Cake className="w-6 h-6 text-primary" />
           Aniversariantes da Semana
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">{periodo}</p>
+        <p className="text-sm text-stone-500 mt-1">{periodo}</p>
       </div>
 
       {loading ? (
@@ -122,10 +123,13 @@ export default function Aniversariantes() {
           ))}
         </div>
       ) : totalGeral === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <PartyPopper className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-            <p className="text-muted-foreground">Nenhum aniversariante esta semana.</p>
+        <Card className="rounded-2xl">
+          <CardContent>
+            <EmptyState
+              icon={PartyPopper}
+              title="Nenhum aniversariante esta semana"
+              description="Volte na próxima semana para conferir quem está de aniversário, batismo ou casamento."
+            />
           </CardContent>
         </Card>
       ) : (
@@ -255,7 +259,7 @@ function Secao({ titulo, icon, itens }: { titulo: string; icon: React.ReactNode;
 
   return (
     <div className="space-y-3">
-      <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+      <h2 className="text-base font-semibold text-stone-900 flex items-center gap-2">
         {icon}
         {titulo}
       </h2>
@@ -265,17 +269,17 @@ function Secao({ titulo, icon, itens }: { titulo: string; icon: React.ReactNode;
         const iniciais = item.pessoas[0].nome.charAt(0).toUpperCase();
 
         return (
-          <Card key={item.key} className={isHoje ? 'border-promessa-400 bg-promessa-50' : ''}>
+          <Card key={item.key} className={`rounded-2xl ${isHoje ? 'border-promessa-400 bg-promessa-50' : ''}`}>
             <CardContent className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary font-semibold">
                   {iniciais}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-medium text-foreground truncate">
+                  <p className="font-medium text-stone-900 truncate">
                     {item.pessoas.map((p) => p.nome).join(' e ')}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-2 text-xs text-stone-500 flex-wrap">
                     <span>{String(item.dia).padStart(2, '0')}/{String(item.mes).padStart(2, '0')}</span>
                     {item.caption && <span>· {item.caption}</span>}
                     {isHoje && (
@@ -293,7 +297,7 @@ function Secao({ titulo, icon, itens }: { titulo: string; icon: React.ReactNode;
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Button variant="outline" size="sm" className="text-green-600 border-green-300 hover:bg-green-50">
+                      <Button variant="outline" size="sm" className="min-h-[44px] sm:min-h-0 text-green-600 border-green-300 hover:bg-green-50">
                         <MessageCircle className="w-4 h-4 mr-1" />
                         {item.pessoas.length > 1 ? titulos[i] : 'WhatsApp'}
                       </Button>
@@ -301,7 +305,7 @@ function Secao({ titulo, icon, itens }: { titulo: string; icon: React.ReactNode;
                   ) : null,
                 )}
                 {item.pessoas.every((p) => !hasValidPhone(p.telefone)) && (
-                  <span className="text-xs text-muted-foreground/60 shrink-0">sem telefone</span>
+                  <span className="text-xs text-stone-400 shrink-0">sem telefone</span>
                 )}
               </div>
             </CardContent>

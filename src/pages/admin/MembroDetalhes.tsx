@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/EmptyState';
 import {
   ArrowLeft, Save, Upload, MessageCircle, User, Phone, Mail, MapPin,
   Calendar, Heart, Clock, Home, Users, AlertCircle, Plus, History, Link2, AlertTriangle, Trash2
@@ -178,7 +179,7 @@ const statusLabels: Record<string, string> = {
 
 const statusColors: Record<string, string> = {
   ativo: 'bg-green-100 text-green-800 border-green-300',
-  inativo: 'bg-gray-100 text-gray-800 border-gray-300',
+  inativo: 'bg-stone-100 text-stone-700 border-stone-300',
   desligado: 'bg-red-100 text-red-800 border-red-300',
   transferido: 'bg-orange-100 text-orange-800 border-orange-300',
   em_acompanhamento: 'bg-blue-100 text-blue-800 border-blue-300',
@@ -750,10 +751,14 @@ export default function MembroDetalhes() {
 
   if (!membro) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <AlertCircle className="w-12 h-12 text-muted-foreground" />
-        <p className="text-muted-foreground">Membro não encontrado</p>
-        <Button onClick={() => navigate(p('/admin/membros'))}>Voltar</Button>
+      <div className="flex items-center justify-center h-64">
+        <EmptyState
+          icon={AlertCircle}
+          title="Membro não encontrado"
+          description="Ele pode ter sido removido ou o link está incorreto."
+          actionLabel="Voltar"
+          onAction={() => navigate(p('/admin/membros'))}
+        />
       </div>
     );
   }
@@ -766,20 +771,20 @@ export default function MembroDetalhes() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(p('/admin/membros'))} aria-label="Voltar">
+          <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => navigate(p('/admin/membros'))} aria-label="Voltar">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-2xl font-display font-bold">{displayName}</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-2xl font-display font-bold text-stone-900">{displayName}</h1>
+              <p className="text-sm text-stone-500">
                 {isLinkedToProfile ? (profileData?.email || '–') : (formData.email || '–')}
               </p>
             </div>
             {hasValidPhone(displayPhone) && (
               <button
                 onClick={() => window.open(getWhatsAppUrl(displayPhone, churchNome), '_blank')}
-                className="text-green-600 hover:text-green-700"
+                className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50"
                 title="Abrir WhatsApp"
                 aria-label="Abrir WhatsApp"
               >
@@ -869,7 +874,7 @@ export default function MembroDetalhes() {
         if (!formData.data_nascimento) missing.push('data de nascimento');
         if (missing.length === 0) return null;
         return (
-          <div className="flex items-start gap-3 rounded-lg border border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-600 px-4 py-3 text-yellow-800 dark:text-yellow-300">
+          <div className="flex items-start gap-3 rounded-xl border border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-600 px-4 py-3 text-yellow-800 dark:text-yellow-300">
             <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0 text-yellow-500" />
             <div className="flex-1 text-sm">
               <span className="font-medium">Cadastro incompleto:</span>{' '}
@@ -896,8 +901,8 @@ export default function MembroDetalhes() {
                 <Clock className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Membro desde</p>
-                <p className="font-medium">{formatDate(membro.data_registro || membro.created_at)}</p>
+                <p className="text-sm text-stone-500">Membro desde</p>
+                <p className="font-medium text-stone-900">{formatDate(membro.data_registro || membro.created_at)}</p>
               </div>
             </div>
           </CardContent>
@@ -909,8 +914,8 @@ export default function MembroDetalhes() {
                 <Calendar className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Batismo nas Águas</p>
-                <p className="font-medium">
+                <p className="text-sm text-stone-500">Batismo nas Águas</p>
+                <p className="font-medium text-stone-900">
                   {ministerialData.data_batismo_agua
                     ? formatDate(ministerialData.data_batismo_agua)
                     : (isLinkedToProfile && profileData?.batizado_aguas
@@ -928,8 +933,8 @@ export default function MembroDetalhes() {
                 <Phone className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Telefone</p>
-                <p className="font-medium">
+                <p className="text-sm text-stone-500">Telefone</p>
+                <p className="font-medium text-stone-900">
                   {displayPhone ? formatPhoneBR(displayPhone) : '–'}
                 </p>
               </div>
@@ -950,18 +955,18 @@ export default function MembroDetalhes() {
           <CardContent>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
-                <p className="font-semibold text-lg">{baseAtual.base.nome}</p>
+                <p className="font-semibold text-lg text-stone-900">{baseAtual.base.nome}</p>
                 {baseAtual.base.lider && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-sm text-stone-500">
                     <span>Líder: {baseAtual.base.lider.nome}</span>
                     {hasValidPhone(baseAtual.base.lider.telefone) && (
-                      <button onClick={() => window.open(getWhatsAppUrl(baseAtual.base.lider!.telefone, churchNome), '_blank')} className="text-green-600 hover:text-green-700" aria-label="Enviar WhatsApp ao líder">
+                      <button onClick={() => window.open(getWhatsAppUrl(baseAtual.base.lider!.telefone, churchNome), '_blank')} className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50" aria-label="Enviar WhatsApp ao líder">
                         <MessageCircle className="w-4 h-4" />
                       </button>
                     )}
                   </div>
                 )}
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-stone-500">
                   {baseAtual.base.dia_semana && baseAtual.base.horario
                     ? `${baseAtual.base.dia_semana} às ${baseAtual.base.horario}`
                     : baseAtual.base.dia_semana || baseAtual.base.horario || '–'}
@@ -1005,7 +1010,7 @@ export default function MembroDetalhes() {
           {isLinkedToProfile && profileData ? (
             <div className="space-y-6">
               {/* Notice */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                 <div className="flex items-start gap-3">
                   <Link2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
@@ -1044,7 +1049,7 @@ export default function MembroDetalhes() {
                         {getInitials(profileData.nome)}
                       </AvatarFallback>
                     </Avatar>
-                    <p className="text-xs text-muted-foreground text-center">Gerenciada pelo usuário</p>
+                    <p className="text-xs text-stone-500 text-center">Gerenciada pelo usuário</p>
                   </CardContent>
                 </Card>
 
@@ -1060,21 +1065,21 @@ export default function MembroDetalhes() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">Nome Completo</Label>
+                        <Label className="text-stone-500 text-xs">Nome Completo</Label>
                         <p className="font-medium">{profileData.nome || '–'}</p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">E-mail</Label>
+                        <Label className="text-stone-500 text-xs">E-mail</Label>
                         <p className="font-medium">{profileData.email || '–'}</p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">Telefone</Label>
+                        <Label className="text-stone-500 text-xs">Telefone</Label>
                         <div className="flex items-center gap-2">
                           <p className="font-medium">{formatPhoneBR(profileData.telefone) || '–'}</p>
                           {hasValidPhone(profileData.telefone) && (
                             <button
                               onClick={() => window.open(getWhatsAppUrl(profileData.telefone, churchNome), '_blank')}
-                              className="text-green-600 hover:text-green-700"
+                              className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50"
                               aria-label="Enviar WhatsApp"
                             >
                               <MessageCircle className="w-4 h-4" />
@@ -1083,27 +1088,27 @@ export default function MembroDetalhes() {
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">CPF</Label>
+                        <Label className="text-stone-500 text-xs">CPF</Label>
                         <p className="font-medium">{profileData.cpf || '–'}</p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">Data de Nascimento</Label>
+                        <Label className="text-stone-500 text-xs">Data de Nascimento</Label>
                         <p className="font-medium">
                           {profileData.data_nascimento ? formatDate(profileData.data_nascimento) : '–'}
                         </p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">Sexo</Label>
+                        <Label className="text-stone-500 text-xs">Sexo</Label>
                         <p className="font-medium">
                           {profileData.sexo ? (sexoLabels[profileData.sexo] || profileData.sexo) : '–'}
                         </p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">Naturalidade</Label>
+                        <Label className="text-stone-500 text-xs">Naturalidade</Label>
                         <p className="font-medium">{profileData.naturalidade || '–'}</p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">Estado Civil (perfil)</Label>
+                        <Label className="text-stone-500 text-xs">Estado Civil (perfil)</Label>
                         <p className="font-medium">
                           {profileData.estado_civil
                             ? (estadoCivilLabels[profileData.estado_civil] || profileData.estado_civil)
@@ -1125,7 +1130,7 @@ export default function MembroDetalhes() {
                 </CardHeader>
                 <CardContent>
                   <div className="max-w-xs">
-                    <Label className="text-sm text-muted-foreground mb-2 block">
+                    <Label className="text-sm text-stone-500 mb-2 block">
                       Estado Civil (registro ministerial)
                     </Label>
                     <Select
@@ -1165,13 +1170,13 @@ export default function MembroDetalhes() {
                   {isEditing && (
                     <>
                       <Label htmlFor="foto" className="cursor-pointer">
-                        <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-muted transition-colors">
+                        <div className="flex items-center gap-2 px-4 py-2 border rounded-xl hover:bg-stone-100 transition-colors">
                           <Upload className="w-4 h-4" />
                           Trocar foto
                         </div>
                         <Input id="foto" type="file" accept="image/*" className="hidden" onChange={handleFotoChange} />
                       </Label>
-                      <p className="text-xs text-muted-foreground">Máximo 5MB</p>
+                      <p className="text-xs text-stone-500">Máximo 5MB</p>
                     </>
                   )}
                 </CardContent>
@@ -1272,14 +1277,14 @@ export default function MembroDetalhes() {
               {isLinkedToProfile && profileData ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {!profileData.logradouro && !profileData.cidade && (
-                    <p className="text-sm text-muted-foreground md:col-span-3">
+                    <p className="text-sm text-stone-500 md:col-span-3">
                       Endereço não informado pelo usuário
                     </p>
                   )}
                   {(profileData.logradouro || profileData.cidade) && (
                     <>
                       <div className="md:col-span-2 space-y-1">
-                        <Label className="text-muted-foreground text-xs">Logradouro</Label>
+                        <Label className="text-stone-500 text-xs">Logradouro</Label>
                         <p className="font-medium">
                           {profileData.logradouro || '–'}
                           {profileData.numero && `, ${profileData.numero}`}
@@ -1287,25 +1292,25 @@ export default function MembroDetalhes() {
                         </p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">CEP</Label>
+                        <Label className="text-stone-500 text-xs">CEP</Label>
                         <p className="font-medium">{profileData.cep || '–'}</p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">Bairro</Label>
+                        <Label className="text-stone-500 text-xs">Bairro</Label>
                         <p className="font-medium">{profileData.bairro || '–'}</p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">Cidade</Label>
+                        <Label className="text-stone-500 text-xs">Cidade</Label>
                         <p className="font-medium">{profileData.cidade || '–'}</p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-muted-foreground text-xs">Estado</Label>
+                        <Label className="text-stone-500 text-xs">Estado</Label>
                         <p className="font-medium">{profileData.uf || '–'}</p>
                       </div>
                     </>
                   )}
                   <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">País</Label>
+                    <Label className="text-stone-500 text-xs">País</Label>
                     <p className="font-medium">{ministerialData.pais || '–'}</p>
                   </div>
                 </div>
@@ -1366,7 +1371,7 @@ export default function MembroDetalhes() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <div className="flex items-center gap-3 p-3 rounded-lg border">
+                  <div className="flex items-center gap-3 p-3 rounded-xl border border-stone-200">
                     <Switch
                       checked={ministerialData.pai_mae_promessista}
                       onCheckedChange={(v) => setMin('pai_mae_promessista', v)}
@@ -1374,7 +1379,7 @@ export default function MembroDetalhes() {
                     />
                     <div>
                       <Label className="cursor-pointer font-medium">Pai ou Mãe é Promessista</Label>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-stone-500">
                         Pelo menos um dos pais é membro da {churchNome || 'nossa igreja'}
                       </p>
                     </div>
@@ -1431,7 +1436,7 @@ export default function MembroDetalhes() {
                     placeholder="Nome completo do cônjuge"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground md:col-span-2">
+                <p className="text-xs text-stone-500 md:col-span-2">
                   Preencha só um dos dois: selecione o cônjuge se ele for membro cadastrado, ou digite o nome se não for.
                 </p>
               </div>
@@ -1620,7 +1625,7 @@ export default function MembroDetalhes() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Escolaridade</Label>
+                    <Label className="text-stone-500 text-xs">Escolaridade</Label>
                     <p className="font-medium">
                       {profileData.grau_instrucao
                         ? (grauInstrucaoLabels[profileData.grau_instrucao] || profileData.grau_instrucao)
@@ -1628,11 +1633,11 @@ export default function MembroDetalhes() {
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Formação</Label>
+                    <Label className="text-stone-500 text-xs">Formação</Label>
                     <p className="font-medium">{profileData.formacao || '–'}</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Profissão</Label>
+                    <Label className="text-stone-500 text-xs">Profissão</Label>
                     <p className="font-medium">{profileData.profissao || '–'}</p>
                   </div>
                 </div>
@@ -1670,14 +1675,16 @@ export default function MembroDetalhes() {
                   {[1, 2].map(i => <Skeleton key={i} className="h-24 w-full" />)}
                 </div>
               ) : historico.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <History className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                  <p>Nenhum registro de histórico ainda</p>
-                </div>
+                <EmptyState
+                  icon={History}
+                  title="Nenhum registro de histórico ainda"
+                  description="Quando o membro for vinculado a uma base, o histórico aparecerá aqui."
+                  className="py-8"
+                />
               ) : (
                 <div className="space-y-3">
                   {historico.map((item) => (
-                    <div key={item.id} className="p-4 border rounded-lg">
+                    <div key={item.id} className="p-4 border border-stone-200 rounded-xl">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
@@ -1686,16 +1693,16 @@ export default function MembroDetalhes() {
                               variant="outline"
                               className={item.status === 'ativo'
                                 ? 'bg-green-100 text-green-800 border-green-300'
-                                : 'bg-gray-100 text-gray-800 border-gray-300'}
+                                : 'bg-stone-100 text-stone-700 border-stone-300'}
                             >
                               {item.status === 'ativo' ? 'Ativo' : item.status === 'saida' ? 'Saiu' : item.status}
                             </Badge>
                           </div>
                           {item.base?.lider && (
-                            <p className="text-sm text-muted-foreground">Líder: {item.base.lider.nome}</p>
+                            <p className="text-sm text-stone-500">Líder: {item.base.lider.nome}</p>
                           )}
                           {item.base && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-stone-500">
                               {item.base.dia_semana && item.base.horario
                                 ? `${item.base.dia_semana} às ${item.base.horario}`
                                 : item.base.dia_semana || item.base.horario || ''}
@@ -1703,15 +1710,15 @@ export default function MembroDetalhes() {
                             </p>
                           )}
                           {item.observacao && (
-                            <p className="text-sm mt-1 italic text-muted-foreground">"{item.observacao}"</p>
+                            <p className="text-sm mt-1 italic text-stone-500">"{item.observacao}"</p>
                           )}
                         </div>
                         <div className="text-right">
-                          <p className="text-xs text-muted-foreground">{formatDateTime(item.created_at)}</p>
+                          <p className="text-xs text-stone-500">{formatDateTime(item.created_at)}</p>
                           {item.base && (
                             <div className="flex items-center justify-end gap-1 mt-1">
-                              <Users className="w-3 h-3 text-muted-foreground" />
-                              <span className="text-xs text-muted-foreground">
+                              <Users className="w-3 h-3 text-stone-500" />
+                              <span className="text-xs text-stone-500">
                                 {item.base.membros_count || 0}/{item.base.capacidade || '∞'}
                               </span>
                               {isBaseLotada(item.base) && (
@@ -1740,7 +1747,7 @@ export default function MembroDetalhes() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg border">
+              <div className="flex items-center gap-3 p-3 rounded-xl border border-stone-200">
                 <Switch
                   checked={ministerialData.batismo_nas_aguas}
                   onCheckedChange={(v) => {
@@ -1798,7 +1805,7 @@ export default function MembroDetalhes() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg border">
+              <div className="flex items-center gap-3 p-3 rounded-xl border border-stone-200">
                 <Switch
                   checked={ministerialData.batismo_espirito_santo}
                   onCheckedChange={(v) => {
@@ -1857,7 +1864,7 @@ export default function MembroDetalhes() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">Membro desde</Label>
+                  <Label className="text-stone-500 text-xs">Membro desde</Label>
                   <p className="font-medium pt-2">{formatDate(membro.data_registro || membro.created_at)}</p>
                 </div>
               </div>
@@ -1886,17 +1893,17 @@ export default function MembroDetalhes() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">E-mail da conta</Label>
+                    <Label className="text-stone-500 text-xs">E-mail da conta</Label>
                     <p className="font-medium">{profileData.email || '–'}</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Data de Cadastro</Label>
+                    <Label className="text-stone-500 text-xs">Data de Cadastro</Label>
                     <p className="font-medium">
                       {profileData.data_cadastro ? formatDate(profileData.data_cadastro) : '–'}
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-muted-foreground text-xs">Conta criada em</Label>
+                    <Label className="text-stone-500 text-xs">Conta criada em</Label>
                     <p className="font-medium">
                       {profileData.created_at ? formatDate(profileData.created_at) : '–'}
                     </p>
@@ -1935,7 +1942,7 @@ export default function MembroDetalhes() {
                     <SelectItem key={base.id} value={base.id}>
                       <div className="flex items-center justify-between w-full">
                         <span>{base.nome}</span>
-                        <span className="text-xs text-muted-foreground ml-2">
+                        <span className="text-xs text-stone-500 ml-2">
                           ({base.membros_count || 0}/{base.capacidade || '∞'})
                           {isBaseLotada(base) && ' - Lotada'}
                         </span>
@@ -1947,7 +1954,7 @@ export default function MembroDetalhes() {
             </div>
 
             {selectedBaseId && (
-              <div className="p-3 bg-muted rounded-lg">
+              <div className="p-3 bg-stone-50 rounded-xl">
                 {(() => {
                   const base = basesDisponiveis.find(b => b.id === selectedBaseId);
                   if (!base) return null;

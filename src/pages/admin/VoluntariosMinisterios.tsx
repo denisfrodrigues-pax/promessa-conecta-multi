@@ -355,17 +355,17 @@ export default function AdminVoluntariosMinisterios() {
 
   if (loading) {
     return (
-      <div className="p-8 flex items-center justify-center">
+      <div className="p-8 flex items-center justify-center bg-stone-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-stone-50">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Voluntários por Ministério</h1>
-        <p className="text-muted-foreground">Gerencie os voluntários de cada ministério</p>
+        <h1 className="text-3xl font-bold text-stone-900">Voluntários por Ministério</h1>
+        <p className="text-stone-500">Gerencie os voluntários de cada ministério</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -381,16 +381,16 @@ export default function AdminVoluntariosMinisterios() {
             <ScrollArea className="h-[calc(100vh-300px)]">
               <div className="space-y-1 p-4">
                 {ministerios.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">Nenhum ministério cadastrado</p>
+                  <p className="text-stone-500 text-center py-4">Nenhum ministério cadastrado</p>
                 ) : (
                   ministerios.map((ministerio) => (
                     <button
                       key={ministerio.id}
                       onClick={() => setSelectedMinisterio(ministerio)}
-                      className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                      className={`w-full text-left px-4 py-3 min-h-[44px] rounded-xl transition-colors ${
                         selectedMinisterio?.id === ministerio.id
                           ? 'bg-primary text-primary-foreground'
-                          : 'hover:bg-muted'
+                          : 'hover:bg-stone-100'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -416,7 +416,7 @@ export default function AdminVoluntariosMinisterios() {
                 {selectedMinisterio ? `Voluntários - ${selectedMinisterio.nome}` : 'Selecione um Ministério'}
               </CardTitle>
               {selectedMinisterio && (
-                <Button onClick={handleOpenAddDialog}>
+                <Button className="min-h-[44px]" onClick={handleOpenAddDialog}>
                   <Plus className="h-4 w-4 mr-2" />
                   Adicionar Voluntário
                 </Button>
@@ -424,7 +424,7 @@ export default function AdminVoluntariosMinisterios() {
             </div>
             {selectedMinisterio && (
               <div className="relative mt-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
                 <Input
                   placeholder="Buscar voluntário..."
                   value={searchTerm}
@@ -436,19 +436,28 @@ export default function AdminVoluntariosMinisterios() {
           </CardHeader>
           <CardContent>
             {!selectedMinisterio ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Selecione um ministério para ver seus voluntários</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+                  <Users className="h-8 w-8 text-stone-400" />
+                </div>
+                <p className="text-stone-500 leading-relaxed">Selecione um ministério para ver seus voluntários</p>
               </div>
             ) : filteredVoluntarios.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>{searchTerm ? 'Nenhum voluntário encontrado' : 'Nenhum voluntário neste ministério'}</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+                  <Users className="h-8 w-8 text-stone-400" />
+                </div>
+                <h3 className="text-base font-semibold text-stone-700 mb-1">
+                  {searchTerm ? 'Nenhum voluntário encontrado' : 'Nenhum voluntário neste ministério'}
+                </h3>
                 {!searchTerm && (
-                  <Button variant="outline" className="mt-4" onClick={handleOpenAddDialog}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Voluntário
-                  </Button>
+                  <>
+                    <p className="text-sm text-stone-500 max-w-xs leading-relaxed mb-4">Adicione o primeiro voluntário para começar a montar a equipe.</p>
+                    <Button variant="outline" className="min-h-[44px]" onClick={handleOpenAddDialog}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Voluntário
+                    </Button>
+                  </>
                 )}
               </div>
             ) : (
@@ -467,14 +476,14 @@ export default function AdminVoluntariosMinisterios() {
                     <TableRow key={voluntario.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{voluntario.profile?.nome || 'Nome não disponível'}</p>
-                          <p className="text-sm text-muted-foreground">{voluntario.profile?.email}</p>
+                          <p className="font-medium text-stone-900">{voluntario.profile?.nome || 'Nome não disponível'}</p>
+                          <p className="text-sm text-stone-500">{voluntario.profile?.email}</p>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2 flex-wrap">
                           {voluntario.funcoes.length === 0 ? (
-                            <span className="text-sm text-muted-foreground">Nenhuma</span>
+                            <span className="text-sm text-stone-500">Nenhuma</span>
                           ) : (
                             voluntario.funcoes.map(f => (
                               <Badge key={f.id} variant="secondary" className="text-xs">
@@ -485,7 +494,7 @@ export default function AdminVoluntariosMinisterios() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6"
+                            className="h-11 w-11"
                             onClick={() => handleOpenEditFuncoesDialog(voluntario)}
                             aria-label="Editar funções do voluntário"
                           >
@@ -508,6 +517,7 @@ export default function AdminVoluntariosMinisterios() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="h-11 w-11"
                           onClick={() => {
                             setDeletingVoluntario(voluntario);
                             setIsDeleteDialogOpen(true);
@@ -545,7 +555,7 @@ export default function AdminVoluntariosMinisterios() {
                 </SelectTrigger>
                 <SelectContent>
                   {availableProfiles.length === 0 ? (
-                    <div className="p-2 text-center text-muted-foreground">
+                    <div className="p-2 text-center text-stone-500">
                       Todos os usuários já estão neste ministério
                     </div>
                   ) : (
@@ -553,7 +563,7 @@ export default function AdminVoluntariosMinisterios() {
                       <SelectItem key={profile.id} value={profile.id}>
                         <div>
                           <span>{profile.nome}</span>
-                          <span className="text-muted-foreground ml-2 text-sm">({profile.email})</span>
+                          <span className="text-stone-500 ml-2 text-sm">({profile.email})</span>
                         </div>
                       </SelectItem>
                     ))
@@ -563,9 +573,9 @@ export default function AdminVoluntariosMinisterios() {
             </div>
             <div className="space-y-2">
               <Label>Funções (selecione ao menos uma)</Label>
-              <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
+              <div className="border border-stone-200 rounded-xl p-3 space-y-2 max-h-48 overflow-y-auto">
                 {funcoes.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nenhuma função cadastrada</p>
+                  <p className="text-sm text-stone-500">Nenhuma função cadastrada</p>
                 ) : (
                   funcoes.map((funcao) => (
                     <div key={funcao.id} className="flex items-center space-x-2">
@@ -587,10 +597,10 @@ export default function AdminVoluntariosMinisterios() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+            <Button variant="outline" className="min-h-[44px]" onClick={() => setIsAddDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleAddVoluntario} disabled={!selectedProfileId || selectedFuncaoIds.length === 0}>
+            <Button className="min-h-[44px]" onClick={handleAddVoluntario} disabled={!selectedProfileId || selectedFuncaoIds.length === 0}>
               Adicionar
             </Button>
           </DialogFooter>
@@ -608,9 +618,9 @@ export default function AdminVoluntariosMinisterios() {
           </DialogHeader>
           <div className="py-4">
             <Label>Funções (selecione ao menos uma)</Label>
-            <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto mt-2">
+            <div className="border border-stone-200 rounded-xl p-3 space-y-2 max-h-48 overflow-y-auto mt-2">
               {funcoes.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhuma função cadastrada</p>
+                <p className="text-sm text-stone-500">Nenhuma função cadastrada</p>
               ) : (
                 funcoes.map((funcao) => (
                   <div key={funcao.id} className="flex items-center space-x-2">
@@ -631,10 +641,10 @@ export default function AdminVoluntariosMinisterios() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditFuncoesDialogOpen(false)}>
+            <Button variant="outline" className="min-h-[44px]" onClick={() => setIsEditFuncoesDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleUpdateFuncoes} disabled={selectedFuncaoIds.length === 0}>
+            <Button className="min-h-[44px]" onClick={handleUpdateFuncoes} disabled={selectedFuncaoIds.length === 0}>
               Salvar
             </Button>
           </DialogFooter>
@@ -651,10 +661,10 @@ export default function AdminVoluntariosMinisterios() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button variant="outline" className="min-h-[44px]" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button variant="destructive" onClick={handleDeleteVoluntario}>
+            <Button variant="destructive" className="min-h-[44px]" onClick={handleDeleteVoluntario}>
               Remover
             </Button>
           </DialogFooter>

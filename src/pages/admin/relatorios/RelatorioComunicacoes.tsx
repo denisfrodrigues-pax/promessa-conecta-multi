@@ -186,10 +186,10 @@ export default function RelatorioComunicacoes() {
     <div className="container-padding space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Relatório de Comunicações</h1>
-          <p className="text-muted-foreground">Histórico de mensagens enviadas pelo sistema</p>
+          <h1 className="text-2xl font-bold text-stone-900">Relatório de Comunicações</h1>
+          <p className="text-stone-600 leading-relaxed">Histórico de mensagens enviadas pelo sistema</p>
         </div>
-        <Button onClick={fetchRecords} variant="outline" disabled={loading}>
+        <Button onClick={fetchRecords} variant="outline" disabled={loading} className="min-h-[44px] sm:min-h-0">
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Atualizar
         </Button>
@@ -197,36 +197,36 @@ export default function RelatorioComunicacoes() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{summary.total}</div>
-            <p className="text-sm text-muted-foreground">Total de Envios</p>
+            <div className="text-2xl font-bold text-stone-900">{summary.total}</div>
+            <p className="text-sm text-stone-500">Total de Envios</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-emerald-600">{summary.sucesso}</div>
-            <p className="text-sm text-muted-foreground">Sucesso</p>
+            <p className="text-sm text-stone-500">Sucesso</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-yellow-600">{summary.semTelefone}</div>
-            <p className="text-sm text-muted-foreground">Sem Telefone</p>
+            <p className="text-sm text-stone-500">Sem Telefone</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-red-600">{summary.erroApi}</div>
-            <p className="text-sm text-muted-foreground">Erros de API</p>
+            <p className="text-sm text-stone-500">Erros de API</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-stone-900">
             <Filter className="w-5 h-5" />
             Filtros
           </CardTitle>
@@ -234,9 +234,9 @@ export default function RelatorioComunicacoes() {
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Status</label>
+              <label className="text-sm font-medium mb-2 block text-stone-900">Status</label>
               <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-xl">
                   <SelectValue placeholder="Todos os status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -248,9 +248,9 @@ export default function RelatorioComunicacoes() {
               </Select>
             </div>
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Período</label>
+              <label className="text-sm font-medium mb-2 block text-stone-900">Período</label>
               <Select value={periodFilter} onValueChange={(v) => setPeriodFilter(v as PeriodFilter)}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-xl">
                   <SelectValue placeholder="Selecione o período" />
                 </SelectTrigger>
                 <SelectContent>
@@ -266,18 +266,24 @@ export default function RelatorioComunicacoes() {
       </Card>
 
       {/* Table */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle>Histórico de Comunicações</CardTitle>
+          <CardTitle className="text-stone-900">Histórico de Comunicações</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+              <RefreshCw className="w-6 h-6 animate-spin text-stone-500" />
             </div>
           ) : records.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhum registro de comunicação encontrado
+            <div className="flex flex-col items-center justify-center text-center py-12 px-4">
+              <div className="inline-flex p-4 rounded-full bg-stone-100 mb-4">
+                <MessageCircle className="w-8 h-8 text-stone-400" />
+              </div>
+              <h3 className="font-semibold text-stone-900 mb-1">Nenhum registro de comunicação encontrado</h3>
+              <p className="text-sm text-stone-500 leading-relaxed max-w-xs">
+                Assim que mensagens forem enviadas pelo sistema, elas aparecerão aqui.
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -294,19 +300,19 @@ export default function RelatorioComunicacoes() {
                 </TableHeader>
                 <TableBody>
                   {records.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-medium">
+                    <TableRow key={record.id} className="hover:bg-stone-50">
+                      <TableCell className="font-medium text-stone-900">
                         {record.voluntario_nome}
                       </TableCell>
                       <TableCell>
                         {record.escala_data ? (
                           <div className="text-sm">
-                            <div>{format(parseLocalDate(record.escala_data), 'dd/MM/yyyy', { locale: ptBR })}</div>
-                            <div className="text-muted-foreground">{record.escala_funcao}</div>
-                            <div className="text-muted-foreground text-xs">{record.ministerio_nome}</div>
+                            <div className="text-stone-900">{format(parseLocalDate(record.escala_data), 'dd/MM/yyyy', { locale: ptBR })}</div>
+                            <div className="text-stone-500">{record.escala_funcao}</div>
+                            <div className="text-stone-500 text-xs">{record.ministerio_nome}</div>
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">-</span>
+                          <span className="text-stone-500">-</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -323,7 +329,7 @@ export default function RelatorioComunicacoes() {
                           {record.status === 'erro_api' || record.status === 'sem_telefone' ? (
                             <span className="text-red-600">{record.detalhes_erro || 'Erro desconhecido'}</span>
                           ) : (
-                            <span className="text-muted-foreground">{record.mensagem_preview || '-'}</span>
+                            <span className="text-stone-500">{record.mensagem_preview || '-'}</span>
                           )}
                         </div>
                       </TableCell>

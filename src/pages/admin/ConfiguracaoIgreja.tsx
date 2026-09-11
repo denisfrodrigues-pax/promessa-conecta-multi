@@ -642,15 +642,15 @@ export default function ConfiguracaoIgreja() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold flex items-center gap-2">
+          <h1 className="text-2xl font-display font-bold text-stone-900 flex items-center gap-2">
             <Building2 className="w-6 h-6 text-promessa-700" />
             Configurações da Igreja
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-stone-600 text-sm leading-relaxed">
             Gerencie as informações, identidade visual e módulos da sua igreja.
           </p>
         </div>
-        <Button onClick={handleSave} disabled={saving}>
+        <Button className="min-h-[44px]" onClick={handleSave} disabled={saving}>
           {saving
             ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Salvando...</>
             : <><Save className="w-4 h-4 mr-2" />Salvar</>
@@ -659,7 +659,7 @@ export default function ConfiguracaoIgreja() {
       </div>
 
       {/* 2.2 — Card de link público */}
-      <Card className="bg-emerald-50 border-emerald-200">
+      <Card className="rounded-2xl bg-emerald-50 border-emerald-200">
         <CardContent className="pt-4 pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1 min-w-0">
@@ -668,11 +668,11 @@ export default function ConfiguracaoIgreja() {
                 className="text-sm text-emerald-700 hover:underline break-all">{publicUrl}</a>
             </div>
             <div className="flex gap-2 shrink-0">
-              <Button variant="outline" size="sm" className="h-8 text-xs"
+              <Button variant="outline" size="sm" className="min-h-[44px] rounded-xl text-xs"
                 onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Link copiado!'); }}>
                 <Copy className="h-3.5 w-3.5 mr-1" />Copiar
               </Button>
-              <Button variant="outline" size="sm" className="h-8 text-xs" asChild>
+              <Button variant="outline" size="sm" className="min-h-[44px] rounded-xl text-xs" asChild>
                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3.5 w-3.5 mr-1" />Abrir
                 </a>
@@ -699,7 +699,7 @@ export default function ConfiguracaoIgreja() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               {/* Identidade */}
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-base">Identidade da Igreja</CardTitle>
                   <CardDescription>Nome público, slogan e versículo de identidade</CardDescription>
@@ -727,38 +727,38 @@ export default function ConfiguracaoIgreja() {
               </Card>
 
               {/* Logo */}
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-base">Logo</CardTitle>
                   <CardDescription>PNG, JPEG, WebP ou SVG — máx. 2 MB</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {form.logo_url ? (
-                    <div className="flex items-center gap-4 p-3 border rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-4 p-3 border border-stone-200 rounded-xl bg-stone-50">
                       <img src={form.logo_url} alt="Logo" className="h-16 w-auto object-contain" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground truncate">{form.logo_url}</p>
+                        <p className="text-xs text-stone-500 truncate">{form.logo_url}</p>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => setForm(p => ({ ...p, logo_url: '' }))} aria-label="Remover logo">
+                      <Button variant="ghost" size="icon" className="h-11 w-11" onClick={() => setForm(p => ({ ...p, logo_url: '' }))} aria-label="Remover logo">
                         <X className="w-4 h-4 text-red-500" />
                       </Button>
                     </div>
                   ) : (
                     <div
-                      className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-promessa-400 transition-colors"
+                      className="border-2 border-dashed border-stone-200 rounded-xl p-6 text-center cursor-pointer hover:border-promessa-400 transition-colors"
                       onClick={() => fileLogoRef.current?.click()}
                     >
-                      <ImageIcon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">Clique para enviar a logo</p>
+                      <ImageIcon className="w-8 h-8 mx-auto text-stone-400 mb-2" />
+                      <p className="text-sm text-stone-500">Clique para enviar a logo</p>
                     </div>
                   )}
                   <input ref={fileLogoRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={handleLogoUpload} disabled={uploading} />
-                  {uploading && <p className="text-xs text-muted-foreground flex items-center gap-1 mt-2"><Loader2 className="w-3 h-3 animate-spin" />Enviando...</p>}
+                  {uploading && <p className="text-xs text-stone-500 flex items-center gap-1 mt-2"><Loader2 className="w-3 h-3 animate-spin" />Enviando...</p>}
                 </CardContent>
               </Card>
 
               {/* Cores */}
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2"><Palette className="w-4 h-4" />Cores</CardTitle>
                   <CardDescription>Cores primária e secundária do sistema</CardDescription>
@@ -768,23 +768,23 @@ export default function ConfiguracaoIgreja() {
                     <Label>Cor Primária</Label>
                     <div className="flex items-center gap-3">
                       <input type="color" name="cor_primaria" value={form.cor_primaria} onChange={handleChange} className="h-10 w-16 rounded cursor-pointer border border-input p-1" />
-                      <Input name="cor_primaria" value={form.cor_primaria} onChange={handleChange} placeholder="#396939" className="w-32 font-mono text-sm" maxLength={7} />
-                      <span className="text-xs text-muted-foreground">Botões e destaques</span>
+                      <Input name="cor_primaria" value={form.cor_primaria} onChange={handleChange} placeholder="#396939" className="w-32 font-mono text-sm rounded-xl" maxLength={7} />
+                      <span className="text-xs text-stone-500">Botões e destaques</span>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Cor Secundária</Label>
                     <div className="flex items-center gap-3">
                       <input type="color" name="cor_secundaria" value={form.cor_secundaria || '#ffffff'} onChange={handleChange} className="h-10 w-16 rounded cursor-pointer border border-input p-1" />
-                      <Input name="cor_secundaria" value={form.cor_secundaria} onChange={handleChange} placeholder="#ffffff" className="w-32 font-mono text-sm" maxLength={7} />
-                      <span className="text-xs text-muted-foreground">Acentos e gradientes</span>
+                      <Input name="cor_secundaria" value={form.cor_secundaria} onChange={handleChange} placeholder="#ffffff" className="w-32 font-mono text-sm rounded-xl" maxLength={7} />
+                      <span className="text-xs text-stone-500">Acentos e gradientes</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Fotos Hero */}
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-base">Fotos do Hero / Slideshow</CardTitle>
                   <CardDescription>Imagens exibidas no site público — máx. 5 MB por foto</CardDescription>
@@ -793,7 +793,7 @@ export default function ConfiguracaoIgreja() {
                   {form.foto_hero_urls.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {form.foto_hero_urls.map((url, idx) => (
-                        <div key={idx} className="relative group aspect-video rounded-lg overflow-hidden border">
+                        <div key={idx} className="relative group aspect-video rounded-xl overflow-hidden border border-stone-200">
                           <img src={url} alt={`Hero ${idx + 1}`} className="w-full h-full object-cover" />
                           <button
                             onClick={() => removeHeroUrl(idx)}
@@ -807,7 +807,7 @@ export default function ConfiguracaoIgreja() {
                       ))}
                     </div>
                   )}
-                  <Button variant="outline" size="sm" onClick={() => fileHeroRef.current?.click()} disabled={uploadingHero}>
+                  <Button variant="outline" size="sm" className="min-h-[44px] rounded-xl" onClick={() => fileHeroRef.current?.click()} disabled={uploadingHero}>
                     {uploadingHero ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Enviando...</> : <><Upload className="w-4 h-4 mr-2" />Adicionar fotos</>}
                   </Button>
                   <input ref={fileHeroRef} type="file" accept="image/*" multiple className="hidden" onChange={handleHeroUpload} disabled={uploadingHero} />
@@ -815,24 +815,24 @@ export default function ConfiguracaoIgreja() {
               </Card>
 
               {/* Foto Login */}
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-base">Fundo da Tela de Login</CardTitle>
                   <CardDescription>Imagem de fundo exibida na tela de login — máx. 5 MB</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {form.foto_login_url ? (
-                    <div className="flex items-center gap-4 p-3 border rounded-lg bg-muted/30">
-                      <img src={form.foto_login_url} alt="Fundo login" className="h-16 w-auto object-cover rounded" />
+                    <div className="flex items-center gap-4 p-3 border border-stone-200 rounded-xl bg-stone-50">
+                      <img src={form.foto_login_url} alt="Fundo login" className="h-16 w-auto object-cover rounded-lg" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground truncate">{form.foto_login_url}</p>
+                        <p className="text-xs text-stone-500 truncate">{form.foto_login_url}</p>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => setForm(p => ({ ...p, foto_login_url: '' }))} aria-label="Remover foto de login">
+                      <Button variant="ghost" size="icon" className="h-11 w-11" onClick={() => setForm(p => ({ ...p, foto_login_url: '' }))} aria-label="Remover foto de login">
                         <X className="w-4 h-4 text-red-500" />
                       </Button>
                     </div>
                   ) : (
-                    <Button variant="outline" size="sm" onClick={() => fileLoginRef.current?.click()} disabled={uploadingLogin}>
+                    <Button variant="outline" size="sm" className="min-h-[44px] rounded-xl" onClick={() => fileLoginRef.current?.click()} disabled={uploadingLogin}>
                       {uploadingLogin ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Enviando...</> : <><Upload className="w-4 h-4 mr-2" />Enviar imagem de fundo</>}
                     </Button>
                   )}
@@ -843,7 +843,7 @@ export default function ConfiguracaoIgreja() {
 
             {/* Coluna lateral — Plano e Status */}
             <div className="space-y-6">
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Crown className="w-4 h-4 text-amber-500" />Plano Atual
@@ -857,7 +857,7 @@ export default function ConfiguracaoIgreja() {
                       value={form.plano}
                       onValueChange={v => setForm(p => ({ ...p, plano: v as Plano }))}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -870,7 +870,7 @@ export default function ConfiguracaoIgreja() {
                     <Badge className={`text-sm px-3 py-1 ${PLANO_COLORS[form.plano]}`}>{PLANO_LABELS[form.plano]}</Badge>
                   )}
                   <Separator />
-                  <div className="text-xs text-muted-foreground space-y-1">
+                  <div className="text-xs text-stone-500 space-y-1">
                     <p>✅ Dashboard e relatórios</p>
                     <p>✅ Gestão de membros e bases</p>
                     <p>✅ Escalas e ministérios</p>
@@ -883,33 +883,33 @@ export default function ConfiguracaoIgreja() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader><CardTitle className="text-base">Status</CardTitle></CardHeader>
                 <CardContent>
-                  <Badge variant="outline" className={form.ativo ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200'}>
+                  <Badge variant="outline" className={form.ativo ? 'bg-green-100 text-green-800 border-green-200' : 'bg-stone-100 text-stone-600 border-stone-200'}>
                     {form.ativo ? '✅ Ativa' : '❌ Inativa'}
                   </Badge>
-                  <p className="text-xs text-muted-foreground mt-2">Para alterar o status, entre em contato com o suporte.</p>
+                  <p className="text-xs text-stone-500 mt-2">Para alterar o status, entre em contato com o suporte.</p>
                 </CardContent>
               </Card>
 
               {/* Responsável */}
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-base">Responsável</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="space-y-2">
                     <Label htmlFor="responsavel_nome" className="flex items-center gap-2"><User className="w-4 h-4" />Nome</Label>
-                    <Input id="responsavel_nome" name="responsavel_nome" value={form.responsavel_nome} onChange={handleChange} placeholder="Nome do pastor/responsável" />
+                    <Input id="responsavel_nome" name="responsavel_nome" value={form.responsavel_nome} onChange={handleChange} placeholder="Nome do pastor/responsável" className="rounded-xl" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="responsavel_email" className="flex items-center gap-2"><Mail className="w-4 h-4" />E-mail</Label>
-                    <Input id="responsavel_email" name="responsavel_email" type="email" value={form.responsavel_email} onChange={handleChange} placeholder="email@exemplo.com" />
+                    <Input id="responsavel_email" name="responsavel_email" type="email" value={form.responsavel_email} onChange={handleChange} placeholder="email@exemplo.com" className="rounded-xl" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="responsavel_telefone" className="flex items-center gap-2"><Phone className="w-4 h-4" />Telefone</Label>
-                    <Input id="responsavel_telefone" name="responsavel_telefone" value={form.responsavel_telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
+                    <Input id="responsavel_telefone" name="responsavel_telefone" value={form.responsavel_telefone} onChange={handleChange} placeholder="(11) 99999-9999" className="rounded-xl" />
                   </div>
                 </CardContent>
               </Card>
@@ -919,7 +919,7 @@ export default function ConfiguracaoIgreja() {
 
         {/* ─── Aba Sobre ──────────────────────────────────────────────────── */}
         <TabsContent value="sobre" className="space-y-6">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2"><BookOpen className="w-4 h-4" />Sobre a Igreja</CardTitle>
             </CardHeader>
@@ -927,12 +927,12 @@ export default function ConfiguracaoIgreja() {
               <div className="space-y-2">
                 <Label htmlFor="missao">Missão</Label>
                 <Textarea id="missao" name="missao" value={form.missao} onChange={handleChange}
-                  placeholder="Ex: Existimos para Amar e Servir a Deus e as pessoas…" rows={3} />
+                  placeholder="Ex: Existimos para Amar e Servir a Deus e as pessoas…" rows={3} className="rounded-xl" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="visao">Visão</Label>
                 <Textarea id="visao" name="visao" value={form.visao} onChange={handleChange}
-                  placeholder="Ex: Ser uma igreja consolidada, saudável e relevante…" rows={3} />
+                  placeholder="Ex: Ser uma igreja consolidada, saudável e relevante…" rows={3} className="rounded-xl" />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -945,12 +945,12 @@ export default function ConfiguracaoIgreja() {
                   </Button>
                 </div>
                 <Textarea id="historia" name="historia" value={form.historia} onChange={handleChange}
-                  placeholder="Conte brevemente a história da igreja…" rows={5} />
+                  placeholder="Conte brevemente a história da igreja…" rows={5} className="rounded-xl" />
               </div>
             </CardContent>
           </Card>
           <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={saving}>
+            <Button className="min-h-[44px]" onClick={handleSave} disabled={saving}>
               {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Salvando...</> : <><Save className="w-4 h-4 mr-2" />Salvar</>}
             </Button>
           </div>
@@ -959,7 +959,7 @@ export default function ConfiguracaoIgreja() {
         {/* ─── Aba Localização ─────────────────────────────────────────────── */}
         <TabsContent value="localizacao" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2"><MapPin className="w-4 h-4" />Localização</CardTitle>
               </CardHeader>
@@ -968,82 +968,82 @@ export default function ConfiguracaoIgreja() {
                 <div className="space-y-2">
                   <Label className="flex items-center gap-1">
                     <Search className="h-3.5 w-3.5" />CEP
-                    {cepLoading && <Loader2 className="h-3 w-3 animate-spin text-gray-400 ml-1" />}
+                    {cepLoading && <Loader2 className="h-3 w-3 animate-spin text-stone-400 ml-1" />}
                   </Label>
-                  <Input value={form.cep} onChange={e => handleCepChange(e.target.value)} placeholder="00000-000" maxLength={9} />
-                  <p className="text-xs text-muted-foreground">Preencha o CEP para buscar o endereço automaticamente</p>
+                  <Input value={form.cep} onChange={e => handleCepChange(e.target.value)} placeholder="00000-000" maxLength={9} className="rounded-xl" />
+                  <p className="text-xs text-stone-500">Preencha o CEP para buscar o endereço automaticamente</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="cidade">Cidade</Label>
-                    <Input id="cidade" name="cidade" value={form.cidade} onChange={handleChange} placeholder="São Paulo" />
+                    <Input id="cidade" name="cidade" value={form.cidade} onChange={handleChange} placeholder="São Paulo" className="rounded-xl" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="estado">Estado (UF)</Label>
-                    <Input id="estado" name="estado" value={form.estado} onChange={handleChange} placeholder="SP" maxLength={2} />
+                    <Input id="estado" name="estado" value={form.estado} onChange={handleChange} placeholder="SP" maxLength={2} className="rounded-xl" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="endereco">Logradouro / Rua</Label>
-                  <Input id="endereco" name="endereco" value={form.endereco} onChange={handleChange} placeholder="Rua Exemplo" />
+                  <Input id="endereco" name="endereco" value={form.endereco} onChange={handleChange} placeholder="Rua Exemplo" className="rounded-xl" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="no_endereco">Número</Label>
-                    <Input id="no_endereco" name="no_endereco" value={form.no_endereco} onChange={handleChange} placeholder="123" />
+                    <Input id="no_endereco" name="no_endereco" value={form.no_endereco} onChange={handleChange} placeholder="123" className="rounded-xl" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="complemento_endereco">Complemento</Label>
-                    <Input id="complemento_endereco" name="complemento_endereco" value={form.complemento_endereco} onChange={handleChange} placeholder="Sala 2" />
+                    <Input id="complemento_endereco" name="complemento_endereco" value={form.complemento_endereco} onChange={handleChange} placeholder="Sala 2" className="rounded-xl" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="telefone" className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />Telefone</Label>
-                    <Input id="telefone" name="telefone" value={form.telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
+                    <Input id="telefone" name="telefone" value={form.telefone} onChange={handleChange} placeholder="(11) 99999-9999" className="rounded-xl" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email" className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />E-mail</Label>
-                    <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="contato@igreja.com.br" />
+                    <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="contato@igreja.com.br" className="rounded-xl" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="google_maps_url" className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />Google Maps URL</Label>
-                  <Input id="google_maps_url" name="google_maps_url" value={form.google_maps_url} onChange={handleChange} placeholder="https://maps.google.com/..." />
+                  <Input id="google_maps_url" name="google_maps_url" value={form.google_maps_url} onChange={handleChange} placeholder="https://maps.google.com/..." className="rounded-xl" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2"><Globe className="w-4 h-4" />Redes Sociais e Site</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="instagram_url" className="flex items-center gap-2"><Instagram className="w-4 h-4" />Instagram</Label>
-                  <Input id="instagram_url" name="instagram_url" value={form.instagram_url} onChange={handleChange} placeholder="https://instagram.com/suaigreja" />
+                  <Input id="instagram_url" name="instagram_url" value={form.instagram_url} onChange={handleChange} placeholder="https://instagram.com/suaigreja" className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="youtube_url" className="flex items-center gap-2"><Youtube className="w-4 h-4" />YouTube</Label>
-                  <Input id="youtube_url" name="youtube_url" value={form.youtube_url} onChange={handleChange} placeholder="https://youtube.com/@suaigreja" />
+                  <Input id="youtube_url" name="youtube_url" value={form.youtube_url} onChange={handleChange} placeholder="https://youtube.com/@suaigreja" className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="facebook_url" className="flex items-center gap-2"><Facebook className="w-4 h-4" />Facebook</Label>
-                  <Input id="facebook_url" name="facebook_url" value={form.facebook_url} onChange={handleChange} placeholder="https://facebook.com/suaigreja" />
+                  <Input id="facebook_url" name="facebook_url" value={form.facebook_url} onChange={handleChange} placeholder="https://facebook.com/suaigreja" className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="whatsapp" className="flex items-center gap-2"><MessageCircle className="w-4 h-4" />WhatsApp</Label>
-                  <Input id="whatsapp" name="whatsapp" value={form.whatsapp} onChange={handleChange} placeholder="5511999999999" />
+                  <Input id="whatsapp" name="whatsapp" value={form.whatsapp} onChange={handleChange} placeholder="5511999999999" className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="site_url" className="flex items-center gap-2"><Globe className="w-4 h-4" />Site</Label>
-                  <Input id="site_url" name="site_url" value={form.site_url} onChange={handleChange} placeholder="https://suaigreja.com.br" />
+                  <Input id="site_url" name="site_url" value={form.site_url} onChange={handleChange} placeholder="https://suaigreja.com.br" className="rounded-xl" />
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2"><Bell className="w-4 h-4" />Notificações</CardTitle>
             </CardHeader>
@@ -1051,7 +1051,7 @@ export default function ConfiguracaoIgreja() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <Label htmlFor="notificacoes_push" className="font-medium">Notificações push para membros</Label>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-stone-600 leading-relaxed mt-1">
                     Habilita o botão de ativar notificações push (Perfil → Conta) para os membros desta igreja.
                     Sem isso ligado, ninguém vê a opção de ativar notificações no navegador.
                   </p>
@@ -1070,7 +1070,7 @@ export default function ConfiguracaoIgreja() {
         {/* ─── Aba Módulos (exclusiva de superadmin) ─────────────────────────── */}
         {isSuperAdmin && (
         <TabsContent value="modulos" className="space-y-6">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2"><Puzzle className="w-4 h-4" />Módulos do Sistema</CardTitle>
               <CardDescription>
@@ -1087,8 +1087,8 @@ export default function ConfiguracaoIgreja() {
                     <Label htmlFor="mod_pg" className="font-medium">Pequenos Grupos / Bases</Label>
                   </div>
                   <div className="sm:col-span-2">
-                    <Label className="text-xs text-muted-foreground mb-1 block">Nome no menu</Label>
-                    <Input name="nome_modulo_pequenos_grupos" value={form.nome_modulo_pequenos_grupos} onChange={handleChange} placeholder="Base" className="max-w-xs" disabled={!form.modulo_pequenos_grupos} />
+                    <Label className="text-xs text-stone-500 mb-1 block">Nome no menu</Label>
+                    <Input name="nome_modulo_pequenos_grupos" value={form.nome_modulo_pequenos_grupos} onChange={handleChange} placeholder="Base" className="max-w-xs rounded-xl" disabled={!form.modulo_pequenos_grupos} />
                   </div>
                 </div>
 
@@ -1099,8 +1099,8 @@ export default function ConfiguracaoIgreja() {
                     <Label htmlFor="mod_culto" className="font-medium">Culto / Celebração</Label>
                   </div>
                   <div className="sm:col-span-2">
-                    <Label className="text-xs text-muted-foreground mb-1 block">Nome no menu</Label>
-                    <Input name="nome_modulo_culto" value={form.nome_modulo_culto} onChange={handleChange} placeholder="Culto" className="max-w-xs" />
+                    <Label className="text-xs text-stone-500 mb-1 block">Nome no menu</Label>
+                    <Input name="nome_modulo_culto" value={form.nome_modulo_culto} onChange={handleChange} placeholder="Culto" className="max-w-xs rounded-xl" />
                   </div>
                 </div>
 
@@ -1111,8 +1111,8 @@ export default function ConfiguracaoIgreja() {
                     <Label htmlFor="mod_eb" className="font-medium">Escola Bíblica</Label>
                   </div>
                   <div className="sm:col-span-2">
-                    <Label className="text-xs text-muted-foreground mb-1 block">Nome no menu</Label>
-                    <Input name="nome_modulo_escola_biblica" value={form.nome_modulo_escola_biblica} onChange={handleChange} placeholder="Escola Bíblica" className="max-w-xs" disabled={!form.modulo_escola_biblica} />
+                    <Label className="text-xs text-stone-500 mb-1 block">Nome no menu</Label>
+                    <Input name="nome_modulo_escola_biblica" value={form.nome_modulo_escola_biblica} onChange={handleChange} placeholder="Escola Bíblica" className="max-w-xs rounded-xl" disabled={!form.modulo_escola_biblica} />
                   </div>
                 </div>
 
@@ -1123,8 +1123,8 @@ export default function ConfiguracaoIgreja() {
                     <Label htmlFor="mod_fin" className="font-medium">Financeiro</Label>
                   </div>
                   <div className="sm:col-span-2">
-                    <Label className="text-xs text-muted-foreground mb-1 block">Nome no menu</Label>
-                    <Input name="nome_modulo_financeiro" value={form.nome_modulo_financeiro} onChange={handleChange} placeholder="Financeiro" className="max-w-xs" disabled={!form.modulo_financeiro} />
+                    <Label className="text-xs text-stone-500 mb-1 block">Nome no menu</Label>
+                    <Input name="nome_modulo_financeiro" value={form.nome_modulo_financeiro} onChange={handleChange} placeholder="Financeiro" className="max-w-xs rounded-xl" disabled={!form.modulo_financeiro} />
                   </div>
                 </div>
 
@@ -1134,7 +1134,7 @@ export default function ConfiguracaoIgreja() {
                     <Switch checked={form.modulo_repertorio} onCheckedChange={v => handleSwitch('modulo_repertorio', v)} id="mod_rep" />
                     <Label htmlFor="mod_rep" className="font-medium">Repertório Musical</Label>
                   </div>
-                  <div className="sm:col-span-2 text-sm text-muted-foreground">
+                  <div className="sm:col-span-2 text-sm text-stone-500">
                     Módulo de letras e cifras para ministério de música
                   </div>
                 </div>
@@ -1145,7 +1145,7 @@ export default function ConfiguracaoIgreja() {
                     <Switch checked={form.modulo_auditoria} onCheckedChange={v => handleSwitch('modulo_auditoria', v)} id="mod_aud" />
                     <Label htmlFor="mod_aud" className="font-medium">Auditoria</Label>
                   </div>
-                  <div className="sm:col-span-2 text-sm text-muted-foreground">
+                  <div className="sm:col-span-2 text-sm text-stone-500">
                     Log de alterações e histórico de ações administrativas
                   </div>
                 </div>
@@ -1154,7 +1154,7 @@ export default function ConfiguracaoIgreja() {
           </Card>
 
           <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={saving}>
+            <Button className="min-h-[44px]" onClick={handleSave} disabled={saving}>
               {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Salvando...</> : <><Save className="w-4 h-4 mr-2" />Salvar Módulos</>}
             </Button>
           </div>
@@ -1164,7 +1164,7 @@ export default function ConfiguracaoIgreja() {
         {/* ─── Aba Cultos ─────────────────────────────────────────────────── */}
         <TabsContent value="cultos" className="space-y-6">
           {/* Configuração rápida de cultos (cultos_config) */}
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2"><Clock className="w-4 h-4" />Configuração Rápida de Cultos</CardTitle>
               <CardDescription>
@@ -1193,14 +1193,14 @@ export default function ConfiguracaoIgreja() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base flex items-center gap-2"><Clock className="w-4 h-4" />Eventos Semanais Recorrentes</CardTitle>
                   <CardDescription>Cultos, EBD e outros encontros que se repetem toda semana</CardDescription>
                 </div>
-                <Button size="sm" onClick={openNovoEvento}>
+                <Button size="sm" className="min-h-[44px]" onClick={openNovoEvento}>
                   <Plus className="w-4 h-4 mr-2" />Adicionar Evento
                 </Button>
               </div>
@@ -1212,7 +1212,7 @@ export default function ConfiguracaoIgreja() {
                   <Skeleton className="h-12 w-full" />
                 </div>
               ) : eventos.length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground">
+                <div className="text-center py-10 text-stone-500">
                   <Clock className="w-10 h-10 mx-auto mb-3 opacity-40" />
                   <p className="text-sm">Nenhum evento semanal cadastrado ainda.</p>
                   <p className="text-xs mt-1">Clique em "Adicionar Evento" para começar.</p>
@@ -1223,10 +1223,10 @@ export default function ConfiguracaoIgreja() {
                     <div key={ev.id} className="py-3 flex items-center gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">{ev.nome}</p>
-                          {!ev.ativo && <Badge variant="outline" className="text-xs bg-gray-100 text-gray-500">Inativo</Badge>}
+                          <p className="font-medium text-sm text-stone-900">{ev.nome}</p>
+                          {!ev.ativo && <Badge variant="outline" className="text-xs bg-stone-100 text-stone-500">Inativo</Badge>}
                         </div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-stone-500">
                           {DIAS_SEMANA[ev.dia_semana]} às {ev.horario_inicio.slice(0, 5)}
                           {ev.horario_fim && ` – ${ev.horario_fim.slice(0, 5)}`}
                           {ev.local && ` • ${ev.local}`}
@@ -1238,10 +1238,10 @@ export default function ConfiguracaoIgreja() {
                           onCheckedChange={() => handleToggleEvento(ev)}
                           className="scale-90"
                         />
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditEvento(ev)} aria-label="Editar evento">
+                        <Button variant="ghost" size="icon" className="h-11 w-11" onClick={() => openEditEvento(ev)} aria-label="Editar evento">
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700" onClick={() => handleDeleteEvento(ev.id)} aria-label="Excluir evento">
+                        <Button variant="ghost" size="icon" className="h-11 w-11 text-red-500 hover:text-red-700" onClick={() => handleDeleteEvento(ev.id)} aria-label="Excluir evento">
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
@@ -1256,19 +1256,19 @@ export default function ConfiguracaoIgreja() {
 
       {/* ─── Dialog Evento ──────────────────────────────────────────────────── */}
       <Dialog open={eventoDialog} onOpenChange={setEventoDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>{editEvento ? 'Editar Evento' : 'Novo Evento Semanal'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label htmlFor="ev_nome">Nome do Evento *</Label>
-              <Input id="ev_nome" value={eventoForm.nome} onChange={e => setEventoForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Culto de Celebração" />
+              <Input id="ev_nome" value={eventoForm.nome} onChange={e => setEventoForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Culto de Celebração" className="rounded-xl" />
             </div>
             <div className="space-y-2">
               <Label>Dia da Semana *</Label>
               <Select value={String(eventoForm.dia_semana)} onValueChange={v => setEventoForm(p => ({ ...p, dia_semana: Number(v) }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {DIAS_SEMANA.map((d, i) => <SelectItem key={i} value={String(i)}>{d}</SelectItem>)}
                 </SelectContent>
@@ -1277,25 +1277,25 @@ export default function ConfiguracaoIgreja() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="ev_inicio">Horário Início *</Label>
-                <Input id="ev_inicio" type="time" value={eventoForm.horario_inicio} onChange={e => setEventoForm(p => ({ ...p, horario_inicio: e.target.value }))} />
+                <Input id="ev_inicio" type="time" value={eventoForm.horario_inicio} onChange={e => setEventoForm(p => ({ ...p, horario_inicio: e.target.value }))} className="rounded-xl" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ev_fim">Horário Fim</Label>
-                <Input id="ev_fim" type="time" value={eventoForm.horario_fim} onChange={e => setEventoForm(p => ({ ...p, horario_fim: e.target.value }))} />
+                <Input id="ev_fim" type="time" value={eventoForm.horario_fim} onChange={e => setEventoForm(p => ({ ...p, horario_fim: e.target.value }))} className="rounded-xl" />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="ev_local">Local</Label>
-              <Input id="ev_local" value={eventoForm.local} onChange={e => setEventoForm(p => ({ ...p, local: e.target.value }))} placeholder="Ex: Templo Principal, Salão..." />
+              <Input id="ev_local" value={eventoForm.local} onChange={e => setEventoForm(p => ({ ...p, local: e.target.value }))} placeholder="Ex: Templo Principal, Salão..." className="rounded-xl" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="ev_desc">Descrição</Label>
-              <Textarea id="ev_desc" value={eventoForm.descricao} onChange={e => setEventoForm(p => ({ ...p, descricao: e.target.value }))} placeholder="Detalhes sobre o evento..." rows={2} />
+              <Textarea id="ev_desc" value={eventoForm.descricao} onChange={e => setEventoForm(p => ({ ...p, descricao: e.target.value }))} placeholder="Detalhes sobre o evento..." rows={2} className="rounded-xl" />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEventoDialog(false)}>Cancelar</Button>
-            <Button onClick={handleSaveEvento} disabled={savingEvento}>
+            <Button variant="outline" className="min-h-[44px]" onClick={() => setEventoDialog(false)}>Cancelar</Button>
+            <Button className="min-h-[44px]" onClick={handleSaveEvento} disabled={savingEvento}>
               {savingEvento ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Salvando...</> : 'Salvar'}
             </Button>
           </DialogFooter>

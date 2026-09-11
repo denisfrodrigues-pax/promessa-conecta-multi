@@ -191,11 +191,11 @@ export default function Contas() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Contas Financeiras</h1>
-          <p className="text-muted-foreground">Gerencie as contas da igreja</p>
+          <h1 className="text-2xl font-bold text-stone-900">Contas Financeiras</h1>
+          <p className="text-stone-600 leading-relaxed">Gerencie as contas da igreja</p>
         </div>
         <Dialog open={modalOpen} onOpenChange={(open) => { setModalOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
@@ -258,10 +258,10 @@ export default function Contas() {
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+                <Button type="button" variant="outline" className="min-h-[44px]" onClick={() => setModalOpen(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={saving}>
+                <Button type="submit" disabled={saving} className="min-h-[44px]">
                   {saving ? "Salvando..." : "Salvar"}
                 </Button>
               </div>
@@ -270,7 +270,7 @@ export default function Contas() {
         </Dialog>
       </div>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="pt-6">
           {loading ? (
             <div className="space-y-4">
@@ -279,10 +279,13 @@ export default function Contas() {
               ))}
             </div>
           ) : contas.length === 0 ? (
-            <div className="text-center py-12">
-              <Wallet className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Nenhuma conta cadastrada</p>
-              <Button className="mt-4" onClick={() => setModalOpen(true)}>
+            <div className="flex flex-col items-center justify-center text-center py-16 px-4">
+              <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+                <Wallet className="h-8 w-8 text-stone-400" />
+              </div>
+              <h3 className="text-base font-semibold text-stone-800 mb-1">Nenhuma conta cadastrada</h3>
+              <p className="text-sm text-stone-500 leading-relaxed max-w-xs mb-4">Crie a primeira conta para começar a registrar as finanças da igreja.</p>
+              <Button className="min-h-[44px]" onClick={() => setModalOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Primeira Conta
               </Button>
@@ -310,7 +313,7 @@ export default function Contas() {
                         {getTipoLabel(conta.tipo)}
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate text-muted-foreground">
+                    <TableCell className="max-w-[200px] truncate text-stone-500">
                       {conta.descricao || "-"}
                     </TableCell>
                     <TableCell
@@ -328,7 +331,7 @@ export default function Contas() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => openEditModal(conta)}>
+                      <Button variant="ghost" size="sm" className="min-h-[44px]" onClick={() => openEditModal(conta)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </TableCell>

@@ -10,7 +10,7 @@ export default function FinanceiroLayout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -31,7 +31,7 @@ export default function FinanceiroLayout() {
   // User has financeiro role but not admin - show financeiro panel
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
+    <div className="min-h-screen flex w-full bg-stone-50">
       <FinanceiroSidebar />
       <main className="flex-1 overflow-auto">
         <Outlet />
