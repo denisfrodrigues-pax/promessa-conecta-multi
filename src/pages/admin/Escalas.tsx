@@ -653,22 +653,22 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
   }, {} as Record<string, EscalaGroup[]>);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 bg-stone-50">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Escalas</h1>
-          <p className="text-muted-foreground">Gerencie as escalas de ministérios e voluntários</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Escalas</h1>
+          <p className="text-stone-500 leading-relaxed">Gerencie as escalas de ministérios e voluntários</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           {canManage && !propMinisterioId && (
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="rounded-xl min-h-[44px]">
               <Link to={p('/admin/escalas/periodos')}>
                 <CalendarIcon className="w-4 h-4 mr-2" />
                 Períodos de Escala
               </Link>
             </Button>
           )}
-          <Button onClick={handleCreate} className={canManage ? '' : 'hidden'}>
+          <Button onClick={handleCreate} className={cn('rounded-xl min-h-[44px]', canManage ? '' : 'hidden')}>
             <Plus className="w-4 h-4 mr-2" />
             Nova Escala
           </Button>
@@ -676,22 +676,22 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="rounded-2xl shadow-soft border-stone-200">
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <Input
                   placeholder="Buscar por função..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 rounded-xl"
                 />
               </div>
             </div>
             <Select value={filterMinisterio} onValueChange={setFilterMinisterio}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] rounded-xl">
                 <SelectValue placeholder="Ministério" />
               </SelectTrigger>
               <SelectContent>
@@ -702,7 +702,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
               </SelectContent>
             </Select>
             <Select value={filterVoluntario} onValueChange={setFilterVoluntario}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] rounded-xl">
                 <SelectValue placeholder="Voluntário" />
               </SelectTrigger>
               <SelectContent>
@@ -714,7 +714,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
             </Select>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className={cn("w-[180px] justify-start text-left font-normal", !filterData && "text-muted-foreground")}>
+                <Button variant="outline" className={cn("w-[180px] justify-start text-left font-normal rounded-xl min-h-[44px]", !filterData && "text-stone-500")}>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {filterData ? format(filterData, 'dd/MM/yyyy') : 'Filtrar data'}
                 </Button>
@@ -727,8 +727,8 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                   locale={ptBR}
                 />
                 {filterData && (
-                  <div className="p-2 border-t">
-                    <Button variant="ghost" size="sm" className="w-full" onClick={() => setFilterData(undefined)}>
+                  <div className="p-2 border-t border-stone-200">
+                    <Button variant="ghost" size="sm" className="w-full rounded-xl" onClick={() => setFilterData(undefined)}>
                       Limpar filtro
                     </Button>
                   </div>
@@ -741,13 +741,13 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
 
       {/* Tabs for different views */}
       <Tabs defaultValue="list">
-        <TabsList>
+        <TabsList className="bg-stone-100">
           <TabsTrigger value="list">Lista</TabsTrigger>
           <TabsTrigger value="calendar">Calendário</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list">
-          <Card>
+          <Card className="rounded-2xl shadow-soft border-stone-200">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
               <Table>
@@ -766,11 +766,11 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                     <TableRow>
                       <TableCell colSpan={6}>
                         <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                          <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-3">
-                            <ClipboardList className="h-7 w-7 text-gray-400" />
+                          <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center mb-3">
+                            <ClipboardList className="h-7 w-7 text-stone-400" />
                           </div>
-                          <h3 className="text-sm font-semibold text-gray-700 mb-1">Nenhuma escala encontrada</h3>
-                          <p className="text-xs text-gray-400 max-w-xs">Ajuste os filtros ou crie uma nova escala para sua equipe.</p>
+                          <h3 className="text-sm font-semibold text-stone-700 mb-1">Nenhuma escala encontrada</h3>
+                          <p className="text-xs text-stone-400 max-w-xs leading-relaxed">Ajuste os filtros ou crie uma nova escala para sua equipe.</p>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -780,20 +780,20 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                       return (
                         <TableRow key={group.key}>
                           <TableCell>
-                            <div className="font-medium">
+                            <div className="font-medium text-stone-900">
                               {format(parseLocalDate(group.data), 'dd/MM/yyyy')}
                             </div>
                             {group.horario && (
-                              <div className="text-sm text-muted-foreground">{group.horario}</div>
+                              <div className="text-sm text-stone-500">{group.horario}</div>
                             )}
                           </TableCell>
                           <TableCell>
-                            <div className="font-medium">{group.funcao}</div>
+                            <div className="font-medium text-stone-900">{group.funcao}</div>
                           </TableCell>
                           <TableCell>{group.ministerio_nome || '-'}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4 text-muted-foreground" />
+                              <Users className="w-4 h-4 text-stone-400" />
                               <span className="font-medium">{summary.total}</span>
                             </div>
                           </TableCell>
@@ -821,11 +821,11 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
-                              <Button variant="ghost" size="icon" aria-label="Ver escala" onClick={() => handleView(group)}>
+                              <Button variant="ghost" size="icon" className="rounded-xl min-h-[44px] min-w-[44px]" aria-label="Ver escala" onClick={() => handleView(group)}>
                                 <Eye className="w-4 h-4" />
                               </Button>
                               {canManage && (
-                                <Button variant="ghost" size="icon" aria-label="Editar escala" onClick={() => handleEdit(group)}>
+                                <Button variant="ghost" size="icon" className="rounded-xl min-h-[44px] min-w-[44px]" aria-label="Editar escala" onClick={() => handleEdit(group)}>
                                   <Pencil className="w-4 h-4" />
                                 </Button>
                               )}
@@ -834,7 +834,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                                   variant="ghost"
                                   size="icon"
                                   aria-label="Excluir escala"
-                                  className="text-destructive hover:text-destructive"
+                                  className="text-destructive hover:text-destructive rounded-xl min-h-[44px] min-w-[44px]"
                                   onClick={() => {
                                     setDeletingGroup(group);
                                     setIsDeleteDialogOpen(true);
@@ -857,7 +857,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
         </TabsContent>
 
         <TabsContent value="calendar">
-          <Card>
+          <Card className="rounded-2xl shadow-soft border-stone-200">
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Calendar
@@ -865,7 +865,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                   selected={filterData}
                   onSelect={setFilterData}
                   locale={ptBR}
-                  className="rounded-md border"
+                  className="rounded-xl border border-stone-200"
                   modifiers={{
                     hasEscala: Object.keys(groupsByDate).map((d) => parseLocalDate(d)),
                   }}
@@ -874,7 +874,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                   }}
                 />
                 <div className="space-y-4">
-                  <h3 className="font-semibold">
+                  <h3 className="font-semibold text-stone-900">
                     {filterData
                       ? `Escalas em ${format(filterData, "dd 'de' MMMM", { locale: ptBR })}`
                       : 'Selecione uma data'}
@@ -884,15 +884,15 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                       {groupsByDate[format(filterData, 'yyyy-MM-dd')].map((group) => {
                         const summary = getVoluntariosStatusSummary(group.voluntarios);
                         return (
-                          <div 
-                            key={group.key} 
-                            className="p-3 rounded-lg border bg-card cursor-pointer hover:bg-muted/50 transition-colors"
+                          <div
+                            key={group.key}
+                            className="p-3 rounded-xl border border-stone-200 bg-white cursor-pointer hover:bg-stone-50 transition-colors min-h-[44px]"
                             onClick={() => handleView(group)}
                           >
                             <div className="flex justify-between items-start">
                               <div>
-                                <p className="font-medium">{group.funcao}</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-medium text-stone-900">{group.funcao}</p>
+                                <p className="text-sm text-stone-500">
                                   {group.ministerio_nome} • {summary.total} voluntário(s)
                                 </p>
                               </div>
@@ -902,7 +902,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                       })}
                     </div>
                   ) : filterData ? (
-                    <p className="text-muted-foreground">Nenhuma escala nesta data</p>
+                    <p className="text-stone-500">Nenhuma escala nesta data</p>
                   ) : null}
                 </div>
               </div>
@@ -923,47 +923,47 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
           
           {viewingGroup && (
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+              <div className="p-4 rounded-xl bg-stone-50 border border-stone-100 space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Data:</span>
-                  <span className="font-medium">{format(parseLocalDate(viewingGroup.data), 'dd/MM/yyyy')}</span>
+                  <span className="text-sm text-stone-500">Data:</span>
+                  <span className="font-medium text-stone-900">{format(parseLocalDate(viewingGroup.data), 'dd/MM/yyyy')}</span>
                 </div>
                 {viewingGroup.horario && (
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Horário:</span>
-                    <span className="font-medium">{viewingGroup.horario}</span>
+                    <span className="text-sm text-stone-500">Horário:</span>
+                    <span className="font-medium text-stone-900">{viewingGroup.horario}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Função:</span>
-                  <span className="font-medium">{viewingGroup.funcao}</span>
+                  <span className="text-sm text-stone-500">Função:</span>
+                  <span className="font-medium text-stone-900">{viewingGroup.funcao}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Ministério:</span>
-                  <span className="font-medium">{viewingGroup.ministerio_nome || '-'}</span>
+                  <span className="text-sm text-stone-500">Ministério:</span>
+                  <span className="font-medium text-stone-900">{viewingGroup.ministerio_nome || '-'}</span>
                 </div>
                 {viewingGroup.responsavel_nome && (
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Responsável:</span>
-                    <span className="font-medium">{viewingGroup.responsavel_nome}</span>
+                    <span className="text-sm text-stone-500">Responsável:</span>
+                    <span className="font-medium text-stone-900">{viewingGroup.responsavel_nome}</span>
                   </div>
                 )}
               </div>
 
               {/* Volunteers count */}
-              <div className="p-4 rounded-lg bg-muted/50 text-center">
+              <div className="p-4 rounded-xl bg-stone-50 border border-stone-100 text-center">
                 <p className="text-2xl font-bold text-primary">{viewingGroup.voluntarios.length}</p>
-                <p className="text-xs text-muted-foreground font-medium">Voluntário(s)</p>
+                <p className="text-xs text-stone-500 font-medium">Voluntário(s)</p>
               </div>
 
               {/* Volunteers List */}
               <div className="space-y-2">
                 {viewingGroup.voluntarios.map((vol) => (
-                  <div key={vol.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
+                  <div key={vol.id} className="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-200">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium">{vol.nome}</p>
+                      <p className="font-medium text-stone-900">{vol.nome}</p>
                       {vol.justificativa && (
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-sm text-stone-500 mt-1 leading-relaxed">
                           Justificativa: {vol.justificativa}
                         </p>
                       )}
@@ -982,8 +982,8 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                 const isPast = new Date(viewingGroup.data) < new Date(new Date().toISOString().split('T')[0]);
                 if (isPast) return null;
                 return (
-                  <div className="border-t pt-4 space-y-3">
-                    <p className="text-sm font-semibold">Minha confirmação</p>
+                  <div className="border-t border-stone-200 pt-4 space-y-3">
+                    <p className="text-sm font-semibold text-stone-900">Minha confirmação</p>
                     {myEntry.status === 'pendente' && !showRecusarForm && (
                       <div className="flex gap-2">
                         <Button
@@ -1040,7 +1040,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-muted-foreground text-xs h-7"
+                          className="text-stone-500 text-xs h-7"
                           disabled={isConfirmandoEscala}
                           onClick={async () => {
                             setIsConfirmandoEscala(true);
@@ -1062,7 +1062,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-muted-foreground text-xs h-7"
+                          className="text-stone-500 text-xs h-7"
                           onClick={() => handleConfirmarPresenca(myEntry.id)}
                           disabled={isConfirmandoEscala}
                         >
@@ -1122,10 +1122,10 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
 
           {loadingHistory ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <Loader2 className="w-6 h-6 animate-spin text-stone-500" />
             </div>
           ) : communicationHistory.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-stone-500">
               <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>Nenhuma comunicação registrada para esta escala</p>
             </div>
@@ -1135,7 +1135,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                 <div 
                   key={item.id} 
                   className={cn(
-                    "p-3 rounded-lg border",
+                    "p-3 rounded-xl border",
                     item.status === 'sucesso' && "bg-emerald-50 border-emerald-200",
                     item.status === 'sem_telefone' && "bg-yellow-50 border-yellow-200",
                     item.status === 'erro_api' && "bg-red-50 border-red-200"
@@ -1169,7 +1169,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                     </Badge>
                   </div>
                   {item.mensagem_preview && (
-                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                    <p className="text-sm text-stone-500 mb-2 line-clamp-2">
                       {item.mensagem_preview}
                     </p>
                   )}
@@ -1178,7 +1178,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                       {item.detalhes_erro}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-stone-500">
                     {format(new Date(item.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                   </p>
                 </div>
@@ -1287,7 +1287,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
               <div className="space-y-2">
                 <Label>Função *</Label>
                 {formData.ministerio_id && funcoes.length === 0 ? (
-                  <div className="p-3 rounded-md border border-amber-200 bg-amber-50 text-amber-700">
+                  <div className="p-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-700">
                     <p className="text-sm font-medium">Nenhuma função ativa</p>
                     <p className="text-xs mt-0.5">Cadastre funções em "Funções de Ministério"</p>
                   </div>
@@ -1329,21 +1329,21 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                     })}
                     className="w-20"
                   />
-                  <span className="text-sm text-muted-foreground">dias antes</span>
+                  <span className="text-sm text-stone-500">dias antes</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-stone-500">
                   Deixe vazio para desativar
                 </p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Voluntários * {editingGroup && <span className="text-muted-foreground font-normal">(alterar irá resetar confirmações)</span>}</Label>
-              <Card>
+              <Label>Voluntários * {editingGroup && <span className="text-stone-500 font-normal">(alterar irá resetar confirmações)</span>}</Label>
+              <Card className="rounded-2xl border-stone-200">
                 <CardContent className="pt-4 max-h-[200px] overflow-y-auto">
                   {!formData.ministerio_id ? (
                     <div className="text-center py-4">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-stone-500">
                         Selecione um ministério primeiro
                       </p>
                     </div>
@@ -1352,7 +1352,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                       <p className="text-sm text-amber-600 font-medium">
                         Nenhum voluntário ativo neste ministério
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-stone-500 mt-1">
                         Cadastre voluntários primeiro em "Voluntários por Ministério"
                       </p>
                     </div>
@@ -1362,10 +1362,10 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                         const selectedFuncao = funcoes.find(f => f.nome === formData.funcao);
                         const isMainFunction = selectedFuncao && v.funcao_principal_id === selectedFuncao.id;
                         return (
-                          <div 
-                            key={v.id} 
+                          <div
+                            key={v.id}
                             className={cn(
-                              "flex items-center space-x-2 p-1.5 rounded-md transition-colors",
+                              "flex items-center space-x-2 p-1.5 rounded-xl transition-colors",
                               isMainFunction && "bg-primary/10 border border-primary/20"
                             )}
                           >
@@ -1393,7 +1393,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                 </CardContent>
               </Card>
               {formData.voluntarios_ids.length > 0 && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-stone-500">
                   {formData.voluntarios_ids.length} voluntário(s) selecionado(s)
                 </p>
               )}
