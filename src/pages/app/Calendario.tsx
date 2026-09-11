@@ -68,17 +68,17 @@ export default function Calendario() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-6 space-y-8 max-w-3xl">
+    <div className="container mx-auto px-4 py-8 pb-6 space-y-10 max-w-3xl">
 
       {/* Seção 1 — Agenda da Igreja */}
       <section>
         <div className="flex items-center gap-2 mb-4">
           <Globe className="w-5 h-5 text-promessa-600" />
-          <h1 className="text-xl font-bold text-foreground">Agenda da Igreja</h1>
+          <h1 className="text-xl font-semibold text-stone-900">Agenda da Igreja</h1>
         </div>
 
         {calendarUrl ? (
-          <div className="rounded-xl overflow-hidden border shadow-sm">
+          <div className="rounded-2xl overflow-hidden border border-stone-200 shadow-soft">
             <iframe
               src={calendarUrl}
               className="w-full h-[300px] md:h-[400px] block"
@@ -88,13 +88,13 @@ export default function Calendario() {
             />
           </div>
         ) : (
-          <Card>
+          <Card className="rounded-2xl shadow-card">
             <CardContent className="py-10 text-center space-y-2">
-              <Calendar className="w-10 h-10 text-muted-foreground/40 mx-auto" />
-              <p className="text-sm text-muted-foreground">
+              <Calendar className="w-10 h-10 text-stone-300 mx-auto" />
+              <p className="text-sm text-stone-500 leading-relaxed">
                 Calendário não configurado.
               </p>
-              <p className="text-xs text-muted-foreground/70">
+              <p className="text-xs text-stone-400 leading-relaxed">
                 Solicite ao administrador que configure a URL de incorporação do Google Calendar.
               </p>
             </CardContent>
@@ -106,7 +106,7 @@ export default function Calendario() {
       <section>
         <div className="flex items-center gap-2 mb-4">
           <CalendarDays className="w-5 h-5 text-promessa-600" />
-          <h2 className="text-xl font-bold text-foreground">Minhas Escalas</h2>
+          <h2 className="text-xl font-semibold text-stone-900">Minhas Escalas</h2>
         </div>
 
         <CalendarioEscalas
@@ -121,13 +121,13 @@ export default function Calendario() {
         {/* Próximas escalas — lista */}
         {proximas.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3">Próximos 30 dias</h3>
-            <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-stone-500 mb-3">Próximos 30 dias</h3>
+            <div className="space-y-3">
               {proximas.map(e => {
                 const cor = slugParaCorLight(e.ministerio_slug);
                 const st = statusLabel(e.status);
                 return (
-                  <Card key={e.id} className="shadow-sm">
+                  <Card key={e.id} className="rounded-2xl shadow-card">
                     <CardContent className="py-3 px-4">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
@@ -140,8 +140,8 @@ export default function Calendario() {
                             </span>
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium text-sm truncate">{e.titulo_evento}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="font-medium text-sm truncate text-stone-900">{e.titulo_evento}</p>
+                            <p className="text-xs text-stone-500">
                               {e.ministerio_nome} · {e.funcao}
                             </p>
                           </div>
@@ -159,9 +159,15 @@ export default function Calendario() {
         )}
 
         {proximas.length === 0 && !isLoading && (
-          <p className="text-sm text-muted-foreground text-center mt-6 py-6">
-            Nenhuma escala nos próximos 30 dias.
-          </p>
+          <div className="text-center mt-6 py-10 px-4">
+            <CalendarDays className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <p className="text-sm text-stone-500 leading-relaxed">
+              Nenhuma escala nos próximos 30 dias.
+            </p>
+            <p className="text-xs text-stone-400 mt-1 leading-relaxed">
+              Quando você for escalado(a) em algum ministério, aparece por aqui.
+            </p>
+          </div>
         )}
       </section>
     </div>

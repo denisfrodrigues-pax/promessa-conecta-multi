@@ -279,7 +279,7 @@ export default function MinhaBase() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="min-h-screen bg-stone-50 container mx-auto px-4 py-8 md:py-12 max-w-4xl">
         <Skeleton className="h-10 w-48 mb-6" />
         <div className="grid gap-6">
           <Skeleton className="h-64 w-full" />
@@ -292,15 +292,15 @@ export default function MinhaBase() {
 
   if (basesData.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">Minha Base</h1>
-        <Card className="border-dashed">
+      <div className="min-h-screen bg-stone-50 container mx-auto px-4 py-8 md:py-12 max-w-4xl">
+        <h1 className="text-2xl md:text-3xl font-display font-bold text-stone-900 mb-6">Minha Base</h1>
+        <Card className="border-dashed border-stone-300 rounded-2xl">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <AlertCircle className="w-8 h-8 text-muted-foreground" />
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+              <AlertCircle className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Você ainda não está vinculado a uma base</h3>
-            <p className="text-muted-foreground max-w-md">Entre em contato com a administração da igreja para ser adicionado a uma base.</p>
+            <h3 className="text-lg font-semibold text-stone-900 mb-2">Você ainda não está vinculado a uma base</h3>
+            <p className="text-stone-600 leading-relaxed max-w-md">Entre em contato com a administração da igreja para ser adicionado a uma base.</p>
           </CardContent>
         </Card>
       </div>
@@ -311,32 +311,32 @@ export default function MinhaBase() {
   const base = selectedMembership?.bases;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-2">Minha Base</h1>
-      <p className="text-muted-foreground mb-6 capitalize">{hojeFormatado}</p>
+    <div className="min-h-screen bg-stone-50 container mx-auto px-4 py-8 md:py-12 max-w-4xl">
+      <h1 className="text-2xl md:text-3xl font-display font-bold text-stone-900 mb-2">Minha Base</h1>
+      <p className="text-stone-500 mb-6 capitalize">{hojeFormatado}</p>
 
       {basesData.length > 1 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {basesData.map((bm) => (
             <button
               key={bm.base_id}
               onClick={() => handleSelectBase(bm.base_id)}
-              className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+              className={`flex items-center gap-3 p-3 min-h-[44px] rounded-xl border text-left transition-all ${
                 selectedBaseId === bm.base_id
                   ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                  : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                  : 'border-stone-200 hover:border-primary/50 hover:bg-stone-50'
               }`}
             >
               {bm.bases?.foto_url ? (
-                <img src={bm.bases.foto_url} alt={bm.bases.nome} className="w-10 h-10 rounded-md object-cover" />
+                <img src={bm.bases.foto_url} alt={bm.bases.nome} className="w-10 h-10 rounded-lg object-cover" />
               ) : (
-                <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center">
-                  <Home className="w-5 h-5 text-muted-foreground" />
+                <div className="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center">
+                  <Home className="w-5 h-5 text-stone-400" />
                 </div>
               )}
               <div className="min-w-0">
-                <p className="font-medium text-foreground text-sm truncate">{bm.bases?.nome}</p>
-                {bm.bases?.dia_semana && <p className="text-xs text-muted-foreground">{bm.bases.dia_semana}</p>}
+                <p className="font-medium text-stone-900 text-sm truncate">{bm.bases?.nome}</p>
+                {bm.bases?.dia_semana && <p className="text-xs text-stone-500">{bm.bases.dia_semana}</p>}
               </div>
             </button>
           ))}
@@ -355,56 +355,56 @@ export default function MinhaBase() {
               {base.descricao && <CardDescription>{base.descricao}</CardDescription>}
             </CardHeader>
             <CardContent>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-6">
                 {base.local && (
                   <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <MapPin className="w-5 h-5 text-stone-400 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">Local</p>
-                      <p className="text-sm text-muted-foreground">{base.local}</p>
+                      <p className="text-sm text-stone-600">{base.local}</p>
                     </div>
                   </div>
                 )}
                 {base.dia_semana && (
                   <div className="flex items-start gap-3">
-                    <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <Calendar className="w-5 h-5 text-stone-400 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">Dia da Semana</p>
-                      <p className="text-sm text-muted-foreground">{base.dia_semana}</p>
+                      <p className="text-sm text-stone-600">{base.dia_semana}</p>
                     </div>
                   </div>
                 )}
                 {base.horario && (
                   <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <Clock className="w-5 h-5 text-stone-400 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">Horário</p>
-                      <p className="text-sm text-muted-foreground">{base.horario}</p>
+                      <p className="text-sm text-stone-600">{base.horario}</p>
                     </div>
                   </div>
                 )}
                 {base.anfitrioes && (
                   <div className="flex items-start gap-3">
-                    <Home className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <Home className="w-5 h-5 text-stone-400 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">Anfitriões</p>
-                      <p className="text-sm text-muted-foreground">{base.anfitrioes}</p>
+                      <p className="text-sm text-stone-600">{base.anfitrioes}</p>
                     </div>
                   </div>
                 )}
                 {base.lider && (
                   <div className="flex items-start gap-3">
-                    <Users className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <Users className="w-5 h-5 text-stone-400 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">Líder</p>
-                      <p className="text-sm text-muted-foreground">{base.lider.nome}</p>
+                      <p className="text-sm text-stone-600">{base.lider.nome}</p>
                     </div>
                   </div>
                 )}
               </div>
               {base.foto_url && (
                 <div className="mt-4">
-                  <img src={base.foto_url} alt={base.nome} className="w-full max-h-48 object-cover rounded-lg" />
+                  <img src={base.foto_url} alt={base.nome} className="w-full max-h-48 object-cover rounded-xl" />
                 </div>
               )}
             </CardContent>
@@ -414,7 +414,7 @@ export default function MinhaBase() {
           <Card className={presencaHoje ? 'border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20' : ''}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className={`w-5 h-5 ${presencaHoje ? 'text-green-600' : 'text-muted-foreground'}`} />
+                <CheckCircle2 className={`w-5 h-5 ${presencaHoje ? 'text-green-600' : 'text-stone-400'}`} />
                 Check-in de Presença
               </CardTitle>
               <CardDescription>Registre sua presença no encontro de hoje</CardDescription>
@@ -457,7 +457,7 @@ export default function MinhaBase() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-muted-foreground hover:text-destructive"
+                    className="text-stone-400 hover:text-destructive"
                     onClick={() => setConfirmExcluir(notaHoje.id)}
                     aria-label="Excluir nota"
                   >
@@ -472,10 +472,10 @@ export default function MinhaBase() {
                 value={notaConteudo}
                 onChange={(e) => setNotaConteudo(e.target.value)}
                 rows={4}
-                className="resize-none"
+                className="resize-none rounded-xl leading-relaxed"
               />
               <div className="flex items-center gap-2">
-                <Button onClick={handleSaveNota} disabled={savingNota} variant="outline" className="w-full sm:w-auto">
+                <Button onClick={handleSaveNota} disabled={savingNota} variant="outline" size="lg" className="w-full sm:w-auto">
                   {savingNota ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Salvando...</>
                   ) : (
@@ -483,7 +483,7 @@ export default function MinhaBase() {
                   )}
                 </Button>
                 {notaHoje?.updated_at && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-stone-500">
                     Salvo às {format(new Date(notaHoje.updated_at), 'HH:mm')}
                   </span>
                 )}
@@ -500,20 +500,20 @@ export default function MinhaBase() {
               >
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <NotebookPen className="w-5 h-5 text-muted-foreground" />
+                    <NotebookPen className="w-5 h-5 text-stone-400" />
                     Anotações Anteriores
-                    <span className="text-sm font-normal text-muted-foreground">({historico.length})</span>
+                    <span className="text-sm font-normal text-stone-500">({historico.length})</span>
                   </span>
-                  {historicoAberto ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+                  {historicoAberto ? <ChevronUp className="w-5 h-5 text-stone-400" /> : <ChevronDown className="w-5 h-5 text-stone-400" />}
                 </CardTitle>
               </CardHeader>
 
               {historicoAberto && (
                 <CardContent className="space-y-3 pt-0">
                   {historico.map((nota) => (
-                    <div key={nota.id} className="rounded-lg border bg-muted/30 p-4 space-y-2">
+                    <div key={nota.id} className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-foreground capitalize">
+                        <p className="text-sm font-medium text-stone-900 capitalize">
                           {format(parseISO(nota.data), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                         </p>
                         <div className="flex items-center gap-1">
@@ -521,7 +521,7 @@ export default function MinhaBase() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              className="h-7 w-7 text-stone-400 hover:text-stone-900"
                               onClick={() => handleEditarAnterior(nota)}
                               aria-label="Editar nota"
                             >
@@ -531,7 +531,7 @@ export default function MinhaBase() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                            className="h-7 w-7 text-stone-400 hover:text-destructive"
                             onClick={() => setConfirmExcluir(nota.id)}
                             aria-label="Excluir nota"
                           >
@@ -546,7 +546,7 @@ export default function MinhaBase() {
                             value={editConteudo}
                             onChange={(e) => setEditConteudo(e.target.value)}
                             rows={4}
-                            className="resize-none text-sm"
+                            className="resize-none text-sm rounded-xl"
                             autoFocus
                           />
                           <div className="flex gap-2">
@@ -565,7 +565,7 @@ export default function MinhaBase() {
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-wrap">
                           {nota.conteudo || <span className="italic">Sem conteúdo</span>}
                         </p>
                       )}

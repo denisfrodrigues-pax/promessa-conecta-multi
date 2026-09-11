@@ -49,18 +49,18 @@ export default function AppHome() {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-stone-50 flex flex-col">
       {/* ============================================
           HERO SECTION — compacto
       ============================================ */}
-      <section className="relative py-8 md:py-10 px-4 bg-gradient-to-b from-promessa-50/50 to-background">
+      <section className="relative py-10 md:py-12 px-4 bg-gradient-to-b from-promessa-50/50 to-stone-50">
         <div className="container mx-auto max-w-4xl">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-display font-bold text-stone-900">
                 Olá, <span style={{ color: 'hsl(var(--promessa-primary-dark))' }}>{firstName}</span>!
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-stone-600 mt-1 leading-relaxed">
                 Você faz parte dessa missão. Bem-vindo(a), {nomeIgreja}.
               </p>
             </div>
@@ -71,9 +71,9 @@ export default function AppHome() {
       {/* ============================================
           AÇÕES RÁPIDAS
       ============================================ */}
-      <section className="py-6 px-4 bg-background">
+      <section className="py-6 px-4 bg-stone-50">
         <div className="container mx-auto max-w-4xl">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {quickActions.map(({ label, icon: Icon, href }) => (
               <KpiTile key={label} icon={Icon} label={label} href={href} />
             ))}
@@ -84,7 +84,7 @@ export default function AppHome() {
       {/* ============================================
           SEÇÃO: DEVOCIONAL DA SEMANA
       ============================================ */}
-      <section className="py-10 md:py-12 bg-background">
+      <section className="py-12 md:py-16 bg-stone-50">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <DevocionaldaSemana />
@@ -100,37 +100,37 @@ export default function AppHome() {
       {/* ============================================
           SEÇÃO: QUEM SOMOS (RESUMO)
       ============================================ */}
-      <section className="py-12 md:py-16 bg-gray-50">
+      <section className="py-12 md:py-16 bg-stone-100">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-xl md:text-2xl font-display font-semibold text-foreground mb-6 text-center">
+            <h2 className="text-xl md:text-2xl font-display font-semibold text-stone-900 mb-6 text-center">
               Quem Somos
             </h2>
 
             {/* Mission & Vision — borda esquerda com cor primária */}
-            <div className="grid md:grid-cols-2 gap-4 mb-8">
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
               <div
-                className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition-shadow duration-200"
+                className="bg-white rounded-2xl p-6 border border-stone-200 shadow-card hover:shadow-soft transition-shadow duration-200"
                 style={{ borderLeft: '4px solid var(--color-primary)' }}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Heart className="w-4 h-4" style={{ color: 'var(--color-primary)' }} />
-                  <h3 className="text-sm font-semibold text-foreground">Nossa Missão</h3>
+                  <h3 className="text-sm font-semibold text-stone-900">Nossa Missão</h3>
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p className="text-stone-600 text-sm leading-relaxed">
                   {missao ? `"${missao}"` : 'Em breve'}
                 </p>
               </div>
 
               <div
-                className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition-shadow duration-200"
+                className="bg-white rounded-2xl p-6 border border-stone-200 shadow-card hover:shadow-soft transition-shadow duration-200"
                 style={{ borderLeft: '4px solid var(--color-primary)' }}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="w-4 h-4" style={{ color: 'var(--color-primary)' }} />
-                  <h3 className="text-sm font-semibold text-foreground">Nossa Visão</h3>
+                  <h3 className="text-sm font-semibold text-stone-900">Nossa Visão</h3>
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p className="text-stone-600 text-sm leading-relaxed">
                   {visao ? `"${visao}"` : 'Em breve'}
                 </p>
               </div>
@@ -140,7 +140,7 @@ export default function AppHome() {
             <Button
               variant="outline"
               size="lg"
-              className="group border-promessa-300 text-promessa-700 hover:bg-promessa-50 hover:border-promessa-400 hover:text-promessa-800 transition-all duration-300"
+              className="group border-promessa-300 text-promessa-700 hover:bg-promessa-50 hover:border-promessa-400 hover:text-promessa-800 rounded-xl transition-all duration-300"
               asChild
             >
               <a href={`${window.location.origin}/i/${slug}/publico`} className="flex items-center gap-2">
@@ -155,24 +155,24 @@ export default function AppHome() {
       {/* ============================================
           SEÇÃO: NOSSOS ENCONTROS
       ============================================ */}
-      <section className="py-16 md:py-20 bg-muted/30">
+      <section className="py-16 md:py-20 bg-stone-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-display font-semibold text-center text-foreground mb-10">
+          <h2 className="text-2xl md:text-3xl font-display font-semibold text-center text-stone-900 mb-10">
             Nossos Encontros
           </h2>
-          <div className={`grid gap-5 max-w-4xl mx-auto ${cultosAtivos.length === 2 ? 'md:grid-cols-2' : cultosAtivos.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-1 max-w-sm'}`}>
+          <div className={`grid gap-6 max-w-4xl mx-auto ${cultosAtivos.length === 2 ? 'md:grid-cols-2' : cultosAtivos.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-1 max-w-sm'}`}>
             {cultosAtivos.length > 0 ? cultosAtivos.map((c, i) => (
-              <div key={i} className="bg-card rounded-2xl p-6 text-center border border-border shadow-soft hover:shadow-elevated transition-all duration-300 hover:-translate-y-1">
+              <div key={i} className="bg-white rounded-2xl p-6 text-center border border-stone-200 shadow-soft hover:shadow-elevated transition-all duration-300 hover:-translate-y-1">
                 <div className="w-12 h-12 rounded-full bg-promessa-100 flex items-center justify-center mx-auto mb-4">
                   <c.icon className="w-6 h-6 text-promessa-600" />
                 </div>
-                <h3 className="font-display font-semibold text-base text-foreground mb-2">{c.nome}</h3>
+                <h3 className="font-display font-semibold text-base text-stone-900 mb-2">{c.nome}</h3>
                 <p className="text-promessa-600 font-semibold text-lg">{c.detalhe || 'A confirmar'}</p>
               </div>
             )) : (
-              <div className="bg-card rounded-2xl p-6 text-center border border-border">
-                <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm">Horários em breve</p>
+              <div className="bg-white rounded-2xl p-6 text-center border border-stone-200">
+                <Clock className="w-8 h-8 text-stone-400 mx-auto mb-2" />
+                <p className="text-stone-500 text-sm">Horários em breve</p>
               </div>
             )}
           </div>
@@ -195,9 +195,9 @@ export default function AppHome() {
               As contribuições são voluntárias e fazem parte da nossa missão de servir a Deus e às pessoas.
               Cada oferta é usada para manter e expandir o trabalho da {nomeIgreja}.
             </p>
-            <Button 
+            <Button
               size="lg"
-              className="bg-white text-promessa-700 hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="bg-white text-promessa-700 hover:bg-white/90 rounded-xl shadow-elevated transition-all duration-300 hover:scale-105"
               asChild
             >
               <Link to={p('/app/contribuicoes')} className="flex items-center gap-2">
@@ -227,9 +227,9 @@ export default function AppHome() {
       )}
 
       {/* Footer */}
-      <footer className="py-8 bg-muted/50 border-t border-border">
+      <footer className="py-8 bg-stone-100 border-t border-stone-200">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-stone-500">
             Promessa Conecta © {new Date().getFullYear()}
           </p>
         </div>

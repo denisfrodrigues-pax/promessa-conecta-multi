@@ -174,15 +174,15 @@ interface InfoRowProps {
 function InfoRow({ icon: Icon, label, value, last }: InfoRowProps) {
   const isEmpty = !value || value === '—';
   return (
-    <div className={cn('flex items-center gap-4 px-4 py-3.5', !last && 'border-b border-gray-100')}>
+    <div className={cn('flex items-center gap-4 px-5 py-4', !last && 'border-b border-stone-100')}>
       <div className="w-8 h-8 rounded-full bg-promessa-50 flex items-center justify-center flex-shrink-0">
         <Icon className="w-4 h-4 text-[#1a5c38]" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] text-gray-400 uppercase tracking-wide font-medium leading-none mb-0.5">
+        <p className="text-[11px] text-stone-400 uppercase tracking-wide font-medium leading-none mb-0.5">
           {label}
         </p>
-        <p className={cn('text-[14px] break-words', isEmpty ? 'text-gray-300 italic' : 'text-gray-800')}>
+        <p className={cn('text-[14px] break-words', isEmpty ? 'text-stone-300 italic' : 'text-stone-800')}>
           {isEmpty ? 'Não informado' : value}
         </p>
       </div>
@@ -204,9 +204,9 @@ interface SectionCardProps {
 
 function SectionCard({ title, editing, saving, onEdit, onSave, onCancel, children }: SectionCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
-        <span className="text-[15px] font-semibold text-gray-800">{title}</span>
+    <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
+      <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-stone-100">
+        <span className="text-[15px] font-semibold text-stone-800">{title}</span>
         {!editing ? (
           <button
             onClick={onEdit}
@@ -220,7 +220,7 @@ function SectionCard({ title, editing, saving, onEdit, onSave, onCancel, childre
             <button
               onClick={onCancel}
               disabled={saving}
-              className="flex items-center gap-1 text-[13px] text-gray-400 active:opacity-70"
+              className="flex items-center gap-1 text-[13px] text-stone-400 active:opacity-70"
             >
               <X className="w-3.5 h-3.5" />
               Cancelar
@@ -228,7 +228,7 @@ function SectionCard({ title, editing, saving, onEdit, onSave, onCancel, childre
             <button
               onClick={onSave}
               disabled={saving}
-              className="flex items-center gap-1.5 text-[13px] font-semibold text-white bg-promessa-800 px-3 py-1.5 rounded-full active:opacity-80"
+              className="flex items-center gap-1.5 text-[13px] font-semibold text-white bg-promessa-800 px-4 py-2.5 rounded-full active:opacity-80"
             >
               {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
               Salvar
@@ -251,8 +251,8 @@ interface FieldProps {
 
 function Field({ label, children, className }: FieldProps) {
   return (
-    <div className={cn('space-y-1', className)}>
-      <Label className="text-[12px] text-gray-500 font-medium">{label}</Label>
+    <div className={cn('space-y-1.5', className)}>
+      <Label className="text-[12px] text-stone-500 font-medium">{label}</Label>
       {children}
     </div>
   );
@@ -758,7 +758,7 @@ export default function MemberPerfil() {
   const avatarSrc = avatarPreview || avatarUrl;
 
   return (
-    <div className="min-h-screen bg-[#f2f4f7]">
+    <div className="min-h-screen bg-stone-50">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div
         className="relative"
@@ -776,7 +776,7 @@ export default function MemberPerfil() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingAvatar}
-            className="relative w-[90px] h-[90px] rounded-full overflow-hidden border-[3px] border-white shadow-xl focus:outline-none"
+            className="relative w-[90px] h-[90px] rounded-full overflow-hidden border-[3px] border-white shadow-elevated focus:outline-none"
             style={{ background: `linear-gradient(135deg, ${cor2}, ${cor1})` }}
             aria-label="Alterar foto"
           >
@@ -801,7 +801,7 @@ export default function MemberPerfil() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
 
           {/* ── Tab List ────────────────────────────────────────────────── */}
-          <TabsList className="flex w-full overflow-x-auto bg-white shadow-sm rounded-2xl mb-3 h-auto p-1 gap-0.5">
+          <TabsList className="flex w-full overflow-x-auto bg-white shadow-soft rounded-2xl mb-4 h-auto p-1 gap-0.5">
             {[
               { value: 'pessoal', label: 'Pessoal' },
               { value: 'endereco', label: 'Endereço' },
@@ -813,7 +813,7 @@ export default function MemberPerfil() {
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="flex-1 text-[11px] py-2 px-1 whitespace-nowrap min-w-0"
+                className="flex-1 min-h-[44px] text-[11px] py-2 px-1 whitespace-nowrap min-w-0"
               >
                 {tab.label}
               </TabsTrigger>
@@ -821,7 +821,7 @@ export default function MemberPerfil() {
           </TabsList>
 
           {/* ── Tab: Pessoal ──────────────────────────────────────────────── */}
-          <TabsContent value="pessoal" className="space-y-3 mt-0">
+          <TabsContent value="pessoal" className="space-y-5 mt-0">
 
             <SectionCard
               title="Dados Pessoais"
@@ -847,13 +847,13 @@ export default function MemberPerfil() {
                   <InfoRow icon={CreditCard} label="CPF" value={data.cpf ? formatCPFMasked(data.cpf) : undefined} last />
                 </>
               ) : (
-                <div className="px-4 py-4 space-y-3">
+                <div className="px-5 py-5 space-y-4">
                   <Field label="Nome completo">
-                    <Input value={pv('nome')} onChange={(e) => pd('nome', e.target.value)} placeholder="Seu nome completo" className="h-10" />
+                    <Input value={pv('nome')} onChange={(e) => pd('nome', e.target.value)} placeholder="Seu nome completo" className="h-11 rounded-xl" />
                   </Field>
                   <Field label="E-mail">
-                    <Input value={profile?.email || ''} disabled className="h-10 bg-gray-50 text-gray-400" />
-                    <p className="text-[11px] text-gray-400">Não pode ser alterado</p>
+                    <Input value={profile?.email || ''} disabled className="h-11 rounded-xl bg-stone-50 text-stone-400" />
+                    <p className="text-[11px] text-stone-400">Não pode ser alterado</p>
                   </Field>
                   <Field label="Telefone">
                     <Input
@@ -862,15 +862,15 @@ export default function MemberPerfil() {
                       placeholder="(00) 00000-0000"
                       inputMode="tel"
                       maxLength={15}
-                      className="h-10"
+                      className="h-11 rounded-xl"
                     />
                   </Field>
                   <Field label="Data de nascimento">
-                    <Input type="date" value={pv('data_nascimento')} onChange={(e) => pd('data_nascimento', e.target.value)} className="h-10" />
+                    <Input type="date" value={pv('data_nascimento')} onChange={(e) => pd('data_nascimento', e.target.value)} className="h-11 rounded-xl" />
                   </Field>
                   <Field label="Gênero">
                     <Select value={pv('sexo')} onValueChange={(v) => pd('sexo', v)}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="masculino">Masculino</SelectItem>
                         <SelectItem value="feminino">Feminino</SelectItem>
@@ -879,17 +879,17 @@ export default function MemberPerfil() {
                   </Field>
                   <Field label="Estado civil">
                     <Select value={pv('estado_civil')} onValueChange={(v) => pd('estado_civil', v)}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
                         {ESTADOS_CIVIS.map((ec) => <SelectItem key={ec.v} value={ec.v}>{ec.l}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </Field>
                   <Field label="Nacionalidade">
-                    <Input value={pv('nacionalidade')} onChange={(e) => pd('nacionalidade', e.target.value)} placeholder="Ex: Brasileiro(a)" className="h-10" />
+                    <Input value={pv('nacionalidade')} onChange={(e) => pd('nacionalidade', e.target.value)} placeholder="Ex: Brasileiro(a)" className="h-11 rounded-xl" />
                   </Field>
                   <Field label="Naturalidade">
-                    <Input value={pv('naturalidade')} onChange={(e) => pd('naturalidade', e.target.value)} placeholder="Cidade/Estado de nascimento" className="h-10" />
+                    <Input value={pv('naturalidade')} onChange={(e) => pd('naturalidade', e.target.value)} placeholder="Cidade/Estado de nascimento" className="h-11 rounded-xl" />
                   </Field>
                   <Field label="CPF">
                     <Input
@@ -898,7 +898,7 @@ export default function MemberPerfil() {
                       placeholder="000.000.000-00"
                       inputMode="numeric"
                       maxLength={14}
-                      className="h-10"
+                      className="h-11 rounded-xl"
                     />
                   </Field>
                 </div>
@@ -925,13 +925,13 @@ export default function MemberPerfil() {
                     <InfoRow icon={Users} label="Pais Promessistas" value={paiMaePromessista ? 'Sim' : 'Não'} last />
                   </>
                 ) : (
-                  <div className="px-4 py-4 space-y-3">
+                  <div className="px-5 py-5 space-y-4">
                     <Field label="Nome da Mãe">
                       <Input
                         value={draftFamilia.nome_mae}
                         onChange={(e) => setDraftFamilia(p => ({ ...p, nome_mae: e.target.value }))}
                         placeholder="Nome completo da mãe"
-                        className="h-10"
+                        className="h-11 rounded-xl"
                       />
                     </Field>
                     <Field label="Nome do Pai">
@@ -939,7 +939,7 @@ export default function MemberPerfil() {
                         value={draftFamilia.nome_pai}
                         onChange={(e) => setDraftFamilia(p => ({ ...p, nome_pai: e.target.value }))}
                         placeholder="Nome completo do pai"
-                        className="h-10"
+                        className="h-11 rounded-xl"
                       />
                     </Field>
                     <Field label="Pais são Promessistas?">
@@ -948,7 +948,7 @@ export default function MemberPerfil() {
                           checked={draftFamilia.pai_mae_promessista}
                           onCheckedChange={(v) => setDraftFamilia(p => ({ ...p, pai_mae_promessista: v }))}
                         />
-                        <span className="text-[14px] text-gray-700">
+                        <span className="text-[14px] text-stone-700">
                           {draftFamilia.pai_mae_promessista ? 'Sim' : 'Não'}
                         </span>
                       </div>
@@ -957,9 +957,9 @@ export default function MemberPerfil() {
                 )}
               </SectionCard>
             ) : (
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-                  <span className="text-[15px] font-semibold text-gray-800">Família</span>
+              <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
+                <div className="px-6 pt-5 pb-4 border-b border-stone-100">
+                  <span className="text-[15px] font-semibold text-stone-800">Família</span>
                 </div>
                 <InfoRow icon={Users} label="Nome da Mãe" value={data.nome_mae} />
                 <InfoRow icon={Users} label="Nome do Pai" value={data.nome_pai} />
@@ -993,7 +993,7 @@ export default function MemberPerfil() {
                   <InfoRow icon={Globe} label="País" value={data.pais} last />
                 </>
               ) : (
-                <div className="px-4 py-4 space-y-3">
+                <div className="px-5 py-5 space-y-4">
                   <Field label="CEP">
                     <div className="flex gap-2">
                       <Input
@@ -1003,40 +1003,40 @@ export default function MemberPerfil() {
                         placeholder="00000-000"
                         maxLength={9}
                         inputMode="numeric"
-                        className="h-10 flex-1"
+                        className="h-11 rounded-xl flex-1"
                       />
-                      <Button type="button" variant="outline" size="icon" className="h-10 w-10 flex-shrink-0" onClick={() => fetchCep(av('cep'))} disabled={loadingCep} aria-label="Buscar CEP">
+                      <Button type="button" variant="outline" size="icon" className="h-11 w-11 rounded-xl flex-shrink-0" onClick={() => fetchCep(av('cep'))} disabled={loadingCep} aria-label="Buscar CEP">
                         {loadingCep ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                       </Button>
                     </div>
                   </Field>
                   <Field label="Rua / Avenida">
-                    <Input value={av('logradouro')} onChange={(e) => ad('logradouro', e.target.value)} placeholder="Nome da rua" className="h-10" />
+                    <Input value={av('logradouro')} onChange={(e) => ad('logradouro', e.target.value)} placeholder="Nome da rua" className="h-11 rounded-xl" />
                   </Field>
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Número">
-                      <Input value={av('numero')} onChange={(e) => ad('numero', e.target.value)} placeholder="Nº" className="h-10" />
+                      <Input value={av('numero')} onChange={(e) => ad('numero', e.target.value)} placeholder="Nº" className="h-11 rounded-xl" />
                     </Field>
                     <Field label="Complemento">
-                      <Input value={av('complemento')} onChange={(e) => ad('complemento', e.target.value)} placeholder="Apto, Bloco..." className="h-10" />
+                      <Input value={av('complemento')} onChange={(e) => ad('complemento', e.target.value)} placeholder="Apto, Bloco..." className="h-11 rounded-xl" />
                     </Field>
                   </div>
                   <Field label="Bairro">
-                    <Input value={av('bairro')} onChange={(e) => ad('bairro', e.target.value)} placeholder="Bairro" className="h-10" />
+                    <Input value={av('bairro')} onChange={(e) => ad('bairro', e.target.value)} placeholder="Bairro" className="h-11 rounded-xl" />
                   </Field>
                   <div className="grid grid-cols-3 gap-3">
                     <Field label="Cidade" className="col-span-2">
-                      <Input value={av('cidade')} onChange={(e) => ad('cidade', e.target.value)} placeholder="Cidade" className="h-10" />
+                      <Input value={av('cidade')} onChange={(e) => ad('cidade', e.target.value)} placeholder="Cidade" className="h-11 rounded-xl" />
                     </Field>
                     <Field label="UF">
                       <Select value={av('uf')} onValueChange={(v) => ad('uf', v)}>
-                        <SelectTrigger className="h-10"><SelectValue placeholder="UF" /></SelectTrigger>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="UF" /></SelectTrigger>
                         <SelectContent>{UFS.map((uf) => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}</SelectContent>
                       </Select>
                     </Field>
                   </div>
                   <Field label="País">
-                    <Input value={av('pais')} onChange={(e) => ad('pais', e.target.value)} placeholder="Brasil" className="h-10" />
+                    <Input value={av('pais')} onChange={(e) => ad('pais', e.target.value)} placeholder="Brasil" className="h-11 rounded-xl" />
                   </Field>
                 </div>
               )}
@@ -1061,21 +1061,21 @@ export default function MemberPerfil() {
                   <InfoRow icon={Briefcase} label="Profissão" value={data.profissao} last />
                 </>
               ) : (
-                <div className="px-4 py-4 space-y-3">
+                <div className="px-5 py-5 space-y-4">
                   <Field label="Grau de instrução">
                     <Select value={fv('grau_instrucao')} onValueChange={(v) => fd('grau_instrucao', v)}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>{GRAUS.map((g) => <SelectItem key={g.v} value={g.v}>{g.l}</SelectItem>)}</SelectContent>
                     </Select>
                   </Field>
                   <Field label="Formação">
-                    <Input value={fv('formacao')} onChange={(e) => fd('formacao', e.target.value)} placeholder="Ex: Administração, Engenharia..." className="h-10" />
+                    <Input value={fv('formacao')} onChange={(e) => fd('formacao', e.target.value)} placeholder="Ex: Administração, Engenharia..." className="h-11 rounded-xl" />
                   </Field>
                   <Field label="Curso">
-                    <Input value={fv('curso')} onChange={(e) => fd('curso', e.target.value)} placeholder="Curso técnico ou superior" className="h-10" />
+                    <Input value={fv('curso')} onChange={(e) => fd('curso', e.target.value)} placeholder="Curso técnico ou superior" className="h-11 rounded-xl" />
                   </Field>
                   <Field label="Profissão">
-                    <Input value={fv('profissao')} onChange={(e) => fd('profissao', e.target.value)} placeholder="Sua profissão atual" className="h-10" />
+                    <Input value={fv('profissao')} onChange={(e) => fd('profissao', e.target.value)} placeholder="Sua profissão atual" className="h-11 rounded-xl" />
                   </Field>
                 </div>
               )}
@@ -1083,12 +1083,12 @@ export default function MemberPerfil() {
           </TabsContent>
 
           {/* ── Tab: Ministerial (somente leitura) ────────────────────────── */}
-          <TabsContent value="ministerial" className="space-y-3 mt-0">
+          <TabsContent value="ministerial" className="space-y-5 mt-0">
 
-            <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-              <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
-                <span className="text-[15px] font-semibold text-gray-800">Situação Ministerial</span>
-                <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
+            <div className="bg-stone-50 rounded-2xl shadow-soft overflow-hidden border border-stone-100">
+              <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-stone-100">
+                <span className="text-[15px] font-semibold text-stone-800">Situação Ministerial</span>
+                <span className="text-[11px] text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
               </div>
               {membroData && (membroData.situacao_ministerial || membroData.data_situacao_inicio || membroData.situacao_observacao) ? (
                 <>
@@ -1097,14 +1097,14 @@ export default function MemberPerfil() {
                   <InfoRow icon={User} label="Observação" value={membroData.situacao_observacao || undefined} last />
                 </>
               ) : (
-                <p className="px-4 py-4 text-[13px] text-gray-400 italic">Nenhuma informação registrada ainda</p>
+                <p className="px-4 py-4 text-[13px] text-stone-400 italic">Nenhuma informação registrada ainda</p>
               )}
             </div>
 
-            <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-              <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
-                <span className="text-[15px] font-semibold text-gray-800">Ordenação</span>
-                <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
+            <div className="bg-stone-50 rounded-2xl shadow-soft overflow-hidden border border-stone-100">
+              <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-stone-100">
+                <span className="text-[15px] font-semibold text-stone-800">Ordenação</span>
+                <span className="text-[11px] text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">ⓘ Gerenciado pelo administrador</span>
               </div>
               {membroData && membroData.ordenacao_funcao && membroData.ordenacao_funcao !== 'nenhum' ? (
                 <>
@@ -1113,7 +1113,7 @@ export default function MemberPerfil() {
                   <InfoRow icon={Calendar} label="Até" value={formatDate(membroData.data_ordenacao_fim || '')} last />
                 </>
               ) : (
-                <p className="px-4 py-4 text-[13px] text-gray-400 italic">Nenhuma informação registrada ainda</p>
+                <p className="px-4 py-4 text-[13px] text-stone-400 italic">Nenhuma informação registrada ainda</p>
               )}
             </div>
 
@@ -1152,36 +1152,36 @@ export default function MemberPerfil() {
                   )}
                 </>
               ) : (
-                <div className="px-4 py-4 space-y-3">
+                <div className="px-5 py-5 space-y-4">
                   <Field label="Como chegou à igreja">
                     <Select value={bv('origem_membro')} onValueChange={(v) => bd('origem_membro', v)}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
                         {ORIGENS.map((o) => <SelectItem key={o.v} value={o.v}>{o.l}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </Field>
                   <Field label="Igreja anterior">
-                    <Input value={bv('igreja_anterior')} onChange={(e) => bd('igreja_anterior', e.target.value)} placeholder="Nome da igreja anterior" className="h-10" />
+                    <Input value={bv('igreja_anterior')} onChange={(e) => bd('igreja_anterior', e.target.value)} placeholder="Nome da igreja anterior" className="h-11 rounded-xl" />
                   </Field>
                   <Field label="Data de recebimento">
-                    <Input type="date" value={bv('data_recebimento')} onChange={(e) => bd('data_recebimento', e.target.value)} className="h-10" />
+                    <Input type="date" value={bv('data_recebimento')} onChange={(e) => bd('data_recebimento', e.target.value)} className="h-11 rounded-xl" />
                   </Field>
                   <Field label="Local do Batismo">
-                    <Input value={bv('local_batismo')} onChange={(e) => bd('local_batismo', e.target.value)} placeholder="Local onde foi batizado" className="h-10" />
+                    <Input value={bv('local_batismo')} onChange={(e) => bd('local_batismo', e.target.value)} placeholder="Local onde foi batizado" className="h-11 rounded-xl" />
                   </Field>
                   <Field label="Pastor Oficiante">
-                    <Input value={bv('pastor_oficiante')} onChange={(e) => bd('pastor_oficiante', e.target.value)} placeholder="Nome do pastor" className="h-10" />
+                    <Input value={bv('pastor_oficiante')} onChange={(e) => bd('pastor_oficiante', e.target.value)} placeholder="Nome do pastor" className="h-11 rounded-xl" />
                   </Field>
                   <Field label="Data do Batismo em Água">
-                    <Input type="date" value={bv('data_batismo_agua')} onChange={(e) => bd('data_batismo_agua', e.target.value)} className="h-10" />
+                    <Input type="date" value={bv('data_batismo_agua')} onChange={(e) => bd('data_batismo_agua', e.target.value)} className="h-11 rounded-xl" />
                   </Field>
                   <Field label="Batizado no Espírito Santo">
                     <Select
                       value={bvBool('batismo_espirito_santo') === null ? '' : bvBool('batismo_espirito_santo') ? 'sim' : 'nao'}
                       onValueChange={(v) => bd('batismo_espirito_santo', v === '' ? null : v === 'sim')}
                     >
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="sim">Sim</SelectItem>
                         <SelectItem value="nao">Não</SelectItem>
@@ -1190,7 +1190,7 @@ export default function MemberPerfil() {
                   </Field>
                   {bvBool('batismo_espirito_santo') === true && (
                     <Field label="Data Batismo no Espírito Santo">
-                      <Input type="date" value={bv('data_batismo_espirito')} onChange={(e) => bd('data_batismo_espirito', e.target.value)} className="h-10" />
+                      <Input type="date" value={bv('data_batismo_espirito')} onChange={(e) => bd('data_batismo_espirito', e.target.value)} className="h-11 rounded-xl" />
                     </Field>
                   )}
                 </div>
@@ -1199,19 +1199,19 @@ export default function MemberPerfil() {
           </TabsContent>
 
           {/* ── Tab: Conta ────────────────────────────────────────────────── */}
-          <TabsContent value="conta" className="space-y-3 mt-0">
+          <TabsContent value="conta" className="space-y-5 mt-0">
 
             {/* Notificações */}
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-                <span className="text-[15px] font-semibold text-gray-800">Notificações</span>
+            <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
+              <div className="px-6 pt-5 pb-4 border-b border-stone-100">
+                <span className="text-[15px] font-semibold text-stone-800">Notificações</span>
               </div>
               {!notificacoesPushAtivas ? (
                 <div className="flex items-start gap-3 px-4 py-4">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <BellOff className="w-4 h-4 text-gray-400" />
+                  <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <BellOff className="w-4 h-4 text-stone-400" />
                   </div>
-                  <p className="text-[14px] text-gray-500 pt-1.5">Notificações push não disponíveis no momento.</p>
+                  <p className="text-[14px] text-stone-500 pt-1.5">Notificações push não disponíveis no momento.</p>
                 </div>
               ) : (
                 <div className="flex items-center justify-between px-4 py-4">
@@ -1219,11 +1219,11 @@ export default function MemberPerfil() {
                     <div className="w-8 h-8 rounded-full bg-promessa-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                       {pushEnabled
                         ? <Bell className="w-4 h-4 text-[#1a5c38]" />
-                        : <BellOff className="w-4 h-4 text-gray-400" />}
+                        : <BellOff className="w-4 h-4 text-stone-400" />}
                     </div>
                     <div>
-                      <p className="text-[14px] font-medium text-gray-800">Notificações Push</p>
-                      <p className="text-[12px] text-gray-400 mt-0.5 leading-snug">
+                      <p className="text-[14px] font-medium text-stone-800">Notificações Push</p>
+                      <p className="text-[12px] text-stone-400 mt-0.5 leading-snug">
                         {!pushSupported
                           ? 'Requer HTTPS e browser compatível'
                           : pushPermission === 'denied'
@@ -1250,21 +1250,21 @@ export default function MemberPerfil() {
             </div>
 
             {/* Segurança */}
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-                <span className="text-[15px] font-semibold text-gray-800">Segurança</span>
+            <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
+              <div className="px-6 pt-5 pb-4 border-b border-stone-100">
+                <span className="text-[15px] font-semibold text-stone-800">Segurança</span>
               </div>
               <button
                 onClick={handlePasswordReset}
-                className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 active:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-4 border-b border-stone-100 active:bg-stone-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-promessa-50 flex items-center justify-center">
                     <Lock className="w-4 h-4 text-[#1a5c38]" />
                   </div>
-                  <span className="text-[14px] font-medium text-gray-800">Alterar senha</span>
+                  <span className="text-[14px] font-medium text-stone-800">Alterar senha</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-300" />
+                <ChevronRight className="w-4 h-4 text-stone-300" />
               </button>
               <button
                 onClick={signOut}

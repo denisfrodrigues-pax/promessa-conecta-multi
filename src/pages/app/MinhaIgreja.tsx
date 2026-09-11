@@ -74,7 +74,7 @@ export default function MinhaIgreja() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-2xl space-y-4">
+      <div className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
         <Skeleton className="h-32 w-full rounded-2xl" />
         <Skeleton className="h-48 w-full rounded-2xl" />
         <Skeleton className="h-32 w-full rounded-2xl" />
@@ -83,7 +83,7 @@ export default function MinhaIgreja() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
+    <div className="container mx-auto px-4 py-8 max-w-2xl space-y-8">
 
       {/* ── Hero da Igreja ───────────────────────────────────────────────── */}
       <div
@@ -107,7 +107,7 @@ export default function MinhaIgreja() {
             <img
               src={config.logo_url}
               alt={config.nome}
-              className="h-16 w-16 object-contain bg-white/90 rounded-xl p-2 shadow-lg flex-shrink-0"
+              className="h-16 w-16 object-contain bg-white/90 rounded-xl p-2 shadow-elevated flex-shrink-0"
             />
           ) : (
             <div className="h-16 w-16 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -128,7 +128,7 @@ export default function MinhaIgreja() {
           <Button
             size="sm"
             variant="secondary"
-            className="flex-shrink-0 bg-white/90 text-promessa-700 hover:bg-white"
+            className="flex-shrink-0 bg-white/90 text-promessa-700 hover:bg-white min-h-[44px]"
             onClick={handleShare}
           >
             <Share2 className="w-4 h-4 mr-1.5" />
@@ -139,12 +139,12 @@ export default function MinhaIgreja() {
 
       {/* ── Slogan e Versículo ──────────────────────────────────────────── */}
       {(config.slogan || config.versiculo) && (
-        <div className="bg-card border rounded-2xl p-5 space-y-3">
+        <div className="bg-white border border-stone-200 rounded-2xl p-6 space-y-3 shadow-card">
           {config.slogan && (
-            <p className="text-sm font-medium text-foreground">{config.slogan}</p>
+            <p className="text-sm font-medium text-stone-900 leading-relaxed">{config.slogan}</p>
           )}
           {config.versiculo && (
-            <blockquote className="border-l-4 border-promessa-300 pl-4 text-sm text-muted-foreground italic">
+            <blockquote className="border-l-4 border-promessa-300 pl-4 text-sm text-stone-600 italic leading-relaxed">
               "{config.versiculo}"
               {config.versiculo_referencia && (
                 <cite className="block text-xs font-semibold not-italic text-promessa-600 mt-1">
@@ -157,30 +157,33 @@ export default function MinhaIgreja() {
       )}
 
       {/* ── Nossos Encontros ────────────────────────────────────────────── */}
-      <div className="bg-card border rounded-2xl p-5">
-        <h2 className="font-display font-semibold text-base mb-4 flex items-center gap-2">
+      <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-card">
+        <h2 className="font-display font-semibold text-base mb-4 flex items-center gap-2 text-stone-900">
           <Clock className="w-5 h-5 text-promessa-600" />
           Nossos Encontros
         </h2>
         {loadingEventos ? (
           <div className="space-y-3">
-            <Skeleton className="h-14 w-full rounded-lg" />
-            <Skeleton className="h-14 w-full rounded-lg" />
+            <Skeleton className="h-14 w-full rounded-xl" />
+            <Skeleton className="h-14 w-full rounded-xl" />
           </div>
         ) : eventos.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            Nenhum evento semanal cadastrado ainda.
-          </p>
+          <div className="text-center py-6">
+            <Clock className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+            <p className="text-sm text-stone-500 leading-relaxed">
+              Nenhum evento semanal cadastrado ainda.
+            </p>
+          </div>
         ) : (
           <div className="space-y-2">
             {eventos.map(ev => (
-              <div key={ev.id} className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg">
+              <div key={ev.id} className="flex items-center gap-3 p-3 bg-stone-50 rounded-xl">
                 <div className="w-10 h-10 bg-promessa-100 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Clock className="w-5 h-5 text-promessa-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm">{ev.nome}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-medium text-sm text-stone-900">{ev.nome}</p>
+                  <p className="text-xs text-stone-500">
                     {DIAS_SEMANA[ev.dia_semana]} · {ev.horario_inicio.slice(0, 5)}
                     {ev.horario_fim && ` – ${ev.horario_fim.slice(0, 5)}`}
                     {ev.local && ` · ${ev.local}`}
@@ -194,8 +197,8 @@ export default function MinhaIgreja() {
 
       {/* ── Localização e Contato ───────────────────────────────────────── */}
       {(config.endereco || config.responsavel_telefone || config.whatsapp || config.responsavel_email) && (
-        <div className="bg-card border rounded-2xl p-5">
-          <h2 className="font-display font-semibold text-base mb-4 flex items-center gap-2">
+        <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-card">
+          <h2 className="font-display font-semibold text-base mb-4 flex items-center gap-2 text-stone-900">
             <MapPin className="w-5 h-5 text-promessa-600" />
             Localização e Contato
           </h2>
@@ -205,20 +208,20 @@ export default function MinhaIgreja() {
                 href={`https://maps.google.com?q=${encodeURIComponent(config.endereco)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-3 text-muted-foreground hover:text-promessa-700 transition-colors"
+                className="flex items-start gap-3 text-stone-600 hover:text-promessa-700 transition-colors min-h-[44px] py-2"
               >
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-promessa-600" />
                 <span>{config.endereco}</span>
               </a>
             )}
             {(config.responsavel_telefone || config.whatsapp) && (
-              <div className="flex items-center gap-3 text-muted-foreground">
+              <div className="flex items-center gap-3 text-stone-600">
                 <Phone className="w-4 h-4 flex-shrink-0 text-promessa-600" />
                 <span>{config.responsavel_telefone || config.whatsapp}</span>
               </div>
             )}
             {config.responsavel_email && (
-              <div className="flex items-center gap-3 text-muted-foreground">
+              <div className="flex items-center gap-3 text-stone-600">
                 <Mail className="w-4 h-4 flex-shrink-0 text-promessa-600" />
                 <span>{config.responsavel_email}</span>
               </div>
@@ -229,39 +232,39 @@ export default function MinhaIgreja() {
 
       {/* ── Redes Sociais ───────────────────────────────────────────────── */}
       {(config.instagram_url || config.youtube_url || config.facebook_url || config.whatsapp || config.site_url) && (
-        <div className="bg-card border rounded-2xl p-5">
-          <h2 className="font-display font-semibold text-base mb-4 flex items-center gap-2">
+        <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-card">
+          <h2 className="font-display font-semibold text-base mb-4 flex items-center gap-2 text-stone-900">
             <Globe className="w-5 h-5 text-promessa-600" />
             Redes Sociais
           </h2>
           <div className="flex flex-wrap gap-3">
             {config.instagram_url && (
               <a href={config.instagram_url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-pink-500 to-orange-400 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                className="flex items-center gap-2 px-4 py-2 min-h-[44px] bg-gradient-to-br from-pink-500 to-orange-400 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">
                 <Instagram className="w-4 h-4" /> Instagram
               </a>
             )}
             {config.youtube_url && (
               <a href={config.youtube_url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                className="flex items-center gap-2 px-4 py-2 min-h-[44px] bg-red-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">
                 <Youtube className="w-4 h-4" /> YouTube
               </a>
             )}
             {config.facebook_url && (
               <a href={config.facebook_url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                className="flex items-center gap-2 px-4 py-2 min-h-[44px] bg-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">
                 <Facebook className="w-4 h-4" /> Facebook
               </a>
             )}
             {config.whatsapp && (
               <a href={`https://wa.me/${config.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                className="flex items-center gap-2 px-4 py-2 min-h-[44px] bg-green-500 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">
                 <MessageCircle className="w-4 h-4" /> WhatsApp
               </a>
             )}
             {config.site_url && (
               <a href={config.site_url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-promessa-700 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                className="flex items-center gap-2 px-4 py-2 min-h-[44px] bg-promessa-700 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">
                 <Globe className="w-4 h-4" /> Site
               </a>
             )}
@@ -270,19 +273,19 @@ export default function MinhaIgreja() {
       )}
 
       {/* ── Link da Igreja ──────────────────────────────────────────────── */}
-      <div className="bg-promessa-50 border border-promessa-200 rounded-2xl p-5">
+      <div className="bg-promessa-50 border border-promessa-200 rounded-2xl p-6">
         <h2 className="font-display font-semibold text-base mb-3 text-promessa-700 flex items-center gap-2">
           <ExternalLink className="w-5 h-5" />
           Site da Igreja
         </h2>
         <div className="flex items-center gap-2">
-          <code className="flex-1 text-sm text-promessa-700 bg-white border border-promessa-200 px-3 py-2 rounded-lg font-mono truncate">
+          <code className="flex-1 min-h-[44px] flex items-center text-sm text-promessa-700 bg-white border border-promessa-200 px-3 py-2 rounded-xl font-mono truncate">
             {shareLink}
           </code>
-          <Button variant="outline" size="icon" className="border-promessa-300 text-promessa-700 flex-shrink-0" onClick={copyLink} title="Copiar link" aria-label="Copiar link">
+          <Button variant="outline" size="icon" className="border-promessa-300 text-promessa-700 flex-shrink-0 h-11 w-11" onClick={copyLink} title="Copiar link" aria-label="Copiar link">
             <Copy className="w-4 h-4" />
           </Button>
-          <Button variant="outline" size="icon" className="border-promessa-300 text-promessa-700 flex-shrink-0" onClick={handleShare} title="Compartilhar" aria-label="Compartilhar">
+          <Button variant="outline" size="icon" className="border-promessa-300 text-promessa-700 flex-shrink-0 h-11 w-11" onClick={handleShare} title="Compartilhar" aria-label="Compartilhar">
             <Share2 className="w-4 h-4" />
           </Button>
         </div>

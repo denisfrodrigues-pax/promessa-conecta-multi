@@ -99,12 +99,12 @@ export default function BasesPublic() {
   });
 
   return (
-    <div className="pb-24 md:pb-6">
+    <div className="pb-24 md:pb-6 bg-stone-50">
       {/* Hero Section - Premium */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/banner_home_placeholder.png')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-gradient-to-r from-promessa-900/90 via-promessa-800/70 to-promessa-700/50" />
-        <div className="container mx-auto px-4 py-16 relative z-10">
+        <div className="container mx-auto px-4 py-16 md:py-20 relative z-10">
           <div className="max-w-2xl">
             <Badge className="bg-white/20 text-white border border-white/30 mb-4">
               <Home className="w-3 h-3 mr-1" />
@@ -116,18 +116,18 @@ export default function BasesPublic() {
             <p className="text-xl text-white/90 mb-8 leading-relaxed">
               Nossas Bases são pequenos grupos onde você pode crescer na fé, fazer amizades e ser acompanhado de perto.
             </p>
-            <Button asChild size="lg" className="bg-white text-promessa-700 hover:bg-white/90 shadow-lg">
+            <Button asChild size="lg" className="bg-white text-promessa-700 hover:bg-white/90 shadow-lg rounded-xl">
               <Link to={p('/sou-novo')}>Quero Participar</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-10 space-y-6">
+      <div className="container mx-auto px-4 py-10 md:py-14 space-y-8">
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
             <Input
               placeholder="Buscar por nome, local ou líder..."
               value={search}
@@ -149,7 +149,7 @@ export default function BasesPublic() {
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-4 text-sm text-stone-500">
           <span className="font-medium">{filtered.length} {filtered.length === 1 ? 'base encontrada' : 'bases encontradas'}</span>
         </div>
 
@@ -157,33 +157,36 @@ export default function BasesPublic() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="p-6 rounded-2xl border border-border/50 bg-card">
+              <div key={i} className="p-6 rounded-2xl border border-stone-200 bg-white">
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-muted animate-pulse" />
+                  <div className="w-12 h-12 rounded-xl bg-stone-100 animate-pulse" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-5 w-3/4 bg-muted rounded-lg animate-pulse" />
-                    <div className="h-4 w-1/2 bg-muted rounded-lg animate-pulse" />
+                    <div className="h-5 w-3/4 bg-stone-100 rounded-lg animate-pulse" />
+                    <div className="h-4 w-1/2 bg-stone-100 rounded-lg animate-pulse" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-4 w-full bg-muted rounded-lg animate-pulse" />
-                  <div className="h-4 w-2/3 bg-muted rounded-lg animate-pulse" />
+                  <div className="h-4 w-full bg-stone-100 rounded-lg animate-pulse" />
+                  <div className="h-4 w-2/3 bg-stone-100 rounded-lg animate-pulse" />
                 </div>
               </div>
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhuma base encontrada</p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-16 px-6 max-w-md mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+              <Users className="w-8 h-8 text-primary" />
+            </div>
+            <p className="text-lg font-semibold text-stone-900 mb-2">Nenhuma Base por aqui ainda</p>
+            <p className="text-stone-600 leading-relaxed">
+              Estamos preparando novos grupos para você. Volte em breve para encontrar uma Base pertinho de você!
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((base) => (
               <Link key={base.id} to={p(`/app/bases/${base.id}`)}>
-                <Card className="shadow-card border-0 hover:shadow-xl transition-all duration-300 h-full group">
+                <Card className="shadow-card border-0 hover:shadow-elevated transition-all duration-300 h-full group rounded-2xl bg-white">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
@@ -199,12 +202,12 @@ export default function BasesPublic() {
                     </h3>
 
                     {base.descricao && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                      <p className="text-sm text-stone-600 leading-relaxed line-clamp-2 mb-4">
                         {base.descricao}
                       </p>
                     )}
 
-                    <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="space-y-2 text-sm text-stone-600">
                       {formatDiaHorario(base.dia_semana, base.horario) && (
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-church-gold" />
@@ -221,21 +224,21 @@ export default function BasesPublic() {
 
                       {base.lider?.nome && (
                         <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-muted-foreground" />
+                          <Users className="w-4 h-4 text-stone-400" />
                           <span>Líder: {base.lider.nome}</span>
                         </div>
                       )}
 
                       {base.capacidade && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs px-2 py-1 rounded-full bg-muted">
+                          <span className="text-xs px-2 py-1 rounded-full bg-stone-100">
                             {base.membros_count}/{base.capacidade} membros
                           </span>
                         </div>
                       )}
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+                    <div className="mt-4 pt-4 border-t border-stone-100 flex items-center justify-between">
                       <span className="text-sm text-primary font-medium group-hover:underline">
                         Ver detalhes
                       </span>

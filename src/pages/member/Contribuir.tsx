@@ -10,12 +10,12 @@ export default function Contribuir() {
   const { p } = useIgrejaSlug();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50">
       {/* Header */}
-      <div className="border-b bg-gradient-to-b from-primary/5 to-background">
-        <div className="container max-w-4xl mx-auto px-4 py-6">
+      <div className="border-b border-stone-200 bg-gradient-to-b from-primary/5 to-stone-50">
+        <div className="container max-w-4xl mx-auto px-4 py-8">
           <div className="flex items-center gap-4">
-            <Button asChild variant="ghost" size="icon">
+            <Button asChild variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
               <Link to={p('/app/contribuicoes')} aria-label="Voltar">
                 <ArrowLeft className="w-5 h-5" />
               </Link>
@@ -25,8 +25,8 @@ export default function Contribuir() {
                 <HandHeart className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-display font-bold">Nova Contribuição</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="text-2xl font-display font-bold text-stone-900">Nova Contribuição</h1>
+                <p className="text-sm text-stone-500 leading-relaxed">
                   Registre sua oferta ou dízimo
                 </p>
               </div>
@@ -36,7 +36,7 @@ export default function Contribuir() {
       </div>
 
       {/* Form */}
-      <main className="py-8">
+      <main className="py-8 md:py-12">
         <ContribuicaoForm
           origem="app"
           backUrl={p('/app/contribuicoes')}

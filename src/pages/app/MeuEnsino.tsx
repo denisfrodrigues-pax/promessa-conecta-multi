@@ -111,34 +111,34 @@ export default function MeuEnsino() {
     'Parcial':      { label: '⚠️ Parcial',      badge: 'bg-amber-100 text-amber-800',  row: 'bg-amber-50 border-amber-200' },
     'Ausente':      { label: '❌ Ausente',      badge: 'bg-red-100 text-red-800',      row: 'bg-red-50 border-red-200 opacity-80' },
     'Atual':        { label: '📍 Atual',        badge: 'bg-blue-100 text-blue-800',    row: 'bg-blue-50 border-blue-200' },
-    'Próxima':      { label: '🔵 Próxima',      badge: 'bg-gray-100 text-gray-600',    row: 'bg-gray-50 border-gray-200' },
-    'Sem chamada':  { label: '⬜ Sem chamada',  badge: 'bg-gray-100 text-gray-500',    row: 'border-gray-200 opacity-70' },
+    'Próxima':      { label: '🔵 Próxima',      badge: 'bg-stone-100 text-stone-600',  row: 'bg-stone-50 border-stone-200' },
+    'Sem chamada':  { label: '⬜ Sem chamada',  badge: 'bg-stone-100 text-stone-500',  row: 'border-stone-200 opacity-70' },
   };
 
   if (isLoading) return (
-    <div className="space-y-4 max-w-2xl mx-auto">
-      <div className="h-8 w-48 bg-neutral-100 rounded animate-pulse" />
-      <div className="h-24 bg-neutral-100 rounded animate-pulse" />
-      <div className="h-48 bg-neutral-100 rounded animate-pulse" />
+    <div className="space-y-6 max-w-2xl mx-auto">
+      <div className="h-8 w-48 bg-stone-100 rounded-xl animate-pulse" />
+      <div className="h-24 bg-stone-100 rounded-2xl animate-pulse" />
+      <div className="h-48 bg-stone-100 rounded-2xl animate-pulse" />
     </div>
   );
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-8 max-w-2xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-promessa-900 flex items-center gap-2">
           <BookOpenCheck className="w-6 h-6 text-promessa-600" />
           Meu Ensino
         </h1>
-        {data && <p className="text-muted-foreground text-sm mt-1">Ciclo {data.cicloNome} — {data.cicloSub}</p>}
+        {data && <p className="text-stone-500 text-sm mt-1 leading-relaxed">Ciclo {data.cicloNome} — {data.cicloSub}</p>}
       </div>
 
       {!data ? (
-        <Card>
+        <Card className="rounded-2xl shadow-card">
           <CardContent className="py-16 text-center">
-            <BookOpen className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
-            <p className="font-medium text-muted-foreground">Você ainda não está matriculado na Escola Bíblica</p>
-            <p className="text-sm text-muted-foreground mt-1">Fale com o líder de ensino para se matricular</p>
+            <BookOpen className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <p className="font-medium text-stone-600 leading-relaxed">Você ainda não está matriculado na Escola Bíblica</p>
+            <p className="text-sm text-stone-500 mt-1 leading-relaxed">Fale com o líder de ensino para se matricular</p>
           </CardContent>
         </Card>
       ) : (
@@ -149,14 +149,14 @@ export default function MeuEnsino() {
             const total = data.discs.length;
             const pct = total > 0 ? Math.round((concluded / total) * 100) : 0;
             return (
-              <Card>
-                <CardContent className="p-4">
+              <Card className="rounded-2xl shadow-card">
+                <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Progresso do Ciclo</span>
-                    <span className="text-sm text-muted-foreground">{concluded}/{total} concluídas</span>
+                    <span className="text-sm font-medium text-stone-900">Progresso do Ciclo</span>
+                    <span className="text-sm text-stone-500">{concluded}/{total} concluídas</span>
                   </div>
                   <Progress value={pct} className="h-2" />
-                  <p className="text-xs text-muted-foreground mt-1">{pct}% completo</p>
+                  <p className="text-xs text-stone-500 mt-1">{pct}% completo</p>
                 </CardContent>
               </Card>
             );
@@ -164,16 +164,16 @@ export default function MeuEnsino() {
 
           {/* Current discipline */}
           {data.currentDisc && (
-            <Card className="ring-2 ring-promessa-400">
-              <CardContent className="p-4">
+            <Card className="rounded-2xl ring-2 ring-promessa-400 shadow-card">
+              <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                    <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">
                       {data.currentDisc.eixo_tematico}
                     </p>
-                    <p className="font-semibold mt-0.5">{data.currentDisc.titulo}</p>
+                    <p className="font-semibold mt-0.5 text-stone-900">{data.currentDisc.titulo}</p>
                     {data.currentDisc.subtitulo && (
-                      <p className="text-sm text-muted-foreground">{data.currentDisc.subtitulo}</p>
+                      <p className="text-sm text-stone-600 leading-relaxed">{data.currentDisc.subtitulo}</p>
                     )}
                   </div>
                   <Badge className="bg-blue-100 text-blue-800 shrink-0">
@@ -187,8 +187,8 @@ export default function MeuEnsino() {
                       <div
                         key={aula.id}
                         title={aula.titulo}
-                        className={`flex-1 h-8 rounded text-xs font-semibold inline-flex items-center justify-center ${
-                          present ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
+                        className={`flex-1 h-9 rounded-lg text-xs font-semibold inline-flex items-center justify-center ${
+                          present ? 'bg-green-100 text-green-700' : 'bg-stone-100 text-stone-400'
                         }`}
                       >
                         A{aula.numero}
@@ -196,7 +196,7 @@ export default function MeuEnsino() {
                     );
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-stone-500 mt-2">
                   {data.currentPresences.length} de {data.currentAulas.length} aulas presentes
                 </p>
               </CardContent>
@@ -204,17 +204,17 @@ export default function MeuEnsino() {
           )}
 
           {/* History */}
-          <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">
               Todas as Disciplinas
             </h2>
             {data.discs.map(d => {
               const s = statusStyle[d.status];
               return (
-                <div key={d.id} className={`flex items-center justify-between px-4 py-3 rounded-lg border ${s.row}`}>
+                <div key={d.id} className={`flex items-center justify-between px-4 py-3 min-h-[44px] rounded-xl border ${s.row}`}>
                   <div>
-                    <p className="text-sm font-medium">{d.titulo}</p>
-                    <p className="text-xs text-muted-foreground">{MES_NOMES[d.mes] || `Mês ${d.mes}`}</p>
+                    <p className="text-sm font-medium text-stone-900">{d.titulo}</p>
+                    <p className="text-xs text-stone-500">{MES_NOMES[d.mes] || `Mês ${d.mes}`}</p>
                   </div>
                   <Badge className={`${s.badge} text-xs shrink-0`}>{s.label}</Badge>
                 </div>
