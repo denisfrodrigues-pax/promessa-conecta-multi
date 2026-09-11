@@ -245,7 +245,7 @@ export default function PlanoDetalhe() {
             <h1 className="text-xl font-bold text-promessa-900 leading-tight">{plano!.titulo}</h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <Badge variant="secondary">{plano!.ensino_turmas?.nome}</Badge>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-stone-500">
                 {format(new Date(plano!.data_aula + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </span>
             </div>
@@ -268,7 +268,7 @@ export default function PlanoDetalhe() {
               <CardTitle className="text-base">Objetivos</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm max-w-none">
+              <div className="prose prose-sm prose-stone max-w-none leading-relaxed">
                 <ReactMarkdown>{plano!.objetivos}</ReactMarkdown>
               </div>
             </CardContent>
@@ -281,7 +281,7 @@ export default function PlanoDetalhe() {
               <CardTitle className="text-base">Conteúdo / Desenvolvimento</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm max-w-none">
+              <div className="prose prose-sm prose-stone max-w-none leading-relaxed">
                 <ReactMarkdown>{plano!.conteudo}</ReactMarkdown>
               </div>
             </CardContent>
@@ -294,7 +294,7 @@ export default function PlanoDetalhe() {
               <CardTitle className="text-base">Anotações</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm whitespace-pre-wrap">{plano!.anotacoes}</p>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{plano!.anotacoes}</p>
             </CardContent>
           </Card>
         )}
@@ -305,25 +305,26 @@ export default function PlanoDetalhe() {
               <Paperclip className="w-4 h-4" />
               Materiais Anexados
               {arquivos.length > 0 && (
-                <span className="text-muted-foreground font-normal text-sm">({arquivos.length})</span>
+                <span className="text-stone-500 font-normal text-sm">({arquivos.length})</span>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {arquivos.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Nenhum material anexado.
-              </p>
+              <div className="text-center py-6">
+                <Paperclip className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+                <p className="text-sm text-stone-500 leading-relaxed">Nenhum material anexado ainda.</p>
+              </div>
             ) : (
               <div className="space-y-2">
                 {arquivos.map(arq => (
-                  <div key={arq.id} className="flex items-center justify-between border rounded-lg px-3 py-2">
+                  <div key={arq.id} className="flex items-center justify-between border border-stone-200 rounded-xl px-4 py-3">
                     <div className="flex items-center gap-2 min-w-0">
                       <FileText className="w-4 h-4 text-promessa-500 shrink-0" />
                       <div className="min-w-0">
                         <p className="text-sm truncate">{arq.nome}</p>
                         {arq.tamanho_bytes && (
-                          <p className="text-xs text-muted-foreground">{formatBytes(arq.tamanho_bytes)}</p>
+                          <p className="text-xs text-stone-500">{formatBytes(arq.tamanho_bytes)}</p>
                         )}
                       </div>
                     </div>
@@ -370,8 +371,8 @@ export default function PlanoDetalhe() {
           <ArrowLeft className="w-4 h-4 mr-1" />Voltar
         </Button>
         <div className="flex-1 min-w-0">
-          <p className="font-medium truncate">{form.titulo || 'Editar plano'}</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="font-semibold truncate">{form.titulo || 'Editar plano'}</p>
+          <p className="text-sm text-stone-500">
             {plano?.ensino_turmas?.nome} · {format(new Date(plano!.data_aula + 'T12:00:00'), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
           </p>
         </div>
@@ -396,7 +397,7 @@ export default function PlanoDetalhe() {
       </div>
 
       <Card>
-        <CardContent className="space-y-4 pt-4">
+        <CardContent className="space-y-6 pt-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 sm:col-span-1">
               <Label>Título *</Label>
@@ -485,19 +486,20 @@ export default function PlanoDetalhe() {
         </CardHeader>
         <CardContent>
           {arquivos.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Nenhum material anexado. Envie slides, apostilas ou outros arquivos.
-            </p>
+            <div className="text-center py-6">
+              <Upload className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+              <p className="text-sm text-stone-500 leading-relaxed">Nenhum material anexado. Envie slides, apostilas ou outros arquivos.</p>
+            </div>
           ) : (
             <div className="space-y-2">
               {arquivos.map(arq => (
-                <div key={arq.id} className="flex items-center justify-between border rounded-lg px-3 py-2">
+                <div key={arq.id} className="flex items-center justify-between border border-stone-200 rounded-xl px-4 py-3">
                   <div className="flex items-center gap-2 min-w-0">
                     <FileText className="w-4 h-4 text-promessa-500 shrink-0" />
                     <div className="min-w-0">
                       <p className="text-sm truncate">{arq.nome}</p>
                       {arq.tamanho_bytes && (
-                        <p className="text-xs text-muted-foreground">{formatBytes(arq.tamanho_bytes)}</p>
+                        <p className="text-xs text-stone-500">{formatBytes(arq.tamanho_bytes)}</p>
                       )}
                     </div>
                   </div>

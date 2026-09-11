@@ -260,7 +260,7 @@ export default function Chamada() {
     <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-2xl font-bold text-promessa-900">Chamada</h1>
-        <p className="text-muted-foreground text-sm mt-1">Registro de presença por turma</p>
+        <p className="text-stone-600 text-sm mt-1 leading-relaxed">Registro de presença por turma</p>
       </div>
 
       {/* Seleção de turma e data */}
@@ -295,7 +295,7 @@ export default function Chamada() {
             <Card>
               <CardContent className="pt-3 pb-3 text-center">
                 <p className="text-2xl font-bold text-promessa-700">{pessoas.length}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 flex items-center justify-center gap-1">
+                <p className="text-xs text-stone-500 mt-0.5 flex items-center justify-center gap-1">
                   <Users className="w-3 h-3" />Total
                 </p>
               </CardContent>
@@ -303,7 +303,7 @@ export default function Chamada() {
             <Card>
               <CardContent className="pt-3 pb-3 text-center">
                 <p className="text-2xl font-bold text-green-600">{presentes}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 flex items-center justify-center gap-1">
+                <p className="text-xs text-stone-500 mt-0.5 flex items-center justify-center gap-1">
                   <UserCheck className="w-3 h-3" />Presentes
                 </p>
               </CardContent>
@@ -311,7 +311,7 @@ export default function Chamada() {
             <Card>
               <CardContent className="pt-3 pb-3 text-center">
                 <p className="text-2xl font-bold text-red-400">{ausentes}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 flex items-center justify-center gap-1">
+                <p className="text-xs text-stone-500 mt-0.5 flex items-center justify-center gap-1">
                   <UserX className="w-3 h-3" />Ausentes
                 </p>
               </CardContent>
@@ -326,11 +326,11 @@ export default function Chamada() {
             <CardContent className="space-y-3">
               {/* Busca de membros */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <Input className="pl-9" placeholder="Buscar membro por nome..."
                   value={busca} onChange={e => setBusca(e.target.value)} />
                 {resultadosBusca.length > 0 && busca && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-elevated max-h-48 overflow-y-auto">
                     {resultadosBusca.map(p => (
                       <button key={p.id} className="w-full px-4 py-2 text-sm text-left hover:bg-promessa-50 flex items-center gap-2"
                         onClick={() => adicionarDaBusca(p)}>
@@ -357,15 +357,16 @@ export default function Chamada() {
           {/* Lista de pessoas */}
           {pessoas.length === 0 ? (
             <Card>
-              <CardContent className="py-10 text-center text-muted-foreground text-sm">
-                Nenhum participante adicionado. Busque membros ou adicione visitantes acima.
+              <CardContent className="py-12 text-center">
+                <UserPlus className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+                <p className="text-sm text-stone-500 leading-relaxed">Nenhum participante adicionado. Busque membros ou adicione visitantes acima.</p>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-1">
               {pessoas.map(p => (
                 <div key={p.key}
-                  className={`flex items-center justify-between px-4 py-2.5 rounded-lg border transition-colors ${p.presente ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200 opacity-75'}`}>
+                  className={`flex items-center justify-between px-4 py-2.5 rounded-xl border transition-colors ${p.presente ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200 opacity-75'}`}>
                   <div className="flex items-center gap-2 min-w-0">
                     <span className={`font-medium text-sm truncate ${p.presente ? 'text-green-800' : 'text-red-700 line-through'}`}>
                       {p.nome}
@@ -377,14 +378,14 @@ export default function Chamada() {
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => togglePresente(p.key)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${p.presente ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-400 text-white hover:bg-red-500'}`}
+                      className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors ${p.presente ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-400 text-white hover:bg-red-500'}`}
                       title={p.presente ? 'Marcar ausente' : 'Marcar presente'}
                       aria-label={p.presente ? 'Marcar ausente' : 'Marcar presente'}>
                       {p.presente ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
                     </button>
                     <button onClick={() => removerPessoa(p.key)}
                       aria-label="Remover pessoa da chamada"
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                      className="w-11 h-11 rounded-full flex items-center justify-center text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -405,7 +406,7 @@ export default function Chamada() {
       {turmaId && historico.length > 0 && (
         <div>
           <button
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-3"
+            className="flex items-center gap-2 text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors mb-3"
             onClick={() => setHistoricoAberto(p => !p)}>
             <Clock className="w-4 h-4" />
             Histórico de chamadas ({historico.length})
@@ -419,10 +420,10 @@ export default function Chamada() {
                   <CardContent className="py-3 px-4">
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium">
+                        <p className="text-sm font-semibold">
                           {format(new Date(h.data + 'T12:00:00'), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <p className="text-xs text-stone-500 mt-0.5">
                           {h.ensino_turmas?.nome}
                         </p>
                       </div>

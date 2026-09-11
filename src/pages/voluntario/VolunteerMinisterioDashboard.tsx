@@ -312,9 +312,9 @@ export default function VolunteerMinisterioDashboard() {
 
         {/* RESUMO */}
         <TabsContent value="resumo">
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Próxima Escala */}
-            <Card>
+            <Card className="rounded-2xl shadow-card">
               <CardHeader>
                 <CardTitle className="text-lg">Próxima Escala</CardTitle>
               </CardHeader>
@@ -326,13 +326,13 @@ export default function VolunteerMinisterioDashboard() {
                   </div>
                 ) : proximaEscala ? (
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 text-foreground">
+                    <div className="flex items-center gap-2 text-stone-900">
                       <CalendarDays className="w-5 h-5 text-primary" />
                       <span className="font-medium capitalize">
                         {formatDate(proximaEscala.data)}
                       </span>
                       {proximaEscala.horario && (
-                        <span className="text-muted-foreground text-sm flex items-center gap-1">
+                        <span className="text-stone-500 text-sm flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5" />
                           {proximaEscala.horario}
                         </span>
@@ -353,19 +353,22 @@ export default function VolunteerMinisterioDashboard() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">
-                    Nenhuma escala futura encontrada.
-                  </p>
+                  <div className="py-6 text-center">
+                    <CalendarDays className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+                    <p className="text-stone-500 leading-relaxed">
+                      Nenhuma escala futura encontrada.
+                    </p>
+                  </div>
                 )}
               </CardContent>
             </Card>
 
             {/* Próximo Culto (música) — card simplificado com link para escalas */}
             {isMusica && (
-              <Card>
-                <CardContent className="p-4">
+              <Card className="rounded-2xl shadow-card">
+                <CardContent className="p-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-promessa-100 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-promessa-100 flex items-center justify-center shrink-0">
                       <Music className="w-4 h-4 text-promessa-600" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -373,7 +376,7 @@ export default function VolunteerMinisterioDashboard() {
                       {loadingEventoMusica ? (
                         <Skeleton className="h-4 w-32 mt-1" />
                       ) : proximoEventoMusica ? (
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-sm text-stone-500 truncate">
                           {format(
                             new Date((proximoEventoMusica as any).eventos_escala.data_evento + "T12:00:00"),
                             "dd/MM · EEEE",
@@ -384,7 +387,7 @@ export default function VolunteerMinisterioDashboard() {
                           )}
                         </p>
                       ) : (
-                        <p className="text-sm text-muted-foreground">Nenhum evento agendado</p>
+                        <p className="text-sm text-stone-500">Nenhum evento agendado</p>
                       )}
                     </div>
                     <Button
@@ -406,21 +409,21 @@ export default function VolunteerMinisterioDashboard() {
         {/* ESCALAS */}
         <TabsContent value="escalas">
           {isMusica ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold">Escalas de Culto</h3>
-                <p className="text-sm text-muted-foreground">Próximos eventos do ministério</p>
+                <h3 className="text-lg font-semibold text-stone-900">Escalas de Culto</h3>
+                <p className="text-sm text-stone-500 leading-relaxed">Próximos eventos do ministério</p>
               </div>
 
               {loadingEventosMusica ? (
                 <div className="flex items-center justify-center py-16">
-                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                  <Loader2 className="w-6 h-6 animate-spin text-stone-500" />
                 </div>
               ) : eventosMusica.length === 0 ? (
-                <Card>
-                  <CardContent className="py-14 text-center space-y-2">
-                    <CalendarDays className="w-12 h-12 mx-auto text-muted-foreground/40" />
-                    <p className="text-muted-foreground">Nenhum evento agendado.</p>
+                <Card className="rounded-2xl shadow-card">
+                  <CardContent className="py-16 text-center space-y-2">
+                    <CalendarDays className="w-12 h-12 mx-auto text-stone-300" />
+                    <p className="text-stone-500 leading-relaxed">Nenhum evento agendado.</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -432,22 +435,22 @@ export default function VolunteerMinisterioDashboard() {
                     return (
                       <div key={group.nome}>
                         <div
-                          className="flex items-center gap-2 mb-1 px-1 py-2 rounded-lg hover:bg-muted/40 cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-2 mb-1 px-1 py-2 rounded-xl hover:bg-stone-100 cursor-pointer select-none transition-colors min-h-[44px]"
                           onClick={() => togglePeriodo(group.nome)}
                         >
                           {periodosAbertos.has(group.nome)
-                            ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
-                            : <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                            ? <ChevronDown className="w-4 h-4 text-stone-500 shrink-0" />
+                            : <ChevronRight className="w-4 h-4 text-stone-500 shrink-0" />
                           }
-                          <div className="w-7 h-7 rounded-lg bg-promessa-100 flex items-center justify-center shrink-0">
+                          <div className="w-7 h-7 rounded-xl bg-promessa-100 flex items-center justify-center shrink-0">
                             <CalendarDays className="w-3.5 h-3.5 text-promessa-600" />
                           </div>
                           <div className="flex-1 flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-sm text-foreground">{group.nome}</span>
+                            <span className="font-semibold text-sm text-stone-900">{group.nome}</span>
                             {mesAno && (
                               <Badge variant="secondary" className="text-xs capitalize">{mesAno}</Badge>
                             )}
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-stone-500">
                               {group.eventos.length} evento{group.eventos.length !== 1 ? "s" : ""}
                             </span>
                           </div>
@@ -461,22 +464,22 @@ export default function VolunteerMinisterioDashboard() {
                               return (
                                 <Card
                                   key={em.id}
-                                  className="cursor-pointer hover:border-promessa-200 transition-colors"
+                                  className="rounded-2xl shadow-card cursor-pointer hover:border-promessa-200 transition-colors"
                                   onClick={() => setEventoDetalhe(em)}
                                 >
-                                  <CardContent className="p-4">
+                                  <CardContent className="p-4 min-h-[44px]">
                                     <div className="flex items-start gap-3">
-                                      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                                      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                                         <Music className="w-4 h-4 text-primary" />
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                          <p className="font-medium text-sm">{ev.titulo}</p>
+                                          <p className="font-medium text-sm text-stone-900">{ev.titulo}</p>
                                           {em.status === "escala_criada" && (
                                             <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">Escala definida</Badge>
                                           )}
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                                        <div className="flex items-center gap-3 text-xs text-stone-500 mt-1">
                                           <span className="flex items-center gap-1">
                                             <Calendar className="w-3 h-3" />
                                             {format(new Date(ev.data_evento + "T12:00:00"), "EEEE, dd/MM", { locale: ptBR })}
@@ -489,7 +492,7 @@ export default function VolunteerMinisterioDashboard() {
                                           )}
                                         </div>
                                       </div>
-                                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
+                                      <ChevronRight className="w-4 h-4 text-stone-500 shrink-0 mt-1" />
                                     </div>
                                   </CardContent>
                                 </Card>
@@ -509,7 +512,7 @@ export default function VolunteerMinisterioDashboard() {
                   <DialogHeader>
                     <DialogTitle>{eventoDetalhe?.eventos_escala?.titulo}</DialogTitle>
                     {eventoDetalhe?.eventos_escala?.data_evento && (
-                      <p className="text-sm text-muted-foreground capitalize">
+                      <p className="text-sm text-stone-500 capitalize">
                         {format(new Date(eventoDetalhe.eventos_escala.data_evento + "T12:00:00"), "EEEE, dd 'de' MMMM", { locale: ptBR })}
                         {eventoDetalhe.eventos_escala.horario_inicio && ` · ${eventoDetalhe.eventos_escala.horario_inicio}`}
                       </p>
@@ -526,9 +529,9 @@ export default function VolunteerMinisterioDashboard() {
                       {loadingDetalheMusicas ? (
                         <Skeleton className="h-20 w-full" />
                       ) : detalheMusicas.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">Músicas ainda não definidas.</p>
+                        <p className="text-sm text-stone-500">Músicas ainda não definidas.</p>
                       ) : (
-                        <div className="divide-y divide-border">
+                        <div className="divide-y divide-stone-200">
                           {detalheMusicas.map((mc: any) => {
                             const rep = mc.musicas_repertorio;
                             const titulo = rep?.titulo ?? mc.titulo_avulso ?? "Sem título";
@@ -540,13 +543,13 @@ export default function VolunteerMinisterioDashboard() {
                             const cf = mc.link_cifraclub ?? rep?.link_cifraclub;
                             return (
                               <div key={mc.id} className="flex items-center gap-2 py-2">
-                                <span className="text-xs text-muted-foreground w-5 text-right flex-shrink-0">
+                                <span className="text-xs text-stone-500 w-5 text-right flex-shrink-0">
                                   {mc.ordem}.
                                 </span>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium truncate">{titulo}</p>
                                   {artista && (
-                                    <p className="text-xs text-muted-foreground truncate">{artista}</p>
+                                    <p className="text-xs text-stone-500 truncate">{artista}</p>
                                   )}
                                 </div>
                                 {tom && (
@@ -576,7 +579,7 @@ export default function VolunteerMinisterioDashboard() {
                       {loadingDetalhePaleta ? (
                         <Skeleton className="h-14 w-full" />
                       ) : !detalhePaleta ? (
-                        <p className="text-sm text-muted-foreground">Paleta não definida.</p>
+                        <p className="text-sm text-stone-500">Paleta não definida.</p>
                       ) : (
                         <div className="space-y-2">
                           <div className="flex items-center gap-4">
@@ -587,15 +590,15 @@ export default function VolunteerMinisterioDashboard() {
                             ].filter(c => c.color).map(({ label, color }) => (
                               <div key={label} className="flex flex-col items-center gap-1.5">
                                 <div
-                                  className="w-10 h-10 rounded-full border border-border shadow-sm"
+                                  className="w-10 h-10 rounded-full border border-stone-200 shadow-sm"
                                   style={{ backgroundColor: color! }}
                                 />
-                                <span className="text-[10px] text-muted-foreground">{label}</span>
+                                <span className="text-[10px] text-stone-500">{label}</span>
                               </div>
                             ))}
                           </div>
                           {detalhePaleta.observacao && (
-                            <p className="text-xs text-muted-foreground">{detalhePaleta.observacao}</p>
+                            <p className="text-xs text-stone-500">{detalhePaleta.observacao}</p>
                           )}
                         </div>
                       )}
@@ -610,10 +613,10 @@ export default function VolunteerMinisterioDashboard() {
                       {loadingConfirmacao ? (
                         <Skeleton className="h-10 w-full" />
                       ) : !minhaConfirmacao ? (
-                        <p className="text-sm text-muted-foreground">Você não está escalado neste evento.</p>
+                        <p className="text-sm text-stone-500">Você não está escalado neste evento.</p>
                       ) : minhaConfirmacao.status === "pendente" ? (
                         <div className="space-y-3">
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-stone-500">
                             Escalado como <strong>{minhaConfirmacao.funcao}</strong>. Confirme sua presença:
                           </p>
                           <div className="flex gap-2">
@@ -649,7 +652,7 @@ export default function VolunteerMinisterioDashboard() {
                             : <><AlertCircle className="w-5 h-5 text-red-500" /><span className="text-sm font-medium text-red-700">Ausência registrada</span></>
                           }
                           {minhaConfirmacao.confirmado_em && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-stone-500">
                               · {format(new Date(minhaConfirmacao.confirmado_em), "dd/MM HH:mm", { locale: ptBR })}
                             </span>
                           )}
@@ -667,7 +670,7 @@ export default function VolunteerMinisterioDashboard() {
 
         {/* EQUIPE */}
         <TabsContent value="equipe">
-          <Card>
+          <Card className="rounded-2xl shadow-card">
             <CardHeader>
               <CardTitle className="text-lg">Equipe</CardTitle>
             </CardHeader>
@@ -679,26 +682,26 @@ export default function VolunteerMinisterioDashboard() {
                   ))}
                 </div>
               ) : equipe && equipe.length > 0 ? (
-                <div className="divide-y divide-border">
+                <div className="divide-y divide-stone-200">
                   {equipe.map((member: any) => {
                     const nome = member.profiles?.nome ?? "Sem nome";
                     const isLider = member.papel === "lider";
                     return (
                       <div
                         key={member.id}
-                        className={`flex items-center justify-between py-3 ${isLider ? "bg-primary/5 -mx-4 px-4 rounded-lg" : ""}`}
+                        className={`flex items-center justify-between py-3 min-h-[44px] ${isLider ? "bg-primary/5 -mx-4 px-4 rounded-xl" : ""}`}
                       >
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold ${
                               isLider
                                 ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-muted-foreground"
+                                : "bg-stone-100 text-stone-500"
                             }`}
                           >
                             {nome.charAt(0).toUpperCase()}
                           </div>
-                          <span className={`font-medium text-foreground ${isLider ? "font-bold" : ""}`}>
+                          <span className={`font-medium text-stone-900 ${isLider ? "font-bold" : ""}`}>
                             {nome}
                           </span>
                         </div>
@@ -710,7 +713,7 @@ export default function VolunteerMinisterioDashboard() {
                   })}
                 </div>
               ) : (
-                <p className="text-muted-foreground">Nenhum membro ativo.</p>
+                <p className="text-stone-500 leading-relaxed">Nenhum membro ativo.</p>
               )}
             </CardContent>
           </Card>
@@ -723,9 +726,10 @@ export default function VolunteerMinisterioDashboard() {
               {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full" />)}
             </div>
           ) : documentos.length === 0 ? (
-            <Card>
-              <CardContent className="py-8">
-                <p className="text-muted-foreground text-center">
+            <Card className="rounded-2xl shadow-card">
+              <CardContent className="py-16 text-center">
+                <BookOpen className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+                <p className="text-stone-500 leading-relaxed">
                   Nenhum documento publicado pelo líder ainda.
                 </p>
               </CardContent>
@@ -733,16 +737,16 @@ export default function VolunteerMinisterioDashboard() {
           ) : (
             <div className="space-y-2">
               {documentos.map(doc => (
-                <Card key={doc.id}>
-                  <CardContent className="p-4">
+                <Card key={doc.id} className="rounded-2xl shadow-card">
+                  <CardContent className="p-4 min-h-[44px]">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                         <FileText className="w-4 h-4 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{doc.nome}</p>
+                        <p className="font-medium text-sm truncate text-stone-900">{doc.nome}</p>
                         {doc.descricao && (
-                          <p className="text-xs text-muted-foreground truncate">{doc.descricao}</p>
+                          <p className="text-xs text-stone-500 truncate">{doc.descricao}</p>
                         )}
                       </div>
                       <a

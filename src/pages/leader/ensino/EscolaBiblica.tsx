@@ -125,15 +125,15 @@ function AulaItem({ aula, disciplinaId, userId }: {
       case 'apostila': return <FileText className="w-3.5 h-3.5 text-red-500" />;
       case 'slides':   return <LayoutList className="w-3.5 h-3.5 text-orange-500" />;
       case 'video':    return <Film className="w-3.5 h-3.5 text-blue-500" />;
-      default:         return <File className="w-3.5 h-3.5 text-gray-400" />;
+      default:         return <File className="w-3.5 h-3.5 text-stone-400" />;
     }
   };
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border border-stone-200 rounded-xl overflow-hidden">
       <button
         type="button"
-        className="w-full flex items-center justify-between p-3 hover:bg-muted/40 text-left gap-2"
+        className="w-full flex items-center justify-between p-3 min-h-[44px] hover:bg-stone-50 text-left gap-2"
         onClick={() => setOpen(o => !o)}
       >
         <span className="font-medium text-sm">Aula {aula.numero} — {aula.titulo}</span>
@@ -141,18 +141,18 @@ function AulaItem({ aula, disciplinaId, userId }: {
       </button>
 
       {open && (
-        <div className="border-t space-y-3 p-3 bg-muted/10">
+        <div className="border-t border-stone-200 space-y-3 p-3 bg-stone-50">
           {aula.conteudo ? (
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+            <p className="text-sm text-stone-500 whitespace-pre-wrap leading-relaxed">
               {aula.conteudo}
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground italic">Sem conteúdo cadastrado</p>
+            <p className="text-sm text-stone-500 italic">Sem conteúdo cadastrado</p>
           )}
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                 Materiais
               </p>
               <Button
@@ -178,20 +178,20 @@ function AulaItem({ aula, disciplinaId, userId }: {
             </div>
 
             {arquivos.length === 0 ? (
-              <p className="text-xs text-muted-foreground italic">Nenhum material</p>
+              <p className="text-xs text-stone-500 italic">Nenhum material</p>
             ) : (
               <div className="space-y-1">
                 {arquivos.map(arq => (
-                  <div key={arq.id} className="flex items-center justify-between bg-white border rounded px-2 py-1.5">
+                  <div key={arq.id} className="flex items-center justify-between bg-white border border-stone-200 rounded-lg px-2 py-1.5">
                     <div className="flex items-center gap-1.5 min-w-0 flex-1">
                       {tipoIcon(arq.tipo)}
                       <span className="text-xs truncate">{arq.nome}</span>
-                      {arq.tipo && <span className="text-xs text-muted-foreground shrink-0">({arq.tipo})</span>}
+                      {arq.tipo && <span className="text-xs text-stone-500 shrink-0">({arq.tipo})</span>}
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
                       <button
                         type="button"
-                        className="p-0.5 text-blue-500 hover:text-blue-700"
+                        className="p-1.5 text-blue-500 hover:text-blue-700"
                         title="Baixar"
                         aria-label="Baixar arquivo"
                         onClick={() => window.open(arq.url, '_blank')}
@@ -200,7 +200,7 @@ function AulaItem({ aula, disciplinaId, userId }: {
                       </button>
                       <button
                         type="button"
-                        className="p-0.5 text-red-400 hover:text-red-600"
+                        className="p-1.5 text-red-400 hover:text-red-600"
                         title="Excluir"
                         aria-label="Excluir arquivo"
                         onClick={() => handleDelete(arq)}
@@ -563,7 +563,7 @@ export default function EscolaBiblica() {
     n >= 3 ? 'bg-green-100 text-green-800' :
     n === 2 ? 'bg-amber-100 text-amber-800' :
     n === 1 ? 'bg-red-100 text-red-800' :
-    'bg-gray-100 text-gray-500';
+    'bg-stone-100 text-stone-500';
 
   if (loadingCiclos) return (
     <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
@@ -574,33 +574,33 @@ export default function EscolaBiblica() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-display font-bold">Escola Bíblica</h1>
-        <p className="text-muted-foreground">Gerenciamento de matrículas e frequência</p>
+        <h1 className="text-2xl font-display font-bold text-stone-900">Escola Bíblica</h1>
+        <p className="text-stone-500 leading-relaxed">Gerenciamento de matrículas e frequência</p>
       </div>
 
       <Tabs defaultValue="grade">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="grade" className="text-xs sm:text-sm">
+          <TabsTrigger value="grade" className="text-xs sm:text-sm min-h-[44px]">
             <BookOpen className="w-4 h-4 mr-1 hidden sm:inline" />Grade
           </TabsTrigger>
-          <TabsTrigger value="matriculas" className="text-xs sm:text-sm">
+          <TabsTrigger value="matriculas" className="text-xs sm:text-sm min-h-[44px]">
             <Users className="w-4 h-4 mr-1 hidden sm:inline" />Matrículas
           </TabsTrigger>
-          <TabsTrigger value="chamada" className="text-xs sm:text-sm">
+          <TabsTrigger value="chamada" className="text-xs sm:text-sm min-h-[44px]">
             <ClipboardList className="w-4 h-4 mr-1 hidden sm:inline" />Chamada
           </TabsTrigger>
-          <TabsTrigger value="relatorio" className="text-xs sm:text-sm">
+          <TabsTrigger value="relatorio" className="text-xs sm:text-sm min-h-[44px]">
             <BarChart3 className="w-4 h-4 mr-1 hidden sm:inline" />Relatório
           </TabsTrigger>
         </TabsList>
 
         {/* ── GRADE CURRICULAR ── */}
         <TabsContent value="grade" className="space-y-8 mt-6">
-          <p className="text-xs text-muted-foreground">Clique em uma disciplina para ver as aulas e materiais</p>
+          <p className="text-xs text-stone-500">Clique em uma disciplina para ver as aulas e materiais</p>
           {ciclos.map(ciclo => (
             <div key={ciclo.id}>
-              <h2 className="text-lg font-semibold mb-1">{ciclo.nome}</h2>
-              <p className="text-sm text-muted-foreground mb-3">{ciclo.subtitulo}</p>
+              <h2 className="text-lg font-semibold mb-1 text-stone-900">{ciclo.nome}</h2>
+              <p className="text-sm text-stone-500 mb-3 leading-relaxed">{ciclo.subtitulo}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {disciplinas.filter(d => d.ciclo_id === ciclo.id).map(d => (
                   <button
@@ -609,13 +609,13 @@ export default function EscolaBiblica() {
                     className="text-left w-full"
                     onClick={() => setSelectedDisc(d)}
                   >
-                    <Card className={`h-full transition-shadow hover:shadow-md cursor-pointer ${d.mes === MES_ATUAL ? 'ring-2 ring-promessa-600 shadow-md' : ''}`}>
+                    <Card className={`h-full transition-shadow hover:shadow-elevated cursor-pointer ${d.mes === MES_ATUAL ? 'ring-2 ring-promessa-600 shadow-elevated' : ''}`}>
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{d.eixo_tematico}</p>
+                            <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">{d.eixo_tematico}</p>
                             <p className="font-semibold text-sm mt-0.5 leading-tight">{d.titulo}</p>
-                            {d.subtitulo && <p className="text-xs text-muted-foreground mt-1">{d.subtitulo}</p>}
+                            {d.subtitulo && <p className="text-xs text-stone-500 mt-1">{d.subtitulo}</p>}
                           </div>
                           <div className="text-right shrink-0">
                             <Badge variant={d.mes === MES_ATUAL ? 'default' : 'outline'} className="text-xs">
@@ -639,8 +639,8 @@ export default function EscolaBiblica() {
         <TabsContent value="matriculas" className="space-y-4 mt-6">
           <div className="flex justify-between items-center">
             <div>
-              <p className="font-medium">{matriculas.length} matriculado(s)</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="font-medium text-stone-900">{matriculas.length} matriculado(s)</p>
+              <p className="text-sm text-stone-500">
                 {matriculaStats.filter(m => m.hasAlert).length} com alerta de ausência
               </p>
             </div>
@@ -651,7 +651,7 @@ export default function EscolaBiblica() {
 
           {/* Campo de busca */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
             <Input
               placeholder="Buscar membro..."
               value={searchQuery}
@@ -667,7 +667,7 @@ export default function EscolaBiblica() {
             if (stats.length === 0) return null;
             return (
               <div key={ciclo.id}>
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">{ciclo.nome}</h3>
+                <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-2">{ciclo.nome}</h3>
                 <div className="space-y-2">
                   {stats.map(m => (
                     <button
@@ -676,7 +676,7 @@ export default function EscolaBiblica() {
                       className="w-full text-left"
                       onClick={() => setSelectedMembro(m)}
                     >
-                      <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                      <Card className="hover:shadow-elevated transition-shadow cursor-pointer">
                         <CardContent className="p-3">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
                             <span className="font-medium text-sm">{m.nome}</span>
@@ -687,13 +687,13 @@ export default function EscolaBiblica() {
                             )}
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full">
+                            <div className="flex-1 h-1.5 bg-stone-100 rounded-full">
                               <div
                                 className={`h-1.5 rounded-full ${m.percent >= 75 ? 'bg-green-500' : m.percent >= 50 ? 'bg-amber-400' : 'bg-red-400'}`}
                                 style={{ width: `${m.percent}%` }}
                               />
                             </div>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            <span className="text-xs text-stone-500 whitespace-nowrap">
                               {m.present}/{m.total} aulas ({m.percent}%)
                             </span>
                           </div>
@@ -709,8 +709,11 @@ export default function EscolaBiblica() {
           {matriculas.length === 0 && !loadingMatriculas && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Users className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
-                <p className="text-muted-foreground">Nenhum membro matriculado</p>
+                <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-stone-400" />
+                </div>
+                <p className="text-lg font-semibold text-stone-900 mb-1">Nenhum membro matriculado</p>
+                <p className="text-sm text-stone-500 leading-relaxed">Matricule um membro para começar a acompanhar a frequência.</p>
               </CardContent>
             </Card>
           )}
@@ -769,7 +772,7 @@ export default function EscolaBiblica() {
 
           {chamadaMatriculas.length === 0 ? (
             <Card>
-              <CardContent className="py-8 text-center text-muted-foreground text-sm">
+              <CardContent className="py-8 text-center text-stone-500 text-sm leading-relaxed">
                 {selectedDiscId ? 'Nenhum membro matriculado neste ciclo' : 'Selecione uma disciplina'}
               </CardContent>
             </Card>
@@ -788,7 +791,7 @@ export default function EscolaBiblica() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="divide-y">
+                <div className="divide-y divide-stone-100">
                   {chamadaMatriculas.map(m => {
                     const presente = presencaLocal[m.perfil_id] ?? false;
                     const nome = m.profiles?.nome || '(sem nome)';
@@ -796,15 +799,15 @@ export default function EscolaBiblica() {
                       <button
                         key={m.perfil_id}
                         type="button"
-                        className={`w-full flex items-center justify-between px-4 py-3 transition-colors text-left ${
-                          presente ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-gray-50'
+                        className={`w-full flex items-center justify-between px-4 py-3 min-h-[44px] transition-colors text-left ${
+                          presente ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-stone-50'
                         }`}
                         onClick={() => setPresencaLocal(prev => ({ ...prev, [m.perfil_id]: !prev[m.perfil_id] }))}
                       >
                         <span className="font-medium text-sm">{nome}</span>
                         {presente
                           ? <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-                          : <XCircle className="w-5 h-5 text-gray-300 shrink-0" />}
+                          : <XCircle className="w-5 h-5 text-stone-300 shrink-0" />}
                       </button>
                     );
                   })}
@@ -821,7 +824,7 @@ export default function EscolaBiblica() {
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-100 border border-green-300 inline-block" />≥3</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-100 border border-amber-300 inline-block" />2</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-100 border border-red-300 inline-block" />1</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100 border border-gray-300 inline-block" />0</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-stone-100 border border-stone-300 inline-block" />0</span>
             </div>
             <Button variant="outline" size="sm" onClick={exportCSV}>
               <Download className="w-4 h-4 mr-2" />CSV
@@ -838,8 +841,8 @@ export default function EscolaBiblica() {
                 <CardContent className="p-0 overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="border-b bg-muted/30">
-                        <th className="text-left p-2 font-medium sticky left-0 bg-white border-r min-w-[140px]">Nome</th>
+                      <tr className="border-b border-stone-200 bg-stone-50">
+                        <th className="text-left p-2 font-medium sticky left-0 bg-white border-r border-stone-200 min-w-[140px]">Nome</th>
                         {discs.map(d => (
                           <th key={d.id} className="p-2 font-medium text-center min-w-[48px]" title={d.titulo}>
                             {MES_NOMES[d.mes] || `M${d.mes}`}
@@ -849,8 +852,8 @@ export default function EscolaBiblica() {
                     </thead>
                     <tbody>
                       {rows.map(r => (
-                        <tr key={r.perfil_id} className="border-b hover:bg-muted/20">
-                          <td className="p-2 font-medium sticky left-0 bg-white border-r whitespace-nowrap">{r.nome}</td>
+                        <tr key={r.perfil_id} className="border-b border-stone-200 hover:bg-stone-50">
+                          <td className="p-2 font-medium sticky left-0 bg-white border-r border-stone-200 whitespace-nowrap">{r.nome}</td>
                           {discs.map(d => {
                             const count = r.counts[d.id] ?? 0;
                             return (
@@ -872,7 +875,7 @@ export default function EscolaBiblica() {
 
           {relatorioRows.every(r => r.rows.length === 0) && (
             <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
+              <CardContent className="py-12 text-center text-stone-500 leading-relaxed">
                 Nenhum dado de frequência disponível
               </CardContent>
             </Card>
@@ -886,7 +889,7 @@ export default function EscolaBiblica() {
           <DialogHeader>
             <DialogTitle>{selectedMembro?.nome}</DialogTitle>
             {selectedMembro && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-stone-500">
                 {ciclos.find(c => c.id === selectedMembro.ciclo_id)?.nome}
                 {' — '}{selectedMembro.present}/{selectedMembro.total} aulas ({selectedMembro.percent}%)
               </p>
@@ -895,11 +898,11 @@ export default function EscolaBiblica() {
 
           <div className="flex-1 overflow-y-auto space-y-3 pr-1">
             {membroDiscs.map(({ disc, discAulas, presentCount, pct }) => (
-              <div key={disc.id} className="border rounded-lg p-3">
+              <div key={disc.id} className="border border-stone-200 rounded-xl p-3">
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <p className="text-sm font-medium">{disc.titulo}</p>
-                    <p className="text-xs text-muted-foreground">{MES_NOMES[disc.mes] || `Mês ${disc.mes}`}</p>
+                    <p className="text-xs text-stone-500">{MES_NOMES[disc.mes] || `Mês ${disc.mes}`}</p>
                   </div>
                   <Badge
                     variant="outline"
@@ -907,7 +910,7 @@ export default function EscolaBiblica() {
                       pct >= 75 ? 'text-green-700 border-green-300' :
                       pct >= 50 ? 'text-amber-700 border-amber-300' :
                       pct > 0   ? 'text-red-700 border-red-300' :
-                      'text-gray-500'
+                      'text-stone-500'
                     }`}
                   >
                     {pct}%
@@ -921,7 +924,7 @@ export default function EscolaBiblica() {
                         key={aula.id}
                         title={`Aula ${aula.numero} — ${aula.titulo}`}
                         className={`flex-1 h-7 rounded text-xs font-semibold inline-flex items-center justify-center ${
-                          !presenca               ? 'bg-gray-100 text-gray-400' :
+                          !presenca               ? 'bg-stone-100 text-stone-400' :
                           presenca.presente       ? 'bg-green-100 text-green-700' :
                                                     'bg-red-100 text-red-600'
                         }`}
@@ -956,7 +959,7 @@ export default function EscolaBiblica() {
                 </div>
                 <DialogTitle className="leading-snug text-lg">{selectedDisc.titulo}</DialogTitle>
                 {selectedDisc.subtitulo && (
-                  <p className="text-sm text-muted-foreground mt-1">{selectedDisc.subtitulo}</p>
+                  <p className="text-sm text-stone-500 mt-1">{selectedDisc.subtitulo}</p>
                 )}
               </>
             )}
@@ -966,7 +969,7 @@ export default function EscolaBiblica() {
             {loadingAulaDetalhe ? (
               <div className="space-y-2">{[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-10" />)}</div>
             ) : aulaDetalhe.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhuma aula cadastrada</p>
+              <p className="text-sm text-stone-500 text-center py-4 leading-relaxed">Nenhuma aula cadastrada</p>
             ) : (
               aulaDetalhe.map(a => (
                 <AulaItem
@@ -1012,7 +1015,7 @@ export default function EscolaBiblica() {
                 </SelectContent>
               </Select>
               {showModal && membrosParaMatricula.length === 0 && (
-                <p className="text-xs text-muted-foreground mt-1">Todos os membros já estão matriculados</p>
+                <p className="text-xs text-stone-500 mt-1">Todos os membros já estão matriculados</p>
               )}
             </div>
           </div>

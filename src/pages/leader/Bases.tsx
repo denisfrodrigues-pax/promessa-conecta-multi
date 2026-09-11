@@ -63,14 +63,16 @@ function LoadingState() {
 // ===== EMPTY STATE COMPONENT =====
 function EmptyState() {
   return (
-    <Card className="border-dashed">
+    <Card className="border-dashed border-stone-300 rounded-2xl">
       <CardContent className="py-16 text-center">
-        <Network className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
-        <h3 className="text-lg font-semibold text-foreground mb-2">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+          <Network className="h-8 w-8 text-primary" />
+        </div>
+        <h3 className="text-lg font-semibold text-stone-900 mb-2">
           Você ainda não lidera nenhuma base 😊
         </h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          Quando uma base for atribuída a você, ela aparecerá aqui com todas as informações 
+        <p className="text-stone-600 leading-relaxed max-w-md mx-auto">
+          Quando uma base for atribuída a você, ela aparecerá aqui com todas as informações
           sobre membros, horários e local de encontro.
         </p>
       </CardContent>
@@ -174,13 +176,13 @@ export default function LeaderBases() {
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link to="/lider" className="hover:text-foreground transition-colors flex items-center gap-1">
+      <nav className="flex items-center gap-2 text-sm text-stone-500">
+        <Link to="/lider" className="hover:text-stone-900 transition-colors flex items-center gap-1">
           <Home className="h-3.5 w-3.5" />
           Início
         </Link>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium">Minhas Bases</span>
+        <span className="text-stone-900 font-medium">Minhas Bases</span>
       </nav>
 
       {/* Header */}
@@ -189,7 +191,7 @@ export default function LeaderBases() {
           <Network className="h-7 w-7 text-primary" />
           Minhas Bases
         </h1>
-        <p className="text-muted-foreground mt-1">Bases que você lidera</p>
+        <p className="text-stone-600 mt-1 leading-relaxed">Bases que você lidera</p>
       </div>
 
       {loading ? (
@@ -199,47 +201,47 @@ export default function LeaderBases() {
       ) : (
         <>
           {/* KPIs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {/* Total de Bases */}
-            <Card className="shadow-card border-0 bg-gradient-to-br from-primary/5 to-primary/10">
+            <Card className="shadow-card border-0 bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center shadow-sm">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center shadow-soft">
                     <Network className="w-7 h-7 text-primary" />
                   </div>
                   <div>
                     <p className="text-3xl font-bold font-display text-primary">{totalBases}</p>
-                    <p className="text-sm text-muted-foreground font-medium">Total de Bases</p>
+                    <p className="text-sm text-stone-600 font-medium">Total de Bases</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Total de Membros */}
-            <Card className="shadow-card border-0 bg-gradient-to-br from-promessa/5 to-promessa/10">
+            <Card className="shadow-card border-0 bg-gradient-to-br from-promessa/5 to-promessa/10 rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-promessa/15 flex items-center justify-center shadow-sm">
+                  <div className="w-14 h-14 rounded-2xl bg-promessa/15 flex items-center justify-center shadow-soft">
                     <Users className="w-7 h-7 text-promessa" />
                   </div>
                   <div>
                     <p className="text-3xl font-bold font-display text-promessa">{totalMembros}</p>
-                    <p className="text-sm text-muted-foreground font-medium">Total de Membros</p>
+                    <p className="text-sm text-stone-600 font-medium">Total de Membros</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Capacidade Total */}
-            <Card className="shadow-card border-0 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/20 dark:to-amber-900/10">
+            <Card className="shadow-card border-0 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/20 dark:to-amber-900/10 rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-amber-500/15 flex items-center justify-center shadow-sm">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/15 flex items-center justify-center shadow-soft">
                     <Target className="w-7 h-7 text-amber-600" />
                   </div>
                   <div>
                     <p className="text-3xl font-bold font-display text-amber-700 dark:text-amber-500">{totalCapacidade}</p>
-                    <p className="text-sm text-muted-foreground font-medium">Capacidade Total</p>
+                    <p className="text-sm text-stone-600 font-medium">Capacidade Total</p>
                   </div>
                 </div>
               </CardContent>
@@ -248,16 +250,16 @@ export default function LeaderBases() {
 
           {/* Bases List */}
           <div>
-            <h2 className="text-lg font-semibold mb-4">Suas Bases ({totalBases})</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <h2 className="text-lg font-semibold text-stone-900 mb-6">Suas Bases ({totalBases})</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {bases.map((base) => {
                 const ocupacao = Math.round((base.membros_count / (base.capacidade || 20)) * 100);
                 const isLotada = ocupacao >= 100;
 
                 return (
-                  <Card 
-                    key={base.id} 
-                    className="group hover:shadow-lg transition-all duration-300 hover:border-primary/30"
+                  <Card
+                    key={base.id}
+                    className="group hover:shadow-elevated transition-all duration-300 hover:border-primary/30 rounded-2xl"
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-2">
@@ -276,21 +278,21 @@ export default function LeaderBases() {
                         )}
                       </div>
                     </CardHeader>
-                    <CardContent className="pt-0 space-y-4">
+                    <CardContent className="pt-0 space-y-5">
                       {/* Info Grid */}
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         {/* Membros */}
-                        <div className="flex items-center gap-2 text-muted-foreground">
+                        <div className="flex items-center gap-2 text-stone-500">
                           <Users className="h-4 w-4 shrink-0" />
                           <span>
-                            <span className="font-medium text-foreground">{base.membros_count}</span>
+                            <span className="font-medium text-stone-900">{base.membros_count}</span>
                             /{base.capacidade || 20} membros
                           </span>
                         </div>
 
                         {/* Dia/Horário */}
                         {base.dia_semana && base.horario && (
-                          <div className="flex items-center gap-2 text-muted-foreground">
+                          <div className="flex items-center gap-2 text-stone-500">
                             <Clock className="h-4 w-4 shrink-0" />
                             <span>{base.dia_semana} • {base.horario}</span>
                           </div>
@@ -298,7 +300,7 @@ export default function LeaderBases() {
 
                         {/* Local */}
                         {base.local && (
-                          <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+                          <div className="flex items-center gap-2 text-stone-500 col-span-2">
                             <MapPin className="h-4 w-4 shrink-0" />
                             <span className="truncate">{base.local}</span>
                           </div>
@@ -307,13 +309,13 @@ export default function LeaderBases() {
 
                       {/* Progress Bar */}
                       <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs text-muted-foreground">
+                        <div className="flex justify-between text-xs text-stone-500">
                           <span>Ocupação</span>
                           <span className={isLotada ? 'text-destructive font-medium' : ''}>
                             {ocupacao}%
                           </span>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
                           <div 
                             className={`h-full rounded-full transition-all duration-500 ${
                               isLotada 
@@ -328,10 +330,10 @@ export default function LeaderBases() {
                       </div>
 
                       {/* Action Button */}
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full min-h-[44px] sm:min-h-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                         onClick={() => navigate(p(`/leader/${slug}/bases/${base.id}`))}
                       >
                         <Eye className="h-4 w-4 mr-2" />

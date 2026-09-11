@@ -128,11 +128,11 @@ const TIPOS: { value: TipoItem; label: string; color: string }[] = [
   { value: 'aviso',        label: 'Aviso',        color: 'bg-orange-100 text-orange-700' },
   { value: 'oferta',       label: 'Oferta',       color: 'bg-emerald-100 text-emerald-700' },
   { value: 'encerramento', label: 'Encerramento', color: 'bg-pink-100 text-pink-700' },
-  { value: 'outro',        label: 'Outro',        color: 'bg-gray-100 text-gray-700' },
+  { value: 'outro',        label: 'Outro',        color: 'bg-stone-100 text-stone-700' },
 ];
 
 const tipoLabel = (tipo: string) => TIPOS.find((t) => t.value === tipo)?.label ?? tipo;
-const tipoColor = (tipo: string) => TIPOS.find((t) => t.value === tipo)?.color ?? 'bg-gray-100 text-gray-700';
+const tipoColor = (tipo: string) => TIPOS.find((t) => t.value === tipo)?.color ?? 'bg-stone-100 text-stone-700';
 
 const STATUS_ICON: Record<string, string> = {
   confirmado: '✅',
@@ -176,17 +176,17 @@ function SortableLiturgiaItem({ item, idx, total, onEdit, onMoveUp, onMoveDown, 
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 p-3 rounded-lg border bg-card hover:bg-muted/40 transition-colors"
+      className="flex items-center gap-2 p-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition-colors"
     >
       <button
         type="button"
-        className="cursor-grab touch-none text-muted-foreground hover:text-foreground shrink-0"
+        className="cursor-grab touch-none p-2 -m-1 rounded-lg text-stone-400 hover:text-stone-600 shrink-0"
         {...attributes}
         {...listeners}
       >
         <GripVertical className="w-4 h-4" />
       </button>
-      <span className="text-sm font-mono text-muted-foreground w-5 text-center shrink-0">{idx + 1}</span>
+      <span className="text-sm font-mono text-stone-500 w-5 text-center shrink-0">{idx + 1}</span>
       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(item)}>
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tipoColor(item.tipo)}`}>
@@ -200,7 +200,7 @@ function SortableLiturgiaItem({ item, idx, total, onEdit, onMoveUp, onMoveDown, 
           )}
           <p className="font-medium text-sm truncate">{item.titulo}</p>
         </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+        <div className="flex items-center gap-3 text-xs text-stone-500 mt-0.5">
           {item.responsavel && <span>{item.responsavel}</span>}
           {item.duracao_minutos && (
             <span className="flex items-center gap-1">
@@ -211,17 +211,17 @@ function SortableLiturgiaItem({ item, idx, total, onEdit, onMoveUp, onMoveDown, 
         </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === 0} onClick={onMoveUp} aria-label="Mover item para cima">
+        <Button variant="ghost" size="icon" className="h-10 w-10" disabled={idx === 0} onClick={onMoveUp} aria-label="Mover item para cima">
           <ChevronUp className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={idx === total - 1} onClick={onMoveDown} aria-label="Mover item para baixo">
+        <Button variant="ghost" size="icon" className="h-10 w-10" disabled={idx === total - 1} onClick={onMoveDown} aria-label="Mover item para baixo">
           <ChevronDown className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(item)} aria-label="Editar item">
+        <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => onEdit(item)} aria-label="Editar item">
           <Pencil className="w-4 h-4" />
         </Button>
         <Button
-          variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive"
+          variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:text-destructive"
           onClick={onDelete}
           aria-label="Excluir item"
         >
@@ -1053,9 +1053,9 @@ export default function CultoDetalhe() {
             Voltar
           </Button>
           <div>
-            <h1 className="text-xl font-bold text-foreground">{evento?.titulo ?? '...'}</h1>
+            <h1 className="text-xl font-bold text-stone-900">{evento?.titulo ?? '...'}</h1>
             {evento && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-stone-500">
                 {format(parseISO(evento.data_evento), "EEEE, d 'de' MMMM", { locale: ptBR })}
                 {evento.horario_inicio && ` · ${evento.horario_inicio.slice(0, 5)}`}
               </p>
@@ -1115,7 +1115,7 @@ export default function CultoDetalhe() {
             </Button>
           </div>
           {evento?.presencas_registrado_em && (
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="text-xs text-stone-500 mt-2">
               Última contagem registrada por {evento.registrado_por_profile?.nome ?? 'alguém'} em{' '}
               {format(parseISO(evento.presencas_registrado_em), "d 'de' MMMM 'às' HH:mm", { locale: ptBR })}
             </p>
@@ -1138,14 +1138,14 @@ export default function CultoDetalhe() {
               <Loader2 className="w-5 h-5 animate-spin text-promessa-500" />
             </div>
           ) : equipePorMinisterio.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">
+            <p className="text-sm text-stone-500 text-center py-6 leading-relaxed">
               Nenhum voluntário escalado para este evento ainda.
             </p>
           ) : (
             <div className="space-y-5">
               {equipePorMinisterio.map((grupo) => (
                 <div key={grupo.nome}>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
                     {grupo.nome}
                   </p>
                   <div className="space-y-1.5">
@@ -1153,7 +1153,7 @@ export default function CultoDetalhe() {
                       <div key={m.id} className="flex items-center gap-3 text-sm">
                         <span className="text-base leading-none">{statusIcon(m.status)}</span>
                         <span className="font-medium flex-1">{m.voluntario_nome}</span>
-                        <span className="text-muted-foreground">{m.funcao}</span>
+                        <span className="text-stone-500">{m.funcao}</span>
                         <Badge
                           variant="outline"
                           className={`text-xs ${m.status === 'confirmado' ? 'border-green-300 text-green-700 bg-green-50' : 'border-yellow-300 text-yellow-700 bg-yellow-50'}`}
@@ -1165,7 +1165,7 @@ export default function CultoDetalhe() {
                   </div>
                 </div>
               ))}
-              <p className="text-xs text-muted-foreground pt-1">
+              <p className="text-xs text-stone-500 pt-1">
                 Legenda: ✅ Confirmado · ⏳ Pendente · ❌ Não confirmado
               </p>
             </div>
@@ -1181,7 +1181,7 @@ export default function CultoDetalhe() {
               <Music2 className="w-4 h-4" />
               Músicas do Culto
             </CardTitle>
-            <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
+            <Badge variant="outline" className="text-xs font-normal text-stone-500">
               Definidas pelo Ministério de Música
             </Badge>
           </div>
@@ -1192,7 +1192,7 @@ export default function CultoDetalhe() {
               <Loader2 className="w-5 h-5 animate-spin text-promessa-500" />
             </div>
           ) : !musicasCulto || musicasCulto.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">
+            <p className="text-sm text-stone-500 text-center py-6 leading-relaxed">
               Nenhuma música definida pelo ministério de música para este evento.
             </p>
           ) : (
@@ -1203,11 +1203,11 @@ export default function CultoDetalhe() {
                 const tom = mc.musicas_repertorio?.tom ?? null;
                 const youtube = mc.link_youtube ?? mc.musicas_repertorio?.link_youtube ?? null;
                 return (
-                  <div key={mc.id} className="flex items-center gap-3 p-2.5 rounded-lg border bg-card">
-                    <span className="text-sm font-mono text-muted-foreground w-5 text-center">{idx + 1}</span>
+                  <div key={mc.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-stone-200 bg-white">
+                    <span className="text-sm font-mono text-stone-500 w-5 text-center">{idx + 1}</span>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{titulo}</p>
-                      <p className="text-xs text-muted-foreground">{artista}</p>
+                      <p className="text-xs text-stone-500">{artista}</p>
                     </div>
                     {tom && (
                       <Badge variant="outline" className="text-xs shrink-0">{tom}</Badge>
@@ -1240,7 +1240,7 @@ export default function CultoDetalhe() {
               Ordem de Liturgia
             </CardTitle>
             {totalDuracao > 0 && (
-              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 Total estimado: {totalDuracao} min
               </p>
@@ -1258,7 +1258,10 @@ export default function CultoDetalhe() {
             </div>
           ) : !itens || itens.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
-              <p className="text-sm text-muted-foreground">Nenhum item na liturgia ainda.</p>
+              <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center">
+                <ListOrdered className="w-6 h-6 text-stone-400" />
+              </div>
+              <p className="text-sm text-stone-500 leading-relaxed">Nenhum item na liturgia ainda.</p>
               {(musicasCulto?.length ?? 0) > 0 || (equipeDia?.length ?? 0) > 0 ? (
                 <Button
                   size="sm" variant="outline"
@@ -1277,7 +1280,7 @@ export default function CultoDetalhe() {
               {itens.length > 0 && (musicasCulto?.length ?? 0) > 0 && (
                 <div className="flex justify-end mb-1">
                   <Button
-                    size="sm" variant="ghost" className="text-xs text-muted-foreground h-7"
+                    size="sm" variant="ghost" className="text-xs text-stone-500 h-7"
                     onClick={() => prepopularMutation.mutate()}
                     disabled={prepopularMutation.isPending}
                   >
@@ -1326,17 +1329,17 @@ export default function CultoDetalhe() {
         <CardContent className="space-y-4">
           {avisosCulto && avisosCulto.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
                 Selecionados — na ordem do culto
               </p>
               {avisosCulto.map((ac, idx) => (
-                <div key={ac.id} className="flex items-center gap-2 p-2 rounded-lg bg-promessa-50 border border-promessa-200">
-                  <span className="text-xs font-mono text-muted-foreground w-4">{idx + 1}</span>
+                <div key={ac.id} className="flex items-center gap-2 p-2 rounded-xl bg-promessa-50 border border-promessa-200">
+                  <span className="text-xs font-mono text-stone-500 w-4">{idx + 1}</span>
                   <p className="flex-1 text-sm font-medium">{ac.avisos?.titulo ?? '—'}</p>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" disabled={idx === 0} onClick={() => moverAviso(idx, 'up')} aria-label="Mover aviso para cima">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" disabled={idx === 0} onClick={() => moverAviso(idx, 'up')} aria-label="Mover aviso para cima">
                     <ChevronUp className="w-3 h-3" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" disabled={idx === avisosCulto.length - 1} onClick={() => moverAviso(idx, 'down')} aria-label="Mover aviso para baixo">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" disabled={idx === avisosCulto.length - 1} onClick={() => moverAviso(idx, 'down')} aria-label="Mover aviso para baixo">
                     <ChevronDown className="w-3 h-3" />
                   </Button>
                 </div>
@@ -1346,10 +1349,10 @@ export default function CultoDetalhe() {
 
           {todosAvisos && todosAvisos.length > 0 ? (
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
                 Todos os avisos disponíveis
               </p>
-              <div className="space-y-2 max-h-56 overflow-y-auto border rounded-md p-3">
+              <div className="space-y-2 max-h-56 overflow-y-auto border border-stone-200 rounded-xl p-3">
                 {todosAvisos.map((av) => (
                   <div key={av.id} className="flex items-start gap-2">
                     <Checkbox
@@ -1362,14 +1365,14 @@ export default function CultoDetalhe() {
                     />
                     <label htmlFor={`av-${av.id}`} className="flex-1 cursor-pointer">
                       <p className="text-sm font-medium leading-tight">{av.titulo}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{av.conteudo}</p>
+                      <p className="text-xs text-stone-500 line-clamp-1 mt-0.5">{av.conteudo}</p>
                     </label>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Nenhum aviso cadastrado. Use "Novo Aviso" para criar.</p>
+            <p className="text-sm text-stone-500 leading-relaxed">Nenhum aviso cadastrado. Use "Novo Aviso" para criar.</p>
           )}
         </CardContent>
       </Card>
@@ -1412,7 +1415,7 @@ export default function CultoDetalhe() {
               </div>
             </>
           ) : (
-            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+            <p className="text-sm text-stone-900 whitespace-pre-wrap leading-relaxed">
               {liturgia.observacoes_gerais}
             </p>
           )}

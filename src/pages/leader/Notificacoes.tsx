@@ -215,7 +215,7 @@ export default function LeaderNotificacoes() {
       case 'ministerio':
         return <Users className="w-4 h-4 text-promessa-600" />;
       default:
-        return <Bell className="w-4 h-4 text-neutral-500" />;
+        return <Bell className="w-4 h-4 text-stone-500" />;
     }
   };
 
@@ -263,10 +263,12 @@ export default function LeaderNotificacoes() {
 
   if (!ministerioId) {
     return (
-      <div className="text-center py-12">
-        <Bell className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
-        <h2 className="text-xl font-semibold mb-2">Nenhum ministério encontrado</h2>
-        <p className="text-muted-foreground">
+      <div className="text-center py-16">
+        <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+          <Bell className="w-8 h-8 text-stone-400" />
+        </div>
+        <h2 className="text-xl font-semibold mb-2 text-stone-900">Nenhum ministério encontrado</h2>
+        <p className="text-stone-600 leading-relaxed">
           Você precisa ser líder de um ministério para ver notificações.
         </p>
       </div>
@@ -274,18 +276,18 @@ export default function LeaderNotificacoes() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-stone-50">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight text-neutral-800">Notificações</h1>
-          <p className="text-neutral-500 mt-1">Notificações dos voluntários do seu ministério</p>
+          <h1 className="text-3xl font-display font-bold tracking-tight text-stone-900">Notificações</h1>
+          <p className="text-stone-600 mt-1 leading-relaxed">Notificações dos voluntários do seu ministério</p>
         </div>
       </div>
 
       {/* Send notification form */}
-      <Card className="shadow-card border-neutral-200 bg-gradient-to-br from-promessa-50 to-promessa-100/50">
+      <Card className="shadow-card border-stone-200 bg-gradient-to-br from-promessa-50 to-promessa-100/50">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg text-neutral-800">
+          <CardTitle className="flex items-center gap-2 text-lg text-stone-800">
             <div className="w-10 h-10 rounded-xl bg-promessa-100 flex items-center justify-center">
               <Send className="w-5 h-5 text-promessa-700" />
             </div>
@@ -294,31 +296,31 @@ export default function LeaderNotificacoes() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="titulo" className="text-neutral-700">Título</Label>
+            <Label htmlFor="titulo" className="text-stone-700">Título</Label>
             <Input
               id="titulo"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               placeholder="Título da notificação"
-              className="border-neutral-200"
+              className="border-stone-200"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="mensagem" className="text-neutral-700">Mensagem</Label>
+            <Label htmlFor="mensagem" className="text-stone-700">Mensagem</Label>
             <Textarea
               id="mensagem"
               value={mensagem}
               onChange={(e) => setMensagem(e.target.value)}
               placeholder="Digite a mensagem..."
               rows={3}
-              className="border-neutral-200"
+              className="border-stone-200"
             />
           </div>
           <div className="flex items-center justify-between pt-2">
-            <p className="text-sm text-neutral-500">
-              Será enviada para <span className="font-semibold text-neutral-700">{members.length}</span> membro(s) do seu ministério
+            <p className="text-sm text-stone-500">
+              Será enviada para <span className="font-semibold text-stone-700">{members.length}</span> membro(s) do seu ministério
             </p>
-            <Button onClick={handleSendNotification} disabled={sending} className="bg-promessa-600 hover:bg-promessa-700">
+            <Button onClick={handleSendNotification} disabled={sending} className="bg-promessa-600 hover:bg-promessa-700 min-h-[44px]">
               {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
               Enviar
             </Button>
@@ -328,47 +330,47 @@ export default function LeaderNotificacoes() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="shadow-card border-neutral-200">
+        <Card className="shadow-card border-stone-200">
           <CardContent className="p-5">
-            <div className="text-3xl font-bold font-display text-neutral-800">{stats.total}</div>
-            <div className="text-sm text-neutral-500 font-medium">Total</div>
+            <div className="text-3xl font-bold font-display text-stone-800">{stats.total}</div>
+            <div className="text-sm text-stone-500 font-medium">Total</div>
           </CardContent>
         </Card>
         <Card className="shadow-card border-0 bg-gradient-to-br from-blue-50 to-blue-100/50">
           <CardContent className="p-5">
             <div className="text-3xl font-bold font-display text-blue-700">{stats.novasEscalas}</div>
-            <div className="text-sm text-neutral-500 font-medium">Novas Escalas</div>
+            <div className="text-sm text-stone-500 font-medium">Novas Escalas</div>
           </CardContent>
         </Card>
         <Card className="shadow-card border-0 bg-gradient-to-br from-amber-50 to-amber-100/50">
           <CardContent className="p-5">
             <div className="text-3xl font-bold font-display text-amber-700">{stats.lembretes}</div>
-            <div className="text-sm text-neutral-500 font-medium">Lembretes</div>
+            <div className="text-sm text-stone-500 font-medium">Lembretes</div>
           </CardContent>
         </Card>
         <Card className="shadow-card border-0 bg-gradient-to-br from-purple-50 to-purple-100/50">
           <CardContent className="p-5">
             <div className="text-3xl font-bold font-display text-purple-700">{stats.atualizacoes}</div>
-            <div className="text-sm text-neutral-500 font-medium">Atualizações</div>
+            <div className="text-sm text-stone-500 font-medium">Atualizações</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card className="border-neutral-200">
+      <Card className="border-stone-200">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
               <Input
                 placeholder="Buscar por mensagem ou voluntário..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-neutral-200"
+                className="pl-10 border-stone-200"
               />
             </div>
             <Select value={filterTipo} onValueChange={setFilterTipo}>
-              <SelectTrigger className="w-full md:w-[200px] border-neutral-200">
+              <SelectTrigger className="w-full md:w-[200px] border-stone-200">
                 <SelectValue placeholder="Filtrar por tipo" />
               </SelectTrigger>
               <SelectContent>
@@ -384,41 +386,46 @@ export default function LeaderNotificacoes() {
       </Card>
 
       {/* Table */}
-      <Card className="border-neutral-200">
+      <Card className="border-stone-200">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-neutral-50 hover:bg-neutral-50 border-neutral-200">
-                <TableHead className="text-neutral-700 font-semibold">Tipo</TableHead>
-                <TableHead className="text-neutral-700 font-semibold">Voluntário</TableHead>
-                <TableHead className="max-w-[300px] text-neutral-700 font-semibold">Mensagem</TableHead>
-                <TableHead className="text-neutral-700 font-semibold">Data</TableHead>
-                <TableHead className="text-neutral-700 font-semibold">Status</TableHead>
-                <TableHead className="text-right text-neutral-700 font-semibold">Ações</TableHead>
+              <TableRow className="bg-stone-50 hover:bg-stone-50 border-stone-200">
+                <TableHead className="text-stone-700 font-semibold">Tipo</TableHead>
+                <TableHead className="text-stone-700 font-semibold">Voluntário</TableHead>
+                <TableHead className="max-w-[300px] text-stone-700 font-semibold">Mensagem</TableHead>
+                <TableHead className="text-stone-700 font-semibold">Data</TableHead>
+                <TableHead className="text-stone-700 font-semibold">Status</TableHead>
+                <TableHead className="text-right text-stone-700 font-semibold">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredNotifications.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-neutral-500">
-                    Nenhuma notificação encontrada
+                  <TableCell colSpan={6} className="text-center py-14">
+                    <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                      <Bell className="w-7 h-7 text-stone-400" />
+                    </div>
+                    <p className="text-stone-600 leading-relaxed">
+                      {searchTerm || filterTipo !== 'all' ? 'Nenhuma notificação encontrada' : 'Nenhuma notificação por aqui ainda'}
+                    </p>
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredNotifications.map((notification) => (
-                  <TableRow key={notification.id} className="border-neutral-200 hover:bg-neutral-50">
+                  <TableRow key={notification.id} className="border-stone-200 hover:bg-stone-50">
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {getNotificationIcon(notification.tipo)}
                         {getNotificationTypeBadge(notification.tipo)}
                       </div>
                     </TableCell>
-                    <TableCell className="text-neutral-700">{notification.voluntario?.nome || '-'}</TableCell>
+                    <TableCell className="text-stone-700">{notification.voluntario?.nome || '-'}</TableCell>
                     <TableCell className="max-w-[300px]">
-                      <p className="truncate text-neutral-700">{notification.mensagem}</p>
+                      <p className="truncate text-stone-700">{notification.mensagem}</p>
                     </TableCell>
-                    <TableCell className="text-neutral-600">
+                    <TableCell className="text-stone-600">
                       {notification.created_at &&
                         format(new Date(notification.created_at), 'dd/MM/yyyy HH:mm', {
                           locale: ptBR,
@@ -437,7 +444,7 @@ export default function LeaderNotificacoes() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-neutral-400 hover:text-red-600 hover:bg-red-50"
+                            className="h-8 w-8 text-stone-400 hover:text-red-600 hover:bg-red-50"
                             disabled={deletingId === notification.id}
                             aria-label="Excluir notificação"
                           >

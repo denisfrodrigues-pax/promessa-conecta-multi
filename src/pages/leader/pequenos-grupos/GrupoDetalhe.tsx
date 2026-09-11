@@ -350,8 +350,10 @@ export default function GrupoDetalhe() {
   if (!grupo) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <Network className="w-12 h-12 text-muted-foreground mb-3" />
-        <p className="text-muted-foreground">Grupo não encontrado.</p>
+        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+          <Network className="w-7 h-7 text-primary" />
+        </div>
+        <p className="text-stone-600 leading-relaxed">Grupo não encontrado.</p>
         <Button variant="link" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4 mr-1" />Voltar
         </Button>
@@ -368,8 +370,8 @@ export default function GrupoDetalhe() {
             <ArrowLeft className="w-4 h-4 mr-1" />Voltar
           </Button>
           <div>
-            <h1 className="text-xl font-bold text-foreground">{grupo.nome}</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl font-bold text-stone-900">{grupo.nome}</h1>
+            <p className="text-sm text-stone-500">
               {grupo.dia_semana && grupo.horario ? `${grupo.dia_semana} · ${grupo.horario}` : 'Horário não definido'}
               {grupo.local && ` · ${grupo.local}`}
             </p>
@@ -386,37 +388,37 @@ export default function GrupoDetalhe() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+      <div className="grid grid-cols-3 gap-6">
+        <Card className="rounded-2xl">
+          <CardContent className="p-6 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
               <Users className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <p className="text-xl font-bold">{membros.length}</p>
-              <p className="text-xs text-muted-foreground">Membros</p>
+              <p className="text-xl font-bold text-stone-900">{membros.length}</p>
+              <p className="text-xs text-stone-500">Membros</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
+        <Card className="rounded-2xl">
+          <CardContent className="p-6 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
               <UserCheck className="w-4 h-4 text-blue-600" />
             </div>
             <div>
-              <p className="text-xl font-bold">{visitantes.length}</p>
-              <p className="text-xs text-muted-foreground">Visitantes</p>
+              <p className="text-xl font-bold text-stone-900">{visitantes.length}</p>
+              <p className="text-xs text-stone-500">Visitantes</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 space-y-2">
+        <Card className="rounded-2xl">
+          <CardContent className="p-6 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Ocupação</span>
-              <span className="font-medium">{Math.round(ocupacaoPercent)}%</span>
+              <span className="text-stone-500">Ocupação</span>
+              <span className="font-medium text-stone-900">{Math.round(ocupacaoPercent)}%</span>
             </div>
             <Progress value={ocupacaoPercent} className="h-2" />
-            <p className="text-xs text-muted-foreground">{totalOcupantes}/{capacidade}</p>
+            <p className="text-xs text-stone-500">{totalOcupantes}/{capacidade}</p>
           </CardContent>
         </Card>
       </div>
@@ -432,13 +434,13 @@ export default function GrupoDetalhe() {
 
         {/* Tab: Membros */}
         <TabsContent value="membros" className="space-y-4">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <CardTitle className="text-base">Membros ({membros.length})</CardTitle>
                 <div className="flex items-center gap-2">
                   <div className="relative w-52">
-                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
                     <Input className="pl-9" placeholder="Buscar…" value={searchMembro} onChange={(e) => setSearchMembro(e.target.value)} />
                   </div>
                   <Button size="sm" onClick={() => { setAddBusca(''); setElegiveis([]); setAddMembroAberto(true); }}>
@@ -456,7 +458,7 @@ export default function GrupoDetalhe() {
             </CardHeader>
             <CardContent>
               {membrosFiltrados.length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground text-sm">Nenhum membro encontrado.</div>
+                <div className="text-center py-10 text-stone-500 text-sm leading-relaxed">Nenhum membro encontrado.</div>
               ) : (
                 <Table>
                   <TableHeader>
@@ -475,24 +477,24 @@ export default function GrupoDetalhe() {
                               <AvatarImage src={m.foto_url ?? undefined} />
                               <AvatarFallback className="text-xs">{initials(m.nome ?? 'M')}</AvatarFallback>
                             </Avatar>
-                            <p className="font-medium text-sm">{m.nome}</p>
+                            <p className="font-medium text-sm text-stone-900">{m.nome}</p>
                           </div>
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{m.telefone ?? '–'}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-sm text-stone-500">{m.telefone ?? '–'}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             {hasPhone(m.telefone) && (
                               <>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => window.open(whatsUrl(m.telefone, churchNome || undefined), '_blank')} aria-label="Enviar WhatsApp">
+                                <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-8 sm:w-8 text-green-600" onClick={() => window.open(whatsUrl(m.telefone, churchNome || undefined), '_blank')} aria-label="Enviar WhatsApp">
                                   <MessageCircle className="w-4 h-4" />
                                 </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => window.open(`tel:${cleanPhone(m.telefone)}`)} aria-label="Ligar">
+                                <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-8 sm:w-8 text-blue-600" onClick={() => window.open(`tel:${cleanPhone(m.telefone)}`)} aria-label="Ligar">
                                   <Phone className="w-4 h-4" />
                                 </Button>
                               </>
                             )}
                             <Button
-                              variant="ghost" size="icon" className="h-8 w-8 text-destructive"
+                              variant="ghost" size="icon" className="h-11 w-11 sm:h-8 sm:w-8 text-destructive"
                               disabled={removendoId === m.bases_membros_id}
                               onClick={() => removerMembro(m.bases_membros_id)}
                               aria-label="Remover membro do grupo"
@@ -513,26 +515,26 @@ export default function GrupoDetalhe() {
 
           {/* Modal: Adicionar Membro */}
           <Dialog open={addMembroAberto} onOpenChange={setAddMembroAberto}>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md rounded-2xl">
               <DialogHeader>
                 <DialogTitle>Adicionar Membro ao Grupo</DialogTitle>
-                <DialogDescription>Busque pelo nome ou e-mail da pessoa.</DialogDescription>
+                <DialogDescription className="leading-relaxed">Busque pelo nome ou e-mail da pessoa.</DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
                   <Input autoFocus className="pl-9" placeholder="Buscar…" value={addBusca} onChange={(e) => setAddBusca(e.target.value)} />
                 </div>
                 <div className="max-h-64 overflow-y-auto space-y-1">
                   {buscandoElegiveis ? (
-                    <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+                    <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-stone-400" /></div>
                   ) : elegiveis.length === 0 && addBusca ? (
-                    <p className="text-sm text-muted-foreground text-center py-6">Nenhuma pessoa encontrada.</p>
+                    <p className="text-sm text-stone-500 text-center py-6">Nenhuma pessoa encontrada.</p>
                   ) : elegiveis.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
+                    <div key={p.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-stone-50">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{p.nome}</p>
-                        <p className="text-xs text-muted-foreground truncate">{p.email}</p>
+                        <p className="text-sm font-medium text-stone-900 truncate">{p.nome}</p>
+                        <p className="text-xs text-stone-500 truncate">{p.email}</p>
                       </div>
                       <Button size="sm" variant="outline" disabled={adicionandoId === p.id} onClick={() => adicionarMembro(p.id)}>
                         {adicionandoId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
@@ -547,19 +549,19 @@ export default function GrupoDetalhe() {
 
         {/* Tab: Visitantes */}
         <TabsContent value="visitantes" className="space-y-4">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <CardTitle className="text-base">Visitantes ({visitantes.length})</CardTitle>
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="relative w-44">
-                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
                     <Input className="pl-9" placeholder="Buscar…" value={searchVisitante} onChange={(e) => setSearchVisitante(e.target.value)} />
                   </div>
                   <select
                     value={filtroStatus}
                     onChange={(e) => setFiltroStatus(e.target.value)}
-                    className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+                    className="h-11 sm:h-10 px-3 rounded-xl border border-stone-200 bg-white text-sm"
                   >
                     <option value="todos">Todos</option>
                     {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -569,7 +571,7 @@ export default function GrupoDetalhe() {
             </CardHeader>
             <CardContent>
               {visitantesFiltrados.length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground text-sm">Nenhum visitante vinculado.</div>
+                <div className="text-center py-10 text-stone-500 text-sm leading-relaxed">Nenhum visitante vinculado.</div>
               ) : (
                 <Table>
                   <TableHeader>
@@ -590,17 +592,17 @@ export default function GrupoDetalhe() {
                               <Avatar className="h-8 w-8">
                                 <AvatarFallback className="text-xs bg-secondary">{initials(v.visitante?.nome ?? 'V')}</AvatarFallback>
                               </Avatar>
-                              <p className="font-medium text-sm">{v.visitante?.nome}</p>
+                              <p className="font-medium text-sm text-stone-900">{v.visitante?.nome}</p>
                             </div>
                           </TableCell>
-                          <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{v.visitante?.telefone ?? '–'}</TableCell>
+                          <TableCell className="hidden sm:table-cell text-sm text-stone-500">{v.visitante?.telefone ?? '–'}</TableCell>
                           <TableCell>
                             <Badge variant="secondary" className="text-xs">{STATUS_LABELS[st] ?? st}</Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
                               {hasPhone(v.visitante?.telefone) && (
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => window.open(whatsUrl(v.visitante?.telefone, churchNome || undefined), '_blank')} aria-label="Enviar WhatsApp">
+                                <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-8 sm:w-8 text-green-600" onClick={() => window.open(whatsUrl(v.visitante?.telefone, churchNome || undefined), '_blank')} aria-label="Enviar WhatsApp">
                                   <MessageCircle className="w-4 h-4" />
                                 </Button>
                               )}
@@ -618,19 +620,19 @@ export default function GrupoDetalhe() {
 
         {/* Tab: Presenças */}
         <TabsContent value="presencas" className="space-y-4">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Presenças de Hoje</CardTitle>
               <CardDescription>{format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</CardDescription>
             </CardHeader>
             <CardContent>
               {!presencasDados?.hoje.length ? (
-                <div className="text-center py-8 text-muted-foreground text-sm">Nenhuma presença registrada hoje.</div>
+                <div className="text-center py-10 text-stone-500 text-sm leading-relaxed">Nenhuma presença registrada hoje.</div>
               ) : (
                 <div className="space-y-2">
                   {presencasDados.hoje.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                      <span className="text-sm font-medium">{p.usuario?.nome ?? 'Membro'}</span>
+                    <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-stone-50">
+                      <span className="text-sm font-medium text-stone-900">{p.usuario?.nome ?? 'Membro'}</span>
                       <Badge variant={p.presente ? 'default' : 'secondary'} className="text-xs">
                         {p.presente ? 'Presente' : 'Ausente'}
                       </Badge>
@@ -641,13 +643,13 @@ export default function GrupoDetalhe() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Histórico Recente</CardTitle>
             </CardHeader>
             <CardContent>
               {!presencasDados?.historico.length ? (
-                <div className="text-center py-8 text-muted-foreground text-sm">Nenhuma presença registrada ainda.</div>
+                <div className="text-center py-10 text-stone-500 text-sm leading-relaxed">Nenhuma presença registrada ainda.</div>
               ) : (
                 <Table>
                   <TableHeader>
@@ -660,8 +662,8 @@ export default function GrupoDetalhe() {
                   <TableBody>
                     {presencasDados.historico.map((p) => (
                       <TableRow key={p.id}>
-                        <TableCell className="text-sm font-medium">{p.usuario?.nome ?? 'Membro'}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-sm font-medium text-stone-900">{p.usuario?.nome ?? 'Membro'}</TableCell>
+                        <TableCell className="text-sm text-stone-500">
                           {format(new Date(p.data), 'dd/MM/yyyy', { locale: ptBR })}
                         </TableCell>
                         <TableCell className="text-right">
@@ -680,13 +682,13 @@ export default function GrupoDetalhe() {
 
         {/* Tab: Info */}
         <TabsContent value="info">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="text-base">Informações do Grupo</CardTitle>
               {grupo.descricao && <CardDescription>{grupo.descricao}</CardDescription>}
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {[
                   { icon: CalendarDays, label: 'Dia da Semana', value: grupo.dia_semana },
                   { icon: Clock, label: 'Horário', value: grupo.horario },
@@ -696,20 +698,20 @@ export default function GrupoDetalhe() {
                   { icon: Building2, label: 'Visibilidade', value: grupo.visibilidade === 'publico' ? 'Pública' : 'Privada' },
                 ].map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                       <Icon className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">{label}</p>
-                      <p className="font-medium text-sm">{value ?? 'Não definido'}</p>
+                      <p className="text-xs text-stone-500">{label}</p>
+                      <p className="font-medium text-sm text-stone-900">{value ?? 'Não definido'}</p>
                     </div>
                   </div>
                 ))}
               </div>
               {grupo.observacoes && (
-                <div className="mt-5 pt-4 border-t">
-                  <p className="text-xs text-muted-foreground mb-1">Observações</p>
-                  <p className="text-sm whitespace-pre-wrap">{grupo.observacoes}</p>
+                <div className="mt-6 pt-4 border-t border-stone-200">
+                  <p className="text-xs text-stone-500 mb-1">Observações</p>
+                  <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap">{grupo.observacoes}</p>
                 </div>
               )}
             </CardContent>
@@ -719,7 +721,7 @@ export default function GrupoDetalhe() {
 
       {/* Dialog: Editar Grupo */}
       <Dialog open={editAberto} onOpenChange={setEditAberto}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>Editar Grupo</DialogTitle>
           </DialogHeader>
@@ -778,10 +780,10 @@ export default function GrupoDetalhe() {
 
       {/* Confirmação: Excluir Grupo */}
       <AlertDialog open={excluindoGrupo} onOpenChange={setExcluindoGrupo}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Grupo</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="leading-relaxed">
               Deseja excluir permanentemente "{grupo.nome}"? Todos os dados de membros vinculados serão perdidos.
             </AlertDialogDescription>
           </AlertDialogHeader>

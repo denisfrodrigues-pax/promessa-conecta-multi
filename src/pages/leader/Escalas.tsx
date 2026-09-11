@@ -455,21 +455,21 @@ export default function LeaderEscalas() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 bg-stone-50">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-display font-bold">Escalas</h2>
-          <p className="text-sm text-muted-foreground">Gerencie as escalas do ministério</p>
+          <h2 className="text-xl font-display font-bold text-stone-900">Escalas</h2>
+          <p className="text-sm text-stone-500">Gerencie as escalas do ministério</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setIsDirectModalOpen(true)}>
+        <Button variant="outline" size="sm" className="min-h-[44px]" onClick={() => setIsDirectModalOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Escala avulsa
         </Button>
       </div>
 
       <Tabs defaultValue="eventos">
-        <TabsList>
-          <TabsTrigger value="eventos">
+        <TabsList className="bg-stone-100">
+          <TabsTrigger value="eventos" className="min-h-[44px]">
             Eventos convocados
             {eventosConvocados.filter((e) => e.status === 'pendente').length > 0 && (
               <Badge className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-promessa-500 text-white">
@@ -477,21 +477,23 @@ export default function LeaderEscalas() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="historico">Histórico de escalas</TabsTrigger>
+          <TabsTrigger value="historico" className="min-h-[44px]">Histórico de escalas</TabsTrigger>
         </TabsList>
 
         {/* ── Tab: Eventos convocados ─────────────────────────────────────── */}
         <TabsContent value="eventos" className="mt-4">
           {loadingEventos ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
             </div>
           ) : eventosConvocados.length === 0 ? (
             <Card>
-              <CardContent className="py-14 text-center space-y-2">
-                <CalendarDays className="w-12 h-12 mx-auto text-muted-foreground/40" />
-                <p className="text-muted-foreground">Nenhuma convocação recebida ainda.</p>
-                <p className="text-sm text-muted-foreground/70">Quando o admin convocar seu ministério para um evento, ele aparecerá aqui.</p>
+              <CardContent className="py-16 text-center space-y-2">
+                <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-2">
+                  <CalendarDays className="w-8 h-8 text-stone-400" />
+                </div>
+                <p className="text-stone-600 leading-relaxed">Nenhuma convocação recebida ainda.</p>
+                <p className="text-sm text-stone-500 leading-relaxed">Quando o admin convocar seu ministério para um evento, ele aparecerá aqui.</p>
               </CardContent>
             </Card>
           ) : (
@@ -506,22 +508,22 @@ export default function LeaderEscalas() {
                   <div key={group.nome}>
                     {/* Cabeçalho clicável do período */}
                     <div
-                      className="flex items-center gap-2 mb-1 px-1 py-2 rounded-lg hover:bg-muted/40 cursor-pointer select-none transition-colors"
+                      className="flex items-center gap-2 mb-1 px-1 py-2 rounded-lg hover:bg-stone-100 cursor-pointer select-none transition-colors min-h-[44px]"
                       onClick={() => togglePeriodo(group.nome)}
                     >
                       {periodosAbertos.has(group.nome)
-                        ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
-                        : <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                        ? <ChevronDown className="w-4 h-4 text-stone-400 shrink-0" />
+                        : <ChevronRight className="w-4 h-4 text-stone-400 shrink-0" />
                       }
                       <div className="w-7 h-7 rounded-lg bg-promessa-100 flex items-center justify-center shrink-0">
                         <CalendarDays className="w-3.5 h-3.5 text-promessa-600" />
                       </div>
                       <div className="flex-1 flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm text-foreground">{group.nome}</span>
+                        <span className="font-semibold text-sm text-stone-900">{group.nome}</span>
                         {mesAno && (
                           <Badge variant="secondary" className="text-xs capitalize">{mesAno}</Badge>
                         )}
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-stone-500">
                           {group.eventos.length} evento{group.eventos.length !== 1 ? 's' : ''}
                         </span>
                       </div>
@@ -547,11 +549,11 @@ export default function LeaderEscalas() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    <p className="font-medium">{ev.titulo}</p>
+                                    <p className="font-medium text-stone-900">{ev.titulo}</p>
                                     <Badge variant="outline" className="text-xs capitalize">{ev.tipo}</Badge>
                                     {eventoStatusBadge(em.status)}
                                   </div>
-                                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
+                                  <div className="flex items-center gap-3 text-xs text-stone-500 mt-1 flex-wrap">
                                     <span className="flex items-center gap-1">
                                       <Calendar className="w-3 h-3" />
                                       {format(new Date(ev.data_evento + 'T12:00:00'), 'EEEE, dd/MM/yyyy', { locale: ptBR })}
@@ -564,13 +566,14 @@ export default function LeaderEscalas() {
                                     )}
                                   </div>
                                   {ev.descricao && (
-                                    <p className="text-sm text-muted-foreground mt-1">{ev.descricao}</p>
+                                    <p className="text-sm text-stone-500 mt-1 leading-relaxed">{ev.descricao}</p>
                                   )}
                                 </div>
                                 <div className="shrink-0">
                                   {em.status === 'pendente' && (
                                     <Button
                                       size="sm"
+                                      className="min-h-[44px]"
                                       onClick={() => {
                                         setEventoParaCriar(em);
                                         setEscalasRows([{ funcao: '', voluntario_id: '', horario: '' }]);
@@ -585,6 +588,7 @@ export default function LeaderEscalas() {
                                       <Button
                                         size="sm"
                                         variant="ghost"
+                                        className="min-h-[44px]"
                                         onClick={() => setConfirmacaoEvento(em)}
                                       >
                                         <Users className="w-4 h-4 mr-1" />
@@ -593,6 +597,7 @@ export default function LeaderEscalas() {
                                       <Button
                                         size="sm"
                                         variant="outline"
+                                        className="min-h-[44px]"
                                         disabled={loadingEscalasEvento}
                                         onClick={() => openEditModal(em)}
                                       >
@@ -625,17 +630,19 @@ export default function LeaderEscalas() {
         <TabsContent value="historico" className="mt-4">
           {loadingEscalas ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
             </div>
           ) : escalas.length === 0 ? (
             <Card>
-              <CardContent className="py-14 text-center space-y-2">
-                <Users className="w-12 h-12 mx-auto text-muted-foreground/40" />
-                <p className="text-muted-foreground">Nenhuma escala criada ainda.</p>
+              <CardContent className="py-16 text-center space-y-2">
+                <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-2">
+                  <Users className="w-8 h-8 text-stone-400" />
+                </div>
+                <p className="text-stone-600 leading-relaxed">Nenhuma escala criada ainda.</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {escalas.map((e) => (
                 <Card key={e.id}>
                   <CardContent className="p-4">
@@ -643,11 +650,11 @@ export default function LeaderEscalas() {
                       {statusIcon(e.status)}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium text-sm">{e.voluntario?.nome ?? 'Voluntário'}</p>
-                          <span className="text-xs text-muted-foreground">·</span>
-                          <span className="text-xs text-muted-foreground">{e.funcao}</span>
+                          <p className="font-medium text-sm text-stone-900">{e.voluntario?.nome ?? 'Voluntário'}</p>
+                          <span className="text-xs text-stone-400">·</span>
+                          <span className="text-xs text-stone-500">{e.funcao}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                        <div className="flex items-center gap-3 text-xs text-stone-500 mt-0.5 flex-wrap">
                           <span>{format(new Date(e.data + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}</span>
                           {e.horario && <span>{e.horario}</span>}
                           {e.eventos_escala && (
@@ -658,7 +665,7 @@ export default function LeaderEscalas() {
                           </Badge>
                         </div>
                         {e.justificativa && (
-                          <p className="text-xs text-muted-foreground mt-1 italic">
+                          <p className="text-xs text-stone-500 mt-1 italic leading-relaxed">
                             Justificativa: "{e.justificativa}"
                           </p>
                         )}
@@ -666,7 +673,7 @@ export default function LeaderEscalas() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0 min-h-[44px]"
                         onClick={() => setToDelete(e)}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -691,7 +698,7 @@ export default function LeaderEscalas() {
               {isEditMode ? 'Editar escala' : 'Criar escala'} — {eventoParaCriar?.eventos_escala?.titulo}
             </DialogTitle>
             {eventoParaCriar?.eventos_escala && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-stone-500">
                 {format(new Date(eventoParaCriar.eventos_escala.data_evento + 'T12:00:00'), 'EEEE, dd/MM/yyyy', { locale: ptBR })}
                 {eventoParaCriar.eventos_escala.horario_inicio && ` · ${eventoParaCriar.eventos_escala.horario_inicio}`}
               </p>
@@ -754,7 +761,7 @@ export default function LeaderEscalas() {
               Adicionar voluntário
             </Button>
 
-            <div className="flex items-center gap-2 pt-2 border-t">
+            <div className="flex items-center gap-2 pt-2 border-t border-stone-200">
               <input
                 type="checkbox"
                 id="notif"
@@ -762,8 +769,8 @@ export default function LeaderEscalas() {
                 onChange={(e) => setEnviarNotificacao(e.target.checked)}
                 className="accent-primary"
               />
-              <label htmlFor="notif" className="text-sm cursor-pointer">
-                <Bell className="w-4 h-4 inline mr-1 text-muted-foreground" />
+              <label htmlFor="notif" className="text-sm cursor-pointer text-stone-700">
+                <Bell className="w-4 h-4 inline mr-1 text-stone-400" />
                 Notificar membros do ministério ao criar a escala
               </label>
             </div>
@@ -807,24 +814,24 @@ export default function LeaderEscalas() {
               Confirmações — {confirmacaoEvento?.eventos_escala?.titulo}
             </DialogTitle>
             {confirmacaoEvento?.eventos_escala && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-stone-500">
                 {format(new Date(confirmacaoEvento.eventos_escala.data_evento + 'T12:00:00'), 'EEEE, dd/MM/yyyy', { locale: ptBR })}
               </p>
             )}
           </DialogHeader>
           {loadingConfirmacoes ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
             </div>
           ) : confirmacoes.length === 0 ? (
-            <p className="text-center text-muted-foreground py-6">Nenhum voluntário escalado.</p>
+            <p className="text-center text-stone-500 py-6 leading-relaxed">Nenhum voluntário escalado.</p>
           ) : (
             <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
               {confirmacoes.map((c) => (
-                <div key={c.id} className="flex items-center gap-3 p-3 rounded-lg border border-border">
+                <div key={c.id} className="flex items-center gap-3 p-3 rounded-xl border border-stone-200">
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{c.voluntario?.nome ?? 'Voluntário'}</p>
-                    <p className="text-xs text-muted-foreground">{c.funcao}</p>
+                    <p className="font-medium text-sm text-stone-900">{c.voluntario?.nome ?? 'Voluntário'}</p>
+                    <p className="text-xs text-stone-500">{c.funcao}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <div className="flex items-center gap-1.5">
@@ -837,12 +844,12 @@ export default function LeaderEscalas() {
                       </Badge>
                     </div>
                     {c.confirmado_em && (
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[10px] text-stone-500">
                         {format(new Date(c.confirmado_em), "dd/MM 'às' HH:mm", { locale: ptBR })}
                       </p>
                     )}
                     {c.justificativa && (
-                      <p className="text-[10px] text-muted-foreground italic truncate max-w-[140px]" title={c.justificativa}>
+                      <p className="text-[10px] text-stone-500 italic truncate max-w-[140px]" title={c.justificativa}>
                         "{c.justificativa}"
                       </p>
                     )}

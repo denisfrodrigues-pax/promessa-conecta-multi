@@ -160,7 +160,7 @@ export default function CheckinKiosk() {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-neutral-50 flex flex-col">
+    <div className="fixed inset-0 z-[100] bg-stone-50 flex flex-col">
       {/* Topbar do quiosque */}
       <header className="shrink-0 bg-promessa-800 text-white px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
@@ -183,9 +183,9 @@ export default function CheckinKiosk() {
       </header>
 
       {/* Busca */}
-      <div className="shrink-0 px-6 py-5 bg-white border-b">
+      <div className="shrink-0 px-6 py-5 bg-white border-b border-stone-200">
         <div className="relative max-w-2xl mx-auto">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-stone-400" />
           <Input
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
@@ -197,7 +197,7 @@ export default function CheckinKiosk() {
             <button
               aria-label="Limpar busca"
               onClick={() => setBusca('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
             >
               <X className="w-6 h-6" />
             </button>
@@ -209,11 +209,11 @@ export default function CheckinKiosk() {
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="max-w-5xl mx-auto space-y-8">
           <section>
-            <h2 className="text-lg font-semibold text-neutral-700 mb-3">
+            <h2 className="text-lg font-semibold text-stone-700 mb-3">
               Toque para fazer check-in {busca && `— resultados para "${busca}"`}
             </h2>
             {resultados.length === 0 ? (
-              <div className="py-10 text-center text-muted-foreground text-lg">
+              <div className="py-10 text-center text-stone-500 text-lg">
                 {busca ? 'Nenhuma criança encontrada.' : 'Todas as crianças já fizeram check-in.'}
               </div>
             ) : (
@@ -223,7 +223,7 @@ export default function CheckinKiosk() {
                     key={c.id}
                     onClick={() => handleTapCrianca(c)}
                     disabled={checkinMutation.isPending}
-                    className="flex items-center gap-3 p-4 rounded-2xl bg-white border-2 border-neutral-200 hover:border-promessa-400 active:bg-promessa-50 transition-colors text-left disabled:opacity-50"
+                    className="flex items-center gap-3 p-4 rounded-2xl bg-white border-2 border-stone-200 hover:border-promessa-400 active:bg-promessa-50 transition-colors text-left disabled:opacity-50"
                   >
                     <Avatar className="w-14 h-14 shrink-0">
                       <AvatarImage src={c.foto_url ?? undefined} alt={c.nome} />
@@ -231,7 +231,7 @@ export default function CheckinKiosk() {
                         {getInitials(c.nome)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-lg font-medium text-neutral-900 truncate">{c.nome}</span>
+                    <span className="text-lg font-medium text-stone-900 truncate">{c.nome}</span>
                   </button>
                 ))}
               </div>
@@ -239,11 +239,11 @@ export default function CheckinKiosk() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-neutral-700 mb-3">
+            <h2 className="text-lg font-semibold text-stone-700 mb-3">
               Presentes agora — toque para check-out
             </h2>
             {presentes.length === 0 ? (
-              <div className="py-10 text-center text-muted-foreground text-lg">
+              <div className="py-10 text-center text-stone-500 text-lg">
                 Nenhuma criança presente no momento.
               </div>
             ) : (
@@ -261,15 +261,15 @@ export default function CheckinKiosk() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-neutral-900 truncate">
+                      <p className="font-medium text-stone-900 truncate">
                         {ci.mca_criancas?.nome ?? 'Visitante'}
                       </p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <p className="text-xs text-stone-500 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {format(new Date(ci.checkin_at), 'HH:mm')}
                       </p>
                     </div>
-                    <LogOut className="w-5 h-5 text-neutral-400 shrink-0" />
+                    <LogOut className="w-5 h-5 text-stone-400 shrink-0" />
                   </button>
                 ))}
               </div>

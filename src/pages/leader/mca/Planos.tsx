@@ -119,11 +119,11 @@ export default function Planos({ ministerioId: propMid }: { ministerioId?: strin
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-promessa-900">Planos de Aula</h1>
-          <p className="text-muted-foreground text-sm mt-1">Planejamento de conteúdo por sala</p>
+          <p className="text-stone-500 text-sm mt-1 leading-relaxed">Planejamento de conteúdo por sala</p>
         </div>
         <Button onClick={() => { setForm(EMPTY); setModal(true); }}>
           <Plus className="w-4 h-4 mr-2" />Novo Plano
@@ -142,26 +142,27 @@ export default function Planos({ ministerioId: propMid }: { ministerioId?: strin
 
       {isLoading ? (
         <div className="space-y-2">
-          {[1, 2, 3].map(i => <div key={i} className="h-16 bg-neutral-100 rounded-lg animate-pulse" />)}
+          {[1, 2, 3].map(i => <div key={i} className="h-16 bg-stone-100 rounded-xl animate-pulse" />)}
         </div>
       ) : planos.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhum plano de aula cadastrado.
+        <Card className="rounded-2xl shadow-card">
+          <CardContent className="py-16 text-center">
+            <BookOpen className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <p className="font-medium text-stone-600 leading-relaxed">Nenhum plano de aula cadastrado.</p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-2">
           {planos.map(plano => (
-            <Card key={plano.id} className="cursor-pointer hover:border-promessa-300 transition-colors"
+            <Card key={plano.id} className="rounded-2xl shadow-card cursor-pointer hover:border-promessa-300 transition-colors"
               onClick={() => navigate(p(`/leader/${slug}/planos/${plano.id}`))}>
-              <CardContent className="py-3 px-4">
+              <CardContent className="py-3 px-4 min-h-[44px]">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
                     <BookOpen className="w-4 h-4 text-promessa-500 shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{plano.titulo}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <p className="font-medium text-sm truncate text-stone-900">{plano.titulo}</p>
+                      <div className="flex items-center gap-2 text-xs text-stone-500">
                         <Calendar className="w-3 h-3" />
                         {format(new Date(plano.data_aula + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                         <Badge variant="outline" className="text-xs py-0">{plano.mca_salas?.nome}</Badge>
@@ -173,7 +174,7 @@ export default function Planos({ ministerioId: propMid }: { ministerioId?: strin
                       onClick={e => { e.stopPropagation(); setDeleteTarget(plano); }}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
                   </div>
                 </div>
               </CardContent>

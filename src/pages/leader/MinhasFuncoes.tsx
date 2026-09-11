@@ -190,11 +190,11 @@ export default function MinhasFuncoes() {
   if (!ministerioId) {
     return (
       <Card>
-        <CardContent className="py-12">
+        <CardContent className="py-16 bg-stone-50">
           <div className="text-center">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">Nenhum ministério atribuído</h3>
-            <p className="text-muted-foreground">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-stone-300" />
+            <h3 className="text-lg font-semibold mb-2 text-stone-900">Nenhum ministério atribuído</h3>
+            <p className="text-stone-600 leading-relaxed">
               Você ainda não é líder de nenhum ministério. Entre em contato com um administrador.
             </p>
           </div>
@@ -204,13 +204,13 @@ export default function MinhasFuncoes() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-stone-50">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">Funções do Ministério</h1>
-          <p className="text-muted-foreground mt-1">Gerencie as funções de {ministerioNome}</p>
+          <h1 className="text-3xl font-display font-bold tracking-tight text-stone-900">Funções do Ministério</h1>
+          <p className="text-stone-600 mt-1 leading-relaxed">Gerencie as funções de {ministerioNome}</p>
         </div>
-        <Button onClick={handleCreate} className="shadow-sm">
+        <Button onClick={handleCreate} className="shadow-soft min-h-[44px]">
           <Plus className="w-4 h-4 mr-2" />
           Nova Função
         </Button>
@@ -219,19 +219,19 @@ export default function MinhasFuncoes() {
       <Card className="shadow-card">
         <CardHeader className="pb-4">
           <CardTitle className="text-lg">{ministerioNome}</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-stone-500">
             {funcoes.length} função(ões) cadastrada(s)
           </p>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
               <Input
                 placeholder="Buscar função..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 rounded-xl min-h-[44px]"
               />
             </div>
           </div>
@@ -249,16 +249,18 @@ export default function MinhasFuncoes() {
             <TableBody>
               {filteredFuncoes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    <ListChecks className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    Nenhuma função cadastrada
+                  <TableCell colSpan={4} className="text-center py-14">
+                    <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                      <ListChecks className="w-7 h-7 text-stone-400" />
+                    </div>
+                    <p className="text-stone-600 leading-relaxed">Nenhuma função cadastrada ainda. Crie a primeira para organizar sua equipe.</p>
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredFuncoes.map((funcao) => (
                   <TableRow key={funcao.id}>
-                    <TableCell className="font-medium">{funcao.nome}</TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="font-medium text-stone-900">{funcao.nome}</TableCell>
+                    <TableCell className="text-stone-500">
                       {funcao.descricao || '-'}
                     </TableCell>
                     <TableCell>

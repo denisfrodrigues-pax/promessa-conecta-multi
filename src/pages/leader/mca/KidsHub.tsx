@@ -12,7 +12,7 @@ export default function KidsHub() {
 
   return (
     <Tabs defaultValue="criancas" className="space-y-4">
-      <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
+      <TabsList className="flex flex-wrap h-auto gap-1.5 bg-stone-100 p-1.5">
         <TabsTrigger value="criancas" className="flex items-center gap-1.5 data-[state=active]:bg-white">
           <Baby className="w-4 h-4" />Crianças
         </TabsTrigger>

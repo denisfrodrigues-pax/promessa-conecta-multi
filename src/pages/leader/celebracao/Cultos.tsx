@@ -144,16 +144,19 @@ export default function Cultos() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Cultos</h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <h1 className="text-2xl font-bold text-stone-900">Cultos</h1>
+        <p className="text-stone-500 text-sm mt-1 leading-relaxed">
           Eventos em que o ministério de celebração foi convocado
         </p>
       </div>
 
       {(!eventos || eventos.length === 0) ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Inbox className="w-12 h-12 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">Nenhum evento convocado ainda.</p>
+          <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+            <Inbox className="w-8 h-8 text-stone-400" />
+          </div>
+          <p className="text-lg font-semibold text-stone-900 mb-1">Nenhum evento convocado ainda.</p>
+          <p className="text-sm text-stone-500 leading-relaxed">Os eventos aparecem aqui quando o admin convoca este ministério.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -167,22 +170,22 @@ export default function Cultos() {
               <div key={group.periodoId}>
                 {/* Cabeçalho clicável do período */}
                 <div
-                  className="flex items-center gap-2 mb-1 px-1 py-2 rounded-lg hover:bg-muted/40 cursor-pointer select-none transition-colors"
+                  className="flex items-center gap-2 mb-1 px-1 py-2 min-h-[44px] rounded-xl hover:bg-stone-100 cursor-pointer select-none transition-colors"
                   onClick={() => togglePeriodo(group.periodoId)}
                 >
                   {periodosAbertos.has(group.periodoId)
-                    ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
-                    : <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                    ? <ChevronDown className="w-4 h-4 text-stone-400 shrink-0" />
+                    : <ChevronRight className="w-4 h-4 text-stone-400 shrink-0" />
                   }
                   <div className="w-7 h-7 rounded-lg bg-promessa-100 flex items-center justify-center shrink-0">
                     <CalendarDays className="w-3.5 h-3.5 text-promessa-600" />
                   </div>
                   <div className="flex-1 flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-sm text-foreground">{group.nome}</span>
+                    <span className="font-semibold text-sm text-stone-900">{group.nome}</span>
                     {mesAno && (
                       <Badge variant="secondary" className="text-xs capitalize">{mesAno}</Badge>
                     )}
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-stone-500">
                       {group.eventos.length} evento{group.eventos.length !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -203,7 +206,7 @@ export default function Cultos() {
                       return (
                         <Card
                           key={ev.id}
-                          className="cursor-pointer hover:border-promessa-300 hover:shadow-md transition-all"
+                          className="cursor-pointer hover:border-promessa-300 hover:shadow-elevated transition-all"
                           onClick={() => navigate(p(`/leader/${slug}/cultos/${evento.id}`))}
                         >
                           <CardContent className="p-4 flex items-center justify-between gap-4">
@@ -212,8 +215,8 @@ export default function Cultos() {
                                 <BookOpen className="w-5 h-5 text-promessa-600" />
                               </div>
                               <div className="min-w-0">
-                                <p className="font-medium text-foreground truncate">{evento.titulo}</p>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
+                                <p className="font-medium text-stone-900 truncate">{evento.titulo}</p>
+                                <div className="flex items-center gap-2 text-sm text-stone-500 mt-0.5">
                                   <CalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
                                   <span>
                                     {format(new Date(evento.data_evento + 'T12:00:00'), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
@@ -229,7 +232,7 @@ export default function Cultos() {
                               <Badge variant={STATUS_VARIANT[ev.status] ?? 'outline'}>
                                 {STATUS_LABEL[ev.status] ?? ev.status}
                               </Badge>
-                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                              <ChevronRight className="w-4 h-4 text-stone-400" />
                             </div>
                           </CardContent>
                         </Card>

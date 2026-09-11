@@ -131,56 +131,58 @@ export default function EscalaCulto() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Escala de Cultos</h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <h1 className="text-2xl font-bold text-stone-900">Escala de Cultos</h1>
+        <p className="text-stone-500 text-sm mt-1 leading-relaxed">
           Eventos em que o ministério foi convocado
         </p>
       </div>
 
       {periodoGroups.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Inbox className="w-12 h-12 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">Nenhum evento convocado ainda.</p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+            <Inbox className="w-8 h-8 text-stone-400" />
+          </div>
+          <p className="text-lg font-semibold text-stone-900 mb-1">Nenhum evento convocado ainda.</p>
+          <p className="text-sm text-stone-500 leading-relaxed">
             Os eventos aparecem aqui quando o admin convoca este ministério.
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {periodoGroups.map((group) => {
             const isOpen = periodosAbertos.has(group.periodoId);
             return (
-              <div key={group.periodoId} className="rounded-lg border border-border overflow-hidden">
+              <div key={group.periodoId} className="rounded-2xl border border-stone-200 shadow-soft overflow-hidden">
                 <button
                   onClick={() => togglePeriodo(group.periodoId)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/70 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 min-h-[44px] bg-stone-50 hover:bg-stone-100 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     {isOpen
                       ? <ChevronDown className="w-4 h-4 text-promessa-600" />
                       : <ChevronRight className="w-4 h-4 text-promessa-600" />
                     }
-                    <span className="font-semibold text-sm text-foreground">{group.nome}</span>
+                    <span className="font-semibold text-sm text-stone-900">{group.nome}</span>
                     <Badge variant="outline" className="text-xs ml-1">
                       {group.eventos.length} evento{group.eventos.length !== 1 ? 's' : ''}
                     </Badge>
                   </div>
                   {group.mes !== null && group.ano !== null && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-stone-500">
                       {format(new Date(group.ano, group.mes - 1, 1), 'MMMM yyyy', { locale: ptBR })}
                     </span>
                   )}
                 </button>
 
                 {isOpen && (
-                  <div className="divide-y divide-border">
+                  <div className="divide-y divide-stone-100">
                     {group.eventos.map((ev) => {
                       const evento = ev.eventos_escala;
                       if (!evento) return null;
                       return (
                         <div
                           key={ev.id}
-                          className="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer hover:bg-accent/30 transition-colors"
+                          className="flex items-center justify-between gap-4 px-4 py-3 min-h-[44px] cursor-pointer hover:bg-accent/30 transition-colors"
                           onClick={() => navigate(p(`/leader/${slug}/escala-culto/${evento.id}`))}
                         >
                           <div className="flex items-center gap-3 min-w-0">
@@ -188,8 +190,8 @@ export default function EscalaCulto() {
                               <Music className="w-4 h-4 text-promessa-600" />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-medium text-sm text-foreground truncate">{evento.titulo}</p>
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                              <p className="font-medium text-sm text-stone-900 truncate">{evento.titulo}</p>
+                              <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-0.5">
                                 <CalendarDays className="w-3 h-3 flex-shrink-0" />
                                 <span>
                                   {format(parseISO(evento.data_evento), "EEEE, d 'de' MMMM", { locale: ptBR })}
@@ -202,7 +204,7 @@ export default function EscalaCulto() {
                             <Badge variant={STATUS_VARIANT[ev.status] ?? 'outline'} className="text-xs">
                               {STATUS_LABEL[ev.status] ?? ev.status}
                             </Badge>
-                            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                            <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
                           </div>
                         </div>
                       );

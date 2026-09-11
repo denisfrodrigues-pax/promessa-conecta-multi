@@ -169,15 +169,15 @@ export default function VisitantesHistorico() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Histórico de Visitantes</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <h1 className="text-2xl font-bold text-stone-900">Histórico de Visitantes</h1>
+        <p className="text-sm text-stone-500 mt-1 leading-relaxed">
           {data ? `${data.total} visitante${data.total !== 1 ? 's' : ''}` : '…'}
         </p>
       </div>
 
       <div className="flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-48">
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
           <Input
             className="pl-9"
             placeholder="Buscar por nome ou telefone…"
@@ -186,7 +186,7 @@ export default function VisitantesHistorico() {
           />
         </div>
         <select
-          className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+          className="h-11 sm:h-9 rounded-xl border border-stone-200 bg-white px-3 py-1 text-sm shadow-soft"
           value={filtroStatus}
           onChange={(e) => handleStatus(e.target.value)}
         >
@@ -208,28 +208,30 @@ export default function VisitantesHistorico() {
         </div>
       ) : !data?.rows.length ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Users className="w-12 h-12 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+            <Users className="w-7 h-7 text-primary" />
+          </div>
+          <p className="text-stone-600 leading-relaxed">
             {busca || filtroStatus ? 'Nenhum visitante encontrado.' : 'Nenhum visitante cadastrado.'}
           </p>
         </div>
       ) : (
         <>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {data.rows.map((v) => {
               const status = v.status ?? 'novo';
               return (
-                <Card key={v.id} className="hover:shadow-sm transition-shadow">
-                  <CardContent className="p-3">
+                <Card key={v.id} className="hover:shadow-soft transition-shadow rounded-2xl">
+                  <CardContent className="p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium text-sm text-foreground">{v.nome}</p>
+                          <p className="font-medium text-sm text-stone-900">{v.nome}</p>
                           <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${STATUS_COLORS[status] ?? STATUS_COLORS['novo']}`}>
                             {STATUS_LABELS[status] ?? status}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                        <div className="flex items-center gap-3 text-xs text-stone-500 mt-0.5 flex-wrap">
                           {v.telefone && <span>{v.telefone}</span>}
                           {v.culto && (
                             <span className="flex items-center gap-1">
@@ -241,30 +243,30 @@ export default function VisitantesHistorico() {
                           )}
                         </div>
                         {v.observacoes && (
-                          <div className="flex items-start gap-1.5 text-xs text-muted-foreground mt-0.5">
-                            <FileText className="w-3 h-3 mt-0.5 shrink-0 text-muted-foreground/70" />
+                          <div className="flex items-start gap-1.5 text-xs text-stone-500 mt-0.5">
+                            <FileText className="w-3 h-3 mt-0.5 shrink-0 text-stone-400" />
                             <p className="line-clamp-2 leading-relaxed">{v.observacoes}</p>
                           </div>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
                         {hasValidPhone(v.telefone) && (
                           <a href={getWhatsAppUrl(v.telefone, churchNome)} target="_blank" rel="noopener noreferrer">
-                            <Button variant="outline" size="sm" className="text-green-600 border-green-300 hover:bg-green-50">
+                            <Button variant="outline" size="sm" className="min-h-[44px] sm:min-h-0 text-green-600 border-green-300 hover:bg-green-50">
                               <MessageCircle className="w-4 h-4 mr-1" />WhatsApp
                             </Button>
                           </a>
                         )}
                         {v.observacoes && (
-                          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setVerObs(v)}>
+                          <Button variant="ghost" size="sm" className="min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-stone-400" onClick={() => setVerObs(v)}>
                             <Eye className="w-4 h-4" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="sm" onClick={() => abrirEdicao(v)}>
+                        <Button variant="ghost" size="sm" className="min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0" onClick={() => abrirEdicao(v)}>
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => abrirDelecao(v)}>
+                        <Button variant="ghost" size="sm" className="min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => abrirDelecao(v)}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>

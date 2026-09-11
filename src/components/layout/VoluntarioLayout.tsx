@@ -18,7 +18,7 @@ const VoluntarioLayout = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -33,8 +33,8 @@ const VoluntarioLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <header className="bg-background border-b sticky top-0 z-50">
+    <div className="min-h-screen bg-stone-50">
+      <header className="bg-white border-b border-stone-200 shadow-soft sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-3">
@@ -42,24 +42,24 @@ const VoluntarioLayout = () => {
                 <Heart className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="font-semibold text-foreground text-sm">Painel Voluntário</h1>
-                <p className="text-xs text-muted-foreground">{config?.nome || "Igreja"}</p>
+                <h1 className="font-semibold text-stone-900 text-sm">Painel Voluntário</h1>
+                <p className="text-xs text-stone-500">{config?.nome || "Igreja"}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               {profile && (
-                <span className="text-sm text-muted-foreground hidden sm:inline">
+                <span className="text-sm text-stone-500 hidden sm:inline">
                   {profile.nome}
                 </span>
               )}
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="ghost" size="sm" asChild className="rounded-xl min-h-[44px]">
                 <Link to={p('/app')}>
                   <Home className="w-4 h-4 mr-1" />
                   <span className="hidden sm:inline">Início</span>
                 </Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="rounded-xl min-h-[44px]">
                 <LogOut className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Sair</span>
               </Button>
@@ -68,7 +68,7 @@ const VoluntarioLayout = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-8">
         <Outlet />
       </main>
     </div>

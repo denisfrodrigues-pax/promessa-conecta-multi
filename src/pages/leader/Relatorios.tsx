@@ -115,10 +115,10 @@ function KPICard({
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
+            <p className="text-sm text-stone-500">{title}</p>
+            <p className="text-2xl font-bold text-stone-900">{value}</p>
             {subtitle && (
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
+              <p className="text-xs text-stone-500">{subtitle}</p>
             )}
             {trend && (
               <div className="flex items-center gap-1 mt-1">
@@ -372,12 +372,12 @@ export default function LeaderRelatorios() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 bg-stone-50">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">Relatórios</h1>
-          <p className="text-muted-foreground">Acompanhe o desempenho das suas bases e equipes</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Relatórios</h1>
+          <p className="text-stone-600 leading-relaxed">Acompanhe o desempenho das suas bases e equipes</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={periodo} onValueChange={setPeriodo}>
@@ -390,7 +390,7 @@ export default function LeaderRelatorios() {
               <SelectItem value="90">Últimos 90 dias</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" onClick={exportarCSV}>
+          <Button variant="outline" onClick={exportarCSV} className="min-h-[44px]">
             <Download className="w-4 h-4 mr-2" />
             Exportar
           </Button>
@@ -431,16 +431,16 @@ export default function LeaderRelatorios() {
 
       {/* Tabs for different views */}
       <Tabs defaultValue="visao-geral" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="visao-geral">
+        <TabsList className="bg-stone-100">
+          <TabsTrigger value="visao-geral" className="min-h-[44px]">
             <BarChart3 className="w-4 h-4 mr-2" />
             Visão Geral
           </TabsTrigger>
-          <TabsTrigger value="escalas">
+          <TabsTrigger value="escalas" className="min-h-[44px]">
             <PieChart className="w-4 h-4 mr-2" />
             Escalas
           </TabsTrigger>
-          <TabsTrigger value="detalhes">
+          <TabsTrigger value="detalhes" className="min-h-[44px]">
             <FileText className="w-4 h-4 mr-2" />
             Detalhes
           </TabsTrigger>
@@ -549,7 +549,7 @@ export default function LeaderRelatorios() {
                       </RechartsPieChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                    <div className="h-full flex items-center justify-center text-stone-500 leading-relaxed">
                       Nenhuma escala no período
                     </div>
                   )}
@@ -581,10 +581,10 @@ export default function LeaderRelatorios() {
                     {escalaStats.ausentes}
                   </Badge>
                 </div>
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t border-stone-200">
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Total de Escalas</span>
-                    <span className="font-bold text-lg">{escalaStats.total}</span>
+                    <span className="text-stone-500">Total de Escalas</span>
+                    <span className="font-bold text-lg text-stone-900">{escalaStats.total}</span>
                   </div>
                 </div>
               </CardContent>
@@ -599,29 +599,31 @@ export default function LeaderRelatorios() {
             </CardHeader>
             <CardContent>
               {bases.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Você não lidera nenhuma base ativa.</p>
+                <div className="text-center py-14">
+                  <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-7 h-7 text-stone-400" />
+                  </div>
+                  <p className="text-stone-600 leading-relaxed">Você não lidera nenhuma base ativa.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-4 font-medium">Base</th>
-                        <th className="text-center py-3 px-4 font-medium">Membros</th>
-                        <th className="text-center py-3 px-4 font-medium">Visitantes</th>
-                        <th className="text-center py-3 px-4 font-medium">Capacidade</th>
-                        <th className="text-center py-3 px-4 font-medium">Ocupação</th>
+                      <tr className="border-b border-stone-200">
+                        <th className="text-left py-3 px-4 font-medium text-stone-700">Base</th>
+                        <th className="text-center py-3 px-4 font-medium text-stone-700">Membros</th>
+                        <th className="text-center py-3 px-4 font-medium text-stone-700">Visitantes</th>
+                        <th className="text-center py-3 px-4 font-medium text-stone-700">Capacidade</th>
+                        <th className="text-center py-3 px-4 font-medium text-stone-700">Ocupação</th>
                       </tr>
                     </thead>
                     <tbody>
                       {bases.map((base) => (
-                        <tr key={base.id} className="border-b hover:bg-muted/50 transition-colors">
-                          <td className="py-3 px-4 font-medium">{base.nome}</td>
-                          <td className="text-center py-3 px-4">{base.totalMembros}</td>
-                          <td className="text-center py-3 px-4">{base.visitantesAtivos}</td>
-                          <td className="text-center py-3 px-4">{base.capacidade}</td>
+                        <tr key={base.id} className="border-b border-stone-200 hover:bg-stone-50 transition-colors">
+                          <td className="py-3 px-4 font-medium text-stone-900">{base.nome}</td>
+                          <td className="text-center py-3 px-4 text-stone-700">{base.totalMembros}</td>
+                          <td className="text-center py-3 px-4 text-stone-700">{base.visitantesAtivos}</td>
+                          <td className="text-center py-3 px-4 text-stone-700">{base.capacidade}</td>
                           <td className="text-center py-3 px-4">
                             <Badge 
                               variant={base.ocupacao >= 90 ? 'destructive' : base.ocupacao >= 70 ? 'secondary' : 'outline'}

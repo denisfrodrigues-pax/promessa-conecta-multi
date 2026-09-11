@@ -122,19 +122,23 @@ export default function Turmas() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-promessa-900">Turmas</h1>
-          <p className="text-muted-foreground text-sm mt-1">Gerenciamento das turmas de ensino</p>
+          <p className="text-stone-500 text-sm mt-1 leading-relaxed">Gerenciamento das turmas de ensino</p>
         </div>
         <Button onClick={openCreate}><Plus className="w-4 h-4 mr-2" />Nova Turma</Button>
       </div>
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => <div key={i} className="h-32 bg-neutral-100 rounded-lg animate-pulse" />)}
+          {[1, 2, 3].map(i => <div key={i} className="h-32 bg-stone-100 rounded-2xl animate-pulse" />)}
         </div>
       ) : turmas.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhuma turma cadastrada ainda.
+          <CardContent className="py-12 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+              <BookOpen className="w-8 h-8 text-stone-400" />
+            </div>
+            <p className="text-lg font-semibold text-stone-900 mb-1">Nenhuma turma cadastrada ainda.</p>
+            <p className="text-sm text-stone-500 leading-relaxed">Crie a primeira turma para começar a organizar as aulas.</p>
           </CardContent>
         </Card>
       ) : (
@@ -154,7 +158,7 @@ export default function Turmas() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {t.descricao && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">{t.descricao}</p>
+                  <p className="text-sm text-stone-500 line-clamp-2 leading-relaxed">{t.descricao}</p>
                 )}
                 <div className="flex gap-2 pt-1">
                   <Button size="sm" variant="outline" onClick={() => openEdit(t)}>

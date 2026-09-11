@@ -83,55 +83,55 @@ export default function VoluntarioDashboard() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-64" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-32" />)}
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Painel do Voluntário</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-bold text-stone-900">Painel do Voluntário</h1>
+        <p className="text-stone-500 leading-relaxed">
           Olá, {profile?.nome?.split(' ')[0]}! Acesse os módulos dos seus ministérios.
         </p>
       </div>
 
       {myMinistries.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Heart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhum ministério vinculado</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
+        <Card className="rounded-2xl shadow-card">
+          <CardContent className="py-16 text-center">
+            <Heart className="w-12 h-12 mx-auto text-stone-300 mb-4" />
+            <h3 className="text-lg font-semibold mb-2 text-stone-900">Nenhum ministério vinculado</h3>
+            <p className="text-stone-500 max-w-md mx-auto leading-relaxed">
               Você ainda não está vinculado a um ministério ativo.
               Fale com a administração da igreja para ser adicionado.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {myMinistries.map(ministry => {
             const config = getMinisterioIconConfig(tipoMap[ministry.ministerio_id]);
             const Icon = config.icon;
             return (
               <Card
                 key={ministry.ministerio_id}
-                className="hover:shadow-md transition-shadow cursor-pointer group"
+                className="rounded-2xl shadow-card hover:shadow-soft transition-shadow cursor-pointer group"
                 onClick={() => handleMinistryClick(ministry)}
               >
-                <CardContent className="p-5 flex items-center gap-4">
+                <CardContent className="p-6 flex items-center gap-4 min-h-[44px]">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${config.color}`}>
                     <Icon className="w-6 h-6" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground truncate">{ministry.nome}</p>
-                    <p className="text-sm text-muted-foreground truncate">
+                    <p className="font-semibold text-stone-900 truncate">{ministry.nome}</p>
+                    <p className="text-sm text-stone-500 truncate">
                       {ministry.slug ? 'Clique para acessar' : 'Em breve'}
                     </p>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <ChevronRight className="w-5 h-5 text-stone-400 group-hover:text-stone-700 transition-colors" />
                 </CardContent>
               </Card>
             );
@@ -141,7 +141,7 @@ export default function VoluntarioDashboard() {
 
       {/* Próximas escalas */}
       {(loadingProximas || proximasEscalas.length > 0) && (
-        <Card>
+        <Card className="rounded-2xl shadow-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <CalendarDays className="w-4 h-4 text-promessa-600" />
@@ -154,22 +154,22 @@ export default function VoluntarioDashboard() {
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full" />)}
               </div>
             ) : (
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-stone-200">
                 {proximasEscalas.map((e) => (
-                  <div key={e.id} className="flex items-center gap-3 py-2.5">
+                  <div key={e.id} className="flex items-center gap-3 py-2.5 min-h-[44px]">
                     <div className="w-10 text-center shrink-0">
                       <p className="text-sm font-bold text-promessa-700 leading-none">
                         {format(parseLocalDate(e.data), 'dd')}
                       </p>
-                      <p className="text-[10px] text-muted-foreground uppercase">
+                      <p className="text-[10px] text-stone-500 uppercase">
                         {format(parseLocalDate(e.data), 'MMM', { locale: ptBR })}
                       </p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
+                      <p className="text-sm font-medium truncate text-stone-900">
                         {e.eventos_escala?.titulo ?? ministerioNomeMap[e.ministerio_id] ?? 'Escala'}
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 text-xs text-stone-500">
                         <span className="truncate">{ministerioNomeMap[e.ministerio_id]}</span>
                         <span>·</span>
                         <span className="truncate">{e.funcao}</span>
@@ -177,7 +177,7 @@ export default function VoluntarioDashboard() {
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {statusIcon(e.status)}
-                      <span className="text-xs text-muted-foreground hidden sm:block">
+                      <span className="text-xs text-stone-500 hidden sm:block">
                         {statusLabel[e.status] ?? e.status}
                       </span>
                     </div>

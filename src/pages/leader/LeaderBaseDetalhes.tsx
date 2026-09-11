@@ -174,10 +174,12 @@ function LeaderBaseDetalhesSkeleton() {
 // ===== EMPTY STATES =====
 function EmptyMembros() {
   return (
-    <div className="text-center py-12">
-      <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-      <p className="text-muted-foreground font-medium">Nenhum membro nesta base</p>
-      <p className="text-sm text-muted-foreground/70 mt-1">
+    <div className="text-center py-14">
+      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+        <Users className="h-7 w-7 text-primary" />
+      </div>
+      <p className="text-stone-700 font-medium">Nenhum membro nesta base</p>
+      <p className="text-sm text-stone-500 mt-1 leading-relaxed">
         Os membros serão listados aqui quando adicionados pelo administrador.
       </p>
     </div>
@@ -186,10 +188,12 @@ function EmptyMembros() {
 
 function EmptyVisitantes() {
   return (
-    <div className="text-center py-12">
-      <UserCheck className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-      <p className="text-muted-foreground font-medium">Nenhum visitante nesta base</p>
-      <p className="text-sm text-muted-foreground/70 mt-1">
+    <div className="text-center py-14">
+      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+        <UserCheck className="h-7 w-7 text-primary" />
+      </div>
+      <p className="text-stone-700 font-medium">Nenhum visitante nesta base</p>
+      <p className="text-sm text-stone-500 mt-1 leading-relaxed">
         Os visitantes serão listados aqui quando vinculados pelo administrador.
       </p>
     </div>
@@ -207,15 +211,15 @@ interface KPICardProps {
 
 function KPICard({ title, value, subtitle, icon, progress }: KPICardProps) {
   return (
-    <Card>
+    <Card className="rounded-2xl">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
-            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+            <p className="text-sm text-stone-500">{title}</p>
+            <p className="text-2xl font-bold text-stone-900">{value}</p>
+            {subtitle && <p className="text-xs text-stone-500">{subtitle}</p>}
           </div>
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
             {icon}
           </div>
         </div>
@@ -593,10 +597,12 @@ export default function LeaderBaseDetalhes() {
 
   if (!base) {
     return (
-      <div className="text-center py-12">
-        <Building2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-        <p className="text-muted-foreground font-medium">Base não encontrada</p>
-        <p className="text-sm text-muted-foreground/70 mt-1">
+      <div className="text-center py-14">
+        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+          <Building2 className="h-7 w-7 text-primary" />
+        </div>
+        <p className="text-stone-700 font-medium">Base não encontrada</p>
+        <p className="text-sm text-stone-500 mt-1 leading-relaxed">
           A base pode ter sido removida ou você não tem permissão para acessá-la.
         </p>
         <Button variant="link" onClick={() => navigate(p('/leader/bases'))} className="mt-4">
@@ -638,12 +644,12 @@ export default function LeaderBaseDetalhes() {
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-display font-bold">{base.nome}</h1>
+              <h1 className="text-xl font-display font-bold text-stone-900">{base.nome}</h1>
               <Badge variant={base.status === 'ativo' ? 'success' : 'secondary'}>
                 {base.status === 'ativo' ? 'Ativo' : 'Inativo'}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">Detalhes da base que você lidera</p>
+            <p className="text-sm text-stone-500">Detalhes da base que você lidera</p>
           </div>
         </div>
         
@@ -656,14 +662,14 @@ export default function LeaderBaseDetalhes() {
 
       {/* ===== DIALOG DE EDIÇÃO ===== */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>Editar Base</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="leading-relaxed">
               Atualize as informações da base. O endereço só pode ser alterado por um administrador.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-nome">Nome da Base *</Label>
@@ -776,7 +782,7 @@ export default function LeaderBaseDetalhes() {
       </Dialog>
 
       {/* ===== KPIs ===== */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <KPICard
           title="Total de Membros"
           value={membrosBase.length}
@@ -821,13 +827,13 @@ export default function LeaderBaseDetalhes() {
 
         {/* ===== TAB: MEMBROS ===== */}
         <TabsContent value="membros" className="space-y-4">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <CardTitle className="text-base">Membros da Base</CardTitle>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1 sm:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
                     <Input
                       placeholder="Buscar membro..."
                       value={searchMembro}
@@ -852,7 +858,7 @@ export default function LeaderBaseDetalhes() {
               {membrosFiltrados.length === 0 ? (
                 <EmptyMembros />
               ) : (
-                <div className="rounded-lg border overflow-hidden">
+                <div className="rounded-xl border border-stone-200 overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -874,7 +880,7 @@ export default function LeaderBaseDetalhes() {
                               </Avatar>
                               <div>
                                 <div className="flex items-center gap-1.5">
-                                  <p className="font-medium text-sm">{bm.nome}</p>
+                                  <p className="font-medium text-sm text-stone-900">{bm.nome}</p>
                                   {bm.origem === 'profile' && (
                                     <Badge variant="info" className="text-[10px] px-1.5 py-0">via perfil</Badge>
                                   )}
@@ -885,13 +891,13 @@ export default function LeaderBaseDetalhes() {
                                     <Badge variant="promessa" className="text-[10px] px-1.5 py-0">perfil + vínculo</Badge>
                                   )}
                                 </div>
-                                <p className="text-xs text-muted-foreground sm:hidden">
+                                <p className="text-xs text-stone-500 sm:hidden">
                                   {bm.telefone || 'Sem telefone'}
                                 </p>
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                          <TableCell className="hidden sm:table-cell text-sm text-stone-500">
                             {bm.telefone || '–'}
                           </TableCell>
                           <TableCell className="text-right">
@@ -901,7 +907,7 @@ export default function LeaderBaseDetalhes() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                    className="h-11 w-11 sm:h-8 sm:w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
                                     onClick={() => window.open(getWhatsAppUrl(bm.telefone, undefined, churchNome), '_blank')}
                                     title="WhatsApp"
                                     aria-label="Enviar WhatsApp"
@@ -911,7 +917,7 @@ export default function LeaderBaseDetalhes() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                    className="h-11 w-11 sm:h-8 sm:w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                     onClick={() => window.open(`tel:${cleanPhone(bm.telefone)}`, '_blank')}
                                     title="Ligar"
                                     aria-label="Ligar"
@@ -923,7 +929,7 @@ export default function LeaderBaseDetalhes() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                className="h-11 w-11 sm:h-8 sm:w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                                 onClick={() => handleRemoveMember(bm.bases_membros_id)}
                                 disabled={removingMemberId === bm.bases_membros_id}
                                 title="Remover da base"
@@ -948,14 +954,14 @@ export default function LeaderBaseDetalhes() {
 
           {/* Modal Adicionar Membro */}
           <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md rounded-2xl">
               <DialogHeader>
                 <DialogTitle>Adicionar Membro à Base</DialogTitle>
-                <DialogDescription>Busque pelo nome ou e-mail da pessoa.</DialogDescription>
+                <DialogDescription className="leading-relaxed">Busque pelo nome ou e-mail da pessoa.</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
                   <Input
                     placeholder="Buscar por nome ou e-mail..."
                     value={addMemberSearch}
@@ -967,20 +973,20 @@ export default function LeaderBaseDetalhes() {
                 <div className="max-h-64 overflow-y-auto space-y-1">
                   {searchingPeople && (
                     <div className="flex items-center justify-center py-6">
-                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      <Loader2 className="h-5 w-5 animate-spin text-stone-400" />
                     </div>
                   )}
                   {!searchingPeople && eligiblePeople.length === 0 && addMemberSearch && (
-                    <p className="text-sm text-muted-foreground text-center py-6">Nenhuma pessoa encontrada</p>
+                    <p className="text-sm text-stone-500 text-center py-6">Nenhuma pessoa encontrada</p>
                   )}
                   {!searchingPeople && eligiblePeople.map((person) => (
                     <div
                       key={person.id}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex items-center justify-between p-2 rounded-xl hover:bg-stone-50 transition-colors"
                     >
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{person.nome}</p>
-                        <p className="text-xs text-muted-foreground truncate">{person.email}</p>
+                        <p className="text-sm font-medium text-stone-900 truncate">{person.nome}</p>
+                        <p className="text-xs text-stone-500 truncate">{person.email}</p>
                       </div>
                       <Button
                         size="sm"
@@ -1004,13 +1010,13 @@ export default function LeaderBaseDetalhes() {
 
         {/* ===== TAB: VISITANTES ===== */}
         <TabsContent value="visitantes" className="space-y-4">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <CardTitle className="text-base">Visitantes da Base</CardTitle>
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="relative flex-1 sm:w-48">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
                     <Input
                       placeholder="Buscar visitante..."
                       value={searchVisitante}
@@ -1021,7 +1027,7 @@ export default function LeaderBaseDetalhes() {
                   <select
                     value={filtroStatusVisitante}
                     onChange={(e) => setFiltroStatusVisitante(e.target.value)}
-                    className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+                    className="h-11 sm:h-10 px-3 rounded-xl border border-stone-200 bg-white text-sm"
                   >
                     <option value="todos">Todos</option>
                     <option value="novo">Novos</option>
@@ -1042,7 +1048,7 @@ export default function LeaderBaseDetalhes() {
               {visitantesFiltrados.length === 0 ? (
                 <EmptyVisitantes />
               ) : (
-                <div className="rounded-lg border overflow-hidden">
+                <div className="rounded-xl border border-stone-200 overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -1063,14 +1069,14 @@ export default function LeaderBaseDetalhes() {
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="font-medium text-sm">{bv.visitante?.nome}</p>
-                                <p className="text-xs text-muted-foreground sm:hidden">
+                                <p className="font-medium text-sm text-stone-900">{bv.visitante?.nome}</p>
+                                <p className="text-xs text-stone-500 sm:hidden">
                                   {bv.visitante?.telefone || 'Sem telefone'}
                                 </p>
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                          <TableCell className="hidden sm:table-cell text-sm text-stone-500">
                             {bv.visitante?.telefone || '–'}
                           </TableCell>
                           <TableCell>
@@ -1085,7 +1091,7 @@ export default function LeaderBaseDetalhes() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                    className="h-11 w-11 sm:h-8 sm:w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
                                     onClick={() => window.open(getWhatsAppUrl(bv.visitante?.telefone, undefined, churchNome), '_blank')}
                                     title="WhatsApp"
                                     aria-label="Enviar WhatsApp"
@@ -1095,7 +1101,7 @@ export default function LeaderBaseDetalhes() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                    className="h-11 w-11 sm:h-8 sm:w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                     onClick={() => window.open(`tel:${cleanPhone(bv.visitante?.telefone)}`, '_blank')}
                                     title="Ligar"
                                     aria-label="Ligar"
@@ -1118,7 +1124,7 @@ export default function LeaderBaseDetalhes() {
 
         {/* ===== TAB: PRESENÇAS ===== */}
         <TabsContent value="presencas" className="space-y-4">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Presenças de Hoje</CardTitle>
               <CardDescription>
@@ -1127,15 +1133,17 @@ export default function LeaderBaseDetalhes() {
             </CardHeader>
             <CardContent>
               {presencasHoje.length === 0 ? (
-                <div className="text-center py-8">
-                  <ClipboardCheck className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                  <p className="text-muted-foreground text-sm">Nenhuma presença registrada hoje</p>
+                <div className="text-center py-10">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                    <ClipboardCheck className="h-6 w-6 text-primary" />
+                  </div>
+                  <p className="text-stone-500 text-sm leading-relaxed">Nenhuma presença registrada hoje</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {presencasHoje.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                      <span className="text-sm font-medium">{p.usuario?.nome || 'Membro'}</span>
+                    <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-stone-50">
+                      <span className="text-sm font-medium text-stone-900">{p.usuario?.nome || 'Membro'}</span>
                       <Badge variant={p.presente ? 'success' : 'secondary'}>
                         {p.presente ? 'Presente' : 'Ausente'}
                       </Badge>
@@ -1146,19 +1154,21 @@ export default function LeaderBaseDetalhes() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Últimas Presenças</CardTitle>
               <CardDescription>Histórico recente de presenças na base</CardDescription>
             </CardHeader>
             <CardContent>
               {presencas.length === 0 ? (
-                <div className="text-center py-8">
-                  <ClipboardCheck className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                  <p className="text-muted-foreground text-sm">Nenhuma presença registrada ainda</p>
+                <div className="text-center py-10">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                    <ClipboardCheck className="h-6 w-6 text-primary" />
+                  </div>
+                  <p className="text-stone-500 text-sm leading-relaxed">Nenhuma presença registrada ainda</p>
                 </div>
               ) : (
-                <div className="rounded-lg border overflow-hidden">
+                <div className="rounded-xl border border-stone-200 overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -1170,10 +1180,10 @@ export default function LeaderBaseDetalhes() {
                     <TableBody>
                       {presencas.map((p) => (
                         <TableRow key={p.id}>
-                          <TableCell className="font-medium text-sm">
+                          <TableCell className="font-medium text-sm text-stone-900">
                             {p.usuario?.nome || 'Membro'}
                           </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
+                          <TableCell className="text-sm text-stone-500">
                             {format(new Date(p.data), 'dd/MM/yyyy', { locale: ptBR })}
                           </TableCell>
                           <TableCell className="text-right">
@@ -1193,7 +1203,7 @@ export default function LeaderBaseDetalhes() {
 
         {/* ===== TAB: INFORMAÇÕES ===== */}
         <TabsContent value="info" className="space-y-4">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle className="text-base">Informações da Base</CardTitle>
               <CardDescription>Dados gerais sobre esta base</CardDescription>
@@ -1202,8 +1212,8 @@ export default function LeaderBaseDetalhes() {
               {/* Description */}
               {base.descricao && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Descrição</p>
-                  <p className="text-sm">{base.descricao}</p>
+                  <p className="text-sm text-stone-500 mb-1">Descrição</p>
+                  <p className="text-sm text-stone-700 leading-relaxed">{base.descricao}</p>
                 </div>
               )}
 
@@ -1212,53 +1222,53 @@ export default function LeaderBaseDetalhes() {
               {/* Details grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                     <CalendarDays className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Dia da Semana</p>
-                    <p className="font-medium">{base.dia_semana || 'Não definido'}</p>
+                    <p className="text-sm text-stone-500">Dia da Semana</p>
+                    <p className="font-medium text-stone-900">{base.dia_semana || 'Não definido'}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                     <Clock className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Horário</p>
-                    <p className="font-medium">{base.horario || 'Não definido'}</p>
+                    <p className="text-sm text-stone-500">Horário</p>
+                    <p className="font-medium text-stone-900">{base.horario || 'Não definido'}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                     <MapPin className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Local</p>
-                    <p className="font-medium">{base.local || 'Não definido'}</p>
+                    <p className="text-sm text-stone-500">Local</p>
+                    <p className="font-medium text-stone-900">{base.local || 'Não definido'}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                     <Users className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Capacidade</p>
-                    <p className="font-medium">{base.capacidade || 20} pessoas</p>
+                    <p className="text-sm text-stone-500">Capacidade</p>
+                    <p className="font-medium text-stone-900">{base.capacidade || 20} pessoas</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                     <User className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Líder</p>
+                    <p className="text-sm text-stone-500">Líder</p>
                     <div className="flex items-center gap-2">
-                      <p className="font-medium">{base.lider?.nome || 'Você'}</p>
+                      <p className="font-medium text-stone-900">{base.lider?.nome || 'Você'}</p>
                       {base.lider && hasValidPhone(base.lider.telefone) && (
                         <Button
                           variant="ghost"
@@ -1275,11 +1285,11 @@ export default function LeaderBaseDetalhes() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                     <Building2 className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Visibilidade</p>
+                    <p className="text-sm text-stone-500">Visibilidade</p>
                     <Badge variant={base.visibilidade === 'publico' ? 'default' : 'secondary'}>
                       {base.visibilidade === 'publico' ? 'Pública' : 'Privada'}
                     </Badge>

@@ -93,7 +93,7 @@ export default function LeaderMinisterioLayout() {
 
   if (authLoading || loadingMin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -104,11 +104,11 @@ export default function LeaderMinisterioLayout() {
 
   if (error || !ministerio) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <div className="text-center space-y-4">
-          <h2 className="text-xl font-bold text-foreground">Ministério não encontrado</h2>
-          <p className="text-muted-foreground">Você não tem acesso a este ministério ou ele não existe.</p>
-          <Button asChild variant="outline">
+          <h2 className="text-xl font-bold text-stone-900">Ministério não encontrado</h2>
+          <p className="text-stone-500 leading-relaxed">Você não tem acesso a este ministério ou ele não existe.</p>
+          <Button asChild variant="outline" className="rounded-xl min-h-[44px]">
             <RouterNavLink to={p('/leader/hub')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar ao Hub
@@ -207,8 +207,8 @@ export default function LeaderMinisterioLayout() {
   const navItems = navBySlug[ministerio.tipo ?? ''] ?? defaultNavItems;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 bg-white border-b border-neutral-200 shadow-sm">
+    <div className="min-h-screen bg-stone-50">
+      <header className="sticky top-0 z-50 bg-white border-b border-stone-200 shadow-soft">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <RouterNavLink to={p('/leader/hub')} className="flex items-center gap-3">
@@ -216,21 +216,21 @@ export default function LeaderMinisterioLayout() {
             </RouterNavLink>
             <div>
               <h1 className="font-display font-bold text-promessa-700">{ministerio.nome}</h1>
-              <p className="text-xs text-neutral-500">{profile?.nome}</p>
+              <p className="text-xs text-stone-500">{profile?.nome}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="sm" className="text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50">
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+            <Button asChild variant="ghost" size="sm" className="rounded-xl min-h-[44px] text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50">
               <RouterNavLink to={p('/leader/hub')}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Hub
+                <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Hub</span>
               </RouterNavLink>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50">
+            <Button asChild variant="ghost" size="sm" className="rounded-xl min-h-[44px] text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50">
               <RouterNavLink to={p('/app')}>
-                <Home className="w-4 h-4 mr-2" />
-                App
+                <Home className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">App</span>
               </RouterNavLink>
             </Button>
             <UserAvatarMenu size="sm" />
@@ -244,7 +244,7 @@ export default function LeaderMinisterioLayout() {
                 key={item.path}
                 to={item.path}
                 end={item.end}
-                className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50 transition-colors whitespace-nowrap"
+                className="relative flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50 transition-colors whitespace-nowrap"
                 activeClassName="bg-promessa-100 text-promessa-700 font-medium"
               >
                 <item.icon className="w-4 h-4" />
@@ -260,7 +260,7 @@ export default function LeaderMinisterioLayout() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-8">
         <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, ministerioTipo: ministerio.tipo }} />
       </main>
     </div>

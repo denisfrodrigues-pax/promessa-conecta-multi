@@ -23,7 +23,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, ChevronRight, Trash2, BookOpen, Calendar, Paperclip } from 'lucide-react';
+import { Plus, ChevronRight, Trash2, BookOpen, Calendar, Paperclip, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -119,7 +119,7 @@ export default function Planos() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-promessa-900">Espaço do Professor</h1>
-          <p className="text-muted-foreground text-sm mt-1">Planos de aula e materiais por turma</p>
+          <p className="text-stone-600 text-sm mt-1 leading-relaxed">Planos de aula e materiais por turma</p>
         </div>
         <Button onClick={() => { setForm(EMPTY); setModal(true); }}>
           <Plus className="w-4 h-4 mr-2" />Novo Plano
@@ -138,38 +138,40 @@ export default function Planos() {
 
       {isLoading ? (
         <div className="space-y-2">
-          {[1, 2, 3].map(i => <div key={i} className="h-16 bg-neutral-100 rounded-lg animate-pulse" />)}
+          {[1, 2, 3].map(i => <div key={i} className="h-16 bg-stone-100 rounded-2xl animate-pulse" />)}
         </div>
       ) : turmas.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Cadastre uma turma antes de criar planos de aula.
+          <CardContent className="py-16 text-center">
+            <Users className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <p className="text-stone-500 leading-relaxed">Cadastre uma turma antes de criar planos de aula.</p>
           </CardContent>
         </Card>
       ) : planos.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhum plano de aula cadastrado.
+          <CardContent className="py-16 text-center">
+            <BookOpen className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <p className="text-stone-500 leading-relaxed">Nenhum plano de aula por aqui ainda. Que tal criar o primeiro?</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {planos.map(plano => (
             <Card key={plano.id} className="cursor-pointer hover:border-promessa-300 transition-colors"
               onClick={() => navigate(p(`/leader/${slug}/planos/${plano.id}`))}>
-              <CardContent className="py-3 px-4">
+              <CardContent className="py-4 px-5">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
                     <BookOpen className="w-4 h-4 text-promessa-500 shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{plano.titulo}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                      <p className="font-semibold text-sm truncate">{plano.titulo}</p>
+                      <div className="flex items-center gap-2 text-xs text-stone-500 mt-0.5 flex-wrap">
                         <Calendar className="w-3 h-3 shrink-0" />
                         <span>{format(new Date(plano.data_aula + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
                         <Badge variant="outline" className="text-xs py-0">{plano.ensino_turmas?.nome}</Badge>
                       </div>
                       {plano.objetivos && (
-                        <p className="text-xs text-muted-foreground mt-1 truncate">
+                        <p className="text-xs text-stone-500 mt-1 truncate">
                           {plano.objetivos.length > 80 ? plano.objetivos.slice(0, 80) + '…' : plano.objetivos}
                         </p>
                       )}
@@ -180,7 +182,7 @@ export default function Planos() {
                       onClick={e => { e.stopPropagation(); setDeleteTarget(plano); }}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
                   </div>
                 </div>
               </CardContent>
