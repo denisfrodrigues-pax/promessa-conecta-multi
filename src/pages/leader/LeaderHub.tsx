@@ -156,7 +156,7 @@ export default function LeaderHub() {
 
       <AniversariantesQuickLink />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {ledMinistries.map((m) => {
           const config = getMinisterioIconConfig(m.tipo);
           const Icon = config.icon;

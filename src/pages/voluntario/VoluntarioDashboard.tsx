@@ -83,7 +83,7 @@ export default function VoluntarioDashboard() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-64" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-32" />)}
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function VoluntarioDashboard() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {myMinistries.map(ministry => {
             const config = getMinisterioIconConfig(tipoMap[ministry.ministerio_id]);
             const Icon = config.icon;
