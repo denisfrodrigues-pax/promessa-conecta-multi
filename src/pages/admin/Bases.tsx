@@ -57,7 +57,7 @@ const isBaseLotada = (membrosCount: number, capacidade: number | null): boolean 
 // ===== STATUS CONFIG =====
 const statusColors: Record<string, string> = {
   ativo: "bg-green-100 text-green-800 border-green-300",
-  inativo: "bg-gray-100 text-gray-800 border-gray-300",
+  inativo: "bg-stone-100 text-stone-700 border-stone-300",
 };
 
 const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
@@ -187,18 +187,18 @@ export default function Bases() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold flex items-center gap-2">
+          <h1 className="text-2xl font-display font-bold text-stone-900 flex items-center gap-2">
             <Network className="h-6 w-6" />
             Bases
           </h1>
-          <p className="text-sm text-muted-foreground">{filtered.length} bases encontradas</p>
+          <p className="text-sm text-stone-600">{filtered.length} bases encontradas</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleExportCSV}>
+          <Button variant="outline" size="sm" className="rounded-xl min-h-[44px] sm:min-h-0" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" />
             Exportar CSV
           </Button>
-          <Button onClick={() => navigate(p("/admin/bases/nova"))}>
+          <Button className="rounded-xl min-h-[44px] sm:min-h-0" onClick={() => navigate(p("/admin/bases/nova"))}>
             <Plus className="h-4 w-4 mr-1" />
             Novo Grupo
           </Button>
@@ -208,16 +208,16 @@ export default function Bases() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
           <Input
             placeholder="Buscar por nome, local ou líder..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 rounded-xl"
           />
         </div>
         <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-          <SelectTrigger className="w-full sm:w-32">
+          <SelectTrigger className="w-full sm:w-32 rounded-xl">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -227,7 +227,7 @@ export default function Bases() {
           </SelectContent>
         </Select>
         <Select value={filtroDia} onValueChange={setFiltroDia}>
-          <SelectTrigger className="w-full sm:w-36">
+          <SelectTrigger className="w-full sm:w-36 rounded-xl">
             <SelectValue placeholder="Dia" />
           </SelectTrigger>
           <SelectContent>
@@ -249,7 +249,7 @@ export default function Bases() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent>
             <EmptyState
               icon={Network}
@@ -264,13 +264,13 @@ export default function Bases() {
       ) : (
         <div className="space-y-3">
           {filtered.map((base) => (
-            <Card key={base.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
+            <Card key={base.id} className="rounded-2xl hover:shadow-elevated transition-shadow">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="flex-1 min-w-0 space-y-2">
                     {/* Name + Badges */}
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-foreground">{base.nome}</h3>
+                      <h3 className="font-semibold text-stone-900">{base.nome}</h3>
                       <Badge variant="outline" className={statusColors[base.status]}>
                         {base.status === "ativo" ? "Ativo" : "Inativo"}
                       </Badge>
@@ -281,7 +281,7 @@ export default function Bases() {
                     </div>
 
                     {/* Info Row */}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-500">
                       <span className="flex items-center gap-1">
                         <Users className="h-3.5 w-3.5" />
                         {base.membros_count}/{base.capacidade || 20}
@@ -296,7 +296,7 @@ export default function Bases() {
                                 e.stopPropagation();
                                 window.open(getWhatsAppUrl(base.lider_telefone, churchNome), "_blank");
                               }}
-                              className="text-green-600 hover:text-green-700 p-0.5"
+                              className="text-green-600 hover:text-green-700 hover:bg-green-50 rounded-full p-1.5"
                               title="WhatsApp do líder"
                               aria-label="WhatsApp do líder"
                             >
@@ -322,7 +322,7 @@ export default function Bases() {
                     </div>
                   </div>
 
-                  <Button variant="outline" size="sm" onClick={() => navigate(p(`/admin/bases/${base.id}`))}>
+                  <Button variant="outline" size="sm" className="rounded-xl min-h-[44px] sm:min-h-0" onClick={() => navigate(p(`/admin/bases/${base.id}`))}>
                     <Eye className="h-4 w-4 mr-1" />
                     Ver detalhes
                   </Button>

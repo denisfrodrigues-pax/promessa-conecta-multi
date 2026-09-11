@@ -16,10 +16,10 @@ export default function AdminMobileHeader() {
   const churchName = config?.nome || 'Igreja';
 
   return (
-    <header className="md:hidden sticky top-0 z-40 flex items-center gap-3 h-14 px-4 bg-white border-b border-gray-100">
+    <header className="md:hidden sticky top-0 z-40 flex items-center gap-3 h-14 px-4 bg-white border-b border-stone-100 shadow-soft">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Abrir menu">
+          <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" aria-label="Abrir menu">
             <Menu className="w-5 h-5" />
           </Button>
         </SheetTrigger>
@@ -34,7 +34,7 @@ export default function AdminMobileHeader() {
       ) : (
         <ChurchLogo size={28} />
       )}
-      <span className="text-sm font-semibold text-gray-800 truncate">{churchName}</span>
+      <span className="text-sm font-semibold text-stone-900 truncate">{churchName}</span>
     </header>
   );
 }

@@ -274,14 +274,14 @@ export default function Visitantes() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-display font-bold flex items-center gap-2">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-display font-bold text-stone-900 flex items-center gap-2">
             <Users className="h-6 w-6" />
             Visitantes
           </h1>
-          <p className="text-muted-foreground">Gerencie os visitantes da igreja</p>
+          <p className="text-stone-600 leading-relaxed">Gerencie os visitantes da igreja</p>
         </div>
-        <Button variant="outline" onClick={handleExportCSV} disabled={loading || visitantes.length === 0}>
+        <Button variant="outline" onClick={handleExportCSV} disabled={loading || visitantes.length === 0} className="rounded-xl">
           <Download className="h-4 w-4 mr-2" />
           Exportar CSV
         </Button>
@@ -290,16 +290,16 @@ export default function Visitantes() {
       {/* Filtros inline */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
           <Input
             placeholder="Buscar por nome ou telefone..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="pl-9 rounded-xl"
           />
         </div>
         <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-          <SelectTrigger className="w-full md:w-52">
+          <SelectTrigger className="w-full md:w-52 rounded-xl">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>

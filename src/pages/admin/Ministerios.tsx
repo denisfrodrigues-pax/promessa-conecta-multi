@@ -307,14 +307,14 @@ export default function AdminMinisterios() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 bg-stone-50">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Ministérios</h1>
-          <p className="text-muted-foreground">Gerencie os ministérios da igreja</p>
+          <h1 className="text-2xl font-display font-bold text-stone-900">Ministérios</h1>
+          <p className="text-stone-500">Gerencie os ministérios da igreja</p>
         </div>
-        <Button onClick={handleOpenCreate}>
+        <Button className="min-h-[44px]" onClick={handleOpenCreate}>
           <Plus className="w-4 h-4 mr-2" />
           Criar Ministério
         </Button>
@@ -322,20 +322,20 @@ export default function AdminMinisterios() {
 
       {/* List */}
       {isLoading ? (
-        <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+        <div className="text-center py-12 text-stone-500">Carregando...</div>
       ) : ministerios.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-            <Music className="h-8 w-8 text-gray-400" />
+          <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+            <Music className="h-8 w-8 text-stone-400" />
           </div>
-          <h3 className="text-base font-semibold text-gray-700 mb-1">Nenhum ministério cadastrado</h3>
-          <p className="text-sm text-gray-400 max-w-xs">Crie o primeiro ministério para organizar equipes e voluntários.</p>
-          <Button size="sm" className="mt-4" onClick={handleOpenCreate}>
+          <h3 className="text-base font-semibold text-stone-700 mb-1">Nenhum ministério cadastrado</h3>
+          <p className="text-sm text-stone-400 max-w-xs leading-relaxed">Crie o primeiro ministério para organizar equipes e voluntários.</p>
+          <Button size="sm" className="mt-4 min-h-[44px]" onClick={handleOpenCreate}>
             <Plus className="w-4 h-4 mr-1" /> Criar primeiro ministério
           </Button>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {ministerios.map((ministerio) => (
             <Card
               key={ministerio.id}
@@ -371,7 +371,7 @@ export default function AdminMinisterios() {
                             Core
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                          <Badge variant="outline" className="text-xs text-stone-500">
                             Geral
                           </Badge>
                         )}
@@ -382,17 +382,17 @@ export default function AdminMinisterios() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {ministerio.descricao && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                  <p className="text-sm text-stone-500 leading-relaxed line-clamp-2">
                     {ministerio.descricao}
                   </p>
                 )}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-stone-500">
                   <User className="w-4 h-4 shrink-0" />
                   <span className="truncate">{getLeaderName(ministerio.lider_id)}</span>
                 </div>
 
                 <div className="flex gap-2 pt-2 flex-wrap">
-                  <Button variant="outline" size="sm" onClick={() => handleOpenEdit(ministerio)}>
+                  <Button variant="outline" size="sm" className="min-h-[44px]" onClick={() => handleOpenEdit(ministerio)}>
                     <Pencil className="w-4 h-4 mr-1" />
                     Editar
                   </Button>
@@ -401,6 +401,7 @@ export default function AdminMinisterios() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="min-h-[44px]"
                     onClick={() => toggleAtivoMutation.mutate({ id: ministerio.id, ativo: !ministerio.ativo })}
                     disabled={toggleAtivoMutation.isPending}
                   >
@@ -415,7 +416,7 @@ export default function AdminMinisterios() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="min-h-[44px] text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => handleDeleteClick(ministerio)}
                     >
                       <Trash2 className="w-4 h-4 mr-1" />
@@ -517,10 +518,11 @@ export default function AdminMinisterios() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog}>
+            <Button variant="outline" className="min-h-[44px]" onClick={handleCloseDialog}>
               Cancelar
             </Button>
             <Button
+              className="min-h-[44px]"
               onClick={handleSubmit}
               disabled={createMutation.isPending || updateMutation.isPending}
             >
@@ -542,11 +544,11 @@ export default function AdminMinisterios() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="min-h-[44px]">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               disabled={deleteMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="min-h-[44px] bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>

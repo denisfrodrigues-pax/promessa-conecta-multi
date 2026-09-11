@@ -101,7 +101,7 @@ export default function LoginSuperAdmin() {
               <span style={{ color: 'var(--rc-primary)' }}>inteligente</span> para<br />
               igrejas que crescem
             </h1>
-            <p className="text-lg mt-4" style={{ color: 'var(--rc-text-secondary)' }}>
+            <p className="text-lg mt-4 leading-relaxed" style={{ color: 'var(--rc-text-secondary)' }}>
               Centralize a gestão de todas as suas igrejas em uma única plataforma poderosa.
             </p>
           </div>
@@ -159,7 +159,7 @@ export default function LoginSuperAdmin() {
                   required
                   autoFocus
                   placeholder="admin@redeconect.com.br"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white placeholder:text-[#64748B] outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 min-h-[44px] rounded-xl text-sm text-white placeholder:text-[#64748B] outline-none transition-colors"
                   style={{
                     background: 'var(--rc-bg-card)',
                     border: '1px solid var(--rc-border)',
@@ -183,7 +183,7 @@ export default function LoginSuperAdmin() {
                   onChange={e => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white placeholder:text-[#64748B] outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 min-h-[44px] rounded-xl text-sm text-white placeholder:text-[#64748B] outline-none transition-colors"
                   style={{
                     background: 'var(--rc-bg-card)',
                     border: '1px solid var(--rc-border)',
@@ -198,7 +198,7 @@ export default function LoginSuperAdmin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-60 mt-2"
+              className="w-full flex items-center justify-center gap-2 py-2.5 min-h-[44px] rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-60 mt-2"
               style={{ background: 'var(--rc-primary)' }}
               onMouseEnter={e => !loading && (e.currentTarget.style.background = 'var(--rc-primary-hover)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'var(--rc-primary)')}

@@ -147,23 +147,23 @@ export default function Avisos() {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Avisos</h1>
-          <p className="text-muted-foreground">Publicações de texto visíveis na área do membro. Use para comunicados, recados e informações gerais da igreja.</p>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-display font-bold text-stone-900">Avisos</h1>
+          <p className="text-stone-600 leading-relaxed">Publicações de texto visíveis na área do membro. Use para comunicados, recados e informações gerais da igreja.</p>
         </div>
-        <Button onClick={() => handleOpenDialog()}>
+        <Button onClick={() => handleOpenDialog()} size="lg" className="rounded-xl">
           <Plus className="w-4 h-4 mr-2" />
           Novo Aviso
         </Button>
       </div>
 
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
         <Input
           placeholder="Buscar avisos..."
-          className="pl-10"
+          className="pl-10 rounded-xl"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -171,12 +171,12 @@ export default function Avisos() {
 
       <div className="space-y-4">
         {filteredAvisos.map((aviso) => (
-          <Card key={aviso.id} className="shadow-card hover:shadow-elevated transition-all duration-300 group">
+          <Card key={aviso.id} className="rounded-2xl shadow-card hover:shadow-elevated transition-all duration-300 group">
             <CardContent className="p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-3">
-                    <h3 className="font-display font-semibold text-lg">{aviso.titulo}</h3>
+                    <h3 className="font-display font-semibold text-lg text-stone-900">{aviso.titulo}</h3>
                     <Badge variant={aviso.publico ? 'default' : 'secondary'}>
                       {aviso.publico ? (
                         <>
@@ -191,18 +191,18 @@ export default function Avisos() {
                       )}
                     </Badge>
                   </div>
-                  <p className="text-muted-foreground">{aviso.conteudo}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-stone-600 leading-relaxed">{aviso.conteudo}</p>
+                  <p className="text-sm text-stone-500">
                     Publicado em {format(new Date(aviso.data_publicacao), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
                   </p>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="h-11 w-11 opacity-0 group-hover:opacity-100 transition-opacity">
                       <MoreHorizontal className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="rounded-xl">
                     <DropdownMenuItem onClick={() => handleOpenDialog(aviso)}>
                       <Edit className="w-4 h-4 mr-2" />
                       Editar
@@ -232,20 +232,20 @@ export default function Avisos() {
         ))}
         {filteredAvisos.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-              <Bell className="h-8 w-8 text-gray-400" />
+            <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+              <Bell className="h-8 w-8 text-stone-400" />
             </div>
-            <h3 className="text-base font-semibold text-gray-700 mb-1">Nenhum aviso encontrado</h3>
-            <p className="text-sm text-gray-400 max-w-xs">Crie avisos para comunicar informações importantes à sua comunidade.</p>
+            <h3 className="text-base font-semibold text-stone-900 mb-1">Nenhum aviso encontrado</h3>
+            <p className="text-sm text-stone-500 leading-relaxed max-w-xs">Crie avisos para comunicar informações importantes à sua comunidade.</p>
           </div>
         )}
       </div>
 
       {/* Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle>{editingAviso ? 'Editar Aviso' : 'Novo Aviso'}</DialogTitle>
+            <DialogTitle className="font-display">{editingAviso ? 'Editar Aviso' : 'Novo Aviso'}</DialogTitle>
             <DialogDescription>
               {editingAviso ? 'Atualize as informações do aviso' : 'Preencha os dados para publicar um novo aviso'}
             </DialogDescription>
@@ -257,6 +257,7 @@ export default function Avisos() {
                 value={formData.titulo}
                 onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
                 placeholder="Título do aviso"
+                className="rounded-xl"
               />
             </div>
             <div className="space-y-2">
@@ -266,6 +267,7 @@ export default function Avisos() {
                 onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
                 placeholder="Conteúdo do aviso"
                 rows={5}
+                className="rounded-xl"
               />
             </div>
             <div className="flex items-center justify-between">
@@ -277,10 +279,10 @@ export default function Avisos() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="rounded-xl">
               Cancelar
             </Button>
-            <Button onClick={handleSave}>
+            <Button onClick={handleSave} className="rounded-xl">
               {editingAviso ? 'Salvar' : 'Publicar'}
             </Button>
           </DialogFooter>
