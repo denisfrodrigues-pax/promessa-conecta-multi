@@ -225,8 +225,8 @@ export default function LeaderDocumentos() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-display font-bold">Documentos</h2>
-          <p className="text-sm text-muted-foreground">Materiais e arquivos do ministério</p>
+          <h2 className="text-xl font-display font-bold text-stone-900">Documentos</h2>
+          <p className="text-sm text-stone-500 leading-relaxed">Materiais e arquivos do ministério</p>
         </div>
         <Button onClick={() => setIsModalOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
@@ -236,13 +236,15 @@ export default function LeaderDocumentos() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
         </div>
       ) : documentos.length === 0 ? (
-        <Card>
-          <CardContent className="py-14 text-center space-y-3">
-            <FolderOpen className="w-12 h-12 mx-auto text-muted-foreground/40" />
-            <p className="text-muted-foreground">Nenhum documento ainda.</p>
+        <Card className="rounded-2xl">
+          <CardContent className="py-16 text-center space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+              <FolderOpen className="w-7 h-7 text-primary" />
+            </div>
+            <p className="text-stone-600 leading-relaxed">Nenhum documento por aqui ainda.</p>
             <Button variant="outline" onClick={() => setIsModalOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Adicionar primeiro documento
@@ -250,29 +252,29 @@ export default function LeaderDocumentos() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {documentos.map((doc) => (
-            <Card key={doc.id}>
-              <CardContent className="p-4">
+            <Card key={doc.id} className="rounded-2xl">
+              <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                     <FileIcon tipo={doc.arquivo_tipo} />
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{doc.nome}</p>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground mt-0.5">
+                    <p className="font-medium text-stone-900 truncate">{doc.nome}</p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-stone-500 mt-0.5">
                       <span className="font-mono font-semibold uppercase">{fileLabel(doc.arquivo_tipo)}</span>
                       <span className="truncate max-w-[180px]">{doc.arquivo_nome}</span>
                       <span>{format(new Date(doc.created_at), 'dd/MM/yyyy', { locale: ptBR })}</span>
                     </div>
                     {doc.descricao && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{doc.descricao}</p>
+                      <p className="text-sm text-stone-500 mt-1 line-clamp-1">{doc.descricao}</p>
                     )}
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <Button size="sm" variant="outline" asChild>
+                    <Button size="sm" variant="outline" className="min-h-[44px] sm:min-h-0" asChild>
                       <a href={doc.arquivo_url} target="_blank" rel="noopener noreferrer" download={doc.arquivo_nome}>
                         <Download className="w-4 h-4 mr-1" />
                         Baixar
@@ -281,7 +283,7 @@ export default function LeaderDocumentos() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => setDocToDelete(doc)}
                       title="Excluir documento"
                     >
@@ -297,7 +299,7 @@ export default function LeaderDocumentos() {
 
       {/* ── Modal Adicionar ─────────────────────────────────────────────────── */}
       <Dialog open={isModalOpen} onOpenChange={(open) => { if (!open) handleCloseModal(); }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>Adicionar documento</DialogTitle>
           </DialogHeader>
@@ -308,21 +310,21 @@ export default function LeaderDocumentos() {
               <Label>Arquivo *</Label>
               <label
                 htmlFor="doc-upload"
-                className={`flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                className={`flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
                   selectedFile
                     ? 'border-primary/50 bg-primary/5'
-                    : 'border-muted-foreground/25 hover:border-primary/40 hover:bg-muted/20'
+                    : 'border-stone-300 hover:border-primary/40 hover:bg-stone-50'
                 }`}
               >
-                <Upload className="w-6 h-6 text-muted-foreground mb-2" />
+                <Upload className="w-6 h-6 text-stone-400 mb-2" />
                 {selectedFile ? (
                   <p className="text-sm font-medium text-primary px-4 text-center truncate w-full">
                     {selectedFile.name}
                   </p>
                 ) : (
                   <>
-                    <p className="text-sm text-muted-foreground">Clique para selecionar</p>
-                    <p className="text-xs text-muted-foreground/60 mt-1">
+                    <p className="text-sm text-stone-500">Clique para selecionar</p>
+                    <p className="text-xs text-stone-400 mt-1">
                       PDF, DOC, DOCX, PPT, PPTX, Imagens — máx. {MAX_SIZE_MB}MB
                     </p>
                   </>
@@ -378,10 +380,10 @@ export default function LeaderDocumentos() {
 
       {/* ── Confirmação Exclusão ────────────────────────────────────────────── */}
       <AlertDialog open={!!docToDelete} onOpenChange={(open) => { if (!open) setDocToDelete(null); }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir documento?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="leading-relaxed">
               O arquivo <strong>"{docToDelete?.nome}"</strong> será removido permanentemente e não poderá ser recuperado.
             </AlertDialogDescription>
           </AlertDialogHeader>

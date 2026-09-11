@@ -256,7 +256,7 @@ export default function Criancas({ ministerioId: propMid }: { ministerioId?: str
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-promessa-900">Crianças</h1>
-          <p className="text-muted-foreground text-sm mt-1">Cadastro de crianças e responsáveis</p>
+          <p className="text-stone-600 text-sm mt-1 leading-relaxed">Cadastro de crianças e responsáveis</p>
         </div>
         <Button onClick={openCreateCrianca}><Plus className="w-4 h-4 mr-2" />Nova Criança</Button>
       </div>
@@ -264,7 +264,7 @@ export default function Criancas({ ministerioId: propMid }: { ministerioId?: str
       {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
           <Input className="pl-9" placeholder="Buscar por nome..." value={search}
             onChange={e => setSearch(e.target.value)} />
         </div>
@@ -281,31 +281,34 @@ export default function Criancas({ ministerioId: propMid }: { ministerioId?: str
       </div>
 
       {isLoading ? (
-        <div className="space-y-2">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-16 bg-neutral-100 rounded-lg animate-pulse" />)}
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-16 bg-stone-100 rounded-2xl animate-pulse" />)}
         </div>
       ) : filtered.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            {search || salaFilter !== 'todas' ? 'Nenhuma criança encontrada para os filtros.' : 'Nenhuma criança cadastrada ainda.'}
+          <CardContent className="py-16 text-center">
+            <Baby className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <p className="text-stone-500 leading-relaxed">
+              {search || salaFilter !== 'todas' ? 'Nenhuma criança encontrada para os filtros.' : 'Nenhuma criança cadastrada ainda. Cadastre a primeira criança do ministério.'}
+            </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filtered.map(c => {
             const sala = salas.find(s => s.id === c.sala_id);
             const resps = responsaveisMap[c.id] ?? [];
             return (
               <Card key={c.id} className={`${c.ativo ? '' : 'opacity-60'}`}>
-                <CardContent className="py-3 px-4">
+                <CardContent className="py-4 px-5">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-9 h-9 rounded-full bg-promessa-100 flex items-center justify-center shrink-0">
                         <Baby className="w-4 h-4 text-promessa-700" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{c.nome}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <p className="font-semibold text-sm truncate">{c.nome}</p>
+                        <div className="flex items-center gap-2 text-xs text-stone-500">
                           {c.data_nascimento && <span>{calcIdade(c.data_nascimento)}</span>}
                           {sala && <Badge variant="outline" className="text-xs py-0">{sala.nome}</Badge>}
                           {!c.sala_id && <span className="text-amber-500">Sem sala</span>}
@@ -385,14 +388,17 @@ export default function Criancas({ ministerioId: propMid }: { ministerioId?: str
           <div className="space-y-4">
             {/* Lista */}
             {respsModal.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhum responsável cadastrado.</p>
+              <div className="text-center py-6">
+                <Users className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+                <p className="text-sm text-stone-500 leading-relaxed">Nenhum responsável cadastrado ainda.</p>
+              </div>
             ) : (
               <div className="space-y-2">
                 {respsModal.map(r => (
-                  <div key={r.id} className="flex items-center justify-between border rounded-lg px-3 py-2">
+                  <div key={r.id} className="flex items-center justify-between border border-stone-200 rounded-xl px-4 py-3">
                     <div>
                       <p className="text-sm font-medium">{r.nome} {r.is_primary && <Badge className="ml-1 text-xs py-0">Principal</Badge>}</p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <p className="text-xs text-stone-500 flex items-center gap-1">
                         <Phone className="w-3 h-3" />{r.telefone} · {r.parentesco}
                       </p>
                     </div>
@@ -410,7 +416,7 @@ export default function Criancas({ ministerioId: propMid }: { ministerioId?: str
             )}
 
             {/* Form inline */}
-            <div className="border rounded-lg p-3 space-y-3 bg-neutral-50">
+            <div className="border border-stone-200 rounded-xl p-4 space-y-3 bg-stone-50">
               <p className="text-sm font-medium">{editingResp ? 'Editar Responsável' : 'Adicionar Responsável'}</p>
               <div className="grid grid-cols-2 gap-2">
                 <div className="col-span-2">

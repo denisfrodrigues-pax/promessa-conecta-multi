@@ -105,7 +105,7 @@ function VisitanteFormFields({
           <select
             value={form.culto}
             onChange={(e) => onChange({ culto: e.target.value })}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex h-11 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">Selecione</option>
             {CULTOS.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -116,7 +116,7 @@ function VisitanteFormFields({
           <select
             value={form.melhor_horario}
             onChange={(e) => onChange({ melhor_horario: e.target.value })}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex h-11 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">Selecione</option>
             {HORARIOS.map((h) => <option key={h} value={h}>{h}</option>)}
@@ -130,7 +130,7 @@ function VisitanteFormFields({
           <select
             value={status ?? 'novo'}
             onChange={(e) => onStatusChange(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex h-11 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
@@ -273,8 +273,8 @@ export default function VisitantesDia() {
     <div className="space-y-5">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Visitantes do Dia</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold text-stone-900">Visitantes do Dia</h1>
+          <p className="text-sm text-stone-500 mt-1 leading-relaxed">
             {ehHoje ? 'Visitantes de hoje' : `Visitantes de ${format(parseISO(filtroData), "d 'de' MMMM", { locale: ptBR })}`}
             {visitantes && ` · ${visitantes.length} registro${visitantes.length !== 1 ? 's' : ''}`}
           </p>
@@ -304,8 +304,10 @@ export default function VisitantesDia() {
         </div>
       ) : !visitantes || visitantes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Users className="w-12 h-12 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+            <Users className="w-7 h-7 text-primary" />
+          </div>
+          <p className="text-stone-600 leading-relaxed">
             {ehHoje ? 'Nenhum visitante registrado hoje.' : 'Nenhum visitante nesta data.'}
           </p>
         </div>
@@ -316,17 +318,17 @@ export default function VisitantesDia() {
             const proximoStatus = PROXIMO_STATUS[status];
 
             return (
-              <Card key={v.id} className="hover:shadow-sm transition-shadow">
-                <CardContent className="p-4">
+              <Card key={v.id} className="hover:shadow-soft transition-shadow rounded-2xl">
+                <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-foreground">{v.nome}</p>
+                        <p className="font-semibold text-stone-900">{v.nome}</p>
                         <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${STATUS_COLORS[status] ?? STATUS_COLORS['novo']}`}>
                           {STATUS_LABELS[status] ?? status}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                      <div className="flex items-center gap-4 text-sm text-stone-500 flex-wrap">
                         {v.telefone && <span>{v.telefone}</span>}
                         {v.culto && (
                           <span className="flex items-center gap-1">
@@ -341,17 +343,17 @@ export default function VisitantesDia() {
                         )}
                       </div>
                       {v.observacoes && (
-                        <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                          <FileText className="w-3.5 h-3.5 mt-0.5 shrink-0 text-muted-foreground/70" />
+                        <div className="flex items-start gap-1.5 text-xs text-stone-500">
+                          <FileText className="w-3.5 h-3.5 mt-0.5 shrink-0 text-stone-400" />
                           <p className="line-clamp-2 leading-relaxed">{v.observacoes}</p>
                         </div>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
                       {hasValidPhone(v.telefone) && (
                         <a href={getWhatsAppUrl(v.telefone, churchNome)} target="_blank" rel="noopener noreferrer">
-                          <Button variant="outline" size="sm" className="text-green-600 border-green-300 hover:bg-green-50">
+                          <Button variant="outline" size="sm" className="min-h-[44px] sm:min-h-0 text-green-600 border-green-300 hover:bg-green-50">
                             <MessageCircle className="w-4 h-4 mr-1" />
                             WhatsApp
                           </Button>
@@ -360,6 +362,7 @@ export default function VisitantesDia() {
                       {proximoStatus && (
                         <Button
                           size="sm"
+                          className="min-h-[44px] sm:min-h-0"
                           disabled={avancando === v.id}
                           onClick={() => avancarStatusMutation.mutate({ id: v.id, novoStatus: proximoStatus })}
                         >
@@ -369,14 +372,14 @@ export default function VisitantesDia() {
                         </Button>
                       )}
                       {v.observacoes && (
-                        <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setVerObs(v)}>
+                        <Button variant="ghost" size="sm" className="min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-stone-400" onClick={() => setVerObs(v)}>
                           <Eye className="w-4 h-4" />
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" onClick={() => abrirEdicao(v)}>
+                      <Button variant="ghost" size="sm" className="min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0" onClick={() => abrirEdicao(v)}>
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setDeletandoId(v.id)}>
+                      <Button variant="ghost" size="sm" className="min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setDeletandoId(v.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -390,7 +393,7 @@ export default function VisitantesDia() {
 
       {/* Modal: Registrar */}
       <Dialog open={modalAberto} onOpenChange={(v) => { setModalAberto(v); if (!v) setNovoVisitante(formVazio()); }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserPlus className="w-4 h-4" />Registrar Visitante
@@ -415,7 +418,7 @@ export default function VisitantesDia() {
 
       {/* Modal: Editar */}
       <Dialog open={!!editando} onOpenChange={(v) => { if (!v) setEditando(null); }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Pencil className="w-4 h-4" />Editar Visitante
@@ -443,14 +446,14 @@ export default function VisitantesDia() {
 
       {/* Modal: Ver observações */}
       <Dialog open={!!verObs} onOpenChange={(v) => { if (!v) setVerObs(null); }}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Observações — {verObs?.nome}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{verObs?.observacoes}</p>
+          <p className="text-sm text-stone-700 whitespace-pre-wrap leading-relaxed">{verObs?.observacoes}</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setVerObs(null)}>Fechar</Button>
           </DialogFooter>
@@ -459,10 +462,10 @@ export default function VisitantesDia() {
 
       {/* Confirmação: Excluir */}
       <AlertDialog open={!!deletandoId} onOpenChange={(v) => { if (!v) setDeletandoId(null); }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Remover visitante</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="leading-relaxed">
               {(() => {
                 const v = visitantes?.find((x) => x.id === deletandoId);
                 return `Deseja remover "${v?.nome ?? 'este visitante'}"? Esta ação não pode ser desfeita.`;

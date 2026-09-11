@@ -139,11 +139,11 @@ export default function GruposHub() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-stone-900 flex items-center gap-2">
             <Network className="w-6 h-6 text-promessa-600" />
             Pequenos Grupos
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-stone-500 mt-1 leading-relaxed">
             {grupos.length} grupo{grupos.length !== 1 ? 's' : ''} ativo{grupos.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -155,37 +155,37 @@ export default function GruposHub() {
 
       {/* KPIs */}
       {grupos.length > 0 && (
-        <div className="grid grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-promessa-100 flex items-center justify-center">
+        <div className="grid grid-cols-3 gap-6">
+          <Card className="rounded-2xl">
+            <CardContent className="p-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-promessa-100 flex items-center justify-center">
                 <Network className="w-5 h-5 text-promessa-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{grupos.length}</p>
-                <p className="text-xs text-muted-foreground">Grupos</p>
+                <p className="text-2xl font-bold text-stone-900">{grupos.length}</p>
+                <p className="text-xs text-stone-500">Grupos</p>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+          <Card className="rounded-2xl">
+            <CardContent className="p-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
                 <Users className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalMembros}</p>
-                <p className="text-xs text-muted-foreground">Membros</p>
+                <p className="text-2xl font-bold text-stone-900">{totalMembros}</p>
+                <p className="text-xs text-stone-500">Membros</p>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+          <Card className="rounded-2xl">
+            <CardContent className="p-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
                 <Target className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalCapacidade}</p>
-                <p className="text-xs text-muted-foreground">Capacidade</p>
+                <p className="text-2xl font-bold text-stone-900">{totalCapacidade}</p>
+                <p className="text-xs text-stone-500">Capacidade</p>
               </div>
             </CardContent>
           </Card>
@@ -195,7 +195,7 @@ export default function GruposHub() {
       {/* Filtros */}
       <div className="flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-48">
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
           <Input
             className="pl-9"
             placeholder="Buscar por nome ou local…"
@@ -204,7 +204,7 @@ export default function GruposHub() {
           />
         </div>
         <select
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          className="h-11 sm:h-10 rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm"
           value={filtroDia}
           onChange={(e) => setFiltroDia(e.target.value)}
         >
@@ -220,13 +220,15 @@ export default function GruposHub() {
 
       {/* Lista */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-44 rounded-xl" />)}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-44 rounded-2xl" />)}
         </div>
       ) : gruposFiltrados.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Network className="w-12 h-12 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+            <Network className="w-7 h-7 text-primary" />
+          </div>
+          <p className="text-stone-600 leading-relaxed">
             {busca || filtroDia ? 'Nenhum grupo encontrado.' : 'Nenhum grupo cadastrado ainda.'}
           </p>
           {!busca && !filtroDia && (
@@ -237,7 +239,7 @@ export default function GruposHub() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {gruposFiltrados.map((g) => {
             const ocupacao = Math.round((g.membros_count / (g.capacidade ?? 20)) * 100);
             const lotado = ocupacao >= 100;
@@ -245,29 +247,29 @@ export default function GruposHub() {
             return (
               <Card
                 key={g.id}
-                className="group hover:shadow-md transition-all cursor-pointer hover:border-promessa-200"
+                className="group hover:shadow-elevated transition-all cursor-pointer hover:border-promessa-200 rounded-2xl min-h-[44px]"
                 onClick={() => navigate(`grupo/${g.id}`)}
               >
-                <CardContent className="p-4 space-y-3">
+                <CardContent className="p-6 space-y-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-foreground group-hover:text-promessa-700 transition-colors truncate">
+                      <p className="font-semibold text-stone-900 group-hover:text-promessa-700 transition-colors truncate">
                         {g.nome}
                       </p>
                       {g.descricao && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{g.descricao}</p>
+                        <p className="text-xs text-stone-500 line-clamp-1 mt-0.5">{g.descricao}</p>
                       )}
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {lotado && <Badge variant="destructive" className="text-xs">Lotado</Badge>}
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      <ChevronRight className="w-4 h-4 text-stone-400" />
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-4 text-sm text-stone-500 flex-wrap">
                     <span className="flex items-center gap-1">
                       <Users className="w-3.5 h-3.5" />
-                      <span className="font-medium text-foreground">{g.membros_count}</span>/{g.capacidade ?? 20}
+                      <span className="font-medium text-stone-900">{g.membros_count}</span>/{g.capacidade ?? 20}
                     </span>
                     {g.dia_semana && g.horario && (
                       <span className="flex items-center gap-1">
@@ -285,11 +287,11 @@ export default function GruposHub() {
 
                   {/* Barra de ocupação */}
                   <div className="space-y-1">
-                    <div className="flex justify-between text-xs text-muted-foreground">
+                    <div className="flex justify-between text-xs text-stone-500">
                       <span>Ocupação</span>
                       <span className={lotado ? 'text-destructive font-medium' : ''}>{ocupacao}%</span>
                     </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${
                           lotado ? 'bg-destructive' : ocupacao >= 80 ? 'bg-amber-500' : 'bg-promessa-500'
@@ -307,7 +309,7 @@ export default function GruposHub() {
 
       {/* Modal: Criar Grupo */}
       <Dialog open={modalAberto} onOpenChange={(v) => { setModalAberto(v); if (!v) setForm(formVazio()); }}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Network className="w-4 h-4" />
@@ -380,7 +382,7 @@ export default function GruposHub() {
 
             {/* Endereço */}
             <div className="space-y-3">
-              <p className="text-sm font-medium text-muted-foreground">Endereço completo</p>
+              <p className="text-sm font-medium text-stone-500">Endereço completo</p>
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2">
                   <Label>Rua</Label>

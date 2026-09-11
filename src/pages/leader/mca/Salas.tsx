@@ -136,23 +136,24 @@ export default function Salas({ ministerioId: propMid }: { ministerioId?: string
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-promessa-900">Salas</h1>
-          <p className="text-muted-foreground text-sm mt-1">Salas do ministério infantil</p>
+          <p className="text-stone-600 text-sm mt-1 leading-relaxed">Salas do ministério infantil</p>
         </div>
         <Button onClick={openCreate}><Plus className="w-4 h-4 mr-2" />Nova Sala</Button>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => <div key={i} className="h-32 bg-neutral-100 rounded-lg animate-pulse" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map(i => <div key={i} className="h-32 bg-stone-100 rounded-2xl animate-pulse" />)}
         </div>
       ) : salas.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhuma sala cadastrada ainda.
+          <CardContent className="py-16 text-center">
+            <Users className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <p className="text-stone-500 leading-relaxed">Nenhuma sala cadastrada ainda. Crie a primeira sala do ministério infantil.</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {salas.map(sala => (
             <Card key={sala.id} className={sala.ativo ? '' : 'opacity-60'}>
               <CardHeader className="pb-2">
@@ -163,7 +164,7 @@ export default function Salas({ ministerioId: propMid }: { ministerioId?: string
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <CardContent className="space-y-3 text-sm text-stone-500">
                 {(sala.faixa_etaria_min != null || sala.faixa_etaria_max != null) && (
                   <div className="flex items-center gap-1.5">
                     <Baby className="w-3.5 h-3.5" />

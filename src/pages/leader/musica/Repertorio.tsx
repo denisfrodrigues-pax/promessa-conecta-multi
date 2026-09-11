@@ -242,8 +242,8 @@ export default function Repertorio() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Repertório</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold text-stone-900">Repertório</h1>
+          <p className="text-sm text-stone-500 mt-1 leading-relaxed">
             {musicas?.length ?? 0} música{musicas?.length !== 1 ? 's' : ''} cadastrada{musicas?.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -256,7 +256,7 @@ export default function Repertorio() {
       {/* Filtros */}
       <div className="flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-48">
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
           <Input
             className="pl-9"
             placeholder="Buscar por título…"
@@ -265,7 +265,7 @@ export default function Repertorio() {
           />
         </div>
         <select
-          className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+          className="h-11 rounded-xl border border-stone-200 bg-white px-3 py-1 text-sm shadow-sm"
           value={filtroTom}
           onChange={(e) => setFiltroTom(e.target.value)}
         >
@@ -288,9 +288,14 @@ export default function Repertorio() {
         </div>
       ) : !musicas || musicas.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Music2 className="w-12 h-12 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">
+          <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+            <Music2 className="w-8 h-8 text-stone-400" />
+          </div>
+          <p className="text-lg font-semibold text-stone-900 mb-1">
             {busca || filtroTom ? 'Nenhuma música encontrada.' : 'O repertório está vazio.'}
+          </p>
+          <p className="text-sm text-stone-500 leading-relaxed">
+            {busca || filtroTom ? 'Tente outro termo de busca ou tom.' : 'As músicas cadastradas pelo ministério aparecem aqui.'}
           </p>
           {!busca && !filtroTom && (
             <Button className="mt-4" onClick={openCreate}>
@@ -300,10 +305,10 @@ export default function Repertorio() {
           )}
         </div>
       ) : (
-        <div className="rounded-lg border overflow-hidden">
+        <div className="rounded-2xl border border-stone-200 shadow-soft overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-muted/50 text-muted-foreground text-xs uppercase tracking-wide">
+              <tr className="bg-stone-50 text-stone-500 text-xs uppercase tracking-wide">
                 <th className="px-4 py-2.5 text-left font-medium">Título</th>
                 <th className="px-4 py-2.5 text-left font-medium hidden sm:table-cell">Artista</th>
                 <th className="px-4 py-2.5 text-left font-medium hidden md:table-cell">Tom</th>
@@ -311,11 +316,11 @@ export default function Repertorio() {
                 <th className="px-4 py-2.5 text-right font-medium">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-stone-100">
               {musicas.map((m) => (
                 <tr
                   key={m.id}
-                  className="hover:bg-muted/40 transition-colors cursor-pointer"
+                  className="hover:bg-stone-50 transition-colors cursor-pointer"
                   onClick={() => openEdit(m)}
                 >
                   <td className="px-4 py-3">
@@ -325,21 +330,21 @@ export default function Repertorio() {
                       )}
                       <div>
                         <p className="font-medium truncate max-w-xs">{m.titulo}</p>
-                        <p className="text-xs text-muted-foreground sm:hidden">{m.artista ?? '—'}</p>
+                        <p className="text-xs text-stone-500 sm:hidden">{m.artista ?? '—'}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">
+                  <td className="px-4 py-3 hidden sm:table-cell text-stone-500">
                     {m.artista ?? '—'}
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {m.tom ? (
                       <Badge variant="outline" className="font-mono">{m.tom}</Badge>
                     ) : (
-                      <span className="text-muted-foreground">—</span>
+                      <span className="text-stone-400">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">
+                  <td className="px-4 py-3 hidden lg:table-cell text-stone-500">
                     {usoCounts?.[m.id] ?? 0}×
                   </td>
                   <td className="px-4 py-3">
@@ -357,7 +362,7 @@ export default function Repertorio() {
                         <CifraclubSvg />
                       </PlatformLink>
                       <button
-                        className="p-1.5 rounded text-destructive hover:bg-red-50 transition-colors ml-1"
+                        className="p-1.5 rounded-xl text-destructive hover:bg-red-50 transition-colors ml-1"
                         onClick={() => setDeleteTarget(m.id)}
                         aria-label="Excluir música do repertório"
                       >
@@ -380,7 +385,7 @@ export default function Repertorio() {
               {step === 'form' && !editTarget && (
                 <button
                   type="button"
-                  className="p-1 rounded hover:bg-muted transition-colors"
+                  className="p-1 rounded-xl hover:bg-stone-100 transition-colors"
                   onClick={() => setStep('busca')}
                   aria-label="Voltar à busca"
                 >
@@ -401,11 +406,11 @@ export default function Repertorio() {
               <div className="space-y-3">
                 {/* Capa preview */}
                 {form.capa_url && (
-                  <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg">
-                    <img src={form.capa_url} alt="Capa" className="w-14 h-14 rounded-lg object-cover" />
+                  <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-xl">
+                    <img src={form.capa_url} alt="Capa" className="w-14 h-14 rounded-xl object-cover" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{form.titulo}</p>
-                      <p className="text-xs text-muted-foreground">{form.artista}</p>
+                      <p className="text-xs text-stone-500">{form.artista}</p>
                     </div>
                   </div>
                 )}
@@ -422,7 +427,7 @@ export default function Repertorio() {
                   <div className="space-y-1.5">
                     <Label>Tom</Label>
                     <select
-                      className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                      className="w-full h-11 rounded-xl border border-stone-200 bg-white px-3 py-1 text-sm shadow-sm"
                       value={form.tom}
                       onChange={(e) => setForm((p) => ({ ...p, tom: e.target.value }))}
                     >
@@ -447,7 +452,7 @@ export default function Repertorio() {
                 {/* Links de busca */}
                 {form.titulo && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Buscar em</Label>
+                    <Label className="text-xs text-stone-500">Buscar em</Label>
                     <div className="flex gap-2 flex-wrap">
                       <a
                         href={`https://open.spotify.com/search/${encodeURIComponent(`${form.titulo} ${form.artista}`.trim())}`}

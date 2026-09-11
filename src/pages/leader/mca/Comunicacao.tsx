@@ -150,15 +150,15 @@ export default function Comunicacao({ ministerioId: propMid }: { ministerioId?: 
   const resp = responsaveis.find(r => r.id === respId) ?? responsaveis[0];
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-8 max-w-2xl">
       <div>
         <h1 className="text-2xl font-bold text-promessa-900">Comunicação</h1>
-        <p className="text-muted-foreground text-sm mt-1">Envie mensagens para responsáveis via WhatsApp</p>
+        <p className="text-stone-500 text-sm mt-1 leading-relaxed">Envie mensagens para responsáveis via WhatsApp</p>
       </div>
 
       {/* Seleção */}
-      <Card>
-        <CardContent className="space-y-4 pt-4">
+      <Card className="rounded-2xl shadow-card">
+        <CardContent className="space-y-4 pt-6">
           <div>
             <Label>Criança</Label>
             <Select value={criancaId} onValueChange={v => { setCriancaId(v); setRespId(''); }}>
@@ -193,12 +193,12 @@ export default function Comunicacao({ ministerioId: propMid }: { ministerioId?: 
 
       {/* Mensagem */}
       {criancaId && responsaveis.length > 0 && (
-        <Card>
-          <CardContent className="space-y-4 pt-4">
+        <Card className="rounded-2xl shadow-card">
+          <CardContent className="space-y-4 pt-6">
             <div>
               <Label>Contexto (opcional)</Label>
               <input
-                className="w-full border rounded-md px-3 py-1.5 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-promessa-400"
+                className="w-full border border-stone-200 rounded-xl px-3 py-1.5 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-promessa-400"
                 value={contexto}
                 onChange={e => setContexto(e.target.value)}
                 placeholder="Ex: Aviso sobre material, ocorrência na sala, etc."
@@ -225,7 +225,7 @@ export default function Comunicacao({ ministerioId: propMid }: { ministerioId?: 
             </div>
 
             {melhorada && (
-              <div className="border border-promessa-200 rounded-lg p-3 bg-promessa-50 space-y-2">
+              <div className="border border-promessa-200 rounded-xl p-3 bg-promessa-50 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-medium text-promessa-700 flex items-center gap-1">
                     <Sparkles className="w-3.5 h-3.5" />Versão melhorada pela IA
@@ -235,17 +235,17 @@ export default function Comunicacao({ ministerioId: propMid }: { ministerioId?: 
                       className={`px-2 py-0.5 rounded ${usarMelhorada ? 'bg-promessa-600 text-white' : 'text-promessa-600 border border-promessa-300'}`}
                       onClick={() => setUsarMelhorada(true)}>Usar esta</button>
                     <button
-                      className={`px-2 py-0.5 rounded ${!usarMelhorada ? 'bg-neutral-600 text-white' : 'text-neutral-600 border border-neutral-300'}`}
+                      className={`px-2 py-0.5 rounded-lg ${!usarMelhorada ? 'bg-stone-600 text-white' : 'text-stone-600 border border-stone-300'}`}
                       onClick={() => setUsarMelhorada(false)}>Usar original</button>
                   </div>
                 </div>
-                <p className="text-sm text-promessa-800 whitespace-pre-wrap">{melhorada}</p>
+                <p className="text-sm text-promessa-800 whitespace-pre-wrap leading-relaxed">{melhorada}</p>
               </div>
             )}
 
             {resp && (
-              <div className="flex items-center justify-between border-t pt-3">
-                <div className="text-sm text-muted-foreground flex items-center gap-2">
+              <div className="flex items-center justify-between border-t border-stone-200 pt-3">
+                <div className="text-sm text-stone-500 flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5" />
                   Enviando para <strong>{resp.nome}</strong> ({resp.telefone})
                 </div>
@@ -261,17 +261,17 @@ export default function Comunicacao({ ministerioId: propMid }: { ministerioId?: 
       {/* Histórico */}
       {criancaId && historico.length > 0 && (
         <div>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">Histórico de comunicações</h2>
+          <h2 className="text-sm font-medium text-stone-500 mb-3">Histórico de comunicações</h2>
           <div className="space-y-2">
             {historico.map(c => (
-              <Card key={c.id}>
+              <Card key={c.id} className="rounded-2xl shadow-card">
                 <CardContent className="py-3 px-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-neutral-700 whitespace-pre-wrap line-clamp-3">
+                      <p className="text-sm text-stone-700 whitespace-pre-wrap line-clamp-3 leading-relaxed">
                         {c.mensagem_melhorada ?? c.mensagem_original}
                       </p>
-                      <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 mt-1.5 text-xs text-stone-500">
                         <Phone className="w-3 h-3" />{c.responsavel_telefone}
                         <Clock className="w-3 h-3" />
                         {format(new Date(c.created_at), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}

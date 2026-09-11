@@ -408,12 +408,12 @@ export default function LeaderMinhaEquipe() {
 
   if (!ministerioId) {
     return (
-      <div className="p-8">
+      <div className="p-8 bg-stone-50">
         <Card>
-          <CardContent className="py-12 text-center">
-            <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h2 className="text-xl font-semibold mb-2">Nenhum Ministério Atribuído</h2>
-            <p className="text-muted-foreground">
+          <CardContent className="py-16 text-center">
+            <Building2 className="h-12 w-12 mx-auto mb-4 text-stone-300" />
+            <h2 className="text-xl font-semibold mb-2 text-stone-900">Nenhum Ministério Atribuído</h2>
+            <p className="text-stone-600 leading-relaxed">
               Você ainda não é líder de nenhum ministério. Entre em contato com a administração.
             </p>
           </CardContent>
@@ -423,10 +423,10 @@ export default function LeaderMinhaEquipe() {
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-6 sm:p-8 space-y-8 bg-stone-50">
       <div>
-        <h1 className="text-3xl font-display font-bold tracking-tight">Minha Equipe</h1>
-        <p className="text-muted-foreground mt-1">Gerencie os voluntários do ministério {ministerioNome}</p>
+        <h1 className="text-3xl font-display font-bold tracking-tight text-stone-900">Minha Equipe</h1>
+        <p className="text-stone-600 mt-1 leading-relaxed">Gerencie os voluntários do ministério {ministerioNome}</p>
       </div>
 
       {/* ── Funções do Ministério ─────────────────────────────────────────── */}
@@ -447,10 +447,12 @@ export default function LeaderMinhaEquipe() {
         </CardHeader>
         <CardContent>
           {funcoes.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground">
-              <Tag className="h-8 w-8 mx-auto mb-3 opacity-40" />
-              <p className="text-sm">Nenhuma função cadastrada. Crie a primeira função para começar a escalar voluntários.</p>
-              <Button variant="outline" size="sm" className="mt-3" onClick={handleOpenCreateFuncao}>
+            <div className="text-center py-10">
+              <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                <Tag className="h-7 w-7 text-stone-400" />
+              </div>
+              <p className="text-sm text-stone-600 leading-relaxed">Nenhuma função cadastrada. Crie a primeira função para começar a escalar voluntários.</p>
+              <Button variant="outline" size="sm" className="mt-4 min-h-[44px]" onClick={handleOpenCreateFuncao}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Função
               </Button>
@@ -460,7 +462,7 @@ export default function LeaderMinhaEquipe() {
               {funcoes.map((f) => (
                 <div
                   key={f.id}
-                  className="flex items-center gap-1 bg-secondary rounded-full pl-3 pr-1 py-1 text-sm font-medium"
+                  className="flex items-center gap-1 bg-stone-100 rounded-full pl-3 pr-1 py-1 text-sm font-medium text-stone-700"
                 >
                   <span
                     className="cursor-pointer hover:text-primary transition-colors"
@@ -499,22 +501,24 @@ export default function LeaderMinhaEquipe() {
             </Button>
           </div>
           <div className="relative mt-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
             <Input
               placeholder="Buscar voluntário..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 rounded-xl min-h-[44px]"
             />
           </div>
         </CardHeader>
         <CardContent>
           {filteredVoluntarios.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{searchTerm ? 'Nenhum voluntário encontrado' : 'Nenhum voluntário neste ministério'}</p>
+            <div className="text-center py-14">
+              <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-stone-400" />
+              </div>
+              <p className="text-stone-600 leading-relaxed">{searchTerm ? 'Nenhum voluntário encontrado' : 'Nenhum voluntário neste ministério ainda'}</p>
               {!searchTerm && (
-                <Button variant="outline" className="mt-4" onClick={handleOpenAddDialog}>
+                <Button variant="outline" className="mt-4 min-h-[44px]" onClick={handleOpenAddDialog}>
                   <Plus className="h-4 w-4 mr-2" />
                   Adicionar Voluntário
                 </Button>
@@ -536,14 +540,14 @@ export default function LeaderMinhaEquipe() {
                   <TableRow key={voluntario.id}>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{voluntario.profile?.nome || 'Nome não disponível'}</p>
-                        <p className="text-sm text-muted-foreground">{voluntario.profile?.email}</p>
+                        <p className="font-medium text-stone-900">{voluntario.profile?.nome || 'Nome não disponível'}</p>
+                        <p className="text-sm text-stone-500">{voluntario.profile?.email}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 flex-wrap">
                         {voluntario.funcoes.length === 0 ? (
-                          <span className="text-sm text-muted-foreground">Nenhuma</span>
+                          <span className="text-sm text-stone-500">Nenhuma</span>
                         ) : (
                           voluntario.funcoes.map(f => (
                             <Badge key={f.id} variant="secondary" className="text-xs">
@@ -667,23 +671,23 @@ export default function LeaderMinhaEquipe() {
             <div className="space-y-2">
               <Label>Buscar Voluntário</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
                 <Input
                   placeholder="Digite o nome ou email..."
                   value={profileSearchTerm}
                   onChange={(e) => setProfileSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 rounded-xl min-h-[44px]"
                 />
               </div>
 
-              <div className="border rounded-md max-h-48 overflow-y-auto">
+              <div className="border border-stone-200 rounded-xl max-h-48 overflow-y-auto">
                 {isSearching ? (
-                  <div className="p-4 text-center text-muted-foreground">
+                  <div className="p-4 text-center text-stone-500">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mx-auto"></div>
                     <p className="text-sm mt-2">Buscando...</p>
                   </div>
                 ) : availableProfiles.length === 0 ? (
-                  <div className="p-4 text-center text-muted-foreground text-sm">
+                  <div className="p-4 text-center text-stone-500 text-sm">
                     {profileSearchTerm
                       ? 'Nenhum voluntário encontrado'
                       : 'Todos os usuários já estão neste ministério'}
@@ -692,22 +696,22 @@ export default function LeaderMinhaEquipe() {
                   availableProfiles.map((p) => (
                     <div
                       key={p.id}
-                      className={`p-3 cursor-pointer hover:bg-muted/50 border-b last:border-b-0 transition-colors ${
+                      className={`p-3 cursor-pointer hover:bg-stone-50 border-b border-stone-200 last:border-b-0 transition-colors min-h-[44px] ${
                         selectedProfileId === p.id ? 'bg-primary/10 border-primary' : ''
                       }`}
                       onClick={() => setSelectedProfileId(p.id)}
                     >
                       <div className="flex items-center gap-2">
                         <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          selectedProfileId === p.id ? 'border-primary bg-primary' : 'border-muted-foreground'
+                          selectedProfileId === p.id ? 'border-primary bg-primary' : 'border-stone-400'
                         }`}>
                           {selectedProfileId === p.id && (
                             <div className="w-2 h-2 rounded-full bg-white" />
                           )}
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{p.nome}</p>
-                          <p className="text-xs text-muted-foreground">{p.email}</p>
+                          <p className="font-medium text-sm text-stone-900">{p.nome}</p>
+                          <p className="text-xs text-stone-500">{p.email}</p>
                         </div>
                       </div>
                     </div>
@@ -717,9 +721,9 @@ export default function LeaderMinhaEquipe() {
             </div>
             <div className="space-y-2">
               <Label>Funções (selecione ao menos uma)</Label>
-              <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
+              <div className="border border-stone-200 rounded-xl p-3 space-y-2 max-h-48 overflow-y-auto">
                 {funcoes.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nenhuma função cadastrada</p>
+                  <p className="text-sm text-stone-500">Nenhuma função cadastrada</p>
                 ) : (
                   funcoes.map((funcao) => (
                     <div key={funcao.id} className="flex items-center space-x-2">
@@ -762,9 +766,9 @@ export default function LeaderMinhaEquipe() {
           </DialogHeader>
           <div className="py-4">
             <Label>Funções (selecione ao menos uma)</Label>
-            <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto mt-2">
+            <div className="border border-stone-200 rounded-xl p-3 space-y-2 max-h-48 overflow-y-auto mt-2">
               {funcoes.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhuma função cadastrada</p>
+                <p className="text-sm text-stone-500">Nenhuma função cadastrada</p>
               ) : (
                 funcoes.map((funcao) => (
                   <div key={funcao.id} className="flex items-center space-x-2">

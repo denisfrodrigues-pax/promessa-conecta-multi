@@ -74,7 +74,7 @@ export default function VolunteerMinisterioLayout() {
 
   if (authLoading || myMinistriesLoading || loadingMin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -85,27 +85,27 @@ export default function VolunteerMinisterioLayout() {
   if (noAccess || !ministerio) return <Navigate to={p('/voluntario')} replace />;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
+    <div className="min-h-screen bg-stone-50">
+      <header className="sticky top-0 z-50 bg-white border-b border-stone-200 shadow-soft">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <RouterNavLink to={p('/voluntario')} className="flex items-center gap-3">
               <ChurchLogo size={40} />
             </RouterNavLink>
             <div>
-              <h1 className="font-display font-bold text-foreground">{ministerio.nome}</h1>
-              <p className="text-xs text-muted-foreground">{profile?.nome}</p>
+              <h1 className="font-display font-bold text-stone-900">{ministerio.nome}</h1>
+              <p className="text-xs text-stone-500">{profile?.nome}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="rounded-xl min-h-[44px]">
               <RouterNavLink to={p('/voluntario')}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Hub
               </RouterNavLink>
             </Button>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="rounded-xl min-h-[44px]">
               <RouterNavLink to={p('/app')}>
                 <Home className="w-4 h-4 mr-2" />
                 App
@@ -116,7 +116,7 @@ export default function VolunteerMinisterioLayout() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-8">
         <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, papel: ministerio.papel }} />
       </main>
     </div>

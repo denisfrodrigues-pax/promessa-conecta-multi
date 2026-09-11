@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Cake, ChevronRight } from "lucide-react";
+import { Cake, ChevronRight, Users } from "lucide-react";
 import { getMinisterioIconConfig } from "@/utils/ministerioIcons";
 
 interface LedMinistry {
@@ -19,18 +19,18 @@ function AniversariantesQuickLink() {
   const { p } = useIgrejaSlug();
   return (
     <Card
-      className="mb-6 hover:shadow-md transition-shadow cursor-pointer group border-promessa-200 bg-promessa-50/50"
+      className="mb-8 hover:shadow-elevated transition-shadow cursor-pointer group border-promessa-200 bg-promessa-50/50"
       onClick={() => navigate(p("/leader/aniversariantes"))}
     >
-      <CardContent className="p-4 flex items-center gap-3">
+      <CardContent className="p-6 flex items-center gap-4">
         <div className="w-10 h-10 rounded-xl bg-promessa-100 text-promessa-700 flex items-center justify-center shrink-0">
           <Cake className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground">Aniversariantes da Semana</p>
-          <p className="text-sm text-muted-foreground">Veja quem faz aniversário e envie um WhatsApp</p>
+          <p className="font-semibold text-stone-900">Aniversariantes da Semana</p>
+          <p className="text-sm text-stone-500 leading-relaxed">Veja quem faz aniversário e envie um WhatsApp</p>
         </div>
-        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+        <ChevronRight className="w-5 h-5 text-stone-400 group-hover:text-stone-600 transition-colors" />
       </CardContent>
     </Card>
   );
@@ -133,48 +133,58 @@ export default function LeaderHub() {
   }, [user, authLoading, isAdmin]);
 
   if (loading) {
-    return <div className="p-6">Carregando...</div>;
+    return <div className="p-6 md:p-8 text-stone-500">Carregando...</div>;
   }
 
   if (ledMinistries.length === 0) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Hub do Líder</h1>
+      <div className="p-6 md:p-8">
+        <h1 className="text-2xl font-bold text-stone-900 mb-6">Hub do Líder</h1>
         <AniversariantesQuickLink />
-        <p className="text-muted-foreground">
-          {isAdmin
-            ? "Nenhum ministério cadastrado na igreja."
-            : "Você não está vinculado como líder em nenhum ministério."}
-        </p>
+        <div className="flex flex-col items-center text-center gap-4 py-12 px-6 bg-white rounded-2xl border border-stone-200 shadow-soft">
+          <div className="w-14 h-14 rounded-2xl bg-promessa-100 text-promessa-700 flex items-center justify-center">
+            <Users className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <p className="font-semibold text-stone-900">
+              {isAdmin ? "Nenhum ministério por aqui ainda" : "Você ainda não lidera nenhum ministério"}
+            </p>
+            <p className="text-sm text-stone-500 leading-relaxed max-w-sm">
+              {isAdmin
+                ? "Cadastre um ministério para começar a organizar sua igreja."
+                : "Quando você for definido como líder de um ministério, ele aparece aqui."}
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Hub do Líder</h1>
+    <div className="p-6 md:p-8">
+      <h1 className="text-2xl font-bold text-stone-900 mb-8">Hub do Líder</h1>
 
       <AniversariantesQuickLink />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {ledMinistries.map((m) => {
           const config = getMinisterioIconConfig(m.tipo);
           const Icon = config.icon;
           return (
             <Card
               key={m.ministerio_id}
-              className="hover:shadow-md transition-shadow cursor-pointer group"
+              className="hover:shadow-elevated transition-shadow cursor-pointer group"
               onClick={() => { if (m.slug) navigate(p(`/leader/${m.slug}`)); }}
             >
-              <CardContent className="p-5 flex items-center gap-4">
+              <CardContent className="p-6 flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${config.color}`}>
                   <Icon className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground truncate">{m.nome}</p>
-                  <p className="text-sm text-muted-foreground">Acessar como líder</p>
+                  <p className="font-semibold text-stone-900 truncate">{m.nome}</p>
+                  <p className="text-sm text-stone-500">Acessar como líder</p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <ChevronRight className="w-5 h-5 text-stone-400 group-hover:text-stone-600 transition-colors" />
               </CardContent>
             </Card>
           );

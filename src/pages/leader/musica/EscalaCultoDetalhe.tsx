@@ -374,9 +374,9 @@ export default function EscalaCultoDetalhe() {
           Voltar
         </Button>
         <div>
-          <h1 className="text-xl font-bold text-foreground">{evento?.titulo ?? '...'}</h1>
+          <h1 className="text-xl font-bold text-stone-900">{evento?.titulo ?? '...'}</h1>
           {evento && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-stone-500">
               {format(parseISO(evento.data_evento), "EEEE, d 'de' MMMM", { locale: ptBR })}
               {evento.horario_inicio && ` · ${evento.horario_inicio.slice(0, 5)}`}
             </p>
@@ -402,23 +402,28 @@ export default function EscalaCultoDetalhe() {
               <Loader2 className="w-5 h-5 animate-spin text-promessa-500" />
             </div>
           ) : !musicasCulto || musicasCulto.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              Nenhuma música adicionada ainda.
-            </p>
+            <div className="flex flex-col items-center text-center py-8">
+              <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mb-3">
+                <Music className="w-6 h-6 text-stone-400" />
+              </div>
+              <p className="text-sm text-stone-500 leading-relaxed">
+                Nenhuma música adicionada ainda.
+              </p>
+            </div>
           ) : (
             <div className="space-y-2">
               {musicasCulto.map((m, idx) => (
                 <div
                   key={m.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/40 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition-colors"
                 >
-                  <span className="text-sm font-mono text-muted-foreground w-5 text-center">
+                  <span className="text-sm font-mono text-stone-500 w-5 text-center">
                     {idx + 1}
                   </span>
 
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{getTituloMusica(m)}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                    <div className="flex items-center gap-2 text-xs text-stone-500 mt-0.5">
                       {getArtista(m) && <span>{getArtista(m)}</span>}
                       {getTom(m) && (
                         <span className="bg-promessa-100 text-promessa-700 px-1.5 py-0.5 rounded font-mono">
@@ -434,7 +439,7 @@ export default function EscalaCultoDetalhe() {
                         href={getYoutube(m)!}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-1.5 rounded text-red-500 hover:bg-red-50 transition-colors"
+                        className="p-1.5 rounded-xl text-red-500 hover:bg-red-50 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Youtube className="w-4 h-4" />
@@ -443,7 +448,7 @@ export default function EscalaCultoDetalhe() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-10 w-10"
                       disabled={idx === 0}
                       onClick={() => moverMusica(idx, 'up')}
                       aria-label="Mover música para cima"
@@ -453,7 +458,7 @@ export default function EscalaCultoDetalhe() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-10 w-10"
                       disabled={idx === musicasCulto.length - 1}
                       onClick={() => moverMusica(idx, 'down')}
                       aria-label="Mover música para baixo"
@@ -463,7 +468,7 @@ export default function EscalaCultoDetalhe() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-destructive hover:text-destructive"
+                      className="h-10 w-10 text-destructive hover:text-destructive"
                       onClick={() => setDeleteTarget(m.id)}
                       aria-label="Excluir música"
                     >
@@ -494,7 +499,7 @@ export default function EscalaCultoDetalhe() {
                   type="color"
                   value={paletaForm.cor_primaria}
                   onChange={(e) => setPaletaForm((p) => ({ ...p, cor_primaria: e.target.value }))}
-                  className="w-10 h-9 rounded border cursor-pointer p-0.5"
+                  className="w-11 h-11 rounded-xl border border-stone-200 cursor-pointer p-0.5"
                 />
                 <Input
                   value={paletaForm.cor_primaria}
@@ -513,7 +518,7 @@ export default function EscalaCultoDetalhe() {
                   type="color"
                   value={paletaForm.cor_secundaria || '#ffffff'}
                   onChange={(e) => setPaletaForm((p) => ({ ...p, cor_secundaria: e.target.value }))}
-                  className="w-10 h-9 rounded border cursor-pointer p-0.5"
+                  className="w-11 h-11 rounded-xl border border-stone-200 cursor-pointer p-0.5"
                 />
                 <Input
                   value={paletaForm.cor_secundaria}
@@ -532,7 +537,7 @@ export default function EscalaCultoDetalhe() {
                   type="color"
                   value={paletaForm.cor_acento || '#ffffff'}
                   onChange={(e) => setPaletaForm((p) => ({ ...p, cor_acento: e.target.value }))}
-                  className="w-10 h-9 rounded border cursor-pointer p-0.5"
+                  className="w-11 h-11 rounded-xl border border-stone-200 cursor-pointer p-0.5"
                 />
                 <Input
                   value={paletaForm.cor_acento}
@@ -548,22 +553,22 @@ export default function EscalaCultoDetalhe() {
           {/* Preview */}
           <div className="flex gap-3 items-center">
             <div
-              className="w-10 h-10 rounded-full border shadow"
+              className="w-10 h-10 rounded-full border-2 border-white shadow-sm ring-1 ring-stone-200"
               style={{ backgroundColor: paletaForm.cor_primaria }}
             />
             {paletaForm.cor_secundaria && (
               <div
-                className="w-10 h-10 rounded-full border shadow"
+                className="w-10 h-10 rounded-full border-2 border-white shadow-sm ring-1 ring-stone-200"
                 style={{ backgroundColor: paletaForm.cor_secundaria }}
               />
             )}
             {paletaForm.cor_acento && (
               <div
-                className="w-10 h-10 rounded-full border shadow"
+                className="w-10 h-10 rounded-full border-2 border-white shadow-sm ring-1 ring-stone-200"
                 style={{ backgroundColor: paletaForm.cor_acento }}
               />
             )}
-            <span className="text-xs text-muted-foreground">Preview</span>
+            <span className="text-xs text-stone-500">Preview</span>
           </div>
 
           <div className="space-y-1.5">
@@ -597,7 +602,7 @@ export default function EscalaCultoDetalhe() {
             <div className="space-y-1.5">
               <Label>Buscar no repertório</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
                 <Input
                   className="pl-9"
                   placeholder="Digite o título…"
@@ -607,15 +612,15 @@ export default function EscalaCultoDetalhe() {
               </div>
 
               {repertorioResultados && repertorioResultados.length > 0 && !form.musica_id && (
-                <div className="border rounded-md divide-y max-h-48 overflow-y-auto">
+                <div className="border border-stone-200 rounded-xl divide-y divide-stone-100 max-h-48 overflow-y-auto">
                   {repertorioResultados.map((r) => (
                     <button
                       key={r.id}
-                      className="w-full text-left px-3 py-2 hover:bg-muted/60 transition-colors"
+                      className="w-full text-left px-3 py-2 min-h-[44px] hover:bg-stone-50 transition-colors"
                       onClick={() => selecionarDoRepertorio(r)}
                     >
                       <p className="text-sm font-medium">{r.titulo}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-stone-500">
                         {r.artista ?? '—'}{r.tom ? ` · Tom: ${r.tom}` : ''}
                       </p>
                     </button>
@@ -627,7 +632,7 @@ export default function EscalaCultoDetalhe() {
                 <p className="text-xs text-promessa-600 font-medium">
                   ✓ Usando música do repertório
                   <button
-                    className="ml-2 underline text-muted-foreground"
+                    className="ml-2 underline text-stone-500"
                     onClick={() => setForm((f) => ({ ...f, musica_id: null }))}
                   >
                     Trocar

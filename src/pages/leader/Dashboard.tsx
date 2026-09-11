@@ -108,8 +108,8 @@ export default function LeaderDashboard() {
           />
         )}
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">Olá, {profile?.nome || 'Líder'}!</h1>
-          <p className="text-muted-foreground mt-1">Confira suas atividades e responsabilidades</p>
+          <h1 className="text-3xl font-display font-bold tracking-tight text-stone-900">Olá, {profile?.nome || 'Líder'}!</h1>
+          <p className="text-stone-600 mt-1 leading-relaxed">Confira suas atividades e responsabilidades</p>
         </div>
       </div>
 
@@ -146,7 +146,7 @@ export default function LeaderDashboard() {
           <CardContent>
             <div className="space-y-2">
               {agenda.map(ev => (
-                <div key={ev.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+                <div key={ev.id} className="flex items-center justify-between p-4 rounded-xl bg-stone-50">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-xl bg-primary/10 flex flex-col items-center justify-center shrink-0">
                       <span className="text-sm font-bold text-primary leading-tight">
@@ -157,8 +157,8 @@ export default function LeaderDashboard() {
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{ev.titulo}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{ev.tipo}</p>
+                      <p className="font-medium text-sm text-stone-900">{ev.titulo}</p>
+                      <p className="text-xs text-stone-500 capitalize">{ev.tipo}</p>
                     </div>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
@@ -196,8 +196,8 @@ export default function LeaderDashboard() {
               </div>
             ) : bases.length === 0 ? (
               <div className="text-center py-10">
-                <Users className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground">Você ainda não lidera nenhuma base</p>
+                <Users className="w-12 h-12 mx-auto text-stone-300 mb-3" />
+                <p className="text-stone-500">Você ainda não lidera nenhuma base</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -205,17 +205,17 @@ export default function LeaderDashboard() {
                   <Link
                     key={base.id}
                     to={p(`/leader/${slug}/bases/${base.id}`)}
-                    className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-200 cursor-pointer group"
+                    className="flex items-center justify-between p-4 rounded-xl bg-stone-50 hover:bg-stone-100 transition-all duration-200 cursor-pointer group min-h-[44px]"
                   >
                     <div>
-                      <p className="font-semibold group-hover:text-primary transition-colors">{base.nome}</p>
+                      <p className="font-semibold text-stone-900 group-hover:text-primary transition-colors">{base.nome}</p>
                       {base.dia_semana && base.horario && (
-                        <p className="text-sm text-muted-foreground mt-0.5">
+                        <p className="text-sm text-stone-500 mt-0.5">
                           {base.dia_semana} às {base.horario}
                         </p>
                       )}
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="w-5 h-5 text-stone-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                   </Link>
                 ))}
               </div>
@@ -243,18 +243,18 @@ export default function LeaderDashboard() {
               </div>
             ) : escalas.length === 0 ? (
               <div className="text-center py-10">
-                <Calendar className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground">Nenhuma escala programada</p>
+                <Calendar className="w-12 h-12 mx-auto text-stone-300 mb-3" />
+                <p className="text-stone-500">Nenhuma escala programada</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {escalas.map((escala) => (
                   <div
                     key={escala.id}
-                    className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-200"
+                    className="flex items-center justify-between p-4 rounded-xl bg-stone-50 hover:bg-stone-100 transition-all duration-200"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex flex-col items-center justify-center shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex flex-col items-center justify-center shadow-soft">
                         <span className="text-sm font-bold text-primary">
                           {format(parseLocalDate(escala.data), 'dd')}
                         </span>
@@ -263,8 +263,8 @@ export default function LeaderDashboard() {
                         </span>
                       </div>
                       <div>
-                        <p className="font-semibold">{escala.funcao}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-semibold text-stone-900">{escala.funcao}</p>
+                        <p className="text-sm text-stone-500">
                           {escala.ministerios?.nome || 'Ministério'}
                         </p>
                       </div>

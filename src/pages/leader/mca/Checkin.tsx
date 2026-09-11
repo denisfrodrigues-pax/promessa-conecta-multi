@@ -166,7 +166,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
   const dataFormatada = format(new Date(selectedDate + 'T12:00:00'), "EEEE, dd 'de' MMMM", { locale: ptBR });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2">
@@ -178,16 +178,16 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
               </div>
             )}
           </div>
-          <p className="text-muted-foreground text-sm mt-1 capitalize">{dataFormatada}</p>
+          <p className="text-stone-500 text-sm mt-1 capitalize leading-relaxed">{dataFormatada}</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5">
-            <CalendarDays className="w-4 h-4 text-muted-foreground" />
+            <CalendarDays className="w-4 h-4 text-stone-400" />
             <Input
               type="date"
               value={selectedDate}
               onChange={e => setSelectedDate(e.target.value)}
-              className="h-8 w-40 text-sm"
+              className="w-40 text-sm"
             />
           </div>
           <Button variant="outline" asChild>
@@ -206,23 +206,23 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
       </div>
 
       {/* Resumo */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-4 text-center">
+      <div className="grid grid-cols-3 gap-4 sm:gap-6">
+        <Card className="rounded-2xl shadow-card">
+          <CardContent className="pt-6 text-center">
             <p className="text-3xl font-bold text-promessa-700">{presentes.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">Presentes</p>
+            <p className="text-xs text-stone-500 mt-1">Presentes</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-4 text-center">
-            <p className="text-3xl font-bold text-neutral-500">{saidas.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">Saídas</p>
+        <Card className="rounded-2xl shadow-card">
+          <CardContent className="pt-6 text-center">
+            <p className="text-3xl font-bold text-stone-500">{saidas.length}</p>
+            <p className="text-xs text-stone-500 mt-1">Saídas</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-4 text-center">
-            <p className="text-3xl font-bold text-neutral-700">{checkins.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">Total</p>
+        <Card className="rounded-2xl shadow-card">
+          <CardContent className="pt-6 text-center">
+            <p className="text-3xl font-bold text-stone-700">{checkins.length}</p>
+            <p className="text-xs text-stone-500 mt-1">Total</p>
           </CardContent>
         </Card>
       </div>
@@ -230,12 +230,15 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
       {/* Por sala */}
       {isLoading ? (
         <div className="space-y-3">
-          {[1, 2].map(i => <div key={i} className="h-32 bg-neutral-100 rounded-lg animate-pulse" />)}
+          {[1, 2].map(i => <div key={i} className="h-32 bg-stone-100 rounded-2xl animate-pulse" />)}
         </div>
       ) : presentes.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            {isToday ? 'Nenhuma criança presente ainda hoje.' : 'Nenhum check-in registrado nesta data.'}
+        <Card className="rounded-2xl shadow-card">
+          <CardContent className="py-16 text-center">
+            <Baby className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <p className="font-medium text-stone-600 leading-relaxed">
+              {isToday ? 'Nenhuma criança presente ainda hoje.' : 'Nenhum check-in registrado nesta data.'}
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -243,7 +246,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
           {Object.entries(porSala).map(([salaId, items]) => {
             const sala = salas.find(s => s.id === salaId);
             return (
-              <Card key={salaId}>
+              <Card key={salaId} className="rounded-2xl shadow-card">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Users className="w-4 h-4 text-promessa-600" />
@@ -252,16 +255,16 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {items.map(ci => (
-                    <div key={ci.id} className="flex items-center justify-between py-1">
+                    <div key={ci.id} className="flex items-center justify-between py-1 min-h-[44px]">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Baby className="w-4 h-4 text-promessa-400 shrink-0" />
-                        <span className="text-sm font-medium">{checkinNome(ci)}</span>
+                        <span className="text-sm font-medium text-stone-900">{checkinNome(ci)}</span>
                         {isVisitanteCheckin(ci) && (
                           <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs px-1.5 py-0">
                             Visitante
                           </Badge>
                         )}
-                        <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                        <span className="text-xs text-stone-500 flex items-center gap-0.5">
                           <Clock className="w-3 h-3" />
                           {format(new Date(ci.checkin_at), 'HH:mm')}
                         </span>
@@ -286,14 +289,14 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
       {/* Histórico de saídas */}
       {saidas.length > 0 && (
         <div>
-          <h2 className="text-sm font-medium text-muted-foreground mb-2">
+          <h2 className="text-sm font-medium text-stone-500 mb-3">
             Saídas {isToday ? 'de hoje' : 'do dia'}
           </h2>
           <div className="space-y-1">
             {saidas.map(ci => (
-              <div key={ci.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-neutral-50 text-sm">
-                <Baby className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                <span className="flex-1 text-neutral-500 line-through">{checkinNome(ci)}</span>
+              <div key={ci.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-stone-50 text-sm min-h-[44px]">
+                <Baby className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                <span className="flex-1 text-stone-500 line-through">{checkinNome(ci)}</span>
                 {isVisitanteCheckin(ci) && (
                   <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">Visitante</Badge>
                 )}
@@ -313,7 +316,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
             <DialogTitle>
               Registrar Check-in
               {!isToday && (
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                <span className="ml-2 text-sm font-normal text-stone-500">
                   ({format(new Date(selectedDate + 'T12:00:00'), 'dd/MM/yyyy')})
                 </span>
               )}
@@ -321,7 +324,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
           </DialogHeader>
           <div className="space-y-4">
             {/* Toggle visitante */}
-            <div className="flex items-center gap-3 pb-3 border-b">
+            <div className="flex items-center gap-3 pb-3 border-b border-stone-200">
               <Switch
                 id="visitante-toggle"
                 checked={isVisitante}
@@ -383,7 +386,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
                       <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                     ))}
                     {criancasDisponiveis.length === 0 && (
-                      <div className="py-4 text-center text-sm text-muted-foreground">
+                      <div className="py-4 text-center text-sm text-stone-500">
                         Todas as crianças já fizeram check-in.
                       </div>
                     )}
@@ -439,7 +442,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
           <DialogHeader>
             <DialogTitle>Cadastrar como membro?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground py-1">
+          <p className="text-sm text-stone-500 py-1 leading-relaxed">
             Deseja cadastrar <strong>{visitanteInfo?.nome}</strong> como membro Kids?
           </p>
           <DialogFooter className="gap-2 flex-col sm:flex-row">
