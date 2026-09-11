@@ -219,11 +219,11 @@ export default function FinanceiroAuditoria() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Auditoria Financeira</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold text-stone-900">Auditoria Financeira</h1>
+          <p className="text-stone-600 leading-relaxed">
             Histórico de alterações no módulo financeiro
           </p>
         </div>
@@ -234,11 +234,11 @@ export default function FinanceiroAuditoria() {
       </div>
 
       {/* Filtros */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="relative lg:col-span-2">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
               <Input
                 placeholder="Buscar por usuário ou ID..."
                 value={search}
@@ -271,7 +271,7 @@ export default function FinanceiroAuditoria() {
               </SelectContent>
             </Select>
 
-            <Button variant="ghost" onClick={clearFilters}>
+            <Button variant="ghost" className="min-h-[44px]" onClick={clearFilters}>
               Limpar filtros
             </Button>
 
@@ -293,7 +293,7 @@ export default function FinanceiroAuditoria() {
       </Card>
 
       {/* Tabela */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="pt-6">
           {loading ? (
             <div className="space-y-4">
@@ -302,9 +302,12 @@ export default function FinanceiroAuditoria() {
               ))}
             </div>
           ) : logs.length === 0 ? (
-            <div className="text-center py-12">
-              <History className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Nenhum registro de auditoria encontrado</p>
+            <div className="flex flex-col items-center justify-center text-center py-16 px-4">
+              <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+                <History className="h-8 w-8 text-stone-400" />
+              </div>
+              <h3 className="text-base font-semibold text-stone-800 mb-1">Nenhum registro de auditoria encontrado</h3>
+              <p className="text-sm text-stone-500 leading-relaxed max-w-xs">Ajuste os filtros para ver o histórico de alterações.</p>
             </div>
           ) : (
             <>
@@ -337,6 +340,7 @@ export default function FinanceiroAuditoria() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="min-h-[44px]"
                           onClick={() => openDetails(log)}
                         >
                           <Eye className="h-4 w-4" />
@@ -349,7 +353,7 @@ export default function FinanceiroAuditoria() {
 
               {/* Paginação */}
               <div className="flex items-center justify-between mt-4">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-stone-500">
                   Mostrando {(page - 1) * limit + 1} -{" "}
                   {Math.min(page * limit, total)} de {total} registros
                 </p>
@@ -357,6 +361,7 @@ export default function FinanceiroAuditoria() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="min-h-[44px]"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
                   >
@@ -366,6 +371,7 @@ export default function FinanceiroAuditoria() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="min-h-[44px]"
                     onClick={() => setPage((p) => p + 1)}
                     disabled={page * limit >= total}
                   >
@@ -393,35 +399,35 @@ export default function FinanceiroAuditoria() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Data/Hora</p>
-                  <p className="font-medium">
+                  <p className="text-sm text-stone-500">Data/Hora</p>
+                  <p className="font-medium text-stone-900">
                     {format(new Date(selectedLog.created_at), "dd/MM/yyyy HH:mm:ss", {
                       locale: ptBR,
                     })}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Usuário</p>
-                  <p className="font-medium">{selectedLog.usuario?.nome || "Sistema"}</p>
+                  <p className="text-sm text-stone-500">Usuário</p>
+                  <p className="font-medium text-stone-900">{selectedLog.usuario?.nome || "Sistema"}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Ação</p>
+                  <p className="text-sm text-stone-500">Ação</p>
                   <div>{getAcaoBadge(selectedLog.acao)}</div>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Entidade</p>
-                  <p className="font-medium">{getEntidadeLabel(selectedLog.entidade)}</p>
+                  <p className="text-sm text-stone-500">Entidade</p>
+                  <p className="font-medium text-stone-900">{getEntidadeLabel(selectedLog.entidade)}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-sm text-muted-foreground">ID do Registro</p>
-                  <p className="font-mono text-sm">{selectedLog.entidade_id || "-"}</p>
+                  <p className="text-sm text-stone-500">ID do Registro</p>
+                  <p className="font-mono text-sm text-stone-900">{selectedLog.entidade_id || "-"}</p>
                 </div>
               </div>
 
               {selectedLog.payload && typeof selectedLog.payload === 'object' && Object.keys(selectedLog.payload as object).length > 0 && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">Dados Alterados</p>
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs">
+                  <p className="text-sm text-stone-500 mb-2">Dados Alterados</p>
+                  <pre className="bg-stone-100 p-4 rounded-xl overflow-x-auto text-xs">
                     {JSON.stringify(selectedLog.payload, null, 2)}
                   </pre>
                 </div>

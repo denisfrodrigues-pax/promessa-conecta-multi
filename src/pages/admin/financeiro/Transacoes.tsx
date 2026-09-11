@@ -247,11 +247,11 @@ export default function Transacoes() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Transações</h1>
-          <p className="text-muted-foreground">Gerencie os lançamentos financeiros</p>
+          <h1 className="text-2xl font-bold text-stone-900">Transações</h1>
+          <p className="text-stone-600 leading-relaxed">Gerencie os lançamentos financeiros</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={exportCSV}>
@@ -266,11 +266,11 @@ export default function Transacoes() {
       </div>
 
       {/* Filtros */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
               <Input
                 placeholder="Buscar por descrição ou referência..."
                 value={search}
@@ -344,7 +344,7 @@ export default function Transacoes() {
               </SelectContent>
             </Select>
 
-            <Button variant="ghost" onClick={clearFilters}>
+            <Button variant="ghost" className="min-h-[44px]" onClick={clearFilters}>
               Limpar filtros
             </Button>
           </div>
@@ -352,7 +352,7 @@ export default function Transacoes() {
       </Card>
 
       {/* Tabela */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardContent className="pt-6">
           {loading ? (
             <div className="space-y-4">
@@ -361,8 +361,12 @@ export default function Transacoes() {
               ))}
             </div>
           ) : transacoes.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Nenhuma transação encontrada</p>
+            <div className="flex flex-col items-center justify-center text-center py-16 px-4">
+              <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+                <Search className="h-8 w-8 text-stone-400" />
+              </div>
+              <h3 className="text-base font-semibold text-stone-800 mb-1">Nenhuma transação encontrada</h3>
+              <p className="text-sm text-stone-500 leading-relaxed max-w-xs">Ajuste os filtros ou registre um novo lançamento para começar.</p>
             </div>
           ) : (
             <>
@@ -414,6 +418,7 @@ export default function Transacoes() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="min-h-[44px]"
                           onClick={() => navigate(p(`/admin/financeiro/transacoes/${t.id}`))}
                         >
                           <Eye className="h-4 w-4" />
@@ -427,7 +432,7 @@ export default function Transacoes() {
 
               {/* Paginação */}
               <div className="flex items-center justify-between mt-4">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-stone-500">
                   Mostrando {(page - 1) * limit + 1} -{" "}
                   {Math.min(page * limit, total)} de {total} registros
                 </p>
@@ -435,6 +440,7 @@ export default function Transacoes() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="min-h-[44px]"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
                   >
@@ -444,6 +450,7 @@ export default function Transacoes() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="min-h-[44px]"
                     onClick={() => setPage((p) => p + 1)}
                     disabled={page * limit >= total}
                   >
