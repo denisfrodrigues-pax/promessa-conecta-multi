@@ -331,7 +331,7 @@ export default function VisitanteDetalhes() {
   if (!visitante) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Visitante não encontrado</p>
+        <p className="text-stone-500">Visitante não encontrado</p>
       </div>
     );
   }
@@ -348,14 +348,14 @@ export default function VisitanteDetalhes() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-display font-bold">{visitante.nome}</h1>
+            <h1 className="text-xl font-display font-bold text-stone-900">{visitante.nome}</h1>
             <button
               onClick={handleWhatsAppClick}
               disabled={!hasValidPhone(formData.telefone)}
               className={`w-11 h-11 flex items-center justify-center rounded-full transition-colors ${
                 hasValidPhone(formData.telefone)
                   ? 'text-green-600 hover:bg-green-100 cursor-pointer'
-                  : 'text-muted-foreground/40 cursor-not-allowed'
+                  : 'text-stone-400/40 cursor-not-allowed'
               }`}
               title={hasValidPhone(formData.telefone) ? 'Enviar WhatsApp' : 'Telefone inválido'}
               aria-label={hasValidPhone(formData.telefone) ? 'Enviar WhatsApp' : 'Telefone inválido'}
@@ -371,7 +371,7 @@ export default function VisitanteDetalhes() {
           </Badge>
 
           {!vinculoAtual && (
-            <Button size="sm" onClick={() => setBaseModalOpen(true)}>
+            <Button size="sm" className="min-h-[44px]" onClick={() => setBaseModalOpen(true)}>
               <UserPlus className="w-4 h-4 mr-1" />
               Iniciar Acompanhamento
             </Button>
@@ -396,10 +396,10 @@ export default function VisitanteDetalhes() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Dados Principais</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="nome" className="text-xs text-muted-foreground">Nome</Label>
+              <Label htmlFor="nome" className="text-xs text-stone-500">Nome</Label>
               <Input
                 id="nome"
                 value={formData.nome}
@@ -407,7 +407,7 @@ export default function VisitanteDetalhes() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="telefone" className="text-xs text-muted-foreground">Telefone</Label>
+              <Label htmlFor="telefone" className="text-xs text-stone-500">Telefone</Label>
               <Input
                 id="telefone"
                 value={formData.telefone}
@@ -418,15 +418,15 @@ export default function VisitanteDetalhes() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-sm">
             <div>
-              <p className="text-xs text-muted-foreground">Cadastrado em</p>
-              <p className="font-medium">{formatDateTime(visitante.created_at)}</p>
+              <p className="text-xs text-stone-500">Cadastrado em</p>
+              <p className="font-medium text-stone-900">{formatDateTime(visitante.created_at)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Última atualização</p>
-              <p className="font-medium">{formatDateTime(visitante.created_at)}</p>
+              <p className="text-xs text-stone-500">Última atualização</p>
+              <p className="font-medium text-stone-900">{formatDateTime(visitante.created_at)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Status atual</p>
+              <p className="text-xs text-stone-500">Status atual</p>
               <Badge variant="outline" className={`mt-1 ${statusColors[currentStatus] || statusColors.novo}`}>
                 {statusLabels[currentStatus] || 'Novo'}
               </Badge>
@@ -434,10 +434,10 @@ export default function VisitanteDetalhes() {
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => navigate(p('/admin/visitantes'))}>
+            <Button variant="outline" className="min-h-[44px]" onClick={() => navigate(p('/admin/visitantes'))}>
               Voltar
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button className="min-h-[44px]" onClick={handleSave} disabled={saving}>
               <Save className="w-4 h-4 mr-1" />
               {saving ? 'Salvando...' : 'Salvar'}
             </Button>
@@ -455,7 +455,7 @@ export default function VisitanteDetalhes() {
         </CardHeader>
         <CardContent>
           {acompanhamentos.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
+            <p className="text-sm text-stone-500 text-center py-12 leading-relaxed">
               Nenhum registro de acompanhamento ainda.
             </p>
           ) : (
@@ -463,7 +463,7 @@ export default function VisitanteDetalhes() {
               {acompanhamentos.map((acomp) => (
                 <div
                   key={acomp.id}
-                  className="p-4 rounded-lg border bg-card space-y-3"
+                  className="p-4 rounded-xl border border-stone-200 bg-card space-y-3"
                 >
                   {/* Header do card */}
                   <div className="flex items-start justify-between gap-2">
@@ -475,20 +475,20 @@ export default function VisitanteDetalhes() {
                         <Badge variant="destructive" className="text-xs">Lotada</Badge>
                       )}
                     </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    <span className="text-xs text-stone-500 whitespace-nowrap">
                       {formatDateTime(acomp.created_at)}
                     </span>
                   </div>
 
                   {/* Observação */}
                   {acomp.observacao && (
-                    <p className="text-sm text-muted-foreground">{acomp.observacao}</p>
+                    <p className="text-sm text-stone-600 leading-relaxed">{acomp.observacao}</p>
                   )}
 
                   {/* Info da Base */}
                   {acomp.base && (
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground pt-1 border-t">
-                      <span className="font-medium text-foreground">{acomp.base.nome}</span>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500 pt-1 border-t border-stone-200">
+                      <span className="font-medium text-stone-900">{acomp.base.nome}</span>
                       {acomp.base.dia_semana && acomp.base.horario && (
                         <span className="flex items-center gap-1">
                           <CalendarDays className="w-3 h-3" />
@@ -520,16 +520,16 @@ export default function VisitanteDetalhes() {
 
       {/* ===== CONVERTER EM MEMBRO ===== */}
       <Card className="border-blue-200 bg-blue-50/50">
-        <CardContent className="p-4">
+        <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <p className="font-medium text-blue-800">Converter em Membro</p>
-              <p className="text-sm text-blue-600">Transfira este visitante para o cadastro de membros</p>
+              <p className="font-semibold text-blue-800">Converter em Membro</p>
+              <p className="text-sm text-blue-600 leading-relaxed">Transfira este visitante para o cadastro de membros</p>
             </div>
             <Button
               onClick={() => navigate(p(`/admin/membros/novo?fromVisitante=${id}`))}
               variant="outline"
-              className="border-blue-300 text-blue-700 hover:bg-blue-100"
+              className="min-h-[44px] border-blue-300 text-blue-700 hover:bg-blue-100"
             >
               <UserPlus className="w-4 h-4 mr-1" />
               Converter
@@ -547,7 +547,7 @@ export default function VisitanteDetalhes() {
 
           <div className="space-y-4">
             {/* Contexto */}
-            <div className="p-3 rounded-lg bg-muted/50 text-sm space-y-1">
+            <div className="p-3 rounded-xl bg-stone-50 text-sm space-y-1">
               <p><strong>Visitante:</strong> {visitante.nome}</p>
               <p><strong>Status atual:</strong> {statusLabels[currentStatus] || 'Novo'}</p>
             </div>
@@ -576,9 +576,9 @@ export default function VisitanteDetalhes() {
 
             {/* Info da Base Selecionada */}
             {selectedBase && (
-              <div className="p-3 rounded-lg bg-muted/50 text-sm space-y-2">
-                <p className="font-medium">{selectedBase.nome}</p>
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <div className="p-3 rounded-xl bg-stone-50 text-sm space-y-2">
+                <p className="font-medium text-stone-900">{selectedBase.nome}</p>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500">
                   {selectedBase.dia_semana && selectedBase.horario && (
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
@@ -638,10 +638,10 @@ export default function VisitanteDetalhes() {
 
             {/* Ações */}
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setBaseModalOpen(false)}>
+              <Button variant="outline" className="min-h-[44px]" onClick={() => setBaseModalOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleStartAcompanhamento} disabled={savingBase}>
+              <Button className="min-h-[44px]" onClick={handleStartAcompanhamento} disabled={savingBase}>
                 {savingBase ? 'Salvando...' : 'Salvar'}
               </Button>
             </div>
