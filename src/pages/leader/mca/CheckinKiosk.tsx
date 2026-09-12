@@ -65,8 +65,8 @@ function ExitKioskDialog({ open, onClose, onExited }: { open: boolean; onClose: 
           autoFocus
         />
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={checking}>Cancelar</Button>
-          <Button onClick={handleConfirm} disabled={checking || !password}>
+          <Button variant="outline" size="lg" onClick={onClose} disabled={checking}>Cancelar</Button>
+          <Button size="lg" onClick={handleConfirm} disabled={checking || !password}>
             {checking ? 'Verificando...' : 'Confirmar'}
           </Button>
         </DialogFooter>
@@ -108,7 +108,7 @@ function SalaPickerDialog({
           ))}
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose} disabled={confirming}>Cancelar</Button>
+          <Button variant="ghost" size="lg" onClick={onClose} disabled={confirming}>Cancelar</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -162,7 +162,7 @@ export default function CheckinKiosk() {
   return (
     <div className="fixed inset-0 z-[100] bg-stone-50 flex flex-col">
       {/* Topbar do quiosque */}
-      <header className="shrink-0 bg-promessa-800 text-white px-6 py-4 flex items-center justify-between shadow-md">
+      <header className="shrink-0 bg-promessa-800 text-white px-6 py-4 flex items-center justify-between shadow-elevated">
         <div className="flex items-center gap-3">
           <Baby className="w-7 h-7" />
           <h1 className="text-2xl font-bold">Check-in Kids</h1>
@@ -197,7 +197,7 @@ export default function CheckinKiosk() {
             <button
               aria-label="Limpar busca"
               onClick={() => setBusca('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100"
             >
               <X className="w-6 h-6" />
             </button>
@@ -213,8 +213,13 @@ export default function CheckinKiosk() {
               Toque para fazer check-in {busca && `— resultados para "${busca}"`}
             </h2>
             {resultados.length === 0 ? (
-              <div className="py-10 text-center text-stone-500 text-lg">
-                {busca ? 'Nenhuma criança encontrada.' : 'Todas as crianças já fizeram check-in.'}
+              <div className="py-10 flex flex-col items-center text-center gap-3">
+                <div className="w-16 h-16 rounded-2xl bg-promessa-100 flex items-center justify-center">
+                  <Baby className="w-8 h-8 text-promessa-600" />
+                </div>
+                <p className="text-stone-700 text-lg font-medium">
+                  {busca ? 'Nenhuma criança encontrada.' : 'Todas as crianças já fizeram check-in.'}
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -243,8 +248,13 @@ export default function CheckinKiosk() {
               Presentes agora — toque para check-out
             </h2>
             {presentes.length === 0 ? (
-              <div className="py-10 text-center text-stone-500 text-lg">
-                Nenhuma criança presente no momento.
+              <div className="py-10 flex flex-col items-center text-center gap-3">
+                <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center">
+                  <Clock className="w-8 h-8 text-stone-500" />
+                </div>
+                <p className="text-stone-700 text-lg font-medium">
+                  Nenhuma criança presente no momento.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

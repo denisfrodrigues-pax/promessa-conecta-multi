@@ -180,7 +180,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
           </div>
           <p className="text-stone-500 text-sm mt-1 capitalize leading-relaxed">{dataFormatada}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5">
             <CalendarDays className="w-4 h-4 text-stone-400" />
             <Input
