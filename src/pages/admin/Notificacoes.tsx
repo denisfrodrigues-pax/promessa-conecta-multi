@@ -465,12 +465,12 @@ export default function AdminNotificacoes() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-display font-bold text-stone-900">Notificações</h1>
           <p className="text-stone-600 leading-relaxed">Push notifications enviadas diretamente para o dispositivo dos membros. Use para alertas urgentes, escalas e lembretes individuais.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {selectedIds.size > 0 && (
             <AlertDialog open={isDeleteSelectedOpen} onOpenChange={setIsDeleteSelectedOpen}>
               <AlertDialogTrigger asChild>
