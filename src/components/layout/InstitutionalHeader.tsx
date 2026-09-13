@@ -61,7 +61,7 @@ export function InstitutionalHeader() {
       {/* ================= MOBILE HEADER ================= */}
       <div className="flex items-center justify-between px-4 py-4 lg:hidden">
         {/* Logo */}
-        <Link to={p('/publico')}>
+        <Link to={p('/publico')} className="flex items-center justify-center min-w-[44px] min-h-[44px] -m-1.5">
           <HeaderLogo logoUrl={church?.logo_url} nome={church?.nome} loading={churchLoading} size={40} />
         </Link>
 

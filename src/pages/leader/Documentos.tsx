@@ -228,7 +228,7 @@ export default function LeaderDocumentos() {
           <h2 className="text-xl font-display font-bold text-stone-900">Documentos</h2>
           <p className="text-sm text-stone-500 leading-relaxed">Materiais e arquivos do ministério</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
+        <Button className="min-h-[44px]" onClick={() => setIsModalOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Adicionar documento
         </Button>
@@ -245,7 +245,7 @@ export default function LeaderDocumentos() {
               <FolderOpen className="w-7 h-7 text-primary" />
             </div>
             <p className="text-stone-600 leading-relaxed">Nenhum documento por aqui ainda.</p>
-            <Button variant="outline" onClick={() => setIsModalOpen(true)}>
+            <Button variant="outline" className="min-h-[44px]" onClick={() => setIsModalOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Adicionar primeiro documento
             </Button>

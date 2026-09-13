@@ -247,7 +247,7 @@ export default function Repertorio() {
             {musicas?.length ?? 0} música{musicas?.length !== 1 ? 's' : ''} cadastrada{musicas?.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button onClick={openCreate}>
+        <Button className="min-h-[44px]" onClick={openCreate}>
           <Plus className="w-4 h-4 mr-1" />
           Nova Música
         </Button>
@@ -362,7 +362,7 @@ export default function Repertorio() {
                         <CifraclubSvg />
                       </PlatformLink>
                       <button
-                        className="p-1.5 rounded-xl text-destructive hover:bg-red-50 transition-colors ml-1"
+                        className="w-11 h-11 flex items-center justify-center rounded-xl text-destructive hover:bg-red-50 transition-colors ml-1"
                         onClick={() => setDeleteTarget(m.id)}
                         aria-label="Excluir música do repertório"
                       >

@@ -93,10 +93,10 @@ export function CalendarioEscalas({ mes, ano, escalas, onMesAnterior, onProximoM
           {format(new Date(ano, mes - 1, 1), 'MMMM yyyy', { locale: ptBR })}
         </h2>
         <div className="flex gap-1">
-          <Button variant="outline" size="icon" onClick={onMesAnterior} aria-label="Mês anterior">
+          <Button variant="outline" size="icon" className="h-11 w-11" onClick={onMesAnterior} aria-label="Mês anterior">
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={onProximoMes} aria-label="Próximo mês">
+          <Button variant="outline" size="icon" className="h-11 w-11" onClick={onProximoMes} aria-label="Próximo mês">
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>

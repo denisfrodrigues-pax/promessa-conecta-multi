@@ -565,7 +565,7 @@ export function ContribuicaoForm({
                               variant="ghost"
                               size="sm"
                               onClick={copyPixKey}
-                              className="h-8 px-2 text-primary hover:text-primary/80 hover:bg-primary/10"
+                              className="h-11 min-w-[44px] px-2 text-primary hover:text-primary/80 hover:bg-primary/10"
                             >
                               {copiedPix ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                             </Button>

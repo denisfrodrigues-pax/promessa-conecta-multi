@@ -40,7 +40,7 @@ export function UserAvatarMenu({ size = 'md', showName = false, className }: Use
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            'flex items-center gap-3 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all hover:opacity-80',
+            'flex items-center gap-3 rounded-full min-w-[44px] min-h-[44px] justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all hover:opacity-80',
             className
           )}
         >

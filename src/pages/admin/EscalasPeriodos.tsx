@@ -223,7 +223,7 @@ export default function AdminEscalasPeriodos() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl min-h-[44px]"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl min-h-[44px] min-w-[44px]"
                       onClick={() => setToDelete(p)}
                       title="Excluir período"
                     >

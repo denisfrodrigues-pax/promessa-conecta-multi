@@ -287,6 +287,7 @@ export default function FinanceiroDashboard() {
             <Button
               variant="ghost"
               size="sm"
+              className="min-h-[44px]"
               onClick={() => navigate(p('/admin/financeiro/transacoes'))}
             >
               Ver todos

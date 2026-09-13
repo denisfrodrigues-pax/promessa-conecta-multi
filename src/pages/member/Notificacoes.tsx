@@ -169,7 +169,7 @@ export default function MemberNotificacoes() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-stone-400 hover:text-red-600 hover:bg-red-50"
+                        className="h-11 w-11 text-stone-400 hover:text-red-600 hover:bg-red-50"
                         onClick={(e) => e.stopPropagation()}
                         disabled={deletingId === notification.id}
                         aria-label="Excluir notificação"

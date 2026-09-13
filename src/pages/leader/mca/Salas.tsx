@@ -138,7 +138,7 @@ export default function Salas({ ministerioId: propMid }: { ministerioId?: string
           <h1 className="text-2xl font-bold text-promessa-900">Salas</h1>
           <p className="text-stone-600 text-sm mt-1 leading-relaxed">Salas do ministério infantil</p>
         </div>
-        <Button onClick={openCreate}><Plus className="w-4 h-4 mr-2" />Nova Sala</Button>
+        <Button className="min-h-[44px]" onClick={openCreate}><Plus className="w-4 h-4 mr-2" />Nova Sala</Button>
       </div>
 
       {isLoading ? (
@@ -178,10 +178,10 @@ export default function Salas({ ministerioId: propMid }: { ministerioId?: string
                   </div>
                 )}
                 <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(sala)}>
+                  <Button size="sm" variant="outline" className="min-h-[44px]" onClick={() => openEdit(sala)}>
                     <Pencil className="w-3.5 h-3.5 mr-1" />Editar
                   </Button>
-                  <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700"
+                  <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700 min-h-[44px]"
                     onClick={() => setDeleteTarget(sala)}>
                     <Trash2 className="w-3.5 h-3.5 mr-1" />Remover
                   </Button>

@@ -53,13 +53,13 @@ const VoluntarioLayout = () => {
                   {profile.nome}
                 </span>
               )}
-              <Button variant="ghost" size="sm" asChild className="rounded-xl min-h-[44px]">
+              <Button variant="ghost" size="sm" asChild className="rounded-xl min-h-[44px] min-w-[44px]">
                 <Link to={p('/app')}>
                   <Home className="w-4 h-4 mr-1" />
                   <span className="hidden sm:inline">Início</span>
                 </Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="rounded-xl min-h-[44px]">
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="rounded-xl min-h-[44px] min-w-[44px]">
                 <LogOut className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Sair</span>
               </Button>

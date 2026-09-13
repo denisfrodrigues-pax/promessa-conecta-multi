@@ -199,7 +199,7 @@ export default function Contas() {
         </div>
         <Dialog open={modalOpen} onOpenChange={(open) => { setModalOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="min-h-[44px]">
               <Plus className="h-4 w-4 mr-2" />
               Nova Conta
             </Button>
@@ -331,7 +331,7 @@ export default function Contas() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" className="min-h-[44px]" onClick={() => openEditModal(conta)}>
+                      <Button variant="ghost" size="sm" className="min-h-[44px] min-w-[44px]" onClick={() => openEditModal(conta)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </TableCell>

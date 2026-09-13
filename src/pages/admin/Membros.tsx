@@ -363,15 +363,15 @@ export default function Membros() {
           <p className="text-stone-600 leading-relaxed">Gerencie os membros da igreja</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(p('/admin/membros/relatorio'))}>
+          <Button variant="outline" className="min-h-[44px]" onClick={() => navigate(p('/admin/membros/relatorio'))}>
             <BarChart3 className="w-4 h-4 mr-2" />
             Relatório
           </Button>
-          <Button variant="outline" onClick={handleExportCSV}>
+          <Button variant="outline" className="min-h-[44px]" onClick={handleExportCSV}>
             <Download className="w-4 h-4 mr-2" />
             Exportar CSV
           </Button>
-          <Button onClick={() => navigate(p('/admin/membros/novo'))}>
+          <Button className="min-h-[44px]" onClick={() => navigate(p('/admin/membros/novo'))}>
             <Plus className="w-4 h-4 mr-2" />
             Novo Membro
           </Button>
@@ -477,7 +477,7 @@ export default function Membros() {
             </div>
 
             {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <Button variant="ghost" size="sm" className="min-h-[44px]" onClick={clearFilters}>
                 <X className="w-4 h-4 mr-1" />
                 Limpar filtros
               </Button>
@@ -516,6 +516,7 @@ export default function Membros() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="min-h-[44px]"
                   disabled={page === 1}
                   onClick={() => setPage(page - 1)}
                 >
@@ -524,6 +525,7 @@ export default function Membros() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="min-h-[44px]"
                   disabled={page * limit >= total}
                   onClick={() => setPage(page + 1)}
                 >
@@ -594,7 +596,7 @@ export default function Membros() {
                         {hasValidPhone(membro.telefone) && (
                           <button
                             onClick={(e) => handleWhatsAppClick(e, membro.telefone)}
-                            className="text-green-600 hover:text-green-700 flex-shrink-0"
+                            className="w-11 h-11 shrink-0 flex items-center justify-center rounded-full text-green-600 hover:text-green-700 hover:bg-green-50"
                             title="Abrir WhatsApp"
                             aria-label="Abrir WhatsApp"
                           >
@@ -647,6 +649,7 @@ export default function Membros() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="min-h-[44px]"
                       onClick={() => navigate(p(`/admin/membros/${membro.id}`))}
                     >
                       <Eye className="w-4 h-4 mr-1" />
@@ -673,6 +676,7 @@ export default function Membros() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="min-h-[44px]"
                   disabled={page === 1}
                   onClick={() => setPage(page - 1)}
                 >
@@ -682,6 +686,7 @@ export default function Membros() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="min-h-[44px]"
                   disabled={page * limit >= total}
                   onClick={() => setPage(page + 1)}
                 >

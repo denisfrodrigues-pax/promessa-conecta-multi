@@ -439,7 +439,7 @@ export default function LeaderMinhaEquipe() {
               </div>
               Funções do Ministério
             </CardTitle>
-            <Button onClick={handleOpenCreateFuncao} variant="outline" size="sm">
+            <Button onClick={handleOpenCreateFuncao} variant="outline" size="sm" className="min-h-[44px]">
               <Plus className="h-4 w-4 mr-2" />
               Nova Função
             </Button>
@@ -495,7 +495,7 @@ export default function LeaderMinhaEquipe() {
               </div>
               Voluntários — {ministerioNome}
             </CardTitle>
-            <Button onClick={handleOpenAddDialog} className="shadow-sm">
+            <Button onClick={handleOpenAddDialog} className="shadow-sm min-h-[44px]">
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Voluntário
             </Button>
@@ -558,7 +558,7 @@ export default function LeaderMinhaEquipe() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-11 w-11"
                           onClick={() => handleOpenEditFuncoesDialog(voluntario)}
                           aria-label="Editar funções do voluntário"
                         >
@@ -581,6 +581,7 @@ export default function LeaderMinhaEquipe() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-11 w-11"
                         onClick={() => {
                           setDeletingVoluntario(voluntario);
                           setIsDeleteDialogOpen(true);

@@ -287,11 +287,11 @@ export default function VisitantesDia() {
             className="w-44"
           />
           {!ehHoje && (
-            <Button variant="outline" size="sm" onClick={() => setFiltroData(format(new Date(), 'yyyy-MM-dd'))}>
+            <Button variant="outline" size="sm" className="min-h-[44px]" onClick={() => setFiltroData(format(new Date(), 'yyyy-MM-dd'))}>
               Hoje
             </Button>
           )}
-          <Button size="sm" onClick={() => setModalAberto(true)}>
+          <Button size="sm" className="min-h-[44px]" onClick={() => setModalAberto(true)}>
             <UserPlus className="w-4 h-4 mr-2" />
             Registrar Visitante
           </Button>

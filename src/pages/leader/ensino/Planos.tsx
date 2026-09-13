@@ -178,7 +178,7 @@ export default function Planos() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700"
+                    <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700 min-h-[44px] min-w-[44px]"
                       onClick={e => { e.stopPropagation(); setDeleteTarget(plano); }}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>

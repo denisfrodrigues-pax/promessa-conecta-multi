@@ -147,7 +147,7 @@ export default function GruposHub() {
             {grupos.length} grupo{grupos.length !== 1 ? 's' : ''} ativo{grupos.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button onClick={() => setModalAberto(true)}>
+        <Button className="min-h-[44px]" onClick={() => setModalAberto(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Grupo
         </Button>
@@ -232,7 +232,7 @@ export default function GruposHub() {
             {busca || filtroDia ? 'Nenhum grupo encontrado.' : 'Nenhum grupo cadastrado ainda.'}
           </p>
           {!busca && !filtroDia && (
-            <Button className="mt-4" onClick={() => setModalAberto(true)}>
+            <Button className="mt-4 min-h-[44px]" onClick={() => setModalAberto(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Criar Primeiro Grupo
             </Button>

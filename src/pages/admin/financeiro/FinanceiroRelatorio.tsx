@@ -268,7 +268,7 @@ export default function FinanceiroRelatorio() {
             {format(new Date(dataFim), "dd/MM/yyyy")}
           </p>
         </div>
-        <Button onClick={exportCSV}>
+        <Button className="min-h-[44px]" onClick={exportCSV}>
           <Download className="h-4 w-4 mr-2" />
           Exportar CSV
         </Button>

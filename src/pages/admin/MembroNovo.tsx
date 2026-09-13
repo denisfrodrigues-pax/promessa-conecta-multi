@@ -482,7 +482,7 @@ export default function MembroNovo() {
                     <Label className="text-xs text-stone-500">CEP</Label>
                     <Input value={form.cep} onChange={(e) => set('cep', formatCep(e.target.value))} placeholder="00000-000" maxLength={9} />
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={handleBuscarCep} disabled={buscandoCep} className="mb-0.5">
+                  <Button type="button" variant="outline" size="sm" onClick={handleBuscarCep} disabled={buscandoCep} className="mb-0.5 min-h-[44px]">
                     {buscandoCep ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4 mr-1" />}
                     Buscar
                   </Button>
@@ -685,6 +685,7 @@ export default function MembroNovo() {
         <Button
           type="button"
           variant="outline"
+          className="min-h-[44px]"
           onClick={abaAtual === 0 ? () => navigate(p('/admin/membros')) : voltar}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -694,12 +695,12 @@ export default function MembroNovo() {
         <div className="flex items-center gap-3">
           <span className="text-sm text-stone-500">{abaAtual + 1} de {ABAS.length}</span>
           {abaAtual < ABAS.length - 1 ? (
-            <Button type="button" onClick={avancar}>
+            <Button type="button" className="min-h-[44px]" onClick={avancar}>
               Avançar
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
-            <Button type="button" onClick={handleSubmit} disabled={loading || uploading}>
+            <Button type="button" className="min-h-[44px]" onClick={handleSubmit} disabled={loading || uploading}>
               {loading || uploading
                 ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 : <Save className="w-4 h-4 mr-2" />}

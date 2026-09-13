@@ -151,8 +151,8 @@ export default function RelatorioMembros() {
           <p className="text-stone-600 leading-relaxed">Análise detalhada da membresia</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExportCSV}><Download className="w-4 h-4 mr-2" />CSV</Button>
-          <Button variant="outline" onClick={handleExportPDF} disabled={exportingPDF}>
+          <Button variant="outline" className="min-h-[44px]" onClick={handleExportCSV}><Download className="w-4 h-4 mr-2" />CSV</Button>
+          <Button variant="outline" className="min-h-[44px]" onClick={handleExportPDF} disabled={exportingPDF}>
             {exportingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
             {exportingPDF ? 'Gerando...' : 'PDF'}
           </Button>
@@ -300,7 +300,7 @@ export default function RelatorioMembros() {
                       <div className="flex items-center gap-2">
                         {m.telefone ? formatPhoneBR(m.telefone) : '–'}
                         {hasValidPhone(m.telefone) && (
-                          <button onClick={() => window.open(getWhatsAppUrl(m.telefone, `Olá! Sou da ${churchNome || 'nossa Igreja'}.`), '_blank')} className="w-11 h-11 flex items-center justify-center rounded-full text-green-600 hover:bg-green-50" aria-label="Enviar WhatsApp">
+                          <button onClick={() => window.open(getWhatsAppUrl(m.telefone, `Olá! Sou da ${churchNome || 'nossa Igreja'}.`), '_blank')} className="w-11 h-11 shrink-0 flex items-center justify-center rounded-full text-green-600 hover:bg-green-50" aria-label="Enviar WhatsApp">
                             <MessageCircle className="w-4 h-4" />
                           </button>
                         )}

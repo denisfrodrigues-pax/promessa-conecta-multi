@@ -97,7 +97,7 @@ export function BaseFotoUpload({ currentUrl, baseId, onUploadComplete, disabled 
               type="button"
               variant="destructive"
               size="icon"
-              className="absolute top-2 right-2 h-8 w-8"
+              className="absolute top-2 right-2 h-11 w-11"
               onClick={handleRemove}
               aria-label="Remover foto"
             >
@@ -128,7 +128,7 @@ export function BaseFotoUpload({ currentUrl, baseId, onUploadComplete, disabled 
           size="sm"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || uploading}
-          className="w-full"
+          className="w-full min-h-[44px]"
         >
           {uploading ? (
             <>

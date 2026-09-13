@@ -258,7 +258,7 @@ export default function Criancas({ ministerioId: propMid }: { ministerioId?: str
           <h1 className="text-2xl font-bold text-promessa-900">Crianças</h1>
           <p className="text-stone-600 text-sm mt-1 leading-relaxed">Cadastro de crianças e responsáveis</p>
         </div>
-        <Button onClick={openCreateCrianca}><Plus className="w-4 h-4 mr-2" />Nova Criança</Button>
+        <Button className="min-h-[44px]" onClick={openCreateCrianca}><Plus className="w-4 h-4 mr-2" />Nova Criança</Button>
       </div>
 
       {/* Filtros */}

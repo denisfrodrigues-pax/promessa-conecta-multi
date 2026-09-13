@@ -221,13 +221,13 @@ export default function LeaderMinisterioLayout() {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-            <Button asChild variant="ghost" size="sm" className="rounded-xl min-h-[44px] text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50">
+            <Button asChild variant="ghost" size="sm" className="rounded-xl min-h-[44px] min-w-[44px] text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50">
               <RouterNavLink to={p('/leader/hub')}>
                 <ArrowLeft className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Hub</span>
               </RouterNavLink>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="rounded-xl min-h-[44px] text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50">
+            <Button asChild variant="ghost" size="sm" className="rounded-xl min-h-[44px] min-w-[44px] text-promessa-700 hover:text-promessa-900 hover:bg-promessa-50">
               <RouterNavLink to={p('/app')}>
                 <Home className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">App</span>

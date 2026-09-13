@@ -444,7 +444,7 @@ export default function LeaderNotificacoes() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-stone-400 hover:text-red-600 hover:bg-red-50"
+                            className="h-11 w-11 text-stone-400 hover:text-red-600 hover:bg-red-50"
                             disabled={deletingId === notification.id}
                             aria-label="Excluir notificação"
                           >
