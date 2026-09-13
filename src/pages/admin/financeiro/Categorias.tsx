@@ -150,7 +150,7 @@ export default function Categorias() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-stone-900">Categorias</h1>
           <p className="text-stone-600 leading-relaxed">Gerencie as categorias de receitas e despesas</p>
@@ -217,7 +217,7 @@ export default function Categorias() {
       <Card className="rounded-2xl">
         <CardContent className="pt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4 bg-stone-100">
+            <TabsList className="mb-4 bg-stone-100 h-auto flex-wrap">
               <TabsTrigger value="todas">
                 Todas ({categorias.length})
               </TabsTrigger>
