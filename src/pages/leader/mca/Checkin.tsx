@@ -190,7 +190,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
               className="w-40 text-sm"
             />
           </div>
-          <Button variant="outline" asChild>
+          <Button variant="outline" className="min-h-[44px]" asChild>
             {/* "checkin" e "checkin/quiosque" são rotas irmãs (não aninhadas) em
                 App.tsx — um Link relativo "quiosque" resolve contra o nível do
                 pai (leader/:slug), não contra "checkin", e cai fora da rota
@@ -199,7 +199,7 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
               <Maximize className="w-4 h-4 mr-2" />Modo Quiosque
             </Link>
           </Button>
-          <Button onClick={() => { resetModal(); setModalOpen(true); }}>
+          <Button className="min-h-[44px]" onClick={() => { resetModal(); setModalOpen(true); }}>
             <LogIn className="w-4 h-4 mr-2" />Check-in
           </Button>
         </div>
