@@ -254,11 +254,11 @@ export default function Transacoes() {
           <p className="text-stone-600 leading-relaxed">Gerencie os lançamentos financeiros</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={exportCSV}>
+          <Button variant="outline" className="min-h-[44px]" onClick={exportCSV}>
             <Download className="h-4 w-4 mr-2" />
             Exportar CSV
           </Button>
-          <Button onClick={() => navigate(p('/admin/financeiro/transacoes/novo'))}>
+          <Button className="min-h-[44px]" onClick={() => navigate(p('/admin/financeiro/transacoes/novo'))}>
             <Plus className="h-4 w-4 mr-2" />
             Novo Lançamento
           </Button>
@@ -418,7 +418,7 @@ export default function Transacoes() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="min-h-[44px]"
+                          className="min-h-[44px] min-w-[44px]"
                           onClick={() => navigate(p(`/admin/financeiro/transacoes/${t.id}`))}
                         >
                           <Eye className="h-4 w-4" />

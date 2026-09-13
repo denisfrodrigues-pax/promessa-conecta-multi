@@ -281,7 +281,7 @@ export default function Visitantes() {
           </h1>
           <p className="text-stone-600 leading-relaxed">Gerencie os visitantes da igreja</p>
         </div>
-        <Button variant="outline" onClick={handleExportCSV} disabled={loading || visitantes.length === 0} className="rounded-xl">
+        <Button variant="outline" onClick={handleExportCSV} disabled={loading || visitantes.length === 0} className="rounded-xl min-h-[44px]">
           <Download className="h-4 w-4 mr-2" />
           Exportar CSV
         </Button>
@@ -371,6 +371,7 @@ export default function Visitantes() {
                       <Button
                         size="sm"
                         variant="outline"
+                        className="min-h-[44px]"
                         onClick={() => navigate(p(`/admin/visitantes/${visitante.id}`))}
                       >
                         <Eye className="h-4 w-4 mr-1" />
@@ -379,7 +380,7 @@ export default function Visitantes() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="min-h-[44px] min-w-[44px] text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleDeleteClick(visitante)}
                         title="Excluir visitante"
                       >

@@ -406,11 +406,11 @@ export default function Usuarios() {
           <p className="text-stone-600 mt-1 leading-relaxed">Gerenciamento de membros e visitantes</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={exportCSV} className="group">
+          <Button variant="outline" onClick={exportCSV} className="group min-h-[44px]">
             <Download className="w-4 h-4 mr-2 transition-transform group-hover:-translate-y-0.5" />
             Exportar CSV
           </Button>
-          <Button onClick={() => setShowInviteDialog(true)}>
+          <Button className="min-h-[44px]" onClick={() => setShowInviteDialog(true)}>
             <UserPlus className="w-4 h-4 mr-2" />
             Convidar Usuário
           </Button>
@@ -732,7 +732,7 @@ export default function Usuarios() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="hover:bg-stone-100">
+                            <Button variant="ghost" size="icon" className="h-11 w-11 hover:bg-stone-100">
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>

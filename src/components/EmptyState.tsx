@@ -30,7 +30,7 @@ export function EmptyState({
       <h3 className="font-display font-semibold text-lg text-foreground mb-2">{title}</h3>
       {description && <p className="text-muted-foreground mb-6">{description}</p>}
       {actionLabel && onAction && (
-        <Button onClick={onAction} variant="outline" className="rounded-xl">
+        <Button onClick={onAction} variant="outline" className="rounded-xl min-h-[44px]">
           {ActionIcon && <ActionIcon className="w-4 h-4 mr-2" />}
           {actionLabel}
         </Button>

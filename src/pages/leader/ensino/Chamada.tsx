@@ -281,7 +281,7 @@ export default function Chamada() {
               <Input type="date" value={data} onChange={e => { setData(e.target.value); setSessaoAberta(false); setPessoas([]); }} className="mt-1" />
             </div>
           </div>
-          <Button onClick={abrirSessao} disabled={!turmaId || !data} className="w-full sm:w-auto">
+          <Button onClick={abrirSessao} disabled={!turmaId || !data} className="w-full sm:w-auto min-h-[44px]">
             {checkinId ? 'Carregar Chamada' : 'Iniciar Nova Chamada'}
           </Button>
         </CardContent>

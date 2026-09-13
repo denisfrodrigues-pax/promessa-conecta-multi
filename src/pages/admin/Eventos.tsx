@@ -450,7 +450,7 @@ export default function Eventos() {
                       <Button 
                         variant="secondary"
                         size="icon"
-                        className="absolute top-3 right-3 bg-black/40 hover:bg-black/60 text-white border-0"
+                        className="absolute top-3 right-3 h-11 w-11 bg-black/40 hover:bg-black/60 text-white border-0"
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>

@@ -250,11 +250,11 @@ export default function RelatorioGeral() {
           <p className="text-stone-600 leading-relaxed">Visão geral de todas as áreas</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExportCSV}>
+          <Button variant="outline" className="min-h-[44px]" onClick={handleExportCSV}>
             <Download className="w-4 h-4 mr-2" />
             CSV
           </Button>
-          <Button variant="outline" onClick={handleExportPDF} disabled={exportingPDF}>
+          <Button variant="outline" className="min-h-[44px]" onClick={handleExportPDF} disabled={exportingPDF}>
             {exportingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
             {exportingPDF ? "Gerando..." : "PDF"}
           </Button>

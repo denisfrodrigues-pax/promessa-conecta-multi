@@ -227,7 +227,7 @@ export default function FinanceiroAuditoria() {
             Histórico de alterações no módulo financeiro
           </p>
         </div>
-        <Button variant="outline" onClick={exportCSV}>
+        <Button variant="outline" className="min-h-[44px]" onClick={exportCSV}>
           <Download className="h-4 w-4 mr-2" />
           Exportar CSV
         </Button>
@@ -340,7 +340,7 @@ export default function FinanceiroAuditoria() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="min-h-[44px]"
+                          className="min-h-[44px] min-w-[44px]"
                           onClick={() => openDetails(log)}
                         >
                           <Eye className="h-4 w-4" />

@@ -675,7 +675,7 @@ export default function AdminDashboard() {
             </CardTitle>
             <CardDescription>Escalas programadas</CardDescription>
           </div>
-          <Button asChild variant="ghost" size="sm">
+          <Button asChild variant="ghost" size="sm" className="min-h-[44px]">
             <Link to={p('/admin/escalas/periodos')}>Ver todos <ChevronRight className="w-4 h-4 ml-1" /></Link>
           </Button>
         </CardHeader>
@@ -949,7 +949,7 @@ export default function AdminDashboard() {
               <CardTitle className="font-display">Últimos Visitantes</CardTitle>
               <CardDescription>Cadastros mais recentes</CardDescription>
             </div>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="min-h-[44px]">
               <Link to={p('/admin/visitantes')}>Ver todos</Link>
             </Button>
           </CardHeader>
@@ -983,7 +983,7 @@ export default function AdminDashboard() {
                             href={getWhatsAppUrl(visitante.telefone)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-green-600 hover:text-green-700"
+                            className="text-green-600 hover:text-green-700 p-4 -m-4"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Phone className="w-3 h-3" />
@@ -994,7 +994,7 @@ export default function AdminDashboard() {
                     <Badge className={statusColors[visitante.status || 'novo']}>
                       {statusLabels[visitante.status || 'novo']}
                     </Badge>
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                    <Button asChild variant="ghost" size="icon" className="h-11 w-11">
                       <Link to={p(`/admin/visitantes/${visitante.id}`)} aria-label="Ver detalhes do visitante">
                         <ExternalLink className="w-4 h-4" />
                       </Link>
@@ -1013,7 +1013,7 @@ export default function AdminDashboard() {
               <CardTitle className="font-display">Últimos Acompanhamentos</CardTitle>
               <CardDescription>Atualizações mais recentes</CardDescription>
             </div>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="min-h-[44px]">
               <Link to={p('/admin/acompanhamento')}>Ver todos</Link>
             </Button>
           </CardHeader>

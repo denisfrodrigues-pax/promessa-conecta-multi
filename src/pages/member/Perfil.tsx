@@ -210,7 +210,7 @@ function SectionCard({ title, editing, saving, onEdit, onSave, onCancel, childre
         {!editing ? (
           <button
             onClick={onEdit}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-primary active:opacity-70"
+            className="flex items-center gap-1.5 text-[13px] font-medium text-primary active:opacity-70 p-3 -m-3"
           >
             <Pencil className="w-3.5 h-3.5" />
             Editar

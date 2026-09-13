@@ -161,10 +161,10 @@ export default function Turmas() {
                   <p className="text-sm text-stone-500 line-clamp-2 leading-relaxed">{t.descricao}</p>
                 )}
                 <div className="flex gap-2 pt-1">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(t)}>
+                  <Button size="sm" variant="outline" className="min-h-[44px]" onClick={() => openEdit(t)}>
                     <Pencil className="w-3.5 h-3.5 mr-1" />Editar
                   </Button>
-                  <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700"
+                  <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700 min-h-[44px]"
                     onClick={() => setDeleteTarget(t)}>
                     <Trash2 className="w-3.5 h-3.5 mr-1" />Remover
                   </Button>

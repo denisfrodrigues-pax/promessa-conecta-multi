@@ -183,7 +183,7 @@ export default function LeaderDashboard() {
               <CardTitle className="font-display text-lg">Minhas Bases</CardTitle>
               <CardDescription>Bases que você lidera</CardDescription>
             </div>
-            <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
+            <Button asChild variant="ghost" size="sm" className="min-h-[44px] text-primary hover:text-primary hover:bg-primary/10">
               <Link to={p(`/leader/${slug}/bases`)}>
                 Ver todas <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
@@ -230,7 +230,7 @@ export default function LeaderDashboard() {
               <CardTitle className="font-display text-lg">Próximas Escalas</CardTitle>
               <CardDescription>Suas escalas de serviço</CardDescription>
             </div>
-            <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
+            <Button asChild variant="ghost" size="sm" className="min-h-[44px] text-primary hover:text-primary hover:bg-primary/10">
               <Link to={p(`/leader/${slug}/escalas`)}>
                 Ver todas <ChevronRight className="w-4 h-4 ml-1" />
               </Link>

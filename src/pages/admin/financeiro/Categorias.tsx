@@ -157,7 +157,7 @@ export default function Categorias() {
         </div>
         <Dialog open={modalOpen} onOpenChange={(open) => { setModalOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="min-h-[44px]">
               <Plus className="h-4 w-4 mr-2" />
               Nova Categoria
             </Button>
@@ -280,7 +280,7 @@ export default function Categorias() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="min-h-[44px]"
+                          className="min-h-[44px] min-w-[44px]"
                           onClick={() => openEditModal(categoria)}
                         >
                           <Pencil className="h-4 w-4" />
