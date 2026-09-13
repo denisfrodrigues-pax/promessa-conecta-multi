@@ -362,7 +362,7 @@ export default function Membros() {
           <h1 className="text-2xl font-display font-bold text-stone-900">Membros</h1>
           <p className="text-stone-600 leading-relaxed">Gerencie os membros da igreja</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" className="min-h-[44px]" onClick={() => navigate(p('/admin/membros/relatorio'))}>
             <BarChart3 className="w-4 h-4 mr-2" />
             Relatório
