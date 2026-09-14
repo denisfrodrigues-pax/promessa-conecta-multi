@@ -1,5 +1,3 @@
-import { next } from '@vercel/functions';
-
 export const config = {
   matcher: ['/i/:slug', '/i/:slug/:path*'],
 };
@@ -103,28 +101,25 @@ export default async function middleware(request: Request) {
   const url = new URL(request.url);
 
   // Só reescreve documentos de rota (HTML) — qualquer path com extensão é asset
-  // (JS/CSS/imagens/etc.) e deve seguir direto, sem custo extra.
-  if (/\.[a-zA-Z0-9]+$/.test(url.pathname)) {
-    return next();
-  }
-
-  const match = url.pathname.match(/^\/i\/([^/]+)/);
+  // (JS/CSS/imagens/etc.) e deve seguir direto, sem custo extra. Na prática o
+  // matcher já restringe a Middleware a /i/:slug*, então isto é defensivo.
+  const isAsset = /\.[a-zA-Z0-9]+$/.test(url.pathname);
+  const match = isAsset ? null : url.pathname.match(/^\/i\/([^/]+)/);
   const slug = match?.[1];
-  if (!slug) {
-    return next();
-  }
-
-  const church = await fetchChurch(slug);
-  if (!church) {
-    return next();
-  }
 
   // SPA estática: toda rota serve o mesmo index.html (via rewrite em vercel.json).
-  // Busca o asset estático diretamente — fora do matcher desta Middleware, sem risco
-  // de recursão — em vez de tentar reobter a resposta da própria rota interceptada.
+  // Busca o asset estático diretamente — sem passar pela própria rota interceptada,
+  // que exigiria "continuar a cadeia" e arriscaria reinvocar esta Middleware.
   const indexResponse = await fetch(new URL('/index.html', url.origin));
-  if (!indexResponse.ok) {
-    return next();
+
+  const church = slug ? await fetchChurch(slug) : null;
+  if (!church) {
+    // Sem igreja resolvida (asset, rota fora de /i/:slug, ou slug inválido):
+    // devolve o index.html sem alterações.
+    return new Response(indexResponse.body, {
+      status: indexResponse.status,
+      headers: indexResponse.headers,
+    });
   }
 
   const html = await indexResponse.text();
