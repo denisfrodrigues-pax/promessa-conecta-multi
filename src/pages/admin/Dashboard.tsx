@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { KpiTile } from '@/components/KpiTile';
 import { EmptyState } from '@/components/EmptyState';
-import { AniversariantesDaSemanaCard } from '@/components/AniversariantesDaSemanaCard';
+import { AniversariantesCard } from '@/components/AniversariantesCard';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -184,8 +184,8 @@ export default function AdminDashboard() {
         // Total arrecadado no mês — mesma lógica de admin/financeiro/FinanceiroDashboard.tsx,
         // agora escopada por church_id.
         totalArrecadadoMesRes,
-        // Aniversariantes da semana — mesmos campos de AniversariantesDoMes.tsx, mas
-        // filtrando por semana em vez de mês (ver src/lib/birthdayWeek.ts).
+        // Aniversariantes da semana — contagem pro tile de KPI abaixo (distinto
+        // do card AniversariantesCard, que mostra o mês inteiro; ver src/lib/birthdayWeek.ts).
         aniversariantesRes,
         // Frequência de culto — cultos (tipo='culto') com presença já registrada
         // nos últimos 60 dias, pra tendência + média (ver constante FREQUENCIA_DIAS abaixo).
@@ -871,7 +871,7 @@ export default function AdminDashboard() {
         </Link>
       </div>
 
-      <AniversariantesDaSemanaCard />
+      <AniversariantesCard />
 
       {/* Frequência de Culto */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
