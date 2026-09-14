@@ -1,5 +1,6 @@
 export const config = {
   matcher: ['/i/:slug', '/i/:slug/:path*'],
+  runtime: 'nodejs',
 };
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
