@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Cake, ChevronRight, Users } from "lucide-react";
 import { getMinisterioIconConfig } from "@/utils/ministerioIcons";
-import { AniversariantesDaSemanaCard } from "@/components/AniversariantesDaSemanaCard";
+import { AniversariantesCard } from "@/components/AniversariantesCard";
 
 interface LedMinistry {
   ministerio_id: string;
@@ -143,7 +143,7 @@ export default function LeaderHub() {
         <h1 className="text-2xl font-bold text-stone-900 mb-6">Hub do Líder</h1>
         <AniversariantesQuickLink />
         <div className="mb-8">
-          <AniversariantesDaSemanaCard />
+          <AniversariantesCard />
         </div>
         <div className="flex flex-col items-center text-center gap-4 py-12 px-6 bg-white rounded-2xl border border-stone-200 shadow-soft">
           <div className="w-14 h-14 rounded-2xl bg-promessa-100 text-promessa-700 flex items-center justify-center">
@@ -171,7 +171,7 @@ export default function LeaderHub() {
       <AniversariantesQuickLink />
 
       <div className="mb-8">
-        <AniversariantesDaSemanaCard />
+        <AniversariantesCard />
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

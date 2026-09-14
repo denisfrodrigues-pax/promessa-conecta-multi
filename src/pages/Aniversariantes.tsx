@@ -50,8 +50,9 @@ function sortByWeekOrder<T extends { mes: number; dia: number }>(items: T[], pai
 }
 
 /** Painel pastoral de aniversariantes da semana — acessível pelo admin e pelo
- * líder. Complementa AniversariantesDoMes (mensal, individual, na home do
- * membro) com uma visão semanal orientada a ação (WhatsApp direto).
+ * líder. Complementa AniversariantesCard (components/AniversariantesCard.tsx
+ * — mês inteiro, natalício apenas, presente na home de todos os papéis) com
+ * uma visão semanal e também batismo/casamento.
  *
  * Três categorias, todas construídas a partir de membros: natalício
  * (data_nascimento), batismo nas águas (data_batismo_agua — não data_batismo,

@@ -12,7 +12,7 @@ import { getMinisterioIconConfig } from '@/utils/ministerioIcons';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { parseLocalDate } from '@/lib/dateUtils';
-import { AniversariantesDaSemanaCard } from '@/components/AniversariantesDaSemanaCard';
+import { AniversariantesCard } from '@/components/AniversariantesCard';
 
 export default function VoluntarioDashboard() {
   const { profile, myMinistries, myMinistriesLoading } = useAuth();
@@ -100,7 +100,7 @@ export default function VoluntarioDashboard() {
         </p>
       </div>
 
-      <AniversariantesDaSemanaCard />
+      <AniversariantesCard />
 
       {myMinistries.length === 0 ? (
         <Card className="rounded-2xl shadow-card">

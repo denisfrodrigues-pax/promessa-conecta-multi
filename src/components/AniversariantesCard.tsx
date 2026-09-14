@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Cake, MessageCircle, PartyPopper } from 'lucide-react';
 import { EmptyState } from '@/components/EmptyState';
-import { format, startOfWeek, endOfWeek } from 'date-fns';
-import { getCurrentWeekMonthDayPairs, monthDayFromDateString } from '@/lib/birthdayWeek';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { monthDayFromDateString } from '@/lib/birthdayWeek';
 import { getWhatsAppUrl, hasValidPhone } from '@/lib/formatters';
 
 interface MembroRaw {
@@ -34,14 +35,16 @@ function getInitials(nome: string) {
   return nome.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
 }
 
-/** Card "Aniversariantes da Semana" reutilizável — mesma janela semanal do
- * painel pastoral (pages/Aniversariantes.tsx), mas em formato compacto pra
+/** Card "Aniversariantes do Mês" reutilizável — mostra os aniversários do
+ * mês corrente (escopo largo o bastante pra não ficar vazio na maior parte
+ * do tempo, ao contrário de uma janela semanal), em formato compacto pra
  * caber na home de qualquer papel (membro, líder, admin, voluntário), com
- * foto + nome + data + botão de WhatsApp por pessoa. Complementa
- * AniversariantesDoMes (mensal, sem ação direta) e o painel pastoral
- * (semanal + batismo/casamento, telas de admin/líder).
+ * foto + nome + data + botão de WhatsApp por pessoa. Complementa o painel
+ * pastoral semanal (pages/Aniversariantes.tsx, admin/líder), que também
+ * cobre batismo e casamento — este card foca só em natalício, pra ação
+ * rápida direto da home.
  */
-export function AniversariantesDaSemanaCard() {
+export function AniversariantesCard() {
   const { churchId: authChurchId } = useAuth();
   const { churchId: slugChurchId } = useIgrejaSlug();
   const churchId = authChurchId ?? slugChurchId ?? null;
@@ -52,6 +55,8 @@ export function AniversariantesDaSemanaCard() {
     if (!churchId) return;
     fetchAniversariantes();
   }, [churchId]);
+
+  const currentMonth = new Date().getMonth() + 1;
 
   const fetchAniversariantes = async () => {
     setLoading(true);
@@ -64,8 +69,7 @@ export function AniversariantesDaSemanaCard() {
 
       if (error) throw error;
 
-      const pairs = getCurrentWeekMonthDayPairs();
-      const semana = ((data || []) as MembroRaw[])
+      const doMes = ((data || []) as MembroRaw[])
         .map((m) => ({
           ...m,
           data_nascimento: m.profiles?.data_nascimento || m.data_nascimento,
@@ -73,8 +77,8 @@ export function AniversariantesDaSemanaCard() {
         }))
         .filter((m) => {
           if (!m.data_nascimento) return false;
-          const { mes, dia } = monthDayFromDateString(m.data_nascimento);
-          return pairs.some((p) => p.mes === mes && p.dia === dia);
+          const { mes } = monthDayFromDateString(m.data_nascimento);
+          return mes === currentMonth;
         })
         .map((m) => {
           const { mes, dia } = monthDayFromDateString(m.data_nascimento as string);
@@ -87,23 +91,18 @@ export function AniversariantesDaSemanaCard() {
             dia,
           };
         })
-        .sort((a, b) => {
-          const idxA = pairs.findIndex((p) => p.mes === a.mes && p.dia === a.dia);
-          const idxB = pairs.findIndex((p) => p.mes === b.mes && p.dia === b.dia);
-          return idxA - idxB;
-        });
+        .sort((a, b) => a.dia - b.dia);
 
-      setAniversariantes(semana);
+      setAniversariantes(doMes);
     } catch (error) {
-      console.error('Erro ao buscar aniversariantes da semana:', error);
+      console.error('Erro ao buscar aniversariantes do mês:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const inicioSemana = startOfWeek(new Date(), { weekStartsOn: 0 });
-  const fimSemana = endOfWeek(new Date(), { weekStartsOn: 0 });
-  const periodo = `${format(inicioSemana, 'dd/MM')} a ${format(fimSemana, 'dd/MM')}`;
+  const monthName = format(new Date(new Date().getFullYear(), currentMonth - 1, 1), 'MMMM', { locale: ptBR });
+  const monthLabel = monthName.charAt(0).toUpperCase() + monthName.slice(1);
   const hoje = new Date();
 
   if (loading) {
@@ -122,16 +121,15 @@ export function AniversariantesDaSemanaCard() {
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <Cake className="w-5 h-5 text-primary" />
-          Aniversariantes da Semana
+          Aniversariantes de {monthLabel}
         </CardTitle>
-        <p className="text-sm text-stone-500">{periodo}</p>
       </CardHeader>
       <CardContent className="space-y-3">
         {aniversariantes.length === 0 ? (
           <EmptyState
             icon={PartyPopper}
-            title="Nenhum aniversariante esta semana"
-            description="Volte na próxima semana para conferir quem está de aniversário."
+            title="Nenhum aniversariante este mês"
+            description="Volte no próximo mês para conferir quem está de aniversário."
           />
         ) : (
           aniversariantes.map((pessoa) => {
@@ -182,4 +180,4 @@ export function AniversariantesDaSemanaCard() {
   );
 }
 
-export default AniversariantesDaSemanaCard;
+export default AniversariantesCard;
