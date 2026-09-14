@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { KpiTile } from '@/components/KpiTile';
 import { EmptyState } from '@/components/EmptyState';
+import { AniversariantesDaSemanaCard } from '@/components/AniversariantesDaSemanaCard';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -279,13 +280,16 @@ export default function AdminDashboard() {
           .gte('data_operacao', inicioMesStr)
           .lte('data_operacao', fimMesStr),
 
-        // Aniversariantes da semana
+        // Aniversariantes da semana — profiles é a fonte de verdade pra
+        // data_nascimento quando o membro tem conta vinculada (ver comentário
+        // em admin/Usuarios.tsx, handleConvertToMembro), por isso o join;
+        // sem isso, gente com membros.data_nascimento vazio mas
+        // profiles.data_nascimento preenchido ficava de fora da contagem.
         supabase
           .from('membros')
-          .select('id, data_nascimento')
+          .select('id, data_nascimento, profiles!membros_user_id_fkey(data_nascimento)')
           .eq('church_id', churchId)
-          .in('status', ['ativo', 'frequentador'])
-          .not('data_nascimento', 'is', null),
+          .in('status', ['ativo', 'frequentador']),
 
         // Frequência de culto — só cultos com presença já registrada
         supabase
@@ -302,8 +306,9 @@ export default function AdminDashboard() {
         (acc: number, t: { valor: number }) => acc + Number(t.valor),
         0
       );
-      const aniversariantesSemana = ((aniversariantesRes.data || []) as { id: string; data_nascimento: string }[])
-        .filter((m) => isBirthdayInCurrentWeek(m.data_nascimento)).length;
+      const aniversariantesSemana = ((aniversariantesRes.data || []) as { id: string; data_nascimento: string | null; profiles: { data_nascimento: string | null } | null }[])
+        .map((m) => m.profiles?.data_nascimento || m.data_nascimento)
+        .filter((d): d is string => !!d && isBirthdayInCurrentWeek(d)).length;
 
       const cultosComPresenca = (frequenciaCultoRes.data || []) as { id: string; data_evento: string; presencas_total: number }[];
       if (cultosComPresenca.length > 0) {
@@ -865,6 +870,8 @@ export default function AdminDashboard() {
           </Card>
         </Link>
       </div>
+
+      <AniversariantesDaSemanaCard />
 
       {/* Frequência de Culto */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -21,6 +21,7 @@ interface MembroRaw {
   data_casamento: string | null;
   conjuge_id: string | null;
   nome_conjuge: string | null;
+  profiles: { data_nascimento: string | null; telefone: string | null } | null;
 }
 
 interface Pessoa {
@@ -78,13 +79,21 @@ export default function Aniversariantes() {
     try {
       const { data, error } = await supabase
         .from('membros')
-        .select('id, nome, telefone, data_nascimento, data_batismo_agua, data_casamento, conjuge_id, nome_conjuge')
+        .select('id, nome, telefone, data_nascimento, data_batismo_agua, data_casamento, conjuge_id, nome_conjuge, profiles!membros_user_id_fkey(data_nascimento, telefone)')
         .eq('church_id', churchId as string)
         .in('status', ['ativo', 'frequentador']);
 
       if (error) throw error;
 
-      const todos = (data || []) as MembroRaw[];
+      // profiles é a fonte de verdade pra dados pessoais compartilhados (nome,
+      // telefone, data_nascimento) quando o membro tem conta vinculada — ver
+      // comentário em admin/Usuarios.tsx (handleConvertToMembro). membros só
+      // deve ser usado como fallback pra quem não tem profiles.user_id.
+      const todos = ((data || []) as MembroRaw[]).map((m) => ({
+        ...m,
+        data_nascimento: m.profiles?.data_nascimento || m.data_nascimento,
+        telefone: m.profiles?.telefone || m.telefone,
+      }));
       const pairs = getCurrentWeekMonthDayPairs();
       const naSemana = (dataStr: string) => {
         const { mes, dia } = monthDayFromDateString(dataStr);

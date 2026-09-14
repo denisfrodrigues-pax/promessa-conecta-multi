@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import DevocionaldaSemana from "@/components/app/DevocionaldaSemana";
 import AniversariantesDoMes from "@/components/app/AniversariantesDoMes";
+import { AniversariantesDaSemanaCard } from "@/components/AniversariantesDaSemanaCard";
 import { KpiTile } from "@/components/KpiTile";
 
 export default function AppHome() {
@@ -96,6 +97,17 @@ export default function AppHome() {
           SEÇÃO: ANIVERSARIANTES DO MÊS
       ============================================ */}
       <AniversariantesDoMes />
+
+      {/* ============================================
+          SEÇÃO: ANIVERSARIANTES DA SEMANA
+      ============================================ */}
+      <section className="py-6 md:py-8 bg-stone-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto">
+            <AniversariantesDaSemanaCard />
+          </div>
+        </div>
+      </section>
 
       {/* ============================================
           SEÇÃO: QUEM SOMOS (RESUMO)
