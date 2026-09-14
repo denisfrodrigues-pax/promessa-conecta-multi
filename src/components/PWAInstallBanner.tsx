@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -11,6 +12,7 @@ const DISMISSED_KEY = 'pwa_install_dismissed_until';
 const DISMISS_DAYS = 7;
 
 export default function PWAInstallBanner() {
+  const { churchNome, churchLogoUrl } = useIgrejaSlug();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -52,10 +54,10 @@ export default function PWAInstallBanner() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-3 md:bottom-4 md:left-auto md:right-4 md:max-w-sm">
       <div className="bg-white border border-gray-200 rounded-2xl shadow-xl flex items-center gap-3 px-4 py-3">
-        <img src="/pwa-192x192.png" alt="App" className="w-10 h-10 rounded-xl shrink-0" />
+        <img src={churchLogoUrl || '/pwa-192x192.png'} alt={churchNome || 'App'} className="w-10 h-10 rounded-xl shrink-0 object-cover" />
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-semibold text-gray-800 leading-tight">
-            Instale o app do Rede Conect
+            Instale o app{churchNome ? ` da ${churchNome}` : ''}
           </p>
           <p className="text-[11px] text-gray-500 leading-tight mt-0.5">
             Acesse mais rápido e receba notificações

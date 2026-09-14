@@ -3,11 +3,13 @@ import { Outlet, useParams } from 'react-router-dom';
 import { useIgrejaBySlug } from '@/hooks/useIgrejaBySlug';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyChurchTheme, resetChurchTheme } from '@/lib/churchTheme';
+import PWAInstallBanner from '@/components/PWAInstallBanner';
 
 interface IgrejaSlugContextType {
   slug: string;
   churchId: string | null;
   churchNome: string | null;
+  churchLogoUrl: string | null;
   churchLoading: boolean;
   /** Retorna o caminho prefixado com /i/:slug. Ex: p('/app') → '/i/minha-igreja/app' */
   p: (path: string) => string;
@@ -17,6 +19,7 @@ const IgrejaSlugContext = createContext<IgrejaSlugContextType>({
   slug: '',
   churchId: null,
   churchNome: null,
+  churchLogoUrl: null,
   churchLoading: false,
   p: (path) => path,
 });
@@ -102,6 +105,7 @@ export function IgrejaSlugLayout() {
     slug: churchSlug,
     churchId: church?.id ?? null,
     churchNome: church?.nome ?? null,
+    churchLogoUrl: church?.logo_url ?? null,
     churchLoading: loading,
     p: (path: string) => `/i/${churchSlug}${path}`,
   }), [churchSlug, church, loading]);
@@ -124,6 +128,7 @@ export function IgrejaSlugLayout() {
   return (
     <IgrejaSlugContext.Provider value={value}>
       <Outlet />
+      <PWAInstallBanner />
     </IgrejaSlugContext.Provider>
   );
 }
@@ -136,6 +141,7 @@ export function IgrejaSlugProvider({ children, slug }: { children: ReactNode; sl
     slug,
     churchId: church?.id ?? null,
     churchNome: church?.nome ?? null,
+    churchLogoUrl: church?.logo_url ?? null,
     churchLoading: loading,
     p: (path: string) => `/i/${slug}${path}`,
   }), [slug, church, loading]);
