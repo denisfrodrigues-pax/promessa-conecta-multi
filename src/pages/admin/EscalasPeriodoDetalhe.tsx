@@ -315,6 +315,12 @@ export default function AdminEscalasPeriodoDetalhe() {
     );
   };
 
+  const allMinisteriosSelected = ministerios.length > 0 && selectedMinisterios.length === ministerios.length;
+
+  const toggleSelectAllMinisterios = () => {
+    setSelectedMinisterios(allMinisteriosSelected ? [] : ministerios.map((m) => m.id));
+  };
+
   const toggleExpandEvento = (id: string) => {
     setExpandedEventos((prev) => {
       const next = new Set(prev);
@@ -600,7 +606,20 @@ export default function AdminEscalasPeriodoDetalhe() {
             </div>
             {/* Ministérios */}
             <div className="space-y-2">
-              <Label>Convocar ministérios (opcional)</Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label>Convocar ministérios (opcional)</Label>
+                {ministerios.length > 0 && (
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-primary shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={allMinisteriosSelected}
+                      onChange={toggleSelectAllMinisterios}
+                      className="accent-primary"
+                    />
+                    Selecionar todos
+                  </label>
+                )}
+              </div>
               <div className="border border-stone-200 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1">
                 {ministerios.map((m) => (
                   <label key={m.id} className="flex items-center gap-2 cursor-pointer hover:bg-stone-100 px-2 py-1.5 rounded-lg min-h-[44px]">
@@ -692,7 +711,20 @@ export default function AdminEscalasPeriodoDetalhe() {
               <Textarea value={eventoForm.descricao} onChange={(e) => setEventoForm({ ...eventoForm, descricao: e.target.value })} rows={2} disabled={updateEventoMutation.isPending} className="rounded-xl" />
             </div>
             <div className="space-y-2">
-              <Label>Ministérios convocados</Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label>Ministérios convocados</Label>
+                {ministerios.length > 0 && (
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-primary shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={allMinisteriosSelected}
+                      onChange={toggleSelectAllMinisterios}
+                      className="accent-primary"
+                    />
+                    Selecionar todos
+                  </label>
+                )}
+              </div>
               <div className="border border-stone-200 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1">
                 {ministerios.map((m) => (
                   <label key={m.id} className="flex items-center gap-2 cursor-pointer hover:bg-stone-100 px-2 py-1.5 rounded-lg min-h-[44px]">
