@@ -2,7 +2,7 @@ import { ImageResponse } from '@vercel/og';
 import { createElement } from 'react';
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 const FALLBACK_NOME = 'Rede Conect';
