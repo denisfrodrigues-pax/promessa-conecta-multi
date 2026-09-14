@@ -8,7 +8,7 @@ interface MembroAniversario {
   id: string;
   nome: string;
   data_nascimento: string;
-  profiles: { foto_url: string | null } | null;
+  profiles: { foto_url: string | null; data_nascimento: string | null; telefone: string | null } | null;
   telefone: string | null;
 }
 
@@ -22,12 +22,16 @@ export default function AniversariantesDoMes() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from('membros')
-        .select('id, nome, data_nascimento, telefone, profiles!membros_user_id_fkey(foto_url)')
-        .in('status', ['ativo', 'frequentador'])
-        .not('data_nascimento', 'is', null);
+        .select('id, nome, data_nascimento, telefone, profiles!membros_user_id_fkey(foto_url, data_nascimento, telefone)')
+        .in('status', ['ativo', 'frequentador']);
       if (!data) return [];
+      // profiles é a fonte de verdade pra data_nascimento/telefone quando o
+      // membro tem conta vinculada (ver comentário em admin/Usuarios.tsx,
+      // handleConvertToMembro) — por isso o filtro de "tem data preenchida"
+      // roda depois de aplicar esse fallback, não na query.
       return (data as MembroAniversario[])
-        .filter(m => new Date(m.data_nascimento + 'T12:00:00').getMonth() + 1 === currentMonth)
+        .map(m => ({ ...m, data_nascimento: m.profiles?.data_nascimento || m.data_nascimento, telefone: m.profiles?.telefone || m.telefone }))
+        .filter(m => m.data_nascimento && new Date(m.data_nascimento + 'T12:00:00').getMonth() + 1 === currentMonth)
         .sort((a, b) =>
           new Date(a.data_nascimento + 'T12:00:00').getDate() -
           new Date(b.data_nascimento + 'T12:00:00').getDate()

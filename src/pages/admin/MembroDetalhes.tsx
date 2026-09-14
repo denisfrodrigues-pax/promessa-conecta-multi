@@ -613,7 +613,7 @@ export default function MembroDetalhes() {
   };
 
   const handleSave = async () => {
-    if (!isLinkedToProfile && !formData.nome.trim()) {
+    if (!formData.nome.trim()) {
       toast.error('Nome é obrigatório');
       return;
     }
@@ -672,6 +672,24 @@ export default function MembroDetalhes() {
 
       const { error } = await supabase.from('membros').update(updateData).eq('id', id);
       if (error) throw error;
+
+      // Membro com conta vinculada: profiles é a fonte de verdade pra dados
+      // pessoais compartilhados (ver comentário em admin/Usuarios.tsx,
+      // handleConvertToMembro) — sem isto, editar esses campos aqui parecia
+      // funcionar (toast de sucesso) mas a mudança nunca era salva em lugar
+      // nenhum, porque membros explicitamente não recebe esses campos acima.
+      if (isLinkedToProfile && membro?.user_id) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            nome: formData.nome.trim(),
+            telefone: cleanPhone(formData.telefone) || null,
+            email: formData.email.trim() || null,
+            data_nascimento: formData.data_nascimento || null,
+          })
+          .eq('id', membro.user_id);
+        if (profileError) throw profileError;
+      }
 
       if (churchId && membro) {
         auditActions.update('membros', id!, membro as unknown as Record<string, unknown>, updateData, churchId);
