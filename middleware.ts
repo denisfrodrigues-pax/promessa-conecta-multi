@@ -1,3 +1,5 @@
+import { next } from '@vercel/functions';
+
 export const config = {
   matcher: ['/i/:slug', '/i/:slug/:path*'],
 };
@@ -72,67 +74,67 @@ async function fetchChurch(slug: string): Promise<ChurchOgData | null> {
   }
 }
 
+function escapeHtmlAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function replaceMetaContent(html: string, attr: 'property' | 'name', key: string, newValue: string): string {
+  const re = new RegExp(`(<meta\\s+${attr}=["']${key}["']\\s+content=["'])([^"']*)(["'])`, 'i');
+  if (!re.test(html)) return html;
+  return html.replace(re, `$1${escapeHtmlAttr(newValue)}$3`);
+}
+
+function rewriteOgTags(html: string, church: ChurchOgData): string {
+  let out = html;
+  out = replaceMetaContent(out, 'property', 'og:title', church.nome);
+  out = replaceMetaContent(out, 'property', 'og:description', church.descricao);
+  out = replaceMetaContent(out, 'property', 'og:image', church.imageUrl);
+  out = replaceMetaContent(out, 'name', 'twitter:title', church.nome);
+  out = replaceMetaContent(out, 'name', 'twitter:description', church.descricao);
+  out = replaceMetaContent(out, 'name', 'twitter:image', church.imageUrl);
+  return out;
+}
+
 export default async function middleware(request: Request) {
   const url = new URL(request.url);
 
   // Só reescreve documentos de rota (HTML) — qualquer path com extensão é asset
   // (JS/CSS/imagens/etc.) e deve seguir direto, sem custo extra.
   if (/\.[a-zA-Z0-9]+$/.test(url.pathname)) {
-    return fetch(request);
+    return next();
   }
 
   const match = url.pathname.match(/^\/i\/([^/]+)/);
   const slug = match?.[1];
   if (!slug) {
-    return fetch(request);
+    return next();
   }
 
   const church = await fetchChurch(slug);
   if (!church) {
-    return fetch(request);
+    return next();
   }
 
-  const response = await fetch(request);
+  // SPA estática: toda rota serve o mesmo index.html (via rewrite em vercel.json).
+  // Busca o asset estático diretamente — fora do matcher desta Middleware, sem risco
+  // de recursão — em vez de tentar reobter a resposta da própria rota interceptada.
+  const indexResponse = await fetch(new URL('/index.html', url.origin));
+  if (!indexResponse.ok) {
+    return next();
+  }
 
-  const rewritten = new HTMLRewriter()
-    .on('meta[property="og:title"]', {
-      element(el) {
-        el.setAttribute('content', church.nome);
-      },
-    })
-    .on('meta[property="og:description"]', {
-      element(el) {
-        el.setAttribute('content', church.descricao);
-      },
-    })
-    .on('meta[property="og:image"]', {
-      element(el) {
-        el.setAttribute('content', church.imageUrl);
-      },
-    })
-    .on('meta[name="twitter:title"]', {
-      element(el) {
-        el.setAttribute('content', church.nome);
-      },
-    })
-    .on('meta[name="twitter:description"]', {
-      element(el) {
-        el.setAttribute('content', church.descricao);
-      },
-    })
-    .on('meta[name="twitter:image"]', {
-      element(el) {
-        el.setAttribute('content', church.imageUrl);
-      },
-    })
-    .transform(response);
+  const html = await indexResponse.text();
+  const rewritten = rewriteOgTags(html, church);
 
-  const headers = new Headers(rewritten.headers);
-  headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-
-  return new Response(rewritten.body, {
-    status: rewritten.status,
-    statusText: rewritten.statusText,
-    headers,
+  return new Response(rewritten, {
+    status: 200,
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'public, s-maxage=300, stale-while-revalidate=600',
+    },
   });
 }
