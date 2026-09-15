@@ -144,8 +144,20 @@ export default async function middleware(request: Request) {
     // que exigiria "continuar a cadeia" e arriscaria reinvocar esta Middleware.
     // As duas buscas são independentes — rodam em paralelo (relevante só pro caso
     // de crawler, que é o único que paga o custo da consulta ao Supabase).
+    //
+    // Repassa cookie/bypass da requisição original pro fetch interno: é uma busca
+    // nova, sem qualquer credencial por padrão — se o deployment tiver Deployment
+    // Protection ativo (caso de todo preview, e potencialmente de produção também
+    // no futuro), esse fetch cairia na tela de login da Vercel em vez do
+    // index.html real, e a página inteira quebraria pra qualquer visitante.
+    const internalFetchHeaders = new Headers();
+    const cookie = request.headers.get('cookie');
+    if (cookie) internalFetchHeaders.set('cookie', cookie);
+    const bypassHeader = request.headers.get('x-vercel-protection-bypass');
+    if (bypassHeader) internalFetchHeaders.set('x-vercel-protection-bypass', bypassHeader);
+
     const [indexResponse, church] = await Promise.all([
-      fetchWithTimeout(new URL('/index.html', url.origin), INDEX_HTML_TIMEOUT_MS),
+      fetchWithTimeout(new URL('/index.html', url.origin), INDEX_HTML_TIMEOUT_MS, { headers: internalFetchHeaders }),
       shouldResolveChurch ? fetchChurch(slug!) : Promise.resolve(null),
     ]);
     if (!church) {
@@ -174,6 +186,11 @@ export default async function middleware(request: Request) {
     // Fail-open absoluto: qualquer erro não previsto no pipeline (ex.: falha ou
     // timeout ao buscar o próprio /index.html) nunca deve derrubar a página para
     // um usuário real — cai para uma busca direta do documento, sem reescrita.
-    return fetchWithTimeout(new URL('/index.html', url.origin), INDEX_HTML_TIMEOUT_MS);
+    const fallbackHeaders = new Headers();
+    const cookie = request.headers.get('cookie');
+    if (cookie) fallbackHeaders.set('cookie', cookie);
+    const bypassHeader = request.headers.get('x-vercel-protection-bypass');
+    if (bypassHeader) fallbackHeaders.set('x-vercel-protection-bypass', bypassHeader);
+    return fetchWithTimeout(new URL('/index.html', url.origin), INDEX_HTML_TIMEOUT_MS, { headers: fallbackHeaders });
   }
 }
