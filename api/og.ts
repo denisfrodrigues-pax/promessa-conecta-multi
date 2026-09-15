@@ -2,39 +2,19 @@ import { ImageResponse } from '@vercel/og';
 import { createElement } from 'react';
 
 export const config = {
-  runtime: 'nodejs',
+  runtime: 'edge',
 };
 
 const FALLBACK_NOME = 'Rede Conect';
 const FALLBACK_COR = '#1e3a5f';
 
-// Formato real do request neste runtime, confirmado via log de produção
-// (TypeError: request.headers.get is not a function): diferente da Routing
-// Middleware (middleware.ts), que sempre usa a Web Fetch API completa, uma
-// Vercel Function em runtime nodejs (fora de Next.js) recebe um objeto no
-// estilo Node clássico — headers é um objeto simples (chaves em minúsculo,
-// valor string ou string[] pra headers repetidos), sem os métodos de
-// Headers do padrão Web. request.url também vem como caminho relativo
-// (mesmo comportamento de http.IncomingMessage.url).
-type NodeStyleRequest = {
-  url: string;
-  headers: Record<string, string | string[] | undefined>;
-};
-
-function headerValue(headers: NodeStyleRequest['headers'], name: string): string | undefined {
-  const value = headers[name];
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function resolveRequestUrl(request: NodeStyleRequest): URL {
-  const host =
-    headerValue(request.headers, 'host') ?? headerValue(request.headers, 'x-forwarded-host') ?? 'promessa-conecta-multi.vercel.app';
-  const proto = headerValue(request.headers, 'x-forwarded-proto') ?? 'https';
-  return new URL(request.url, `${proto}://${host}`);
-}
-
-export default async function handler(request: NodeStyleRequest) {
-  const { searchParams } = resolveRequestUrl(request);
+export default async function handler(request: Request) {
+  // Runtime edge: request é a Web Fetch API genuína (Request/Headers reais),
+  // então request.url já vem absoluta e não precisa de resolução manual —
+  // ao contrário do runtime nodejs (usado antes), onde @vercel/og trava/
+  // demora indefinidamente em produção (não suportado de forma confiável
+  // fora de edge, conforme discussão oficial do pacote).
+  const { searchParams } = new URL(request.url);
   const nome = (searchParams.get('nome') || FALLBACK_NOME).slice(0, 60);
   const cor = /^#[0-9a-fA-F]{6}$/.test(searchParams.get('cor') || '') ? searchParams.get('cor')! : FALLBACK_COR;
 
