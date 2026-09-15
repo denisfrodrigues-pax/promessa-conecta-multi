@@ -8,8 +8,19 @@ export const config = {
 const FALLBACK_NOME = 'Rede Conect';
 const FALLBACK_COR = '#1e3a5f';
 
+function resolveRequestUrl(request: Request): URL {
+  // No runtime nodejs (fora de Next.js), request.url pode vir como caminho
+  // relativo (ex: "/api/og?nome=...") em vez de absoluto — ao contrário do
+  // runtime edge, que sempre entrega uma URL completa. new URL() exige uma
+  // base explícita nesse caso; se request.url já for absoluta, a base é
+  // simplesmente ignorada (comportamento padrão da própria API URL).
+  const host = request.headers.get('host') ?? request.headers.get('x-forwarded-host') ?? 'promessa-conecta-multi.vercel.app';
+  const proto = request.headers.get('x-forwarded-proto') ?? 'https';
+  return new URL(request.url, `${proto}://${host}`);
+}
+
 export default async function handler(request: Request) {
-  const { searchParams } = new URL(request.url);
+  const { searchParams } = resolveRequestUrl(request);
   const nome = (searchParams.get('nome') || FALLBACK_NOME).slice(0, 60);
   const cor = /^#[0-9a-fA-F]{6}$/.test(searchParams.get('cor') || '') ? searchParams.get('cor')! : FALLBACK_COR;
 
