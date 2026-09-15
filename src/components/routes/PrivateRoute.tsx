@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 
@@ -23,12 +25,27 @@ function homePathForRoles(roles: UserRole[], slug: string): string {
 }
 
 const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
-  const { user, roles, loading, churchId: myChurchId, churchSlug: myChurchSlug } = useAuth();
-  const { churchId: urlChurchId } = useIgrejaSlug();
+  const { user, roles, loading, churchId: myChurchId, churchSlug: myChurchSlug, churchNome: myChurchNome } = useAuth();
+  const { churchId: urlChurchId, churchNome: urlChurchNome } = useIgrejaSlug();
   const location = useLocation();
 
   const churchSlug = extractChurchSlug(location.pathname);
   const loginPath = churchSlug ? `/i/${churchSlug}/login` : '/';
+
+  const mismatchedChurch = !!(user && !roles.includes('superadmin') && myChurchId && urlChurchId && myChurchId !== urlChurchId);
+  // Ref (não state) porque o aviso deve disparar uma única vez por mismatch — o
+  // componente é desmontado pelo <Navigate> logo depois, então não há re-render
+  // pra um guard baseado em state evitar duplicata do StrictMode/re-render.
+  const warnedRef = useRef(false);
+  useEffect(() => {
+    if (mismatchedChurch && !warnedRef.current) {
+      warnedRef.current = true;
+      toast.warning(
+        `Você não tem uma conta em ${urlChurchNome ?? 'esta igreja'}. Redirecionando para ${myChurchNome ?? 'sua igreja'}.`
+      );
+    }
+    if (!mismatchedChurch) warnedRef.current = false;
+  }, [mismatchedChurch, urlChurchNome, myChurchNome]);
 
   if (loading) {
     return (
@@ -50,11 +67,12 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
 
   // O slug na URL não é o da igreja do usuário logado (ex: trocou manualmente
   // /i/convergencia/... por /i/radiacao/... estando logado como admin da
-  // Convergência). churchId do useAuth já é sempre o da própria igreja pra
-  // quem não é superadmin (ver AuthContext), então esse mismatch só pode vir
-  // do slug — nunca deixar renderizar com a igreja errada, manda de volta
-  // pra dentro da própria.
-  if (myChurchId && urlChurchId && myChurchId !== urlChurchId) {
+  // Convergência, ou logou usando a URL de outra igreja). churchId do useAuth
+  // já é sempre o da própria igreja pra quem não é superadmin (ver
+  // AuthContext), então esse mismatch só pode vir do slug — nunca deixar
+  // renderizar com a igreja errada, manda de volta pra dentro da própria
+  // (o aviso pro usuário já foi disparado no useEffect acima).
+  if (mismatchedChurch) {
     return <Navigate to={myChurchSlug ? homePathForRoles(roles, myChurchSlug) : '/'} replace />;
   }
 
