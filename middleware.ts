@@ -1,7 +1,24 @@
 import { next } from '@vercel/functions';
 
+// Escopo restrito às rotas públicas/institucionais de cada igreja — as únicas
+// realisticamente compartilhadas como link (ex: WhatsApp), onde a prévia
+// importa de verdade. Deliberadamente NÃO cobre app/, admin/, leader/,
+// voluntario/, financeiro/ (navegação autenticada, onde ninguém compartilha
+// link) nem utilitários como reset-password/install/onboarding — invocar esta
+// Middleware ali seria custo puro, sem benefício. Lista espelha as rotas
+// públicas declaradas em src/App.tsx sob /i/:churchSlug.
 export const config = {
-  matcher: ['/i/:slug', '/i/:slug/:path*'],
+  matcher: [
+    '/i/:slug/login',
+    '/i/:slug/sou-novo',
+    '/i/:slug/contribuicoes',
+    '/i/:slug/publico',
+    '/i/:slug/quem-somos/:path*',
+    '/i/:slug/trilha-amar-servir',
+    '/i/:slug/bases-publicas',
+    '/i/:slug/seja-voluntario',
+    '/i/:slug/contato/:path*',
+  ],
   runtime: 'nodejs',
 };
 
