@@ -32,6 +32,8 @@ interface AuthContextType {
   churchId: string | null;
   /** Slug da igreja do usuário logado (null pra superadmin, que não tem igreja fixa). */
   churchSlug: string | null;
+  /** Nome da igreja do usuário logado (null pra superadmin, que não tem igreja fixa). */
+  churchNome: string | null;
   /** Sobrescreve o churchId do perfil — usado por IgrejaSlugLayout para superadmin */
   setChurchIdOverride: (id: string | null) => void;
   myMinistries: MyMinistry[];
@@ -58,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [profileChurchId, setProfileChurchId] = useState<string | null>(null);
   const [profileChurchSlug, setProfileChurchSlug] = useState<string | null>(null);
+  const [profileChurchNome, setProfileChurchNome] = useState<string | null>(null);
   const [churchIdOverride, setChurchIdOverride] = useState<string | null>(null);
   const [myMinistries, setMyMinistries] = useState<MyMinistry[]>([]);
   const [myMinistriesLoading, setMyMinistriesLoading] = useState(false);
@@ -74,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // complementar quando o slug da URL não bate com a igreja do usuário.
   const churchId = (isSuperAdmin ? churchIdOverride : null) ?? profileChurchId;
   const churchSlug = isSuperAdmin ? null : profileChurchSlug;
+  const churchNome = isSuperAdmin ? null : profileChurchNome;
 
   const refreshMyMinistries = useCallback(async () => {
     setMyMinistriesLoading(true);
@@ -128,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const [profileResult, rolesResult] = await Promise.all([
         supabase
           .from('profiles')
-          .select('id, user_id, nome, email, telefone, foto_url, status, church_id, igrejas(slug)')
+          .select('id, user_id, nome, email, telefone, foto_url, status, church_id, igrejas(slug, nome)')
           .eq('user_id', userId)
           .maybeSingle(),
         supabase
@@ -138,10 +142,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ]);
 
       if (!profileResult.error && profileResult.data) {
-        const { igrejas, ...profileData } = profileResult.data as Profile & { igrejas: { slug: string } | null };
+        const { igrejas, ...profileData } = profileResult.data as Profile & { igrejas: { slug: string; nome: string } | null };
         setProfile(profileData as Profile);
         setProfileChurchId(profileData.church_id ?? null);
         setProfileChurchSlug(igrejas?.slug ?? null);
+        setProfileChurchNome(igrejas?.nome ?? null);
       } else if (profileResult.error) {
         console.error('Profile fetch error:', profileResult.error);
       }
@@ -188,6 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRoles([]);
     setProfileChurchId(null);
     setProfileChurchSlug(null);
+    setProfileChurchNome(null);
     setChurchIdOverride(null);
     setMyMinistries([]);
   };
@@ -216,6 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       churchId,
       churchSlug,
+      churchNome,
       setChurchIdOverride,
       myMinistries,
       myMinistriesLoading,
