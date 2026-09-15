@@ -525,7 +525,6 @@ export default function EscolaBiblica() {
       const { error } = await supabase.from('eb_matriculas').insert({
         perfil_id: matriculaMembroId,
         ciclo_id: matriculaCicloId,
-        data_inicio: new Date().toISOString().slice(0, 10),
         ativo: true,
       });
       if (error) throw error;
@@ -533,8 +532,13 @@ export default function EscolaBiblica() {
       qc.invalidateQueries({ queryKey: ['eb_chamada_membros'] });
       toast.success('Matrícula realizada com sucesso');
       setShowModal(false); setMatriculaCicloId(''); setMatriculaMembroId('');
-    } catch {
-      toast.error('Erro ao matricular membro');
+    } catch (err) {
+      console.error('Erro ao matricular membro:', err);
+      if ((err as { code?: string })?.code === '23505') {
+        toast.error('Este membro já está matriculado neste ciclo');
+      } else {
+        toast.error('Erro ao matricular membro');
+      }
     } finally {
       setSavingMatricula(false);
     }

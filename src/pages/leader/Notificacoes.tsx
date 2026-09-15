@@ -156,17 +156,16 @@ export default function LeaderNotificacoes() {
 
     setSending(true);
     try {
-      const profileIds = members
-        .filter(m => m.profile?.id)
-        .map(m => m.profile!.id);
-
+      // A edge function não aceita "user_ids" (nunca aceitou — só user_id singular,
+      // send_to_all ou send_to_ministerio). send_to_ministerio já resolve o público-alvo
+      // (voluntários ativos do ministério) e já valida no servidor que o líder só pode
+      // enviar pro próprio ministério — mais simples e mais seguro que montar a lista aqui.
       const { error } = await supabase.functions.invoke('send-notification', {
         body: {
-          user_ids: profileIds,
+          send_to_ministerio: ministerioId,
           titulo,
           mensagem,
           tipo: 'ministerio',
-          ministerio_id: ministerioId
         }
       });
 

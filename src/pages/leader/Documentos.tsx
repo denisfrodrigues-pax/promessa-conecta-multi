@@ -109,16 +109,18 @@ export default function LeaderDocumentos() {
 
       setUploading(true);
       const ext = selectedFile.name.split('.').pop() || 'bin';
-      const filePath = `${ministerioId}/${crypto.randomUUID()}.${ext}`;
+      // Bucket "documentos" (compartilhado com outras features, ex.: escola-biblica/,
+      // church-logos/) — este prefixo isola os documentos de ministério.
+      const filePath = `ministerios/${ministerioId}/${crypto.randomUUID()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('ministerio-docs')
+        .from('documentos')
         .upload(filePath, selectedFile, { upsert: false });
 
       if (uploadError) throw uploadError;
 
       const { data: urlData } = supabase.storage
-        .from('ministerio-docs')
+        .from('documentos')
         .getPublicUrl(filePath);
 
       const { error: insertError } = await supabase
@@ -135,7 +137,7 @@ export default function LeaderDocumentos() {
 
       if (insertError) {
         // limpa o arquivo enviado se o insert falhou
-        await supabase.storage.from('ministerio-docs').remove([filePath]);
+        await supabase.storage.from('documentos').remove([filePath]);
         throw insertError;
       }
     },
@@ -155,12 +157,12 @@ export default function LeaderDocumentos() {
     mutationFn: async (doc: Documento) => {
       // Extrai o path relativo da URL pública
       const url = new URL(doc.arquivo_url);
-      const marker = '/ministerio-docs/';
+      const marker = '/documentos/';
       const idx = url.pathname.indexOf(marker);
       const storagePath = idx >= 0 ? url.pathname.slice(idx + marker.length) : null;
 
       if (storagePath) {
-        await supabase.storage.from('ministerio-docs').remove([storagePath]);
+        await supabase.storage.from('documentos').remove([storagePath]);
       }
 
       const { error } = await supabase
