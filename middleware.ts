@@ -152,9 +152,11 @@ export default async function middleware(request: Request) {
       // Sem igreja resolvida (asset, rota fora de /i/:slug, slug inválido, ou
       // qualquer falha em fetchChurch — que já é fail-open internamente):
       // devolve o index.html sem alterações.
+      const headers = new Headers(indexResponse.headers);
+      headers.set('x-og-debug', `slug=${slug ?? '(none)'};shouldResolve=${shouldResolveChurch};ua=${(request.headers.get('user-agent') ?? '').slice(0, 80)}`);
       return new Response(indexResponse.body, {
         status: indexResponse.status,
-        headers: indexResponse.headers,
+        headers,
       });
     }
 
