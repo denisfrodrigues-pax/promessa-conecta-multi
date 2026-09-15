@@ -1,3 +1,5 @@
+import { next } from '@vercel/functions';
+
 export const config = {
   matcher: ['/i/:slug', '/i/:slug/:path*'],
   runtime: 'nodejs',
@@ -137,13 +139,20 @@ export default async function middleware(request: Request) {
     const match = isAsset ? null : url.pathname.match(/^\/i\/([^/]+)/);
     const slug = match?.[1];
 
-    const shouldResolveChurch = !!slug && isCrawlerRequest(request);
+    // Fast path: esmagadora maioria do tráfego (navegador real, asset, rota sem
+    // slug) — next() devolve o controle pro roteamento normal da Vercel sem
+    // nenhum fetch adicional, sem nenhuma latência extra medível.
+    if (!slug || !isCrawlerRequest(request)) {
+      return next();
+    }
 
+    // A partir daqui, só requests de crawler conhecido (compartilhamento social
+    // ou indexação) — aqui sim vale pagar o custo de resolver a igreja e
+    // reescrever o HTML.
+    //
     // SPA estática: toda rota serve o mesmo index.html (via rewrite em vercel.json).
     // Busca o asset estático diretamente — sem passar pela própria rota interceptada,
     // que exigiria "continuar a cadeia" e arriscaria reinvocar esta Middleware.
-    // As duas buscas são independentes — rodam em paralelo (relevante só pro caso
-    // de crawler, que é o único que paga o custo da consulta ao Supabase).
     //
     // Repassa cookie/bypass da requisição original pro fetch interno: é uma busca
     // nova, sem qualquer credencial por padrão — se o deployment tiver Deployment
@@ -158,17 +167,14 @@ export default async function middleware(request: Request) {
 
     const [indexResponse, church] = await Promise.all([
       fetchWithTimeout(new URL('/index.html', url.origin), INDEX_HTML_TIMEOUT_MS, { headers: internalFetchHeaders }),
-      shouldResolveChurch ? fetchChurch(slug!) : Promise.resolve(null),
+      fetchChurch(slug),
     ]);
     if (!church) {
-      // Sem igreja resolvida (asset, rota fora de /i/:slug, slug inválido, ou
-      // qualquer falha em fetchChurch — que já é fail-open internamente):
-      // devolve o index.html sem alterações.
-      const headers = new Headers(indexResponse.headers);
-      headers.set('x-og-debug', `slug=${slug ?? '(none)'};shouldResolve=${shouldResolveChurch};ua=${(request.headers.get('user-agent') ?? '').slice(0, 80)}`);
+      // Slug não corresponde a nenhuma igreja, ou fetchChurch falhou (já é
+      // fail-open internamente): devolve o index.html sem alterações.
       return new Response(indexResponse.body, {
         status: indexResponse.status,
-        headers,
+        headers: indexResponse.headers,
       });
     }
 
@@ -183,14 +189,9 @@ export default async function middleware(request: Request) {
       },
     });
   } catch {
-    // Fail-open absoluto: qualquer erro não previsto no pipeline (ex.: falha ou
-    // timeout ao buscar o próprio /index.html) nunca deve derrubar a página para
-    // um usuário real — cai para uma busca direta do documento, sem reescrita.
-    const fallbackHeaders = new Headers();
-    const cookie = request.headers.get('cookie');
-    if (cookie) fallbackHeaders.set('cookie', cookie);
-    const bypassHeader = request.headers.get('x-vercel-protection-bypass');
-    if (bypassHeader) fallbackHeaders.set('x-vercel-protection-bypass', bypassHeader);
-    return fetchWithTimeout(new URL('/index.html', url.origin), INDEX_HTML_TIMEOUT_MS, { headers: fallbackHeaders });
+    // Fail-open absoluto: qualquer erro não previsto no pipeline nunca deve
+    // derrubar a página pra um usuário real — deixa o roteamento normal seguir,
+    // sem nenhum fetch adicional (mesmo mecanismo do fast path acima).
+    return next();
   }
 }
