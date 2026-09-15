@@ -113,6 +113,19 @@ function rewriteOgTags(html: string, church: ChurchOgData): string {
   return out;
 }
 
+// Navegadores reais já recebem título/favicon dinâmicos via IgrejaSlugContext no
+// client — as tags og:*/twitter:* do HTML inicial só importam pra crawlers de
+// compartilhamento, que não executam JS. Então só vale a pena pagar o custo da
+// consulta ao Supabase (~0,3-0,9s, medido) quando o requester é um desses bots
+// conhecidos — pra um usuário real, isso seria latência pura sem benefício algum.
+const CRAWLER_USER_AGENT_RE =
+  /facebookexternalhit|Facebot|Twitterbot|WhatsApp|Slackbot|LinkedInBot|TelegramBot|Discordbot|SkypeUriPreview|redditbot|Pinterest|vkShare|Applebot|Googlebot|Bingbot|DuckDuckBot|YandexBot|W3C_Validator/i;
+
+function isCrawlerRequest(request: Request): boolean {
+  const userAgent = request.headers.get('user-agent') ?? '';
+  return CRAWLER_USER_AGENT_RE.test(userAgent);
+}
+
 export default async function middleware(request: Request) {
   const url = new URL(request.url);
 
@@ -124,12 +137,17 @@ export default async function middleware(request: Request) {
     const match = isAsset ? null : url.pathname.match(/^\/i\/([^/]+)/);
     const slug = match?.[1];
 
+    const shouldResolveChurch = !!slug && isCrawlerRequest(request);
+
     // SPA estática: toda rota serve o mesmo index.html (via rewrite em vercel.json).
     // Busca o asset estático diretamente — sem passar pela própria rota interceptada,
     // que exigiria "continuar a cadeia" e arriscaria reinvocar esta Middleware.
-    const indexResponse = await fetchWithTimeout(new URL('/index.html', url.origin), INDEX_HTML_TIMEOUT_MS);
-
-    const church = slug ? await fetchChurch(slug) : null;
+    // As duas buscas são independentes — rodam em paralelo (relevante só pro caso
+    // de crawler, que é o único que paga o custo da consulta ao Supabase).
+    const [indexResponse, church] = await Promise.all([
+      fetchWithTimeout(new URL('/index.html', url.origin), INDEX_HTML_TIMEOUT_MS),
+      shouldResolveChurch ? fetchChurch(slug!) : Promise.resolve(null),
+    ]);
     if (!church) {
       // Sem igreja resolvida (asset, rota fora de /i/:slug, slug inválido, ou
       // qualquer falha em fetchChurch — que já é fail-open internamente):
