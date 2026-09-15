@@ -20,16 +20,14 @@ type ChurchOgData = {
 // e efêmeras); o Cache-Control abaixo é o mecanismo real de redução de carga no Supabase.
 const cache = new Map<string, { data: ChurchOgData; expiresAt: number }>();
 
-type FetchChurchResult = { data: ChurchOgData | null; debug: string };
-
-async function fetchChurch(slug: string): Promise<FetchChurchResult> {
+async function fetchChurch(slug: string): Promise<ChurchOgData | null> {
   const cached = cache.get(slug);
   if (cached && cached.expiresAt > Date.now()) {
-    return { data: cached.data, debug: 'cache-hit' };
+    return cached.data;
   }
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    return { data: null, debug: 'missing-env' };
+    return null;
   }
 
   try {
@@ -43,7 +41,7 @@ async function fetchChurch(slug: string): Promise<FetchChurchResult> {
       }
     );
 
-    if (!res.ok) return { data: null, debug: `supabase-http-${res.status}` };
+    if (!res.ok) return null;
 
     const rows = (await res.json()) as Array<{
       nome: string | null;
@@ -53,7 +51,7 @@ async function fetchChurch(slug: string): Promise<FetchChurchResult> {
     }>;
 
     const igreja = rows[0];
-    if (!igreja || !igreja.nome) return { data: null, debug: 'no-matching-row' };
+    if (!igreja || !igreja.nome) return null;
 
     const temLogoReal = !!igreja.logo_url && /^https?:\/\//i.test(igreja.logo_url);
     const imageUrl = temLogoReal
@@ -69,9 +67,9 @@ async function fetchChurch(slug: string): Promise<FetchChurchResult> {
     };
 
     cache.set(slug, { data, expiresAt: Date.now() + CACHE_TTL_MS });
-    return { data, debug: 'ok' };
-  } catch (e) {
-    return { data: null, debug: `exception-${String(e).slice(0, 100)}` };
+    return data;
+  } catch {
+    return null;
   }
 }
 
@@ -115,15 +113,13 @@ export default async function middleware(request: Request) {
   // que exigiria "continuar a cadeia" e arriscaria reinvocar esta Middleware.
   const indexResponse = await fetch(new URL('/index.html', url.origin));
 
-  const { data: church, debug } = slug ? await fetchChurch(slug) : { data: null, debug: 'no-slug-match' };
+  const church = slug ? await fetchChurch(slug) : null;
   if (!church) {
     // Sem igreja resolvida (asset, rota fora de /i/:slug, ou slug inválido):
     // devolve o index.html sem alterações.
-    const headers = new Headers(indexResponse.headers);
-    headers.set('x-og-debug', `slug=${slug ?? '(none)'};reason=${debug}`);
     return new Response(indexResponse.body, {
       status: indexResponse.status,
-      headers,
+      headers: indexResponse.headers,
     });
   }
 
@@ -135,7 +131,6 @@ export default async function middleware(request: Request) {
     headers: {
       'content-type': 'text/html; charset=utf-8',
       'cache-control': 'public, s-maxage=300, stale-while-revalidate=600',
-      'x-og-debug': `slug=${slug};reason=${debug}`,
     },
   });
 }
