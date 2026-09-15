@@ -19,7 +19,14 @@ interface MembroRaw {
   nome: string;
   telefone: string | null;
   data_nascimento: string | null;
-  profiles: { foto_url: string | null; data_nascimento: string | null; telefone: string | null } | null;
+  user_id: string | null;
+}
+
+interface ProfileDirectoryRow {
+  id: string;
+  foto_url: string | null;
+  data_nascimento: string | null;
+  telefone: string | null;
 }
 
 interface Aniversariante {
@@ -61,20 +68,35 @@ export function AniversariantesCard() {
   const fetchAniversariantes = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('membros')
-        .select('id, nome, telefone, data_nascimento, profiles!membros_user_id_fkey(foto_url, data_nascimento, telefone)')
-        .eq('church_id', churchId as string)
-        .in('status', ['ativo', 'frequentador']);
+      // profiles não é lido diretamente aqui — profiles_church_directory é uma view
+      // que expõe só as colunas não-sensíveis (nome/foto/data_nascimento/telefone),
+      // já escopada por igreja. Ver comentário da view no banco pro porquê.
+      const [membrosRes, directoryRes] = await Promise.all([
+        supabase
+          .from('membros')
+          .select('id, nome, telefone, data_nascimento, user_id')
+          .eq('church_id', churchId as string)
+          .in('status', ['ativo', 'frequentador']),
+        supabase.from('profiles_church_directory').select('id, foto_url, data_nascimento, telefone'),
+      ]);
 
-      if (error) throw error;
+      if (membrosRes.error) throw membrosRes.error;
+      if (directoryRes.error) throw directoryRes.error;
 
-      const doMes = ((data || []) as MembroRaw[])
-        .map((m) => ({
-          ...m,
-          data_nascimento: m.profiles?.data_nascimento || m.data_nascimento,
-          telefone: m.profiles?.telefone || m.telefone,
-        }))
+      const directoryById = new Map(
+        ((directoryRes.data || []) as ProfileDirectoryRow[]).map((p) => [p.id, p])
+      );
+
+      const doMes = ((membrosRes.data || []) as MembroRaw[])
+        .map((m) => {
+          const perfil = m.user_id ? directoryById.get(m.user_id) : undefined;
+          return {
+            ...m,
+            data_nascimento: perfil?.data_nascimento || m.data_nascimento,
+            telefone: perfil?.telefone || m.telefone,
+            fotoUrl: perfil?.foto_url || null,
+          };
+        })
         .filter((m) => {
           if (!m.data_nascimento) return false;
           const { mes } = monthDayFromDateString(m.data_nascimento);
@@ -86,7 +108,7 @@ export function AniversariantesCard() {
             key: m.id,
             nome: m.nome,
             telefone: m.telefone,
-            fotoUrl: m.profiles?.foto_url || null,
+            fotoUrl: m.fotoUrl,
             mes,
             dia,
           };
