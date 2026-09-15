@@ -45,10 +45,7 @@ export default function BaseDetalhesPublic() {
     try {
       const { data, error } = await supabase
         .from('bases')
-        .select(`
-          id, nome, descricao, dia_semana, horario, local, capacidade, visibilidade, lider_id,
-          lider:profiles!bases_lider_id_fkey(nome)
-        `)
+        .select('id, nome, descricao, dia_semana, horario, local, capacidade, visibilidade, lider_id')
         .eq('id', id)
         .eq('status', 'ativo')
         .maybeSingle();
@@ -65,12 +62,22 @@ export default function BaseDetalhesPublic() {
         .eq('base_id', id)
         .eq('status', 'ativo');
 
-      // Handle the lider being an array from the join
-      const liderData = Array.isArray(data.lider) ? data.lider[0] : data.lider;
-      setBase({ 
-        ...data, 
-        lider: liderData || null,
-        membros_count: count || 0 
+      // Nome do líder vem de profiles_church_directory (view com só colunas
+      // não-sensíveis, escopada por igreja) — não de um embed direto em profiles.
+      let liderNome: string | null = null;
+      if (data.lider_id) {
+        const { data: liderRow } = await supabase
+          .from('profiles_church_directory')
+          .select('nome')
+          .eq('id', data.lider_id)
+          .maybeSingle();
+        liderNome = liderRow?.nome ?? null;
+      }
+
+      setBase({
+        ...data,
+        lider: liderNome ? { nome: liderNome } : null,
+        membros_count: count || 0
       });
     } catch (error) {
       console.error('Error fetching base:', error);

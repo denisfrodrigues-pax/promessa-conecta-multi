@@ -248,17 +248,27 @@ export default function VolunteerMinisterioDashboard() {
     return order;
   })();
 
-  // Equipe do ministério
+  // Equipe do ministério — nome vem de profiles_church_directory (view com só
+  // colunas não-sensíveis, escopada por igreja), não de um embed direto em profiles.
   const { data: equipe, isLoading: loadingEquipe } = useQuery({
     queryKey: ["ministerio-equipe", ministerioId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: membros } = await supabase
         .from("ministerio_usuarios")
-        .select("id, papel, user_id, profiles!ministerio_voluntarios_user_id_fkey(nome, foto_url)")
+        .select("id, papel, user_id")
         .eq("ministerio_id", ministerioId)
         .eq("ativo", true)
         .order("papel");
-      return data ?? [];
+
+      const { data: directory } = await supabase.from("profiles_church_directory").select("user_id, nome");
+      const nomeByUserId = new Map(
+        ((directory ?? []) as { user_id: string; nome: string }[]).map((p) => [p.user_id, p.nome])
+      );
+
+      return (membros ?? []).map((m) => ({
+        ...m,
+        profiles: m.user_id && nomeByUserId.has(m.user_id) ? { nome: nomeByUserId.get(m.user_id)! } : null,
+      }));
     },
     enabled: !!ministerioId,
   });

@@ -108,6 +108,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
         ]
       }
       auditoria_financeira: {
@@ -144,6 +151,13 @@ export type Database = {
             columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auditoria_financeira_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -207,10 +221,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "avisos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "avisos_criado_por_fkey"
             columns: ["criado_por"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -361,6 +389,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bases_lider_id_fkey"
+            columns: ["lider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
         ]
       }
       bases_membros: {
@@ -423,6 +458,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bases_membros_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
           {
@@ -785,6 +827,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "eb_aula_arquivos_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
         ]
       }
       eb_aulas: {
@@ -976,6 +1025,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "eb_matriculas_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
         ]
       }
       eb_presencas: {
@@ -1036,6 +1092,13 @@ export type Database = {
             columns: ["perfil_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eb_presencas_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -1375,6 +1438,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "escalas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "escalas_evento_escala_id_fkey"
             columns: ["evento_escala_id"]
             isOneToOne: false
@@ -1396,10 +1466,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "escalas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "escalas_voluntario_id_fkey"
             columns: ["voluntario_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalas_voluntario_id_fkey"
+            columns: ["voluntario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -1504,6 +1588,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "eventos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
         ]
       }
       eventos_escala: {
@@ -1580,6 +1671,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "eventos_escala_presencas_registrado_por_fkey"
+            columns: ["presencas_registrado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
         ]
       }
       eventos_inscricoes: {
@@ -1617,6 +1715,13 @@ export type Database = {
             columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_inscricoes_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -1679,6 +1784,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "grupos_lider_id_fkey"
+            columns: ["lider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
         ]
       }
       grupos_participantes: {
@@ -1719,6 +1831,13 @@ export type Database = {
             columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grupos_participantes_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -1767,6 +1886,13 @@ export type Database = {
             columns: ["voluntario_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historico_comunicacoes_voluntario_id_fkey"
+            columns: ["voluntario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -2068,6 +2194,7 @@ export type Database = {
       }
       logs_comunicacao: {
         Row: {
+          church_id: string | null
           conteudo: string
           created_at: string | null
           destinatarios: Json | null
@@ -2076,6 +2203,7 @@ export type Database = {
           tipo: Database["public"]["Enums"]["communication_type"]
         }
         Insert: {
+          church_id?: string | null
           conteudo: string
           created_at?: string | null
           destinatarios?: Json | null
@@ -2084,6 +2212,7 @@ export type Database = {
           tipo: Database["public"]["Enums"]["communication_type"]
         }
         Update: {
+          church_id?: string | null
           conteudo?: string
           created_at?: string | null
           destinatarios?: Json | null
@@ -2091,7 +2220,15 @@ export type Database = {
           status?: string | null
           tipo?: Database["public"]["Enums"]["communication_type"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "logs_comunicacao_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "igrejas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mca_checkins: {
         Row: {
@@ -2633,6 +2770,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "membros_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ministerio_documentos: {
@@ -2827,6 +2971,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "ministerio_voluntarios_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       ministerio_voluntarios_funcoes: {
@@ -2921,6 +3072,13 @@ export type Database = {
             columns: ["lider_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministerios_lider_id_fkey"
+            columns: ["lider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -3113,6 +3271,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "notas_base_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
         ]
       }
       notificacoes: {
@@ -3187,6 +3352,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "notificacoes_voluntario_id_fkey"
+            columns: ["voluntario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
         ]
       }
       pedidos_oracao: {
@@ -3236,6 +3408,13 @@ export type Database = {
             columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_oracao_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -3324,10 +3503,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "presencas_marcado_por_fkey"
+            columns: ["marcado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "presencas_usuario_id_fkey"
             columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presencas_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -3563,6 +3756,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "transacoes_financeiras_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles_church_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transacoes_financeiras_evento_id_fkey"
             columns: ["evento_id"]
             isOneToOne: false
@@ -3669,7 +3869,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_church_directory: {
+        Row: {
+          data_nascimento: string | null
+          foto_url: string | null
+          id: string | null
+          nome: string | null
+          telefone: string | null
+          user_id: string | null
+        }
+        Insert: {
+          data_nascimento?: string | null
+          foto_url?: string | null
+          id?: string | null
+          nome?: string | null
+          telefone?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          data_nascimento?: string | null
+          foto_url?: string | null
+          id?: string | null
+          nome?: string | null
+          telefone?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_ministry: {
@@ -3768,6 +3994,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_base_in_user_church: { Args: { _base_id: string }; Returns: boolean }
       is_base_lider: {
         Args: { _base_id: string; _user_id: string }
         Returns: boolean

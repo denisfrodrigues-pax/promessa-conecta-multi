@@ -57,10 +57,7 @@ export default function BasesPublic() {
     try {
       const { data, error } = await supabase
         .from('bases')
-        .select(`
-          id, nome, descricao, dia_semana, horario, local, capacidade, visibilidade, lider_id,
-          lider:profiles!bases_lider_id_fkey(nome)
-        `)
+        .select('id, nome, descricao, dia_semana, horario, local, capacidade, visibilidade, lider_id')
         .eq('church_id', churchId)
         .eq('status', 'ativo')
         .order('nome');
@@ -69,15 +66,16 @@ export default function BasesPublic() {
 
       const counts = await fetchCountsByIds('bases_membros', 'base_id', (data || []).map((b) => b.id), (q) => q.eq('status', 'ativo'));
 
-      const basesWithCounts = (data || []).map((base) => {
-        // Handle the lider being an array from the join
-        const liderData = Array.isArray(base.lider) ? base.lider[0] : base.lider;
-        return {
-          ...base,
-          lider: liderData || null,
-          membros_count: counts.get(base.id) ?? 0,
-        };
-      });
+      // Nome do líder vem de profiles_church_directory (view com só colunas não-sensíveis,
+      // escopada por igreja) — não de um embed direto em profiles.
+      const { data: directory } = await supabase.from('profiles_church_directory').select('id, nome');
+      const nomeById = new Map(((directory || []) as { id: string; nome: string }[]).map((p) => [p.id, p.nome]));
+
+      const basesWithCounts = (data || []).map((base) => ({
+        ...base,
+        lider: base.lider_id && nomeById.has(base.lider_id) ? { nome: nomeById.get(base.lider_id)! } : null,
+        membros_count: counts.get(base.id) ?? 0,
+      }));
 
       setBases(basesWithCounts);
     } catch (error) {
