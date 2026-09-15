@@ -48,7 +48,7 @@
     "@supabase/supabase-js": "^2.86.2",
     "@tanstack/react-query": "^5.83.0",
     "@vercel/functions": "^3.9.7",
-    "@vercel/og": "^1.0.2",
+    "@vercel/og": "^0.11.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
