@@ -88,15 +88,28 @@ Deno.serve(async (req) => {
         }
       }
 
-      const { data: volunteers } = await supabase
-        .from('ministerio_voluntarios')
-        .select(`profile:profiles!ministerio_voluntarios_user_id_fkey(id)`)
+      // A tabela foi renomeada pra ministerio_usuarios em algum momento (as FK constraints
+      // não foram renomeadas junto, continuam com o prefixo antigo ministerio_voluntarios_*).
+      // O embed via hint de constraint (profiles!ministerio_voluntarios_user_id_fkey)
+      // retornava vazio nesta função mesmo com o schema cache do PostgREST recarregado —
+      // busca em duas etapas (já é o padrão usado mais abaixo pra profilesForPush) evita
+      // depender da resolução de embed por trás do rename.
+      const { data: activeVolunteers } = await supabase
+        .from('ministerio_usuarios')
+        .select('user_id')
         .eq('ministerio_id', body.send_to_ministerio)
         .eq('ativo', true);
 
-      targetUserIds = (volunteers || [])
-        .filter((v: { profile: { id: string }[] | null }) => v.profile && v.profile.length > 0)
-        .map((v: { profile: { id: string }[] }) => v.profile[0].id);
+      const volunteerAuthIds = (activeVolunteers || []).map((v: { user_id: string }) => v.user_id);
+
+      if (volunteerAuthIds.length > 0) {
+        const { data: volunteerProfiles } = await supabase
+          .from('profiles')
+          .select('id')
+          .in('user_id', volunteerAuthIds);
+
+        targetUserIds = (volunteerProfiles || []).map((p: { id: string }) => p.id);
+      }
     } else if (body.user_id) {
       if (!isAdmin && !isLeader) throw new Error('Only admins and leaders can send notifications');
 
@@ -115,7 +128,7 @@ Deno.serve(async (req) => {
         const ministryIds = (leaderMinistries || []).map((m: { id: string }) => m.id);
 
         const { data: targetVolunteer } = await supabase
-          .from('ministerio_voluntarios')
+          .from('ministerio_usuarios')
           .select('ministerio_id')
           .eq('user_id', body.user_id)
           .in('ministerio_id', ministryIds)
