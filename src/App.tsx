@@ -1,7 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import PWAInstallBanner from "@/components/PWAInstallBanner";
 import PWAUpdatePrompt from "@/components/PWAUpdatePrompt";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -393,7 +392,6 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
-        <PWAInstallBanner />
         <PWAUpdatePrompt />
       </TooltipProvider>
     </AuthProvider>
