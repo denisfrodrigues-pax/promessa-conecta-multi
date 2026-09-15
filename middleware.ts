@@ -9,6 +9,18 @@ const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const SITE_URL = 'https://promessa-conecta-multi.vercel.app';
 const GENERIC_DESCRICAO = 'Plataforma de gestão eclesiástica para igrejas que crescem.';
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const SUPABASE_TIMEOUT_MS = 2000;
+const INDEX_HTML_TIMEOUT_MS = 3000;
+
+async function fetchWithTimeout(url: string | URL, timeoutMs: number, init?: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 type ChurchOgData = {
   nome: string;
@@ -31,8 +43,9 @@ async function fetchChurch(slug: string): Promise<ChurchOgData | null> {
   }
 
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${SUPABASE_URL}/rest/v1/igrejas?slug=eq.${encodeURIComponent(slug)}&select=nome,slogan,logo_url,cor_primaria&limit=1`,
+      SUPABASE_TIMEOUT_MS,
       {
         headers: {
           apikey: SUPABASE_ANON_KEY,
@@ -69,6 +82,8 @@ async function fetchChurch(slug: string): Promise<ChurchOgData | null> {
     cache.set(slug, { data, expiresAt: Date.now() + CACHE_TTL_MS });
     return data;
   } catch {
+    // Qualquer falha (rede, timeout via AbortController, JSON inválido, etc.):
+    // fail-open — trata como "igreja não resolvida", nunca propaga o erro.
     return null;
   }
 }
@@ -101,36 +116,44 @@ function rewriteOgTags(html: string, church: ChurchOgData): string {
 export default async function middleware(request: Request) {
   const url = new URL(request.url);
 
-  // Só reescreve documentos de rota (HTML) — qualquer path com extensão é asset
-  // (JS/CSS/imagens/etc.) e deve seguir direto, sem custo extra. Na prática o
-  // matcher já restringe a Middleware a /i/:slug*, então isto é defensivo.
-  const isAsset = /\.[a-zA-Z0-9]+$/.test(url.pathname);
-  const match = isAsset ? null : url.pathname.match(/^\/i\/([^/]+)/);
-  const slug = match?.[1];
+  try {
+    // Só reescreve documentos de rota (HTML) — qualquer path com extensão é asset
+    // (JS/CSS/imagens/etc.) e deve seguir direto, sem custo extra. Na prática o
+    // matcher já restringe a Middleware a /i/:slug*, então isto é defensivo.
+    const isAsset = /\.[a-zA-Z0-9]+$/.test(url.pathname);
+    const match = isAsset ? null : url.pathname.match(/^\/i\/([^/]+)/);
+    const slug = match?.[1];
 
-  // SPA estática: toda rota serve o mesmo index.html (via rewrite em vercel.json).
-  // Busca o asset estático diretamente — sem passar pela própria rota interceptada,
-  // que exigiria "continuar a cadeia" e arriscaria reinvocar esta Middleware.
-  const indexResponse = await fetch(new URL('/index.html', url.origin));
+    // SPA estática: toda rota serve o mesmo index.html (via rewrite em vercel.json).
+    // Busca o asset estático diretamente — sem passar pela própria rota interceptada,
+    // que exigiria "continuar a cadeia" e arriscaria reinvocar esta Middleware.
+    const indexResponse = await fetchWithTimeout(new URL('/index.html', url.origin), INDEX_HTML_TIMEOUT_MS);
 
-  const church = slug ? await fetchChurch(slug) : null;
-  if (!church) {
-    // Sem igreja resolvida (asset, rota fora de /i/:slug, ou slug inválido):
-    // devolve o index.html sem alterações.
-    return new Response(indexResponse.body, {
-      status: indexResponse.status,
-      headers: indexResponse.headers,
+    const church = slug ? await fetchChurch(slug) : null;
+    if (!church) {
+      // Sem igreja resolvida (asset, rota fora de /i/:slug, slug inválido, ou
+      // qualquer falha em fetchChurch — que já é fail-open internamente):
+      // devolve o index.html sem alterações.
+      return new Response(indexResponse.body, {
+        status: indexResponse.status,
+        headers: indexResponse.headers,
+      });
+    }
+
+    const html = await indexResponse.text();
+    const rewritten = rewriteOgTags(html, church);
+
+    return new Response(rewritten, {
+      status: 200,
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
     });
+  } catch {
+    // Fail-open absoluto: qualquer erro não previsto no pipeline (ex.: falha ou
+    // timeout ao buscar o próprio /index.html) nunca deve derrubar a página para
+    // um usuário real — cai para uma busca direta do documento, sem reescrita.
+    return fetchWithTimeout(new URL('/index.html', url.origin), INDEX_HTML_TIMEOUT_MS);
   }
-
-  const html = await indexResponse.text();
-  const rewritten = rewriteOgTags(html, church);
-
-  return new Response(rewritten, {
-    status: 200,
-    headers: {
-      'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'public, s-maxage=300, stale-while-revalidate=600',
-    },
-  });
 }
