@@ -333,7 +333,11 @@ const App = () => (
               </Route>
 
               {/* ── LÍDER (ministério específico) ──────────────────────────── */}
-              <Route path="leader/:slug" element={<PrivateRoute allowedRoles={["lider", "admin"]}><LeaderMinisterioLayout /></PrivateRoute>}>
+              {/* "voluntario" entra aqui também — LeaderMinisterioLayout é quem
+                  decide o acesso fino: líder/admin full, voluntário só passa
+                  se tiver uma função com permissões no ministério (sistema de
+                  permissões por função), senão é redirecionado por ela mesma. */}
+              <Route path="leader/:slug" element={<PrivateRoute allowedRoles={["lider", "admin", "voluntario"]}><LeaderMinisterioLayout /></PrivateRoute>}>
                 <Route index element={<LeaderDashboard />} />
                 <Route path="equipe" element={<LeaderMinhaEquipe />} />
                 <Route path="funcoes" element={<LeaderMinhasFuncoes />} />

@@ -52,9 +52,17 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export default function Chamada() {
-  const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
-  const { churchId, user } = useAuth();
+  const { ministerioId, minhasPermissoes = [], isFuncaoOnly = false } = useOutletContext<{
+    ministerioId: string; ministerioNome: string; minhasPermissoes?: string[]; isFuncaoOnly?: boolean;
+  }>();
+  const { churchId, user, profile } = useAuth();
   const qc = useQueryClient();
+  // Professor-only (sem a permissão de qualquer turma) só faz chamada nas
+  // próprias turmas — Auxiliar (eb.chamada.qualquer_turma) não tem essa
+  // restrição, igual líder/admin.
+  const isProfessorOnly = isFuncaoOnly
+    && minhasPermissoes.includes('eb.professor.gerenciar_turma')
+    && !minhasPermissoes.includes('eb.chamada.qualquer_turma');
 
   const [turmaId, setTurmaId] = useState('');
   const [data, setData] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -68,16 +76,20 @@ export default function Chamada() {
 
   const [historicoAberto, setHistoricoAberto] = useState(false);
 
-  const { data: turmas = [] } = useQuery({
+  const { data: turmasRaw = [] } = useQuery({
     queryKey: ['ensino_turmas', ministerioId],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
-        .from('ensino_turmas').select('id, nome').eq('ministerio_id', ministerioId).eq('ativo', true).order('nome');
+        .from('ensino_turmas').select('id, nome, professor_id').eq('ministerio_id', ministerioId).eq('ativo', true).order('nome');
       if (error) throw error;
-      return data as Turma[];
+      return data as (Turma & { professor_id: string | null })[];
     },
     enabled: !!ministerioId,
   });
+
+  const turmas = isProfessorOnly
+    ? turmasRaw.filter((t) => t.professor_id === profile?.id)
+    : turmasRaw;
 
   const { data: resultadosBusca = [] } = useQuery({
     queryKey: ['perfis_busca', debouncedBusca, churchId],
