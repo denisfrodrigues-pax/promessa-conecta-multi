@@ -525,6 +525,7 @@ export default function EscolaBiblica() {
       const { error } = await supabase.from('eb_matriculas').insert({
         perfil_id: matriculaMembroId,
         ciclo_id: matriculaCicloId,
+        church_id: churchId,
         ativo: true,
       });
       if (error) throw error;
