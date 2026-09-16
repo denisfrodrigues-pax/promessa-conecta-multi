@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Outlet, Navigate, NavLink as RouterNavLink, useParams } from "react-router-dom";
+import { Outlet, Navigate, NavLink as RouterNavLink, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIgrejaConfig } from "@/hooks/useIgrejaConfig";
 import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
@@ -24,13 +24,21 @@ interface MinisterioInfo {
 
 export default function LeaderMinisterioLayout() {
   const { slug } = useParams<{ slug: string }>();
-  const { user, loading: authLoading, profile, isLider } = useAuth();
+  const { user, loading: authLoading, profile, isLider, roles } = useAuth();
+  const isAdminOrSuperAdmin = roles.includes('admin') || roles.includes('superadmin');
   const { nomeModulo } = useIgrejaConfig();
   const { p, churchId } = useIgrejaSlug();
   const { unreadCount } = useLeaderNotifications();
+  const location = useLocation();
   const [ministerio, setMinisterio] = useState<MinisterioInfo | null>(null);
   const [loadingMin, setLoadingMin] = useState(true);
   const [error, setError] = useState(false);
+  // Permissões via função (Parte 1 do sistema de permissões por função) —
+  // preenchido só quando o usuário NÃO é líder/admin deste ministério, mas
+  // tem pelo menos uma função ativa com permissões (ex.: Professor(a) EB,
+  // Auxiliar, Secretaria no Ensino). Vazio pra líder/admin (eles já têm
+  // acesso total por outro caminho, não precisam disso).
+  const [minhasPermissoes, setMinhasPermissoes] = useState<string[]>([]);
 
   useEffect(() => {
     if (authLoading || !user || !slug || !churchId) return;
@@ -61,24 +69,63 @@ export default function LeaderMinisterioLayout() {
       const match = (vinculo as unknown as VinculoItem[]).find((v) => v.ministerios?.slug === slug);
 
       if (!match) {
+        // Função fallback: voluntário sem papel líder, mas com pelo menos
+        // uma função ativa com permissões neste ministério (ex.: Professor(a)
+        // EB no Ensino) — entra com acesso restrito, sinalizado por
+        // minhasPermissoes. get_my_funcao_permissoes já filtra por
+        // ativo=true em ministerio_usuarios e ministerio_funcoes. Checado
+        // ANTES do fallback de admin abaixo: a query de admin não verifica
+        // role nenhuma (só existe/church/ativo), então testar função depois
+        // dela nunca executaria — qualquer voluntário já teria "achado" o
+        // ministério ali e voltado sem função nenhuma setada.
+        const { data: membro } = await supabase
+          .from("ministerio_usuarios")
+          .select("ministerio_id, ministerios!ministerio_voluntarios_ministerio_id_fkey(id, nome, slug, tipo)")
+          .eq("user_id", user.id)
+          .eq("ativo", true);
+
+        const matchMembro = (membro as unknown as VinculoItem[] | null)?.find(
+          (v) => v.ministerios?.slug === slug
+        );
+
+        if (matchMembro) {
+          const { data: perms } = await supabase.rpc("get_my_funcao_permissoes", {
+            _ministerio_id: matchMembro.ministerio_id,
+          });
+          if (perms && perms.length > 0) {
+            const m = matchMembro.ministerios!;
+            setMinisterio({ id: m.id, nome: m.nome, tipo: m.tipo ?? null });
+            setMinhasPermissoes(perms);
+            setLoadingMin(false);
+            return;
+          }
+        }
+
         // Admin fallback: busca direta pelo ministério, escopada pela igreja
         // do usuário — slug não é globalmente único (constraint real é
         // composta church_id+slug; toda igreja nova recebe os mesmos slugs
         // fixos via fn_seed_nova_igreja), só filtrar por slug faz
         // .maybeSingle() falhar assim que duas igrejas tiverem o mesmo slug.
-        const { data: adm } = await (supabase as any)
-          .from("ministerios")
-          .select("id, nome, tipo")
-          .eq("slug", slug)
-          .eq("church_id", churchId)
-          .eq("ativo", true)
-          .maybeSingle();
+        // Restrito a admin/superadmin de verdade — a query em si não checa
+        // role (só existe/church/ativo), então sem esse guard qualquer
+        // usuário autenticado que consiga ler ministerios entraria aqui.
+        if (isAdminOrSuperAdmin) {
+          const { data: adm } = await (supabase as any)
+            .from("ministerios")
+            .select("id, nome, tipo")
+            .eq("slug", slug)
+            .eq("church_id", churchId)
+            .eq("ativo", true)
+            .maybeSingle();
 
-        if (adm) {
-          setMinisterio({ id: adm.id, nome: adm.nome, tipo: adm.tipo ?? null });
-        } else {
-          setError(true);
+          if (adm) {
+            setMinisterio({ id: adm.id, nome: adm.nome, tipo: adm.tipo ?? null });
+            setLoadingMin(false);
+            return;
+          }
         }
+
+        setError(true);
         setLoadingMin(false);
         return;
       }
@@ -89,7 +136,7 @@ export default function LeaderMinisterioLayout() {
     };
 
     fetch();
-  }, [user, authLoading, slug, churchId]);
+  }, [user, authLoading, slug, churchId, isAdminOrSuperAdmin]);
 
   if (authLoading || loadingMin) {
     return (
@@ -100,7 +147,9 @@ export default function LeaderMinisterioLayout() {
   }
 
   if (!user) return <Navigate to={p('/login')} replace />;
-  if (!isLider) return <Navigate to={p('/app')} replace />;
+  // Função-only (minhasPermissoes preenchido) é o único jeito de um não-líder
+  // chegar até aqui — sem isso, mantém o comportamento de sempre.
+  if (!isLider && minhasPermissoes.length === 0) return <Navigate to={p('/app')} replace />;
 
   if (error || !ministerio) {
     return (
@@ -204,7 +253,42 @@ export default function LeaderMinisterioLayout() {
     'pequenos-grupos': pequenosGruposNavItems,
   };
 
-  const navItems = navBySlug[ministerio.tipo ?? ''] ?? defaultNavItems;
+  const isFuncaoOnly = !isLider && minhasPermissoes.length > 0;
+
+  // Função-only só vê os itens de nav ligados a uma permissão que ela tem —
+  // Dashboard, Turmas, Escalas, Equipe, Relatórios, Documentos e Notificações
+  // continuam fora do alcance (nenhuma permissão do catálogo cobre eles).
+  // Ministérios sem catálogo de permissões ainda (fora Ensino/Recepção)
+  // simplesmente não deixam função-only entrar — minhasPermissoes viria
+  // vazio de get_my_funcao_permissoes e o guard acima já bloqueia.
+  function filterNavParaFuncao(items: typeof defaultNavItems): typeof defaultNavItems {
+    if (!isFuncaoOnly) return items;
+    if (ministerio!.tipo === 'ensino') {
+      const podeProfessor = minhasPermissoes.includes('eb.professor.gerenciar_turma');
+      const podeChamadaQualquer = minhasPermissoes.includes('eb.chamada.qualquer_turma');
+      const podeSecretaria = minhasPermissoes.includes('eb.secretaria.gerenciar');
+      return items.filter((item) => {
+        if (item.path === `${basePath}/planos`) return podeProfessor;
+        if (item.path === `${basePath}/chamada`) return podeProfessor || podeChamadaQualquer;
+        if (item.path === `${basePath}/escola-biblica`) return podeSecretaria;
+        return false;
+      });
+    }
+    if (ministerio!.tipo === 'recepcao') {
+      const podeVisitantes = minhasPermissoes.includes('recepcao.visitantes.gerenciar');
+      return items.filter((item) => item.path === `${basePath}/visitantes-dia` && podeVisitantes);
+    }
+    return [];
+  }
+
+  const navItems = filterNavParaFuncao(navBySlug[ministerio.tipo ?? ''] ?? defaultNavItems);
+
+  // Função-only nunca vê o Dashboard (item removido do nav acima) — se a URL
+  // atual é a raiz do ministério (index route = LeaderDashboard), manda pra
+  // primeira tela que ela realmente pode usar.
+  if (isFuncaoOnly && location.pathname === basePath && navItems.length > 0) {
+    return <Navigate to={navItems[0].path} replace />;
+  }
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -261,7 +345,18 @@ export default function LeaderMinisterioLayout() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, ministerioTipo: ministerio.tipo }} />
+        <Outlet context={{
+          ministerioId: ministerio.id,
+          ministerioNome: ministerio.nome,
+          ministerioTipo: ministerio.tipo,
+          minhasPermissoes,
+          // true só quando o acesso a ESTE ministério específico veio de uma
+          // função (não de líder/admin) — isLider do useAuth é global e não
+          // serve aqui: alguém pode ser líder de outro ministério e, ao mesmo
+          // tempo, só função neste. As telas filhas devem confiar neste flag,
+          // não no isLider global, pra decidir o que restringir.
+          isFuncaoOnly,
+        }} />
       </main>
     </div>
   );

@@ -2832,6 +2832,7 @@ export type Database = {
           id: string
           ministerio_id: string
           nome: string
+          permissoes: string[]
           updated_at: string | null
         }
         Insert: {
@@ -2842,6 +2843,7 @@ export type Database = {
           id?: string
           ministerio_id: string
           nome: string
+          permissoes?: string[]
           updated_at?: string | null
         }
         Update: {
@@ -2852,6 +2854,7 @@ export type Database = {
           id?: string
           ministerio_id?: string
           nome?: string
+          permissoes?: string[]
           updated_at?: string | null
         }
         Relationships: [
@@ -3975,6 +3978,10 @@ export type Database = {
         }[]
       }
       get_my_bases: { Args: never; Returns: Json }
+      get_my_funcao_permissoes: {
+        Args: { _ministerio_id: string }
+        Returns: string[]
+      }
       get_my_ministries: {
         Args: never
         Returns: {
@@ -3987,6 +3994,10 @@ export type Database = {
       }
       get_profile_id: { Args: { _user_id: string }; Returns: string }
       get_user_church_id: { Args: never; Returns: string }
+      has_funcao_permissao: {
+        Args: { _ministerio_id: string; _permissao: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

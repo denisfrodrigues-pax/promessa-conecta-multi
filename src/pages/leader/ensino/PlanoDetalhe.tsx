@@ -2,9 +2,10 @@
 // registrada na hora. Não é o mesmo sistema que eb_* (Escola Bíblica formal,
 // com matrícula de longo prazo) — ver README.md desta pasta.
 import { useState, useRef, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,7 +25,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 
-interface Turma { id: string; nome: string }
+interface Turma { id: string; nome: string; professor_id: string | null }
 interface Plano {
   id: string;
   titulo: string;
@@ -55,6 +56,11 @@ export default function PlanoDetalhe() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
+  const { profile } = useAuth();
+  const { minhasPermissoes = [], isFuncaoOnly = false } = useOutletContext<{
+    minhasPermissoes?: string[]; isFuncaoOnly?: boolean;
+  }>();
+  const isProfessorOnly = isFuncaoOnly && minhasPermissoes.includes('eb.professor.gerenciar_turma');
 
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [form, setForm] = useState<{
@@ -70,11 +76,18 @@ export default function PlanoDetalhe() {
     queryKey: ['ensino_turmas_all'],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
-        .from('ensino_turmas').select('id, nome').eq('ativo', true).order('nome');
+        .from('ensino_turmas').select('id, nome, professor_id').eq('ativo', true).order('nome');
       if (error) throw error;
       return data as Turma[];
     },
   });
+
+  // Professor-only só edita/exclui planos das próprias turmas — mesma
+  // restrição da RLS de ensino_planos_aula, escondida aqui só pra não expor
+  // um botão que a policy vai recusar.
+  const turmasGerenciaveis = isProfessorOnly
+    ? turmasList.filter((t) => t.professor_id === profile?.id)
+    : turmasList;
 
   const { data: plano, isLoading } = useQuery({
     queryKey: ['ensino_plano', planoId],
@@ -233,6 +246,12 @@ export default function PlanoDetalhe() {
     );
   }
 
+  // Se um professor-only chegou aqui por URL direta num plano de outra
+  // turma, a RLS já bloqueia a escrita — isso só esconde os botões de
+  // edição/exclusão que seriam inúteis (a leitura continua liberada, mesmo
+  // padrão de qualquer membro do ministério).
+  const podeGerenciarEstePlano = !isProfessorOnly || turmasGerenciaveis.some((t) => t.id === plano!.turma_id);
+
   // ── VIEW MODE ───────────────────────────────────────────────────────────────
   if (mode === 'view') {
     return (
@@ -250,16 +269,18 @@ export default function PlanoDetalhe() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button size="sm" onClick={() => setMode('edit')}>
-              <Pencil className="w-4 h-4 mr-1" />Editar
-            </Button>
-            <Button size="sm" variant="ghost"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={() => setConfirmDeletePlan(true)}>
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
+          {podeGerenciarEstePlano && (
+            <div className="flex items-center gap-2 shrink-0">
+              <Button size="sm" onClick={() => setMode('edit')}>
+                <Pencil className="w-4 h-4 mr-1" />Editar
+              </Button>
+              <Button size="sm" variant="ghost"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => setConfirmDeletePlan(true)}>
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
 
         {plano!.objetivos && (
@@ -414,7 +435,7 @@ export default function PlanoDetalhe() {
             <Select value={form.turma_id} onValueChange={v => setForm(p => p && ({ ...p, turma_id: v }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {turmasList.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
+                {turmasGerenciaveis.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

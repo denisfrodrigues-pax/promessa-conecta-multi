@@ -27,7 +27,7 @@ import { Plus, ChevronRight, Trash2, BookOpen, Calendar, Paperclip, Users } from
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-interface Turma { id: string; nome: string }
+interface Turma { id: string; nome: string; professor_id: string | null }
 interface Plano {
   id: string;
   turma_id: string;
@@ -41,10 +41,19 @@ interface PlanoForm { titulo: string; data_aula: string; turma_id: string }
 const EMPTY: PlanoForm = { titulo: '', data_aula: '', turma_id: '' };
 
 export default function Planos() {
-  const { ministerioId } = useOutletContext<{ ministerioId: string; ministerioNome: string }>();
+  const { ministerioId, minhasPermissoes = [], isFuncaoOnly = false } = useOutletContext<{
+    ministerioId: string; ministerioNome: string; minhasPermissoes?: string[]; isFuncaoOnly?: boolean;
+  }>();
   const { slug } = useParams<{ slug: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { p } = useIgrejaSlug();
+  // Função-only (não-líder DESTE ministério — isFuncaoOnly vem do
+  // LeaderMinisterioLayout, já resolvido por ministério, não é o isLider
+  // global) só pode criar/editar plano nas turmas em que é o próprio
+  // professor — mesma restrição aplicada na RLS de ensino_planos_aula.
+  // Esconder aqui evita mandar o voluntário pra um formulário que a RLS vai
+  // recusar; quem decide de verdade continua sendo a policy no banco.
+  const isProfessorOnly = isFuncaoOnly && minhasPermissoes.includes('eb.professor.gerenciar_turma');
   const navigate = useNavigate();
   const qc = useQueryClient();
 
@@ -57,17 +66,24 @@ export default function Planos() {
     queryKey: ['ensino_turmas', ministerioId],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
-        .from('ensino_turmas').select('id, nome').eq('ministerio_id', ministerioId).eq('ativo', true).order('nome');
+        .from('ensino_turmas').select('id, nome, professor_id').eq('ministerio_id', ministerioId).eq('ativo', true).order('nome');
       if (error) throw error;
       return data as Turma[];
     },
     enabled: !!ministerioId,
   });
 
+  // Professor-only só vê/gerencia planos das próprias turmas — turmas de
+  // outros professores não aparecem nem no filtro nem no formulário de novo
+  // plano. Líder/admin continuam vendo todas.
+  const turmasGerenciaveis = isProfessorOnly
+    ? turmas.filter((t) => t.professor_id === profile?.id)
+    : turmas;
+
   const { data: planos = [], isLoading } = useQuery({
-    queryKey: ['ensino_planos', ministerioId, turmaFilter],
+    queryKey: ['ensino_planos', ministerioId, turmaFilter, isProfessorOnly],
     queryFn: async () => {
-      const turmaIds = turmas.map(t => t.id);
+      const turmaIds = turmasGerenciaveis.map(t => t.id);
       if (!turmaIds.length) return [];
       let q = (supabase as any)
         .from('ensino_planos_aula')
@@ -132,7 +148,7 @@ export default function Planos() {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="todas">Todas as turmas</SelectItem>
-          {turmas.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
+          {turmasGerenciaveis.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
         </SelectContent>
       </Select>
 
@@ -140,7 +156,7 @@ export default function Planos() {
         <div className="space-y-2">
           {[1, 2, 3].map(i => <div key={i} className="h-16 bg-stone-100 rounded-2xl animate-pulse" />)}
         </div>
-      ) : turmas.length === 0 ? (
+      ) : turmasGerenciaveis.length === 0 ? (
         <Card>
           <CardContent className="py-16 text-center">
             <Users className="w-10 h-10 text-stone-300 mx-auto mb-3" />
@@ -216,7 +232,7 @@ export default function Planos() {
               <Select value={form.turma_id} onValueChange={v => setForm(p => ({ ...p, turma_id: v }))}>
                 <SelectTrigger><SelectValue placeholder="Selecionar turma" /></SelectTrigger>
                 <SelectContent>
-                  {turmas.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
+                  {turmasGerenciaveis.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

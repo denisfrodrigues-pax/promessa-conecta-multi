@@ -2,6 +2,7 @@
 // de longo prazo. Não é o mesmo sistema que ensino_* (aula avulsa por
 // ministério) usado no resto de leader/ensino/ — ver README.md da pasta.
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -223,7 +224,19 @@ function AulaItem({ aula, disciplinaId, userId }: {
 
 export default function EscolaBiblica() {
   const { profile, churchId } = useAuth();
+  const { minhasPermissoes = [], isFuncaoOnly = false } = useOutletContext<{
+    minhasPermissoes?: string[]; isFuncaoOnly?: boolean;
+  }>();
   const qc = useQueryClient();
+  // Secretaria (função sem líder/admin NESTE ministério — isFuncaoOnly vem
+  // do LeaderMinisterioLayout, já resolvido por ministério) só usa
+  // Matrículas e Relatório — Grade (conteúdo/currículo) e a Chamada interna
+  // desta tela continuam líder/admin-only, nenhuma permissão do catálogo
+  // cobre isso ainda.
+  const isSecretariaOnly = isFuncaoOnly && minhasPermissoes.includes('eb.secretaria.gerenciar');
+  const podeGrade = !isFuncaoOnly;
+  const podeChamadaInterna = !isFuncaoOnly;
+  const podeMatriculasRelatorio = !isFuncaoOnly || isSecretariaOnly;
 
   const [selectedDiscId, setSelectedDiscId] = useState('');
   const [selectedAulaNum, setSelectedAulaNum] = useState('1');
@@ -574,6 +587,22 @@ export default function EscolaBiblica() {
     <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
   );
 
+  if (!podeGrade && !podeMatriculasRelatorio) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-stone-500 leading-relaxed">Você não tem uma função com acesso a nenhuma aba da Escola Bíblica.</p>
+      </div>
+    );
+  }
+
+  const tabCount = (podeGrade ? 1 : 0) + (podeMatriculasRelatorio ? 2 : 0) + (podeChamadaInterna ? 1 : 0);
+  // Classes literais (não interpoladas) — Tailwind só reconhece grid-cols-N
+  // escrito por extenso no código-fonte, uma string montada em runtime não
+  // seria detectada pelo scanner do build.
+  const gridColsClass: Record<number, string> = {
+    1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4',
+  };
+
   // ── JSX ───────────────────────────────────────────────────────────────────
 
   return (
@@ -583,23 +612,32 @@ export default function EscolaBiblica() {
         <p className="text-stone-500 leading-relaxed">Gerenciamento de matrículas e frequência</p>
       </div>
 
-      <Tabs defaultValue="grade">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="grade" className="text-xs sm:text-sm min-h-[44px]">
-            <BookOpen className="w-4 h-4 mr-1 hidden sm:inline" />Grade
-          </TabsTrigger>
-          <TabsTrigger value="matriculas" className="text-xs sm:text-sm min-h-[44px]">
-            <Users className="w-4 h-4 mr-1 hidden sm:inline" />Matrículas
-          </TabsTrigger>
-          <TabsTrigger value="chamada" className="text-xs sm:text-sm min-h-[44px]">
-            <ClipboardList className="w-4 h-4 mr-1 hidden sm:inline" />Chamada
-          </TabsTrigger>
-          <TabsTrigger value="relatorio" className="text-xs sm:text-sm min-h-[44px]">
-            <BarChart3 className="w-4 h-4 mr-1 hidden sm:inline" />Relatório
-          </TabsTrigger>
+      <Tabs defaultValue={podeGrade ? 'grade' : 'matriculas'}>
+        <TabsList className={`grid w-full ${gridColsClass[tabCount] ?? 'grid-cols-4'}`}>
+          {podeGrade && (
+            <TabsTrigger value="grade" className="text-xs sm:text-sm min-h-[44px]">
+              <BookOpen className="w-4 h-4 mr-1 hidden sm:inline" />Grade
+            </TabsTrigger>
+          )}
+          {podeMatriculasRelatorio && (
+            <TabsTrigger value="matriculas" className="text-xs sm:text-sm min-h-[44px]">
+              <Users className="w-4 h-4 mr-1 hidden sm:inline" />Matrículas
+            </TabsTrigger>
+          )}
+          {podeChamadaInterna && (
+            <TabsTrigger value="chamada" className="text-xs sm:text-sm min-h-[44px]">
+              <ClipboardList className="w-4 h-4 mr-1 hidden sm:inline" />Chamada
+            </TabsTrigger>
+          )}
+          {podeMatriculasRelatorio && (
+            <TabsTrigger value="relatorio" className="text-xs sm:text-sm min-h-[44px]">
+              <BarChart3 className="w-4 h-4 mr-1 hidden sm:inline" />Relatório
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* ── GRADE CURRICULAR ── */}
+        {podeGrade && (
         <TabsContent value="grade" className="space-y-8 mt-6">
           <p className="text-xs text-stone-500">Clique em uma disciplina para ver as aulas e materiais</p>
           {ciclos.map(ciclo => (
@@ -639,8 +677,10 @@ export default function EscolaBiblica() {
             </div>
           ))}
         </TabsContent>
+        )}
 
         {/* ── MATRÍCULAS ── */}
+        {podeMatriculasRelatorio && (
         <TabsContent value="matriculas" className="space-y-4 mt-6">
           <div className="flex justify-between items-center">
             <div>
@@ -723,8 +763,10 @@ export default function EscolaBiblica() {
             </Card>
           )}
         </TabsContent>
+        )}
 
         {/* ── CHAMADA ── */}
+        {podeChamadaInterna && (
         <TabsContent value="chamada" className="space-y-4 mt-6">
           <Card>
             <CardContent className="p-4 space-y-4">
@@ -821,8 +863,10 @@ export default function EscolaBiblica() {
             </Card>
           )}
         </TabsContent>
+        )}
 
         {/* ── RELATÓRIO DE FREQUÊNCIA ── */}
+        {podeMatriculasRelatorio && (
         <TabsContent value="relatorio" className="space-y-4 mt-6">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex gap-3 text-xs flex-wrap">
@@ -886,6 +930,7 @@ export default function EscolaBiblica() {
             </Card>
           )}
         </TabsContent>
+        )}
       </Tabs>
 
       {/* ── Dialog: Detalhe do Membro ── */}

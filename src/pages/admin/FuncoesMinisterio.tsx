@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +18,7 @@ import { Plus, Pencil, Trash2, ListChecks, Search } from 'lucide-react';
 interface Ministerio {
   id: string;
   nome: string;
+  tipo: string | null;
 }
 
 interface Funcao {
@@ -25,18 +27,52 @@ interface Funcao {
   nome: string;
   descricao: string | null;
   ativo: boolean;
+  permissoes: string[];
 }
 
 interface FuncaoFormData {
   nome: string;
   descricao: string;
   ativo: boolean;
+  permissoes: string[];
 }
 
 const initialFormData: FuncaoFormData = {
   nome: '',
   descricao: '',
   ativo: true,
+  permissoes: [],
+};
+
+// Catálogo de permissões desta rodada — só Ensino e Recepção têm opções por
+// enquanto. Chave = ministerios.tipo (não o nome, que varia por igreja).
+// Adicionar um novo ministério ao catálogo é só acrescentar uma entrada aqui;
+// a tela já reage sozinha (mostra checkbox só do tipo selecionado).
+const PERMISSOES_POR_TIPO: Record<string, { value: string; label: string; descricao: string }[]> = {
+  ensino: [
+    {
+      value: 'eb.professor.gerenciar_turma',
+      label: 'Gerenciar turma (Professor)',
+      descricao: 'Gerencia aulas/planos e faz chamada, só das turmas em que é o professor.',
+    },
+    {
+      value: 'eb.chamada.qualquer_turma',
+      label: 'Fazer chamada em qualquer turma',
+      descricao: 'Registra presença em qualquer turma do Ensino — sem gerenciar conteúdo de aula nem matrícula.',
+    },
+    {
+      value: 'eb.secretaria.gerenciar',
+      label: 'Secretaria (matrículas e relatórios)',
+      descricao: 'Matricula/desmatricula membros e vê relatórios de presença da Escola Bíblica — sem editar conteúdo de aula.',
+    },
+  ],
+  recepcao: [
+    {
+      value: 'recepcao.visitantes.gerenciar',
+      label: 'Gerenciar Visitantes do Dia',
+      descricao: 'Registra, edita e avança o status de visitantes.',
+    },
+  ],
 };
 
 export default function AdminFuncoesMinisterio() {
@@ -69,7 +105,7 @@ export default function AdminFuncoesMinisterio() {
     try {
       const { data, error } = await supabase
         .from('ministerios')
-        .select('id, nome')
+        .select('id, nome, tipo')
         .eq('church_id', churchId)
         .eq('ativo', true)
         .order('nome');
@@ -115,28 +151,35 @@ export default function AdminFuncoesMinisterio() {
       nome: funcao.nome,
       descricao: funcao.descricao || '',
       ativo: funcao.ativo,
+      permissoes: funcao.permissoes ?? [],
     });
     setIsDialogOpen(true);
   };
 
+  // "Excluir" é sempre inativação (ativo = false), nunca um DELETE real —
+  // ministerio_voluntarios_funcoes tem ON DELETE CASCADE em funcao_id, então
+  // um delete de verdade apagaria em silêncio, sem rastro, o vínculo de
+  // permissão de todo mundo que tinha essa função. Isso já era arriscado
+  // antes (perdia o "quem teve essa função"); agora que função concede
+  // acesso de verdade, ficou perigoso demais pra deixar como estava.
   const handleDelete = async () => {
     if (!deletingFuncao) return;
 
     try {
       const { error } = await supabase
         .from('ministerio_funcoes')
-        .delete()
+        .update({ ativo: false })
         .eq('id', deletingFuncao.id);
 
       if (error) throw error;
 
-      toast.success('Função excluída com sucesso');
+      toast.success('Função inativada com sucesso');
       setIsDeleteDialogOpen(false);
       setDeletingFuncao(null);
       if (selectedMinisterio) fetchFuncoes(selectedMinisterio);
     } catch (error) {
-      console.error('Error deleting funcao:', error);
-      toast.error('Erro ao excluir função');
+      console.error('Error inactivating funcao:', error);
+      toast.error('Erro ao inativar função');
     }
   };
 
@@ -154,6 +197,7 @@ export default function AdminFuncoesMinisterio() {
             nome: formData.nome,
             descricao: formData.descricao || null,
             ativo: formData.ativo,
+            permissoes: formData.permissoes,
           })
           .eq('id', editingFuncao.id);
 
@@ -167,6 +211,7 @@ export default function AdminFuncoesMinisterio() {
             nome: formData.nome,
             descricao: formData.descricao || null,
             ativo: formData.ativo,
+            permissoes: formData.permissoes,
           });
 
         if (error) throw error;
@@ -208,6 +253,17 @@ export default function AdminFuncoesMinisterio() {
   );
 
   const selectedMinisterioNome = ministerios.find((m) => m.id === selectedMinisterio)?.nome;
+  const selectedMinisterioTipo = ministerios.find((m) => m.id === selectedMinisterio)?.tipo;
+  const permissoesDisponiveis = PERMISSOES_POR_TIPO[selectedMinisterioTipo ?? ''] ?? [];
+
+  const togglePermissao = (value: string, checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      permissoes: checked
+        ? [...prev.permissoes, value]
+        : prev.permissoes.filter((p) => p !== value),
+    }));
+  };
 
   return (
     <div className="space-y-8 bg-stone-50">
@@ -329,7 +385,7 @@ export default function AdminFuncoesMinisterio() {
                                     setDeletingFuncao(funcao);
                                     setIsDeleteDialogOpen(true);
                                   }}
-                                  aria-label="Excluir função"
+                                  aria-label="Inativar função"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
@@ -398,6 +454,28 @@ export default function AdminFuncoesMinisterio() {
                 onCheckedChange={(checked) => setFormData({ ...formData, ativo: checked })}
               />
             </div>
+
+            {permissoesDisponiveis.length > 0 && (
+              <div className="space-y-2">
+                <Label>Permissões concedidas por esta função</Label>
+                <div className="space-y-3 rounded-xl border border-stone-200 p-3">
+                  {permissoesDisponiveis.map((perm) => (
+                    <div key={perm.value} className="flex items-start gap-2">
+                      <Checkbox
+                        id={`perm-${perm.value}`}
+                        checked={formData.permissoes.includes(perm.value)}
+                        onCheckedChange={(checked) => togglePermissao(perm.value, checked === true)}
+                        className="mt-0.5"
+                      />
+                      <label htmlFor={`perm-${perm.value}`} className="cursor-pointer">
+                        <span className="text-sm font-medium text-stone-900 block">{perm.label}</span>
+                        <span className="text-xs text-stone-500 leading-relaxed">{perm.descricao}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
@@ -411,13 +489,15 @@ export default function AdminFuncoesMinisterio() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Dialog */}
+      {/* Inactivate Dialog — "excluir" aqui é sempre inativação (ativo=false),
+          nunca um DELETE real: quem já tem essa função atribuída mantém o
+          histórico, só perde o acesso concedido por ela a partir de agora. */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Excluir Função</DialogTitle>
+            <DialogTitle>Inativar Função</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja excluir a função "{deletingFuncao?.nome}"? Esta ação não pode ser desfeita.
+              Tem certeza que deseja inativar a função "{deletingFuncao?.nome}"? Ela deixa de conceder acesso e de aparecer pra atribuição, mas quem já a tinha mantém o histórico — pode ser reativada depois.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -425,7 +505,7 @@ export default function AdminFuncoesMinisterio() {
               Cancelar
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
-              Excluir
+              Inativar
             </Button>
           </DialogFooter>
         </DialogContent>
