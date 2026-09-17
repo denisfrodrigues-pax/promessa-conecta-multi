@@ -43,6 +43,8 @@ interface OutletCtx {
   ministerioId: string;
   ministerioNome: string;
   ministerioTipo?: string | null;
+  minhasPermissoes?: string[];
+  isFuncaoOnly?: boolean;
 }
 
 type TipoItem =
@@ -233,13 +235,23 @@ function SortableLiturgiaItem({ item, idx, total, onEdit, onMoveUp, onMoveDown, 
 }
 
 export default function CultoDetalhe() {
-  const { ministerioId, ministerioNome } = useOutletContext<OutletCtx>();
+  const { ministerioId, ministerioNome, minhasPermissoes = [], isFuncaoOnly = false } = useOutletContext<OutletCtx>();
   const { slug, eventoId } = useParams<{ slug: string; eventoId: string }>();
   const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const { user, profile, churchId } = useAuth();
   const queryClient = useQueryClient();
   const resumoRef = useRef<HTMLDivElement>(null);
+
+  // Nesta rodada só existe permissão de função pra Celebração sobre avisos
+  // do culto (avisos_culto) — Presença, Equipe (já é só leitura), Músicas
+  // (já é só leitura) e Liturgia continuam líder/admin-only. "Novo Aviso"
+  // (cria um aviso NOVO na tabela avisos, não só em avisos_culto) também
+  // continua líder-only — fora do escopo desta permissão.
+  const podeAvisos = !isFuncaoOnly || minhasPermissoes.includes('celebracao.avisos.gerenciar');
+  const podeLiturgia = !isFuncaoOnly;
+  const podePresenca = !isFuncaoOnly;
+  const podeCriarAviso = !isFuncaoOnly;
 
   const [showItemModal, setShowItemModal] = useState(false);
   const [editItem, setEditItem] = useState<LiturgiaItem | null>(null);
@@ -1081,6 +1093,11 @@ export default function CultoDetalhe() {
       </div>
 
       {/* ── Presença ───────────────────────────────────────────────────────── */}
+      {/* Nenhuma permissão de função desta rodada cobre presença — só
+          líder/admin. Função-only (ex.: Responsável pelos Avisos) nem vê
+          esta seção; escrever aqui seria bloqueado pela RLS de qualquer
+          forma, então esconder evita um formulário que sempre falharia. */}
+      {podePresenca && (
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
@@ -1122,6 +1139,7 @@ export default function CultoDetalhe() {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* ── Equipe do Dia ─────────────────────────────────────────────────── */}
       <Card>
@@ -1232,6 +1250,7 @@ export default function CultoDetalhe() {
       </Card>
 
       {/* ── Ordem de Liturgia ──────────────────────────────────────────────── */}
+      {podeLiturgia && (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <div>
@@ -1311,6 +1330,7 @@ export default function CultoDetalhe() {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* ── Avisos do Culto ────────────────────────────────────────────────── */}
       <Card>
@@ -1320,10 +1340,12 @@ export default function CultoDetalhe() {
               <Megaphone className="w-4 h-4" />
               Avisos do Culto
             </CardTitle>
-            <Button size="sm" variant="outline" onClick={() => setShowNovoAviso(true)}>
-              <Plus className="w-4 h-4 mr-1" />
-              Novo Aviso
-            </Button>
+            {podeCriarAviso && (
+              <Button size="sm" variant="outline" onClick={() => setShowNovoAviso(true)}>
+                <Plus className="w-4 h-4 mr-1" />
+                Novo Aviso
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1377,7 +1399,9 @@ export default function CultoDetalhe() {
         </CardContent>
       </Card>
 
-      {/* Observações gerais */}
+      {/* Observações gerais — parte de liturgia_culto, mesmo escopo de
+          podeLiturgia acima. */}
+      {podeLiturgia && (
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base">Observações Gerais</CardTitle>
@@ -1421,6 +1445,7 @@ export default function CultoDetalhe() {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* ── Modal Adicionar/Editar Item ────────────────────────────────────── */}
       <Dialog open={showItemModal} onOpenChange={(open) => { if (!open) closeItemModal(); }}>

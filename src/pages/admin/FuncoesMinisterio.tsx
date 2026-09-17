@@ -19,6 +19,7 @@ interface Ministerio {
   id: string;
   nome: string;
   tipo: string | null;
+  slug: string | null;
 }
 
 interface Funcao {
@@ -44,10 +45,13 @@ const initialFormData: FuncaoFormData = {
   permissoes: [],
 };
 
-// Catálogo de permissões desta rodada — só Ensino e Recepção têm opções por
-// enquanto. Chave = ministerios.tipo (não o nome, que varia por igreja).
+// Catálogo de permissões — chave = ministerios.tipo, EXCETO Mídia: seu tipo
+// é "padrao" (compartilhado com qualquer ministério customizado sem tipo
+// dedicado), então Mídia é identificada pelo slug em vez do tipo (ver
+// catalogKey abaixo) pra não mostrar esse checkbox em ministérios
+// customizados sem relação nenhuma com Mídia.
 // Adicionar um novo ministério ao catálogo é só acrescentar uma entrada aqui;
-// a tela já reage sozinha (mostra checkbox só do tipo selecionado).
+// a tela já reage sozinha (mostra checkbox só do tipo/slug selecionado).
 const PERMISSOES_POR_TIPO: Record<string, { value: string; label: string; descricao: string }[]> = {
   ensino: [
     {
@@ -71,6 +75,44 @@ const PERMISSOES_POR_TIPO: Record<string, { value: string; label: string; descri
       value: 'recepcao.visitantes.gerenciar',
       label: 'Gerenciar Visitantes do Dia',
       descricao: 'Registra, edita e avança o status de visitantes.',
+    },
+  ],
+  mca: [
+    {
+      value: 'mca.professor.gerenciar_sala',
+      label: 'Gerenciar sala (Professor)',
+      descricao: 'Gerencia planos de aula e materiais, só das salas em que é o professor.',
+    },
+    {
+      value: 'mca.checkin.qualquer_sala',
+      label: 'Fazer check-in em qualquer sala',
+      descricao: 'Registra check-in/check-out de crianças em qualquer sala do Kids.',
+    },
+    {
+      value: 'mca.secretaria.gerenciar',
+      label: 'Secretaria (crianças e responsáveis)',
+      descricao: 'Gerencia cadastro de crianças e responsáveis do Kids inteiro, sem estar preso a uma sala.',
+    },
+  ],
+  musica: [
+    {
+      value: 'musica.liturgia.gerenciar',
+      label: 'Gerenciar repertório e liturgia',
+      descricao: 'Gerencia o repertório de músicas e a ordem/liturgia do culto.',
+    },
+  ],
+  celebracao: [
+    {
+      value: 'celebracao.avisos.gerenciar',
+      label: 'Gerenciar avisos do culto',
+      descricao: 'Escolhe e ordena quais avisos entram em cada culto — criar um aviso novo continua líder/admin.',
+    },
+  ],
+  midia: [
+    {
+      value: 'midia.documentos.gerenciar',
+      label: 'Gerenciar documentos/mídia',
+      descricao: 'Anexa e remove documentos e arquivos de mídia do ministério.',
     },
   ],
 };
@@ -105,7 +147,7 @@ export default function AdminFuncoesMinisterio() {
     try {
       const { data, error } = await supabase
         .from('ministerios')
-        .select('id, nome, tipo')
+        .select('id, nome, tipo, slug')
         .eq('church_id', churchId)
         .eq('ativo', true)
         .order('nome');
@@ -254,7 +296,11 @@ export default function AdminFuncoesMinisterio() {
 
   const selectedMinisterioNome = ministerios.find((m) => m.id === selectedMinisterio)?.nome;
   const selectedMinisterioTipo = ministerios.find((m) => m.id === selectedMinisterio)?.tipo;
-  const permissoesDisponiveis = PERMISSOES_POR_TIPO[selectedMinisterioTipo ?? ''] ?? [];
+  const selectedMinisterioSlug = ministerios.find((m) => m.id === selectedMinisterio)?.slug;
+  // Mídia usa slug em vez de tipo (tipo "padrao" é compartilhado com
+  // qualquer ministério customizado) — ver comentário do catálogo acima.
+  const catalogKey = selectedMinisterioSlug === 'midia' ? 'midia' : (selectedMinisterioTipo ?? '');
+  const permissoesDisponiveis = PERMISSOES_POR_TIPO[catalogKey] ?? [];
 
   const togglePermissao = (value: string, checked: boolean) => {
     setFormData((prev) => ({

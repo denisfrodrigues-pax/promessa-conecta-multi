@@ -24,7 +24,7 @@ import { Plus, ChevronRight, Pencil, Trash2, BookOpen, Calendar } from 'lucide-r
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-interface Sala { id: string; nome: string }
+interface Sala { id: string; nome: string; professor_id: string | null }
 interface Plano {
   id: string;
   sala_id: string;
@@ -38,32 +38,43 @@ interface PlanoForm { titulo: string; data_aula: string; sala_id: string }
 const EMPTY: PlanoForm = { titulo: '', data_aula: '', sala_id: '' };
 
 export default function Planos({ ministerioId: propMid }: { ministerioId?: string } = {}) {
-  const ctx = useOutletContext<{ ministerioId: string } | null>();
+  const ctx = useOutletContext<{ ministerioId: string; minhasPermissoes?: string[]; isFuncaoOnly?: boolean } | null>();
   const ministerioId = propMid ?? ctx?.ministerioId ?? '';
+  const minhasPermissoes = ctx?.minhasPermissoes ?? [];
+  const isFuncaoOnly = ctx?.isFuncaoOnly ?? false;
   const { slug } = useParams<{ slug: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { p } = useIgrejaSlug();
   const navigate = useNavigate();
   const qc = useQueryClient();
+
+  // Professor-only só gerencia planos das próprias salas — mesma restrição
+  // da RLS de mca_planos_aula (ver README ensino_*/mca_* equivalente na
+  // migration: professor.gerenciar_sala é escopado por mca_salas.professor_id).
+  const isProfessorOnly = isFuncaoOnly && minhasPermissoes.includes('mca.professor.gerenciar_sala');
 
   const [salaFilter, setSalaFilter] = useState('todas');
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState<PlanoForm>(EMPTY);
   const [deleteTarget, setDeleteTarget] = useState<Plano | null>(null);
 
-  const { data: salas = [] } = useQuery({
+  const { data: salasRaw = [] } = useQuery({
     queryKey: ['mca_salas', ministerioId],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
-        .from('mca_salas').select('id, nome').eq('ministerio_id', ministerioId).eq('ativo', true).order('nome');
+        .from('mca_salas').select('id, nome, professor_id').eq('ministerio_id', ministerioId).eq('ativo', true).order('nome');
       if (error) throw error;
       return data as Sala[];
     },
     enabled: !!ministerioId,
   });
 
+  const salas = isProfessorOnly
+    ? salasRaw.filter((s) => s.professor_id === profile?.id)
+    : salasRaw;
+
   const { data: planos = [], isLoading } = useQuery({
-    queryKey: ['mca_planos', ministerioId, salaFilter],
+    queryKey: ['mca_planos', ministerioId, salaFilter, isProfessorOnly],
     queryFn: async () => {
       let q = (supabase as any)
         .from('mca_planos_aula')

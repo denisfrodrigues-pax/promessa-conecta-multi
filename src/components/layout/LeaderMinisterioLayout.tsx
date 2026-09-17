@@ -278,6 +278,33 @@ export default function LeaderMinisterioLayout() {
       const podeVisitantes = minhasPermissoes.includes('recepcao.visitantes.gerenciar');
       return items.filter((item) => item.path === `${basePath}/visitantes-dia` && podeVisitantes);
     }
+    if (ministerio!.tipo === 'mca') {
+      // Kids não tem um item de nav por tela (Crianças/Salas/Check-in/Planos
+      // são abas dentro de "Gestão", ver KidsHub.tsx) — quem tem qualquer
+      // uma das 3 permissões do Kids vê "Gestão"; o filtro fino de quais
+      // abas usar é feito dentro do próprio KidsHub.
+      return items.filter((item) => item.path === `${basePath}/kids`);
+    }
+    if (ministerio!.tipo === 'musica') {
+      // Única permissão de Música nesta rodada cobre repertório + liturgia/
+      // músicas do culto — as duas telas que usam essas tabelas.
+      return items.filter((item) =>
+        item.path === `${basePath}/escala-culto` || item.path === `${basePath}/repertorio`
+      );
+    }
+    if (ministerio!.tipo === 'celebracao') {
+      // Única permissão de Celebração nesta rodada é avisos do culto, uma
+      // seção dentro de Cultos > [culto] — sem tela própria no nav.
+      return items.filter((item) => item.path === `${basePath}/cultos`);
+    }
+    if (slug === 'midia') {
+      // Mídia usa tipo "padrao" (compartilhado com outros ministérios
+      // customizados, sem entrada própria em navBySlug — cai no
+      // defaultNavItems), então checa o slug da URL em vez do tipo pra não
+      // pegar por engano algum outro ministério "padrao" no futuro. Única
+      // permissão desta rodada é Documentos.
+      return items.filter((item) => item.path === `${basePath}/documentos`);
+    }
     return [];
   }
 
