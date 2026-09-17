@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,7 +27,7 @@ interface Plano {
   conteudo: string | null;
   anotacoes: string | null;
   sala_id: string;
-  mca_salas: { nome: string } | null;
+  mca_salas: { nome: string; professor_id: string | null } | null;
 }
 
 interface Arquivo {
@@ -49,6 +50,11 @@ export default function PlanoDetalhe() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
+  const { profile } = useAuth();
+  const { minhasPermissoes = [], isFuncaoOnly = false } = useOutletContext<{
+    minhasPermissoes?: string[]; isFuncaoOnly?: boolean;
+  }>();
+  const isProfessorOnly = isFuncaoOnly && minhasPermissoes.includes('mca.professor.gerenciar_sala');
 
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [form, setForm] = useState<{
@@ -64,7 +70,7 @@ export default function PlanoDetalhe() {
     queryKey: ['mca_plano', planoId],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
-        .from('mca_planos_aula').select('*, mca_salas(nome)').eq('id', planoId).single();
+        .from('mca_planos_aula').select('*, mca_salas(nome, professor_id)').eq('id', planoId).single();
       if (error) throw error;
       return data as Plano;
     },
@@ -228,6 +234,12 @@ export default function PlanoDetalhe() {
     );
   }
 
+  // Se um professor-only chegou aqui por URL direta num plano de outra
+  // sala, a RLS já bloqueia a escrita — isso só esconde os botões de
+  // edição/exclusão que seriam inúteis (leitura continua liberada, mesmo
+  // padrão de qualquer membro do ministério).
+  const podeGerenciarEstePlano = !isProfessorOnly || plano!.mca_salas?.professor_id === profile?.id;
+
   // ── VIEW MODE ───────────────────────────────────────────────────────────────
   if (mode === 'view') {
     return (
@@ -245,16 +257,18 @@ export default function PlanoDetalhe() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button size="sm" onClick={() => setMode('edit')}>
-              <Pencil className="w-4 h-4 mr-1" />Editar
-            </Button>
-            <Button size="sm" variant="ghost"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={() => setConfirmDeletePlan(true)}>
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
+          {podeGerenciarEstePlano && (
+            <div className="flex items-center gap-2 shrink-0">
+              <Button size="sm" onClick={() => setMode('edit')}>
+                <Pencil className="w-4 h-4 mr-1" />Editar
+              </Button>
+              <Button size="sm" variant="ghost"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => setConfirmDeletePlan(true)}>
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
 
         {plano!.objetivos && (
