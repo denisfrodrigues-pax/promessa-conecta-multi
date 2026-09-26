@@ -7,6 +7,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { toast } from 'sonner';
 import { Loader2, Mail } from 'lucide-react';
 
@@ -38,6 +39,7 @@ export function InviteUserDialog({
   const [nome, setNome] = useState(defaultNome);
   const [role, setRole] = useState(defaultRole);
   const [sending, setSending] = useState(false);
+  const { p } = useIgrejaSlug();
 
   useEffect(() => {
     if (open) {
@@ -54,13 +56,20 @@ export function InviteUserDialog({
     }
     setSending(true);
     try {
+      // A rota de definir senha só existe em /i/:slug/reset-password. O slug vem da
+      // igreja do convite (churchId), não da URL atual: este dialog também abre fora
+      // de /i/:slug (superadmin em NovaIgreja), onde p() não prefixa nada. p() fica
+      // como fallback se a consulta falhar.
+      const { data: igreja } = await supabase.from('igrejas').select('slug').eq('id', churchId).maybeSingle();
+      const resetPath = igreja?.slug ? `/i/${igreja.slug}/reset-password` : p('/reset-password');
+
       const { data, error } = await supabase.functions.invoke('invite-admin', {
         body: {
           email: email.trim(),
           nome: nome.trim(),
           church_id: churchId,
           role,
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: `${window.location.origin}${resetPath}`,
         },
       });
 
