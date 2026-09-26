@@ -199,7 +199,8 @@ export default function Auth() {
       options: {
         redirectTo: redirectUrl
           ? `${window.location.origin}${decodeURIComponent(redirectUrl)}`
-          : `${window.location.origin}/app`,
+          // p() prefixa /i/:slug dentro do contexto de igreja; fora dele é identidade → /app
+          : `${window.location.origin}${p('/app')}`,
       },
     });
     if (error) {
