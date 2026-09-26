@@ -11,6 +11,28 @@ const LOGO_TIMEOUT_MS = 3000;
 // erro no meio do stream, então são recusados aqui e caem no ícone genérico.
 const OK_MIME = /^image\/(png|jpeg|svg\+xml|gif)$/i;
 
+const MAX_REDIRECTS = 3;
+
+// Anti-SSRF: o endpoint é público, então só busca logos hospedados no storage
+// público do próprio projeto Supabase (host de VITE_SUPABASE_URL, https).
+// Qualquer outro host/esquema/credencial cai no ícone genérico sem fetch.
+function isAllowedLogoUrl(raw: string): boolean {
+  const base = process.env.VITE_SUPABASE_URL;
+  if (!base) return false;
+  try {
+    const u = new URL(raw);
+    return (
+      u.protocol === 'https:' &&
+      u.host === new URL(base).host &&
+      !u.username &&
+      !u.password &&
+      u.pathname.startsWith('/storage/v1/object/public/')
+    );
+  } catch {
+    return false;
+  }
+}
+
 function toBase64(bytes: Uint8Array): string {
   let bin = '';
   for (let i = 0; i < bytes.length; i += 0x8000) {
@@ -26,12 +48,24 @@ async function resolveLogo(logoUrl: string): Promise<string | null> {
     const mime = logoUrl.slice(5, end);
     return OK_MIME.test(mime) ? logoUrl : null;
   }
-  if (!/^https?:\/\//i.test(logoUrl)) return null;
+  if (!isAllowedLogoUrl(logoUrl)) return null;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), LOGO_TIMEOUT_MS);
   try {
-    const res = await fetch(logoUrl, { signal: controller.signal });
-    if (!res.ok) return null;
+    // Redirect manual: cada destino é revalidado contra a allowlist antes de ser
+    // seguido, então um redirect não leva o servidor pra fora do storage.
+    let target = logoUrl;
+    let res: Response | null = null;
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+      res = await fetch(target, { signal: controller.signal, redirect: 'manual' });
+      if (res.status < 300 || res.status >= 400) break;
+      const location = res.headers.get('location');
+      if (!location) return null;
+      target = new URL(location, target).toString();
+      if (!isAllowedLogoUrl(target)) return null;
+      res = null;
+    }
+    if (!res || !res.ok) return null;
     const mime = (res.headers.get('content-type') || '').split(';')[0].trim();
     if (!OK_MIME.test(mime)) return null;
     const buf = new Uint8Array(await res.arrayBuffer());
