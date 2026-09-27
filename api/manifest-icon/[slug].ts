@@ -1,6 +1,6 @@
 import { ImageResponse } from '@vercel/og';
 import { createElement } from 'react';
-import { fetchIgreja, isValidSlug, slugFromPath, HEX_RE } from '../_lib/igreja';
+import { fetchIgreja, isValidSlug, slugFromPath, HEX_RE } from '../_lib/igreja.js';
 
 export const config = { runtime: 'edge' };
 
