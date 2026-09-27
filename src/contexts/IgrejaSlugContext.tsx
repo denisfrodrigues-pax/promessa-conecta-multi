@@ -101,6 +101,37 @@ export function IgrejaSlugLayout() {
     return () => { document.title = prevTitle; };
   }, [church?.logo_url, church?.nome]);
 
+  // PWA por igreja: troca o <link rel="manifest"> gerado pelo vite-plugin-pwa
+  // (genérico, scope "/") pelo manifest dinâmico da igreja — id/scope/start_url
+  // próprios, então o navegador instala cada igreja como um app distinto.
+  // Mesmo padrão do favicon acima (troca ao entrar, restaura ao sair); fora de
+  // /i/:slug esta layout não monta, então o manifest genérico segue intacto.
+  // Só age com igreja resolvida — slug inexistente fica no genérico.
+  // Também troca o nome/ícone específicos do iOS (apple-mobile-web-app-title e
+  // apple-touch-icon), que o iOS usa no "Adicionar à Tela de Início" e que
+  // estavam fixos em "Rede Conect".
+  useEffect(() => {
+    if (!church?.slug) return;
+    const manifestLink = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    const appleTitle = document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-title"]');
+    const appleIcon = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
+    const prevManifest = manifestLink?.getAttribute('href') ?? null;
+    const prevTitle = appleTitle?.getAttribute('content') ?? null;
+    const prevIcon = appleIcon?.getAttribute('href') ?? null;
+
+    manifestLink?.setAttribute('href', `/api/manifest/${church.slug}`);
+    appleTitle?.setAttribute('content', church.nome);
+    if (appleIcon && church.logo_url) {
+      appleIcon.setAttribute('href', `/api/manifest-icon/${church.slug}?size=192&purpose=any`);
+    }
+
+    return () => {
+      if (manifestLink && prevManifest !== null) manifestLink.setAttribute('href', prevManifest);
+      if (appleTitle && prevTitle !== null) appleTitle.setAttribute('content', prevTitle);
+      if (appleIcon && prevIcon !== null) appleIcon.setAttribute('href', prevIcon);
+    };
+  }, [church?.slug, church?.nome, church?.logo_url]);
+
   const value = useMemo<IgrejaSlugContextType>(() => ({
     slug: churchSlug,
     churchId: church?.id ?? null,
