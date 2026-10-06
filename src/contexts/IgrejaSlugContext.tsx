@@ -109,7 +109,12 @@ export function IgrejaSlugLayout() {
   // Só age com igreja resolvida — slug inexistente fica no genérico.
   // Também troca o nome/ícone específicos do iOS (apple-mobile-web-app-title e
   // apple-touch-icon), que o iOS usa no "Adicionar à Tela de Início" e que
-  // estavam fixos em "Rede Conect".
+  // estavam fixos em "Rede Conect". Troca sempre que há igreja resolvida,
+  // mesmo sem logo_url — o endpoint já cai no ícone genérico da plataforma
+  // nesse caso, então o fallback continua correto (e evita ficar preso no
+  // apple-touch-icon de uma igreja anterior ao navegar entre igrejas sem logo).
+  // purpose=apple (size=180, nativo do iOS) garante fundo opaco na cor da
+  // igreja — o iOS preenche área transparente do ícone com preto.
   useEffect(() => {
     if (!church?.slug) return;
     const manifestLink = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
@@ -121,8 +126,8 @@ export function IgrejaSlugLayout() {
 
     manifestLink?.setAttribute('href', `/api/manifest/${church.slug}`);
     appleTitle?.setAttribute('content', church.nome);
-    if (appleIcon && church.logo_url) {
-      appleIcon.setAttribute('href', `/api/manifest-icon/${church.slug}?size=192&purpose=any`);
+    if (appleIcon) {
+      appleIcon.setAttribute('href', `/api/manifest-icon/${church.slug}?size=180&purpose=apple`);
     }
 
     return () => {
