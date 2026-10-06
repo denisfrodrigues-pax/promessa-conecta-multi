@@ -10,9 +10,12 @@ import { next } from '@vercel/functions';
 // direto, abertura do ícone instalado) — trocar de rota dentro do SPA é
 // client-side (React Router) e não bate aqui. Dentro da função, o fast path
 // (abaixo) é só 2 regex contra o User-Agent já presente no header, sem
-// nenhum fetch; o custo real por request é o mesmo overhead de invocar
-// qualquer Edge Function (isolado V8, sem cold start de container) que já se
-// paga hoje nas rotas públicas — só passa a valer pras demais também.
+// nenhum fetch; o custo real por request é o mesmo overhead de invocar esta
+// Routing Middleware (runtime Node.js — não é isolado edge/V8; é a mesma
+// Function Node já paga hoje nas rotas públicas) que já existia antes desta
+// mudança — só passa a valer pras demais rotas também. Medido: mediana de
+// time_starttransfer ~10ms acima da rota raiz "/" (que não passa por
+// Middleware alguma) — ver relatório do PR.
 export const config = {
   matcher: ['/i/:slug', '/i/:slug/:path*'],
   runtime: 'nodejs',
