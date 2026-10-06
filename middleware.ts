@@ -114,10 +114,15 @@ function escapeHtmlAttr(value: string): string {
     .replace(/>/g, '&gt;');
 }
 
+// Substituição por função (não por string "$1...$3") de propósito: se
+// newValue/newHref viesse de dado externo contendo "$&", "$1" etc. (ex.: nome
+// de igreja), String.replace trataria isso como padrão de referência de
+// grupo capturado, não como texto literal — a função recebe o valor já
+// pronto e devolve literal, sem essa interpretação.
 function replaceMetaContent(html: string, attr: 'property' | 'name', key: string, newValue: string): string {
   const re = new RegExp(`(<meta\\s+${attr}=["']${key}["']\\s+content=["'])([^"']*)(["'])`, 'i');
   if (!re.test(html)) return html;
-  return html.replace(re, `$1${escapeHtmlAttr(newValue)}$3`);
+  return html.replace(re, (_match, pre: string, _old: string, post: string) => pre + escapeHtmlAttr(newValue) + post);
 }
 
 // Casa tanto `<link rel="x" href="y">` quanto a forma self-closing
@@ -127,7 +132,7 @@ function replaceMetaContent(html: string, attr: 'property' | 'name', key: string
 function replaceLinkHref(html: string, rel: string, newHref: string): string {
   const re = new RegExp(`(<link\\s+rel=["']${rel}["']\\s+href=["'])([^"']*)(["'])`, 'i');
   if (!re.test(html)) return html;
-  return html.replace(re, `$1${escapeHtmlAttr(newHref)}$3`);
+  return html.replace(re, (_match, pre: string, _old: string, post: string) => pre + escapeHtmlAttr(newHref) + post);
 }
 
 function rewriteOgTags(html: string, church: ChurchOgData): string {

@@ -35,6 +35,18 @@ describe('rewriteIosPwaTags (função pura)', () => {
     expect(out).toContain('<meta name="apple-mobile-web-app-title" content="Igreja Red" />');
     expect(out).toContain('/api/manifest-icon/red?size=180&amp;purpose=apple');
   });
+
+  it('nome de igreja com "$&"/"$1" não vira padrão de substituição do replace', () => {
+    // Regressão: html.replace(re, string) trataria "$1"/"$&" no valor como
+    // referência de grupo capturado (ex.: "$&" vira o texto inteiro casado
+    // pelo regex). A versão com função de substituição não tem esse problema.
+    const nomeMalicioso = 'Igreja $& $1 Teste';
+    const out = rewriteIosPwaTags(SAMPLE_HTML, 'red', nomeMalicioso);
+    expect(out).toContain('<meta name="apple-mobile-web-app-title" content="Igreja $&amp; $1 Teste" />');
+    // as demais tags seguem intactas — nada do html foi corrompido/duplicado pela interpretação de "$1"
+    expect(out).toContain('<link rel="manifest" href="/api/manifest/red">');
+    expect(out).toContain('<meta property="og:title" content="Rede Conect" />');
+  });
 });
 
 function mockFetchFor(options: { church: { nome: string } | null; indexHtml?: string }) {
