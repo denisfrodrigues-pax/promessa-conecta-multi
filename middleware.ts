@@ -1,24 +1,20 @@
 import { next } from '@vercel/functions';
 
-// Escopo restrito às rotas públicas/institucionais de cada igreja — as únicas
-// realisticamente compartilhadas como link (ex: WhatsApp), onde a prévia
-// importa de verdade. Deliberadamente NÃO cobre app/, admin/, leader/,
-// voluntario/, financeiro/ (navegação autenticada, onde ninguém compartilha
-// link) nem utilitários como reset-password/install/onboarding — invocar esta
-// Middleware ali seria custo puro, sem benefício. Lista espelha as rotas
-// públicas declaradas em src/App.tsx sob /i/:churchSlug.
+// Cobre TODA rota sob /i/:slug — não só as públicas. Motivo: diferente da
+// reescrita de OG (só importa pra crawler, que nunca pisa em rota
+// autenticada), a reescrita de PWA do iOS (abaixo) precisa valer em qualquer
+// página, porque "Adicionar à Tela de Início" no Safari lê o HTML da página
+// em que a pessoa está NO MOMENTO do toque — e o caso real mais comum é
+// alguém logado reinstalando a partir de dentro de /app, não da home pública.
+// Custo da ampliação: a Function só roda em NAVEGAÇÃO DE PÁGINA (reload, link
+// direto, abertura do ícone instalado) — trocar de rota dentro do SPA é
+// client-side (React Router) e não bate aqui. Dentro da função, o fast path
+// (abaixo) é só 2 regex contra o User-Agent já presente no header, sem
+// nenhum fetch; o custo real por request é o mesmo overhead de invocar
+// qualquer Edge Function (isolado V8, sem cold start de container) que já se
+// paga hoje nas rotas públicas — só passa a valer pras demais também.
 export const config = {
-  matcher: [
-    '/i/:slug/login',
-    '/i/:slug/sou-novo',
-    '/i/:slug/contribuicoes',
-    '/i/:slug/publico',
-    '/i/:slug/quem-somos/:path*',
-    '/i/:slug/trilha-amar-servir',
-    '/i/:slug/bases-publicas',
-    '/i/:slug/seja-voluntario',
-    '/i/:slug/contato/:path*',
-  ],
+  matcher: ['/i/:slug', '/i/:slug/:path*'],
   runtime: 'nodejs',
 };
 
@@ -121,6 +117,16 @@ function replaceMetaContent(html: string, attr: 'property' | 'name', key: string
   return html.replace(re, `$1${escapeHtmlAttr(newValue)}$3`);
 }
 
+// Casa tanto `<link rel="x" href="y">` quanto a forma self-closing
+// `<link rel="x" href="y" />` (é assim que o vite-plugin-pwa e o index.html
+// escrevem essas tags, respectivamente) — só o valor do href é substituído,
+// o resto da tag (inclusive o fechamento) segue intocado.
+function replaceLinkHref(html: string, rel: string, newHref: string): string {
+  const re = new RegExp(`(<link\\s+rel=["']${rel}["']\\s+href=["'])([^"']*)(["'])`, 'i');
+  if (!re.test(html)) return html;
+  return html.replace(re, `$1${escapeHtmlAttr(newHref)}$3`);
+}
+
 function rewriteOgTags(html: string, church: ChurchOgData): string {
   let out = html;
   out = replaceMetaContent(out, 'property', 'og:title', church.nome);
@@ -145,6 +151,30 @@ function isCrawlerRequest(request: Request): boolean {
   return CRAWLER_USER_AGENT_RE.test(userAgent);
 }
 
+// iOS puro por User-Agent. Deliberadamente NÃO tenta o heurístico de
+// iPadOS-13+-anunciado-como-Macintosh (que o client usa em src/lib/
+// pwaDetect.ts via navigator.maxTouchPoints) — esse sinal não existe do lado
+// do servidor, então esse caso específico de iPad continua coberto só pela
+// troca via JS em IgrejaSlugContext.tsx (fallback descrito abaixo).
+const IOS_USER_AGENT_RE = /iPhone|iPad|iPod/i;
+
+function isIOSRequest(request: Request): boolean {
+  const userAgent = request.headers.get('user-agent') ?? '';
+  return IOS_USER_AGENT_RE.test(userAgent);
+}
+
+// Reescreve as 3 tags que o Safari usa em "Adicionar à Tela de Início" —
+// nome, manifest (id/scope/start_url próprios da igreja) e ícone — direto no
+// HTML estático, pro caso de alguém instalar antes do JS (IgrejaSlugContext)
+// rodar. Função pura e exportada pra poder testar sem precisar de um Request.
+export function rewriteIosPwaTags(html: string, slug: string, churchNome: string): string {
+  let out = html;
+  out = replaceLinkHref(out, 'manifest', `/api/manifest/${slug}`);
+  out = replaceMetaContent(out, 'name', 'apple-mobile-web-app-title', churchNome);
+  out = replaceLinkHref(out, 'apple-touch-icon', `/api/manifest-icon/${slug}?size=180&purpose=apple`);
+  return out;
+}
+
 export default async function middleware(request: Request) {
   const url = new URL(request.url);
 
@@ -156,15 +186,21 @@ export default async function middleware(request: Request) {
     const match = isAsset ? null : url.pathname.match(/^\/i\/([^/]+)/);
     const slug = match?.[1];
 
-    // Fast path: esmagadora maioria do tráfego (navegador real, asset, rota sem
-    // slug) — next() devolve o controle pro roteamento normal da Vercel sem
-    // nenhum fetch adicional, sem nenhuma latência extra medível.
-    if (!slug || !isCrawlerRequest(request)) {
+    const crawler = isCrawlerRequest(request);
+    const ios = isIOSRequest(request);
+
+    // Fast path: esmagadora maioria do tráfego (navegador real não-iOS,
+    // asset, rota sem slug) — next() devolve o controle pro roteamento
+    // normal da Vercel sem nenhum fetch adicional, sem nenhuma latência
+    // extra medível (só os 2 testes de regex acima, já resolvidos a essa
+    // altura).
+    if (!slug || (!crawler && !ios)) {
       return next();
     }
 
-    // A partir daqui, só requests de crawler conhecido (compartilhamento social
-    // ou indexação) — aqui sim vale pagar o custo de resolver a igreja e
+    // A partir daqui, só requests de crawler conhecido (compartilhamento
+    // social/indexação) ou de iOS (instalação via "Adicionar à Tela de
+    // Início") — aqui sim vale pagar o custo de resolver a igreja e
     // reescrever o HTML.
     //
     // SPA estática: toda rota serve o mesmo index.html (via rewrite em vercel.json).
@@ -196,15 +232,27 @@ export default async function middleware(request: Request) {
     }
 
     const html = await indexResponse.text();
-    const rewritten = rewriteOgTags(html, church);
+    let rewritten = html;
+    if (crawler) rewritten = rewriteOgTags(rewritten, church);
+    if (ios) rewritten = rewriteIosPwaTags(rewritten, slug, church.nome);
 
-    return new Response(rewritten, {
-      status: 200,
-      headers: {
-        'content-type': 'text/html; charset=utf-8',
-        'cache-control': 'public, s-maxage=300, stale-while-revalidate=600',
-      },
-    });
+    const headers: Record<string, string> = { 'content-type': 'text/html; charset=utf-8' };
+    if (ios) {
+      // Conteúdo varia por User-Agent (só iOS recebe as tags trocadas) — não
+      // pode virar cache compartilhado: serviria o HTML de iOS pra quem não
+      // é iOS, ou o genérico pra quem é. no-store é a garantia real (Vary
+      // sozinho não impede CDNs que ignoram a chave); os dois juntos,
+      // redundantes de propósito.
+      headers['cache-control'] = 'private, no-store';
+      headers['vary'] = 'User-Agent';
+    } else {
+      // Só crawler: conteúdo (tags OG) não varia pela identidade do bot
+      // específico, então cache público e compartilhado continua seguro,
+      // como já era.
+      headers['cache-control'] = 'public, s-maxage=300, stale-while-revalidate=600';
+    }
+
+    return new Response(rewritten, { status: 200, headers });
   } catch {
     // Fail-open absoluto: qualquer erro não previsto no pipeline nunca deve
     // derrubar a página pra um usuário real — deixa o roteamento normal seguir,
