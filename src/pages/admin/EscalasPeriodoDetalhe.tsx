@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -319,6 +320,33 @@ export default function AdminEscalasPeriodoDetalhe() {
 
   const toggleSelectAllMinisterios = () => {
     setSelectedMinisterios(allMinisteriosSelected ? [] : ministerios.map((m) => m.id));
+  };
+
+  // "Selecionar todos" do modal Convocar — diferente do toggleSelectAllMinisterios
+  // acima (usado em Novo evento/Editar evento, onde todo ministério é
+  // selecionável): aqui um ministério já convocado pra este evento fica de fora,
+  // tanto da contagem quanto do que "marcar todos" marca.
+  const convocarSelecionaveis = selectedEvento
+    ? ministerios.filter((m) => !selectedEvento.evento_ministerios.some((em) => em.ministerio_id === m.id))
+    : [];
+  const convocarSelecionadosCount = convocarSelecionaveis.filter((m) => selectedMinisterios.includes(m.id)).length;
+  const convocarTodosEstado: boolean | 'indeterminate' =
+    convocarSelecionaveis.length === 0 || convocarSelecionadosCount === 0
+      ? false
+      : convocarSelecionadosCount === convocarSelecionaveis.length
+        ? true
+        : 'indeterminate';
+
+  const toggleConvocarTodos = () => {
+    if (convocarTodosEstado === true) {
+      setSelectedMinisterios((prev) => prev.filter((id) => !convocarSelecionaveis.some((m) => m.id === id)));
+    } else {
+      setSelectedMinisterios((prev) => {
+        const ids = new Set(prev);
+        convocarSelecionaveis.forEach((m) => ids.add(m.id));
+        return Array.from(ids);
+      });
+    }
   };
 
   const toggleExpandEvento = (id: string) => {
@@ -770,6 +798,26 @@ export default function AdminEscalasPeriodoDetalhe() {
           </DialogHeader>
           <div className="py-2 space-y-3">
             <p className="text-sm text-stone-500 leading-relaxed">Selecione os ministérios a convocar para este evento:</p>
+
+            {/* "Selecionar todos" fica fora da área rolável da lista, logo
+                acima dela — nunca some ao rolar (sem precisar de sticky). */}
+            <div className="flex items-center justify-between gap-2 pb-2 border-b border-stone-200">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="convocar-selecionar-todos"
+                  checked={convocarTodosEstado}
+                  onCheckedChange={toggleConvocarTodos}
+                  disabled={convocarSelecionaveis.length === 0}
+                />
+                <Label htmlFor="convocar-selecionar-todos" className="text-sm font-medium text-stone-700 cursor-pointer">
+                  Selecionar todos
+                </Label>
+              </div>
+              <span className="text-xs text-stone-500 shrink-0">
+                {convocarSelecionadosCount} de {convocarSelecionaveis.length} selecionados
+              </span>
+            </div>
+
             <div className="border border-stone-200 rounded-xl p-3 max-h-52 overflow-y-auto space-y-1">
               {ministerios.map((m) => {
                 const jaConvocado = selectedEvento?.evento_ministerios.some((em) => em.ministerio_id === m.id);
