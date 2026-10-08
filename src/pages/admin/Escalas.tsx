@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { parseLocalDate, formatDateForDB, isDatePast } from '@/lib/dateUtils';
+import { useResponderEscala, getMinhaConfirmacaoInfo } from '@/hooks/useResponderEscala';
 
 interface Ministerio {
   id: string;
@@ -135,10 +136,12 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
     created_at: string;
   }>>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [isConfirmandoEscala, setIsConfirmandoEscala] = useState(false);
-  const [isRecusandoEscala, setIsRecusandoEscala] = useState(false);
   const [justificativaConfirmacao, setJustificativaConfirmacao] = useState('');
   const [showRecusarForm, setShowRecusarForm] = useState(false);
+  // "Cancelar confirmação" — reverte status -> pendente. Ação distinta de
+  // confirmar/recusar (não passa por useResponderEscala), mas ressincroniza
+  // o diálogo do mesmo jeito.
+  const [isCancelandoConfirmacao, setIsCancelandoConfirmacao] = useState(false);
 
   // Filters
   const [filterMinisterio, setFilterMinisterio] = useState<string>('all');
@@ -162,7 +165,10 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
     setLoading(false);
   };
 
-  const fetchEscalas = async () => {
+  // Retorna os grupos recém-buscados (além de atualizar o state) — usado pelo
+  // diálogo "Detalhes da Escala" pra se ressincronizar com os dados novos
+  // depois de confirmar/recusar, sem esperar o próximo render pra ler o state.
+  const fetchEscalas = async (): Promise<EscalaGroup[]> => {
     try {
       let query = supabase
         .from('escalas')
@@ -177,19 +183,30 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
       if (propMinisterioId) {
         query = query.eq('ministerio_id', propMinisterioId);
       }
-      
+
       const { data, error } = await query.order('data', { ascending: false });
 
       if (error) throw error;
       setEscalas(data || []);
-      
+
       // Group escalas by (ministerio_id, data, funcao, turno)
       const groups = groupEscalas(data || []);
       setEscalaGroups(groups);
+      return groups;
     } catch (error) {
       console.error('Error fetching escalas:', error);
       toast.error('Erro ao carregar escalas');
+      return [];
     }
+  };
+
+  // Mesmo refetch de fetchEscalas, mas também ressincroniza o viewingGroup
+  // (snapshot separado usado pelo diálogo "Detalhes da Escala") com os dados
+  // novos — sem isso, depois de confirmar/recusar a própria escala, o
+  // diálogo aberto continuava mostrando o status antigo e os botões.
+  const refreshAndSyncViewingGroup = async () => {
+    const freshGroups = await fetchEscalas();
+    setViewingGroup((prev) => (prev ? freshGroups.find((g) => g.key === prev.key) ?? null : prev));
   };
 
   const groupEscalas = (escalas: Escala[]): EscalaGroup[] => {
@@ -552,44 +569,22 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
     }
   };
 
+  // Confirmar/recusar a própria escala — mesmo hook usado em MinhasEscalas.tsx
+  // (src/hooks/useResponderEscala.ts). onResponded ressincroniza a lista E o
+  // viewingGroup do diálogo aberto (ver refreshAndSyncViewingGroup acima).
+  const { confirmar: confirmarMinhaEscala, recusar: recusarMinhaEscala, isConfirming: isConfirmandoEscala, isRecusing: isRecusandoEscala } =
+    useResponderEscala({ onResponded: refreshAndSyncViewingGroup });
+
   const handleConfirmarPresenca = async (escalaId: string) => {
-    setIsConfirmandoEscala(true);
-    try {
-      const { error } = await supabase
-        .from('escalas')
-        .update({ status: 'confirmado', confirmado_em: new Date().toISOString() })
-        .eq('id', escalaId);
-      if (error) throw error;
-      toast.success('Presença confirmada!');
-      setShowRecusarForm(false);
-      await fetchEscalas();
-    } catch (err) {
-      toast.error('Erro ao confirmar presença');
-    } finally {
-      setIsConfirmandoEscala(false);
-    }
+    const ok = await confirmarMinhaEscala(escalaId);
+    if (ok) setShowRecusarForm(false);
   };
 
   const handleRecusarPresenca = async (escalaId: string) => {
-    if (!justificativaConfirmacao.trim()) {
-      toast.error('Informe uma justificativa');
-      return;
-    }
-    setIsRecusandoEscala(true);
-    try {
-      const { error } = await supabase
-        .from('escalas')
-        .update({ status: 'ausente', justificativa: justificativaConfirmacao, confirmado_em: new Date().toISOString() })
-        .eq('id', escalaId);
-      if (error) throw error;
-      toast.success('Resposta registrada');
+    const ok = await recusarMinhaEscala(escalaId, justificativaConfirmacao);
+    if (ok) {
       setShowRecusarForm(false);
       setJustificativaConfirmacao('');
-      await fetchEscalas();
-    } catch (err) {
-      toast.error('Erro ao registrar resposta');
-    } finally {
-      setIsRecusandoEscala(false);
     }
   };
 
@@ -975,16 +970,19 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
 
               {/* ── Minha Confirmação (só para o próprio voluntário) ─────────── */}
               {(() => {
-                const myEntry = viewingGroup.voluntarios.find(
-                  (v) => v.voluntario_id === profile?.id
-                );
+                // getMinhaConfirmacaoInfo usa isDatePast (comparação em data local) em
+                // vez do antigo `new Date(viewingGroup.data) < new Date(...)` — esse
+                // padrão parseia 'YYYY-MM-DD' como UTC e, pra quem está num fuso atrás
+                // de UTC (Brasil, UTC-3), marcava a escala de HOJE como "passada" já a
+                // partir de ~21h local, horas antes do evento de fato acontecer —
+                // escondendo Confirmar/Não posso bem antes da hora.
+                const { myEntry, podeResponder } = getMinhaConfirmacaoInfo(viewingGroup.voluntarios, profile?.id, viewingGroup.data);
                 if (!myEntry) return null;
-                const isPast = new Date(viewingGroup.data) < new Date(new Date().toISOString().split('T')[0]);
-                if (isPast) return null;
+                if (isDatePast(viewingGroup.data)) return null;
                 return (
                   <div className="border-t border-stone-200 pt-4 space-y-3">
                     <p className="text-sm font-semibold text-stone-900">Minha confirmação</p>
-                    {myEntry.status === 'pendente' && !showRecusarForm && (
+                    {podeResponder && !showRecusarForm && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -1006,7 +1004,7 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                         </Button>
                       </div>
                     )}
-                    {myEntry.status === 'pendente' && showRecusarForm && (
+                    {podeResponder && showRecusarForm && (
                       <div className="space-y-2">
                         <Label htmlFor="just-confirm">Justificativa *</Label>
                         <Textarea
@@ -1041,12 +1039,19 @@ export default function AdminEscalas({ ministerioId: propMinisterioId, canManage
                           size="sm"
                           variant="ghost"
                           className="text-stone-500 text-xs h-7"
-                          disabled={isConfirmandoEscala}
+                          disabled={isCancelandoConfirmacao}
                           onClick={async () => {
-                            setIsConfirmandoEscala(true);
-                            await supabase.from('escalas').update({ status: 'pendente', confirmado_em: null }).eq('id', myEntry.id);
-                            setIsConfirmandoEscala(false);
-                            await fetchEscalas();
+                            setIsCancelandoConfirmacao(true);
+                            try {
+                              const { error } = await supabase.from('escalas').update({ status: 'pendente', confirmado_em: null }).eq('id', myEntry.id);
+                              if (error) throw error;
+                              await refreshAndSyncViewingGroup();
+                            } catch (err) {
+                              console.error('Cancelar confirmação error:', err);
+                              toast.error('Erro ao cancelar confirmação');
+                            } finally {
+                              setIsCancelandoConfirmacao(false);
+                            }
                           }}
                         >
                           Cancelar confirmação

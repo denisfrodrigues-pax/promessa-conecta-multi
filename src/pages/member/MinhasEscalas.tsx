@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { parseLocalDate, isDatePast } from '@/lib/dateUtils';
+import { useResponderEscala } from '@/hooks/useResponderEscala';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -170,8 +171,7 @@ export default function MinhasEscalas() {
 
   const [escalas, setEscalas] = useState<Escala[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRecusing, setIsRecusing] = useState(false);
+  const [isRecusingDialog, setIsRecusingDialog] = useState(false);
   const [selectedEscala, setSelectedEscala] = useState<Escala | null>(null);
   const [justificativa, setJustificativa] = useState('');
 
@@ -205,68 +205,29 @@ export default function MinhasEscalas() {
 
   // ─── Actions ─────────────────────────────────────────────────────────────
 
+  const { confirmar, recusar, isSubmitting } = useResponderEscala({ onResponded: fetchEscalas });
+
   const handleConfirmar = async (escala: Escala) => {
     if (escala.status !== 'pendente') return;
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase
-        .from('escalas')
-        .update({
-          status: 'confirmado',
-          confirmado_em: new Date().toISOString(),
-        })
-        .eq('id', escala.id);
-
-      if (error) throw error;
-      toast.success('Escala confirmada com sucesso!');
-      await fetchEscalas();
-    } catch (err) {
-      console.error('handleConfirmar error:', err);
-      toast.error('Erro ao confirmar escala');
-    } finally {
-      setIsSubmitting(false);
-    }
+    await confirmar(escala.id);
   };
 
   const openRecusar = (escala: Escala) => {
     setSelectedEscala(escala);
     setJustificativa('');
-    setIsRecusing(true);
+    setIsRecusingDialog(true);
   };
 
   const closeRecusar = () => {
-    setIsRecusing(false);
+    setIsRecusingDialog(false);
     setSelectedEscala(null);
     setJustificativa('');
   };
 
   const handleRecusar = async () => {
     if (!selectedEscala) return;
-    if (!justificativa.trim()) {
-      toast.error('Informe uma justificativa');
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase
-        .from('escalas')
-        .update({
-          status: 'ausente',
-          justificativa,
-          confirmado_em: new Date().toISOString(),
-        })
-        .eq('id', selectedEscala.id);
-
-      if (error) throw error;
-      toast.success('Resposta registrada');
-      closeRecusar();
-      await fetchEscalas();
-    } catch (err) {
-      console.error('handleRecusar error:', err);
-      toast.error('Erro ao recusar escala');
-    } finally {
-      setIsSubmitting(false);
-    }
+    const ok = await recusar(selectedEscala.id, justificativa);
+    if (ok) closeRecusar();
   };
 
   // ─── Derived state ────────────────────────────────────────────────────────
@@ -451,7 +412,7 @@ export default function MinhasEscalas() {
 
       {/* Dialog: Recusar Escala */}
       <Dialog
-        open={isRecusing}
+        open={isRecusingDialog}
         onOpenChange={(open) => {
           if (!open) closeRecusar();
         }}
