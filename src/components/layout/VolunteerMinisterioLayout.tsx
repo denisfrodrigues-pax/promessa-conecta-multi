@@ -30,6 +30,12 @@ export default function VolunteerMinisterioLayout() {
   // por rotas-filhas que exigem uma função específica (ex.: Check-in do Kids,
   // mca.checkin.qualquer_sala), não só o papel líder/voluntário/admin.
   const [minhasPermissoes, setMinhasPermissoes] = useState<string[]>([]);
+  // A RPC é assíncrona — sem este flag, uma guarda de rota-filha (ver
+  // RequireVolunteerFuncaoPermissao) que lê minhasPermissoes na primeira
+  // renderização vê [] (estado inicial, não "carregando") e redireciona antes
+  // da resposta chegar. Entrar direto em /volunteer/mca/checkin (link, F5,
+  // reload do quiosque) sempre voltava pro painel, mesmo com a permissão.
+  const [permissoesCarregadas, setPermissoesCarregadas] = useState(false);
 
   const isAdmin = roles.includes("admin");
 
@@ -77,10 +83,40 @@ export default function VolunteerMinisterioLayout() {
   }, [user, authLoading, myMinistries, myMinistriesLoading, slug, isAdmin]);
 
   useEffect(() => {
-    if (!ministerio?.id) { setMinhasPermissoes([]); return; }
+    // Reseta pra "carregando" a cada troca de ministério — sem isso, trocar
+    // de /volunteer/mca pra /volunteer/musica manteria por um instante as
+    // permissões (já carregadas) do ministério anterior.
+    setPermissoesCarregadas(false);
+    if (!ministerio?.id) {
+      // Ministério ainda não resolveu (ou nunca resolve — "sem acesso" já é
+      // tratado por noAccess/!ministerio logo abaixo, que redireciona antes
+      // do Outlet/guarda sequer montarem). NUNCA marcar carregado aqui: como
+      // este efeito e o de cima (resolve ministerio) rodam no mesmo lote de
+      // commit no mount, marcar permissoesCarregadas=true neste ramo (mesmo
+      // que só por um instante, com minhasPermissoes=[]) fica visível pra
+      // guarda de rota antes da RPC real sequer começar — ela decide "sem
+      // permissão" e redireciona cedo demais. Bug real, pego em teste.
+      setMinhasPermissoes([]);
+      return;
+    }
+
+    let cancelled = false;
     supabase
       .rpc('get_my_funcao_permissoes', { _ministerio_id: ministerio.id })
-      .then(({ data }) => setMinhasPermissoes(data ?? []));
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          // Fail-safe: trata como "carregado, sem permissões" — a guarda
+          // nega acesso (comportamento mais seguro) em vez de travar a tela
+          // de carregamento pra sempre.
+          console.error('get_my_funcao_permissoes error:', error);
+          setMinhasPermissoes([]);
+        } else {
+          setMinhasPermissoes(data ?? []);
+        }
+        setPermissoesCarregadas(true);
+      });
+    return () => { cancelled = true; };
   }, [ministerio?.id]);
 
   if (authLoading || myMinistriesLoading || loadingMin) {
@@ -128,7 +164,7 @@ export default function VolunteerMinisterioLayout() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, papel: ministerio.papel, minhasPermissoes }} />
+        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, papel: ministerio.papel, minhasPermissoes, permissoesCarregadas }} />
       </main>
     </div>
   );

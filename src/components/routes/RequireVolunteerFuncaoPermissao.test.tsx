@@ -8,7 +8,11 @@ vi.mock('@/contexts/IgrejaSlugContext', () => ({
 }));
 
 function Wrapper({ minhasPermissoes }: { minhasPermissoes: string[] }) {
-  return <Outlet context={{ ministerioId: 'm1', ministerioNome: 'Kids', papel: 'voluntario', minhasPermissoes }} />;
+  return (
+    <Outlet
+      context={{ ministerioId: 'm1', ministerioNome: 'Kids', papel: 'voluntario', minhasPermissoes, permissoesCarregadas: true }}
+    />
+  );
 }
 
 function renderComPermissoes(minhasPermissoes: string[]) {
@@ -23,6 +27,14 @@ function renderComPermissoes(minhasPermissoes: string[]) {
         </Route>
       </Routes>
     </MemoryRouter>
+  );
+}
+
+function WrapperCarregando() {
+  return (
+    <Outlet
+      context={{ ministerioId: 'm1', ministerioNome: 'Kids', papel: 'voluntario', minhasPermissoes: [], permissoesCarregadas: false }}
+    />
   );
 }
 
@@ -47,5 +59,22 @@ describe('RequireVolunteerFuncaoPermissao', () => {
   it('Auxiliar (mesma permissão do Responsável) também acessa', () => {
     renderComPermissoes(['mca.checkin.qualquer_sala']);
     expect(screen.getByText('Tela de Check-in')).toBeInTheDocument();
+  });
+
+  it('enquanto permissoesCarregadas é false, não decide nada — nem tela, nem redirect', () => {
+    render(
+      <MemoryRouter initialEntries={['/volunteer/mca/checkin']}>
+        <Routes>
+          <Route path="/volunteer/:slug" element={<WrapperCarregando />}>
+            <Route index element={<div>Painel do voluntário</div>} />
+            <Route element={<RequireVolunteerFuncaoPermissao permission="mca.checkin.qualquer_sala" />}>
+              <Route path="checkin" element={<div>Tela de Check-in</div>} />
+            </Route>
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    );
+    expect(screen.queryByText('Tela de Check-in')).not.toBeInTheDocument();
+    expect(screen.queryByText('Painel do voluntário')).not.toBeInTheDocument();
   });
 });
