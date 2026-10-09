@@ -13,6 +13,7 @@ import { ChurchThemeApplier } from "@/components/ChurchThemeApplier";
 // Route Guards
 import PublicRoute from "@/components/routes/PublicRoute";
 import PrivateRoute from "@/components/routes/PrivateRoute";
+import RequireVolunteerFuncaoPermissao from "@/components/routes/RequireVolunteerFuncaoPermissao";
 
 // Layouts (não lazy — necessários imediatamente)
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -376,6 +377,15 @@ const App = () => (
 
               <Route path="volunteer/:slug" element={<PrivateRoute allowedRoles={["voluntario", "admin", "lider"]}><VolunteerMinisterioLayout /></PrivateRoute>}>
                 <Route index element={<VolunteerMinisterioDashboard />} />
+                {/* Check-in Kids pro voluntário com a função mca.checkin.qualquer_sala
+                    (Responsável pelo Check-in / Auxiliar) — mesma tela/hook do líder
+                    (LeaderMcaCheckin/LeaderMcaCheckinKiosk), só com rota própria pra
+                    poder voltar pro lugar certo (ver RequireVolunteerFuncaoPermissao e
+                    o onExited/"Modo Quiosque" context-aware dentro das telas). */}
+                <Route element={<RequireVolunteerFuncaoPermissao permission="mca.checkin.qualquer_sala" />}>
+                  <Route path="checkin" element={<LeaderMcaCheckin />} />
+                  <Route path="checkin/quiosque" element={<LeaderMcaCheckinKiosk />} />
+                </Route>
               </Route>
 
               {/* ── MINISTÉRIO MODULAR ────────────────────────────────────── */}

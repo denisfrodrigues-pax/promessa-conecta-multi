@@ -1,0 +1,24 @@
+-- Check-in de visitante (criança sem cadastro em mca_criancas) sempre falhava:
+-- useMcaCheckin.ts grava crianca_id NULL pra esse caso (ver comentário
+-- isVisitanteCheckin, "Visitante = check-in sem crianca_id") desde que o
+-- fluxo de visitante foi escrito em Checkin.tsx, mas a coluna nunca deixou de
+-- ser NOT NULL — todo check-in de visitante batia em "null value in column
+-- crianca_id ... violates not-null constraint".
+--
+-- Verificado antes desta migration, nada mais depende de crianca_id ser
+-- NOT NULL:
+--   - Nenhum índice/UNIQUE em mca_checkins além da PK (id) — só a FK comum.
+--   - Nenhuma view, função ou trigger no banco referencia mca_checkins.crianca_id.
+--   - RLS (mca_checkins_lider_funcao / membro_select_mca_checkins, migration
+--     20260918100000) nunca filtra por crianca_id — só por sala_id via
+--     mca_salas/ministerio_usuarios — continua válida com crianca_id nulo,
+--     pra líder e pra quem tem mca.checkin.qualquer_sala.
+--   - Telas de relatório (admin/Dashboard.tsx, admin/relatorios/RelatorioGeral.tsx)
+--     só fazem count(*) sobre mca_checkins, nunca selecionam/filtram por
+--     crianca_id — sem risco de quebrar.
+--   - useMcaCheckin.ts já trata null: isVisitanteCheckin()/checkinNome() leem
+--     o nome do visitante de `observacao` quando crianca_id é null, e o join
+--     `mca_criancas(nome)` do PostgREST já volta null nesse caso (tratado via
+--     optional chaining em Checkin.tsx/CheckinKiosk.tsx).
+alter table public.mca_checkins
+  alter column crianca_id drop not null;

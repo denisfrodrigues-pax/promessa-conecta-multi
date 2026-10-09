@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useOutletContext, useParams } from 'react-router-dom';
+import { Link, useLocation, useOutletContext, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
@@ -129,6 +129,11 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
   const ministerioId = propMid ?? ctx?.ministerioId ?? '';
   const { p } = useIgrejaSlug();
   const { slug } = useParams<{ slug: string }>();
+  // Esta mesma tela é montada tanto em /leader/:slug/checkin (líder/admin)
+  // quanto em /volunteer/:slug/checkin (voluntário com a função de check-in)
+  // — a origem decide pra onde "Modo Quiosque" deve levar.
+  const location = useLocation();
+  const area = location.pathname.includes('/volunteer/') ? 'volunteer' : 'leader';
 
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [modalOpen, setModalOpen] = useState(false);
@@ -193,9 +198,9 @@ export default function Checkin({ ministerioId: propMid }: { ministerioId?: stri
           <Button variant="outline" className="min-h-[44px]" asChild>
             {/* "checkin" e "checkin/quiosque" são rotas irmãs (não aninhadas) em
                 App.tsx — um Link relativo "quiosque" resolve contra o nível do
-                pai (leader/:slug), não contra "checkin", e cai fora da rota
-                registrada. Precisa do caminho absoluto. */}
-            <Link to={p(`/leader/${slug}/checkin/quiosque`)}>
+                pai (leader|volunteer/:slug), não contra "checkin", e cai fora
+                da rota registrada. Precisa do caminho absoluto. */}
+            <Link to={p(`/${area}/${slug}/checkin/quiosque`)}>
               <Maximize className="w-4 h-4 mr-2" />Modo Quiosque
             </Link>
           </Button>

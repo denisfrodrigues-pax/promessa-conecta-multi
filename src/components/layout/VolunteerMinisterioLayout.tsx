@@ -26,6 +26,10 @@ export default function VolunteerMinisterioLayout() {
   const [ministerio, setMinisterio] = useState<MinisterioInfo | null>(null);
   const [loadingMin, setLoadingMin] = useState(true);
   const [noAccess, setNoAccess] = useState(false);
+  // Permissões por função (mesma RPC/padrão de LeaderMinisterioLayout) — usado
+  // por rotas-filhas que exigem uma função específica (ex.: Check-in do Kids,
+  // mca.checkin.qualquer_sala), não só o papel líder/voluntário/admin.
+  const [minhasPermissoes, setMinhasPermissoes] = useState<string[]>([]);
 
   const isAdmin = roles.includes("admin");
 
@@ -72,6 +76,13 @@ export default function VolunteerMinisterioLayout() {
     setLoadingMin(false);
   }, [user, authLoading, myMinistries, myMinistriesLoading, slug, isAdmin]);
 
+  useEffect(() => {
+    if (!ministerio?.id) { setMinhasPermissoes([]); return; }
+    supabase
+      .rpc('get_my_funcao_permissoes', { _ministerio_id: ministerio.id })
+      .then(({ data }) => setMinhasPermissoes(data ?? []));
+  }, [ministerio?.id]);
+
   if (authLoading || myMinistriesLoading || loadingMin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-50">
@@ -117,7 +128,7 @@ export default function VolunteerMinisterioLayout() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, papel: ministerio.papel }} />
+        <Outlet context={{ ministerioId: ministerio.id, ministerioNome: ministerio.nome, papel: ministerio.papel, minhasPermissoes }} />
       </main>
     </div>
   );
