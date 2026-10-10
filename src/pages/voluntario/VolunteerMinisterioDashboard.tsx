@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { Link, useOutletContext, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIgrejaSlug } from "@/contexts/IgrejaSlugContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import {
   CalendarDays, Users, LayoutDashboard, Clock, CheckCircle2, AlertCircle,
   BookOpen, FileText, Download, Loader2, Music, Palette, Calendar,
-  ChevronRight, ChevronDown, X,
+  ChevronRight, ChevronDown, X, ClipboardCheck,
 } from "lucide-react";
 import { parseLocalDate } from "@/lib/dateUtils";
 import { format } from "date-fns";
@@ -25,6 +26,7 @@ interface OutletCtx {
   ministerioId: string;
   ministerioNome: string;
   papel: string;
+  minhasPermissoes: string[];
 }
 
 interface EventoMusicaVol {
@@ -49,8 +51,10 @@ type PeriodoGroup = {
 };
 
 export default function VolunteerMinisterioDashboard() {
-  const { ministerioId, papel } = useOutletContext<OutletCtx>();
+  const { ministerioId, papel, minhasPermissoes = [] } = useOutletContext<OutletCtx>();
   const { profile } = useAuth();
+  const { p } = useIgrejaSlug();
+  const { slug } = useParams<{ slug: string }>();
   const qc = useQueryClient();
   const [tab, setTab] = useState("resumo");
   const [periodosAbertos, setPeriodosAbertos] = useState<Set<string>>(new Set());
@@ -86,6 +90,13 @@ export default function VolunteerMinisterioDashboard() {
     enabled: !!ministerioId,
   });
   const isMusica = ministerioInfo?.tipo === "musica";
+  const isMca = ministerioInfo?.tipo === "mca";
+  // Atalho de Check-in no painel do voluntário: só quem tem a função com essa
+  // permissão (Responsável pelo Check-in / Auxiliar) — mesmo critério usado
+  // pela guarda de rota (RequireVolunteerFuncaoPermissao) e pela RLS de
+  // mca_checkins (mca_checkins_lider_funcao). Não é "ou é líder": líder já
+  // usa /leader/mca/checkin, esta tela é o atalho do voluntário com função.
+  const podeCheckinKids = isMca && minhasPermissoes.includes("mca.checkin.qualquer_sala");
 
   // Próxima escala do voluntário
   const { data: proximaEscala, isLoading: loadingEscala } = useQuery({
@@ -372,6 +383,29 @@ export default function VolunteerMinisterioDashboard() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Check-in Kids — atalho só pra quem tem a função de check-in */}
+            {podeCheckinKids && (
+              <Card className="rounded-2xl shadow-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-promessa-100 flex items-center justify-center shrink-0">
+                      <ClipboardCheck className="w-4 h-4 text-promessa-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">Check-in Kids</p>
+                      <p className="text-sm text-stone-500 truncate">Registrar entrada e saída das crianças</p>
+                    </div>
+                    <Button asChild variant="ghost" size="sm" className="text-promessa-600 hover:text-promessa-700 text-xs shrink-0">
+                      <Link to={p(`/volunteer/${slug}/checkin`)}>
+                        Abrir
+                        <ChevronRight className="w-3 h-3 ml-1" />
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Próximo Culto (música) — card simplificado com link para escalas */}
             {isMusica && (

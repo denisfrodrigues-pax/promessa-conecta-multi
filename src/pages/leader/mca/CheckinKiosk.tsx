@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIgrejaSlug } from '@/contexts/IgrejaSlugContext';
 import { Button } from '@/components/ui/button';
@@ -123,6 +123,11 @@ export default function CheckinKiosk() {
   const navigate = useNavigate();
   const { p } = useIgrejaSlug();
   const { slug } = useParams<{ slug: string }>();
+  // Mesma tela montada em /leader/:slug/checkin/quiosque e em
+  // /volunteer/:slug/checkin/quiosque — sair do quiosque precisa voltar pra
+  // origem certa, não sempre pro painel de líder.
+  const location = useLocation();
+  const area = location.pathname.includes('/volunteer/') ? 'volunteer' : 'leader';
 
   const [busca, setBusca] = useState('');
   const [exitDialogOpen, setExitDialogOpen] = useState(false);
@@ -288,6 +293,12 @@ export default function CheckinKiosk() {
         </div>
       </div>
 
+      {/* O cadeado no topo abre o diálogo de saída, mas sozinho ninguém
+          percebe — dica discreta no rodapé, sem mudar a lógica de saída. */}
+      <footer className="shrink-0 px-6 py-2 text-center text-xs text-stone-400 bg-white border-t border-stone-200">
+        Para sair, toque no cadeado e digite a senha.
+      </footer>
+
       <SalaPickerDialog
         crianca={salaPickerCrianca}
         salas={salas}
@@ -301,9 +312,10 @@ export default function CheckinKiosk() {
         open={exitDialogOpen}
         onClose={() => setExitDialogOpen(false)}
         // "checkin/quiosque" e "checkin" são rotas irmãs (não aninhadas) em
-        // App.tsx — navigate('..') sobe pro nível do pai (leader/:slug), não
-        // pra "checkin". Precisa do caminho absoluto.
-        onExited={() => navigate(p(`/leader/${slug}/checkin`))}
+        // App.tsx — navigate('..') sobe pro nível do pai (leader|volunteer/:slug),
+        // não pra "checkin". Precisa do caminho absoluto, e de volta pra
+        // origem certa (líder ou voluntário).
+        onExited={() => navigate(p(`/${area}/${slug}/checkin`))}
       />
     </div>
   );
